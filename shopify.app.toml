@@ -1,16 +1,27 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
+<<<<<<< HEAD
 client_id = "2ef9bcffa347a7b425be245874164308"
 name = "Cart Drawer App"
+=======
+client_id = "0741db22a559208f286f8afcfb6dcc65"
+name = "Cart Drawer"
+>>>>>>> cf1e28d8c234fc626bc5b73da5e514279edd763f
 application_url = "https://example.com"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
+<<<<<<< HEAD
 include_config_on_deploy = true
 
 [webhooks]
 api_version = "2026-04"
+=======
+
+[webhooks]
+api_version = "2026-01"
+>>>>>>> cf1e28d8c234fc626bc5b73da5e514279edd763f
 
   [[webhooks.subscriptions]]
   topics = [ "app/uninstalled" ]
@@ -22,6 +33,7 @@ api_version = "2026-04"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+<<<<<<< HEAD
 scopes = "write_metaobject_definitions,write_metaobjects,write_products"
 
 [auth]
@@ -50,3 +62,9 @@ required = true
 [metaobjects.app.example.fields.description]
 name = "Description"
 type = "multi_line_text_field"
+=======
+scopes = "read_products,read_customers,read_themes,write_themes,write_app_proxy,write_files,read_orders,write_price_rules"
+
+[auth]
+redirect_urls = [ "https://example.com/api/auth" ]
+>>>>>>> cf1e28d8c234fc626bc5b73da5e514279edd763f

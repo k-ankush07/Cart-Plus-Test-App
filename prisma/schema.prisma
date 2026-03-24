@@ -29,6 +29,9 @@ model Session {
   locale        String?
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
+<<<<<<< HEAD
   refreshToken        String?
   refreshTokenExpires DateTime?
+=======
+>>>>>>> cf1e28d8c234fc626bc5b73da5e514279edd763f
 }

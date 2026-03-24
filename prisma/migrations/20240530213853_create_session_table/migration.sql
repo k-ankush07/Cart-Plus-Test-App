@@ -14,7 +14,11 @@ CREATE TABLE "Session" (
     "accountOwner" BOOLEAN NOT NULL DEFAULT false,
     "locale" TEXT,
     "collaborator" BOOLEAN DEFAULT false,
+<<<<<<< HEAD
     "emailVerified" BOOLEAN DEFAULT false,
     "refreshToken" TEXT,
     "refreshTokenExpires" DATETIME
+=======
+    "emailVerified" BOOLEAN DEFAULT false
+>>>>>>> cf1e28d8c234fc626bc5b73da5e514279edd763f
 );

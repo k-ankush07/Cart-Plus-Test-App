@@ -1,6 +1,7 @@
 export default function AdditionalPage() {
   return (
     <s-page heading="Additional page">
+<<<<<<< HEAD
       <s-section heading="Multiple pages">
         <s-paragraph>
           The app template comes with an additional page which demonstrates how
@@ -32,6 +33,9 @@ export default function AdditionalPage() {
           </s-list-item>
         </s-unordered-list>
       </s-section>
+=======
+     
+>>>>>>> cf1e28d8c234fc626bc5b73da5e514279edd763f
     </s-page>
   );
 }
