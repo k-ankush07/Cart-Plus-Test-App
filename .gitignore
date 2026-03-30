@@ -1,11 +1,8 @@
 node_modules
 
-<<<<<<< HEAD
 # macOS
 .DS_Store
 
-=======
->>>>>>> cf1e28d8c234fc626bc5b73da5e514279edd763f
 /.cache
 /build
 /app/build

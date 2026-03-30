@@ -1,0 +1,84 @@
+<link rel="stylesheet" href="{{ 'hub-cart-drawer.css' | asset_url }}">
+
+<div id="cart-drawer-App-{{ block.id }}"></div>
+
+<script>
+  window.HUB_CART_BLOCK_ID = "{{ block.id }}";
+</script>
+
+<script>
+  window.__SHOPIFY_CURRENCY__ = {
+    code: "{{ localization.country.currency.iso_code }}",
+    symbol: "{{ localization.country.currency.symbol }}",
+    format: "{{ shop.money_format }}"
+  };
+</script>
+
+<script src="{{ 'hub-cart-html.js' | asset_url }}"></script>
+<script src="{{ 'hub-cart-render.js' | asset_url }}"></script> 
+<script src="{{ 'hub-cart-actions.js' | asset_url }}"></script>
+<script src="{{ 'hub-cart-drawer.js' | asset_url }}"></script>
+
+<!--Localization UI -->
+<localization-form>
+  {% form 'localization' %}
+    <div class="disclosure">
+      
+      <button 
+        type="button" 
+        class="disclosure__button"
+        aria-expanded="false"
+        aria-controls="CountryList-{{ block.id }}"
+      >
+        {{ localization.country.name }} 
+        ({{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }})
+      </button>
+
+      <ul 
+        id="CountryList-{{ block.id }}" 
+        role="list" 
+        class="disclosure__list" 
+        hidden
+      >
+        {% for country in localization.available_countries %}
+          <li class="disclosure__item" tabindex="-1">
+            <a href="#"
+              {% if country.iso_code == localization.country.iso_code %} aria-current="true"{% endif %}
+              data-value="{{ country.iso_code }}">
+              {{ country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}" />
+    </div>
+  {% endform %}
+</localization-form>
+
+<style>
+.hub-visible-{{ block.id }} {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display:block !important;
+}
+
+#hub-cart-drawer-{{ block.id }} {
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+#hub-cart-drawer-{{ block.id }}.hub-visible-{{ block.id }} {
+  transform: translateX(0);
+}
+
+
+</style>
+
+{% schema %}
+{
+  "name": "Hub Cart Drawer",
+  "target": "body"
+}
+{% endschema %}
+
