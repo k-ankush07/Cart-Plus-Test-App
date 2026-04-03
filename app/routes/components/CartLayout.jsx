@@ -42,6 +42,7 @@ export default function CartLayout({
           <CartPreview
             designSettings={designSettings}
             headerSettings={headerSettings}
+            announcementSettings={announcementSettings}
           />
         </div>
       </div>

@@ -4,7 +4,7 @@ import crypto from "crypto";
 
 const router = express.Router();
 
-router.get("/get-carts", async (req,res)=>{
+router.get("/get-carts", async (req, res) => {
   try {
     const { shop } = req.query;
     if (!shop) {
@@ -54,7 +54,6 @@ router.get("/get-cart/:cartId", async (req, res) => {
       message: "Cart fetched successfully",
       data: cart,
     });
-
   } catch (error) {
     console.error("GET CART ERROR:", error);
 
@@ -114,17 +113,20 @@ router.put("/update-cart/:cartId", async (req, res) => {
 
     if (req.body.cartName) updateData.cartName = req.body.cartName;
     if (req.body.status) updateData.status = req.body.status;
-    if (req.body.designSettings) updateData.designSettings = req.body.designSettings;
-    if (req.body.headerSettings) updateData.headerSettings = req.body.headerSettings;
+    if (req.body.designSettings)
+      updateData.designSettings = req.body.designSettings;
+    if (req.body.headerSettings)
+      updateData.headerSettings = req.body.headerSettings;
+    if (req.body.announcementSettings)
+      updateData.announcementSettings = req.body.announcementSettings;
 
     const updatedCart = await cartModels.findOneAndUpdate(
       { cartId },
       updateData,
-      { new: true }
+      { new: true },
     );
 
     res.json({ success: true, data: updatedCart });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false });

@@ -245,3 +245,9 @@ body,
     color: var(--icon-hover-color);
     border-color: var(--icon-border-hover);
 }
+
+.cart-app__row-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

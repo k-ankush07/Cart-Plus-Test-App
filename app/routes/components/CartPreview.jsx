@@ -1,5 +1,7 @@
-import CartItem from "./CartItem";
+import CartItem from "./cart-setting/CartItem";
 import "../../index.css";
+import Announcements from "../components/cart-setting/Announcements";
+
 import {
     getFontWeight,
     getHeadingSize,
@@ -7,7 +9,7 @@ import {
     getBorderWidth,
 } from "../../routes/components/utils/helpers";
 
-export default function CartPreview({ designSettings, headerSettings }) {
+export default function CartPreview({ designSettings, headerSettings, announcementSettings }) {
     const CloseButton = ({ headerSettings }) => {
         return (
             <button
@@ -42,7 +44,7 @@ export default function CartPreview({ designSettings, headerSettings }) {
             </button>
         );
     };
-    
+
     return (
         <div
             className={`cart-app ${designSettings.inheritFonts ? "" : "cart-app--customFont"
@@ -158,12 +160,23 @@ export default function CartPreview({ designSettings, headerSettings }) {
 
                     {headerSettings.border === "thin" && (<div className="cart-app__divider"></div>)}
 
+                    {!announcementSettings.enabled &&
+                        announcementSettings.position === "before" && (
+                            <Announcements announcementSettings={announcementSettings} />
+                        )}
+
                     <div className="cart-app__items">
-                        <CartItem showStrikethrough={designSettings.showStrikethrough}
+                        <CartItem
+                            showStrikethrough={designSettings.showStrikethrough}
                             textColor={designSettings.textColor}
                             savingColor={designSettings.savingsColor}
                         />
                     </div>
+
+                    {!announcementSettings.enabled &&
+                        announcementSettings.position === "after" && (
+                            <Announcements announcementSettings={announcementSettings} />
+                        )}
 
                     <div className="cart-app__divider"></div>
                 </div>

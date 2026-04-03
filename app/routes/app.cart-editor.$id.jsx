@@ -10,61 +10,11 @@ import { shopLoader } from "./components/shop.server";
 import { useLoaderData } from "react-router-dom";
 import { getCart, updateCart } from "../services/apiRoutes";
 import { useState, useEffect, useRef } from "react";
-
-const defaultSettings = {
-  inheritFonts: true,
-  showStrikethrough: true,
-  enableSubtotal: false,
-  desktopWidth: "default",
-  mobileWidth: "full",
-  backgroundColor: "#FFFFFF",
-  accentColor: "#f6f6f7",
-  textColor: "#000000",
-  savingsColor: "#2ea818",
-  subtotalColor: "#000000",
-  buttonRadius: "0",
-  buttonColor: "#000000",
-  buttonTextColor: "#FFFFFF",
-  buttonHoverColor: "#e9e9e9",
-};
-
-const defaultHeaderSettings = {
-  height: "tall",
-  border: "thin",
-  backgroundColor: "#ffffff",
-  titleType: "inherit",
-  titleText: "Cart • {{cart_quantity}}",
-  alignment: "side",
-  heading: "h4",
-  logo: "",
-  logoSize: 24,
-  textColor: "#000000",
-  fontWeight: "semibold",
-  fontSize: 16,
-  closePosition: "right",
-  iconBgColor: "#ffffff",
-  iconbgHoverColor: "#00000014",
-  iconSize: "medium",
-  iconThickNess: "normal",
-  iconColor: "#637381",
-  iconHoverColor: "#637381",
-  iconBorder: "none",
-  iconBorderColor: "#000000",
-  borderHoverColor: "#000000",
-  iconHoverEnabled: false,
-  borderHoverEnabled: false
-};
-
-const defaultAnnouncementSettings = {
-  enabled: false,
-  height: "normal",
-  position: "before",
-  timer: "00:00",
-  text: "Your products are reserved for {TIMER}!",
-  fontSize: 16,
-  backgroundColor: "#f6f6f7",
-  borderColor: "#e8e8e8",
-};
+import {
+  defaultSettings,
+  defaultHeaderSettings,
+  defaultAnnouncementSettings,
+} from "../routes/components/constants/cartDefaults";
 
 export const loader = async ({ request, params }) => {
   const { shop, apiUrl, accessToken } = await shopLoader(request);

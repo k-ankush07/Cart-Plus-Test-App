@@ -7,9 +7,10 @@ import {
   InlineStack,
   InlineGrid,
   BlockStack,
-  Checkbox
+  RangeSlider
 } from "@shopify/polaris";
 import RichTextEditor from "../ui/RichTextEditor";
+import ColorInput from "../ui/ColorInput";
 
 export default function AnnouncementsSettings({
   handleChange,
@@ -28,10 +29,10 @@ export default function AnnouncementsSettings({
         <InlineStack gap="300" align="space-between">
           <Text variant="headingMd">Announcements</Text>
           <Button
-            variant={announcementSettings.enabled ? "secondary" : "primary"}
+            variant={announcementSettings.enabled ? "primary" : "secondary"}
             onClick={() => update("enabled", !announcementSettings.enabled)}
           >
-            {announcementSettings.enabled ? "Disable" : "Enable"}
+            {announcementSettings.enabled ? "Enable" : "Disable"}
           </Button>
         </InlineStack>
         {/* HEIGHT */}
@@ -99,23 +100,25 @@ export default function AnnouncementsSettings({
           onChange={(val) => update("text", val)}
         />
 
-        {/* FONT SIZE */}
-        <TextField
-          label="Font size"
-          type="number"
-          value={announcementSettings.fontSize.toString()}
-          onChange={(val) => update("fontSize", Number(val))}
-        />
+        <InlineStack align="space-between">
+          <Text>Font size</Text>
+          <Text>{announcementSettings.fontSize || 10}px</Text>
+        </InlineStack>
 
-        {/* COLORS */}
+        <RangeSlider
+          value={announcementSettings.fontSize || 10}
+          onChange={(val) => update("fontSize", val)}
+          min={0}
+          max={24}
+          step={1}
+        />
         <InlineGrid columns={2} gap="200">
-          <TextField
+          <ColorInput
             label="Background color"
             value={announcementSettings.backgroundColor}
             onChange={(val) => update("backgroundColor", val)}
           />
-
-          <TextField
+          <ColorInput
             label="Border color"
             value={announcementSettings.borderColor}
             onChange={(val) => update("borderColor", val)}
