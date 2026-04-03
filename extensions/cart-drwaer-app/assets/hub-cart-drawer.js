@@ -1,4 +1,24 @@
 (function () {
+  const originalFetch = window.fetch;
+
+  window.fetch = async function (...args) {
+    const response = await originalFetch.apply(this, args);
+
+    if (
+      args[0].includes("/cart/add") ||
+      args[0].includes("/cart/change") ||
+      args[0].includes("/cart/clear")
+    ) {
+      const data = await response.clone().json();
+
+      document.dispatchEvent(new CustomEvent("cart:updated", { detail: data }));
+    }
+
+    return response;
+  };
+})();
+
+(function () {
   let isEventBound = false;
 
   function initCart() {
@@ -118,27 +138,10 @@
         true,
       );
 
-      document.addEventListener("submit", function (e) {
-        const form = e.target.closest('form[action="/cart/add"]');
-        if (!form) return;
+      document.addEventListener("cart:updated", function (e) {
+        console.log("Cart updated:", e.detail);
 
-        let previousCount = 0;
-
-        fetch("/cart.js")
-          .then((res) => res.json())
-          .then((cart) => {
-            previousCount = cart.item_count;
-
-            const interval = setInterval(async () => {
-              const res = await fetch("/cart.js");
-              const newCart = await res.json();
-
-              if (newCart.item_count > previousCount) {
-                clearInterval(interval);
-                openDrawer();
-              }
-            }, 300);
-          });
+        openDrawer();
       });
     }
   }

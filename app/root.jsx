@@ -1,5 +1,6 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import '@shopify/polaris/build/esm/styles.css';
+import "./index.css";
 
 export default function App() {
   return (
@@ -11,6 +12,10 @@ export default function App() {
         <link
           rel="stylesheet"
           href="https://cdn.shopify.com/static/fonts/inter/v4/styles.css"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
         />
         <Meta />
         <Links />

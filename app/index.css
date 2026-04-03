@@ -1,0 +1,247 @@
+html,
+body,
+#root {
+    height: 100%;
+}
+
+.appLayout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.cartPreviewWrapper {
+    width: 550px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0px;
+    display: flex;
+    justify-content: right;
+}
+
+.sidebar {
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.mainContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.cart-app__checkout,
+.cart-app__close,
+.cart-app-item__qty-btn {
+    font-family: inherit;
+}
+
+.cart-app {
+    width: 100%;
+    margin: 0 0 0 auto;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+
+.cart-app--customFont {
+    font-family: "Poppins", sans-serif;
+}
+
+.cart-app__container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.cart-app__header {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.cart-app__items {
+    padding: 16px;
+}
+
+.cart-app__footer {
+    flex-shrink: 0;
+    padding: 16px;
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: white;
+}
+
+.cart-app__row {
+    display: flex;
+    align-items: center;
+}
+
+.cart-app__row--gap {
+    gap: 8px;
+}
+
+.cart-app__title {
+    margin: 0;
+    font-size: 16px;
+}
+
+.cart-app__subtotal {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.cart-app__divider {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.cart-app__checkout {
+    width: 100%;
+    padding: 12px;
+    background: black;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.cart-app__badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* ITEM WRAPPER */
+.cart-app-item {
+    display: flex;
+    gap: 12px;
+}
+
+/* IMAGE */
+.cart-app-item__image img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* CONTENT */
+.cart-app-item__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* TEXT */
+.cart-app-item__title {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.cart-app-item__variant {
+    font-size: 12px;
+    color: #777;
+}
+
+/* PRICE */
+.cart-app-item__price-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.cart-app-item__price-old {
+    font-size: 13px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.cart-app-item__price-new {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.cart-app-item__save {
+    font-size: 12px;
+    color: green;
+}
+
+/* ACTIONS */
+.cart-app-item__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* QTY */
+.cart-app-item__qty {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.cart-app-item__qty-btn {
+    background: none;
+    border: none;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cart-app-item__qty-value {
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+/* BADGE */
+.cart-app-item__badge {
+    background: #eee;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.cart-app__checkout {
+    color: var(--btn-text);
+    transition: all 0.2s ease;
+}
+
+.cart-app__checkout:hover {
+    color: var(--btn-hover-text);
+}
+
+.upload-box {
+    border: 2px dashed #d1d5db;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+}
+
+.custom-close-btn {
+    background: var(--icon-bg);
+    color: var(--icon-color);
+    transition: background 0.3s ease;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    border: var(--border-width) solid var(--border-color);
+}
+
+.custom-close-btn:hover {
+    background: var(--icon-hover-bg);
+    color: var(--icon-hover-color);
+    border-color: var(--icon-border-hover);
+}

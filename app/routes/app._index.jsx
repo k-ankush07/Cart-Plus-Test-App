@@ -1,13 +1,8 @@
-import { AppProvider, Page, Card, Text } from '@shopify/polaris';
 
-export default function AppIndex() {
+export default function Dashboard() {
   return (
-    <AppProvider>
-      <Page title="Dashboard">
-        <Card>
-          <Text variant="headingMd">Polaris Working </Text>
-        </Card>
-      </Page>
-    </AppProvider>
+    <div>
+
+    </div>
   );
 }
