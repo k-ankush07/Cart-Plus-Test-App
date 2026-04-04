@@ -138,7 +138,7 @@ export default function AppCarts() {
                                     selectable={false}
                                 >
                                     {carts.map((cart, index) => (
-                                        <IndexTable.Row id={cart.id} key={cart.id} position={index}>
+                                        <IndexTable.Row id={cart.cartId} key={cart.cartId} position={index}>
 
                                             {/* Cart Name */}
                                             <IndexTable.Cell>

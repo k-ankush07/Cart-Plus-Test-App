@@ -14,10 +14,11 @@ import {
   defaultSettings,
   defaultHeaderSettings,
   defaultAnnouncementSettings,
+  defaultRewardsSettings
 } from "../routes/components/constants/cartDefaults";
 
 export const loader = async ({ request, params }) => {
-  const { shop, apiUrl, accessToken } = await shopLoader(request);
+  const { shop, apiUrl, accessToken, products, nextCursor, hasNextPage, currency  } = await shopLoader(request);
   const cartId = params.id;
 
   let cart = null;
@@ -33,12 +34,16 @@ export const loader = async ({ request, params }) => {
     shop,
     apiUrl,
     cart,
-    accessToken
+    accessToken,
+    currency,
+    products,
+    nextCursor,
+    hasNextPage
   });
 };
 
 export default function CartEditor() {
-  const { shop, apiUrl, cart, accessToken } = useLoaderData();
+  const { shop, apiUrl, cart, accessToken, products, nextCursor, hasNextPage, currency  } = useLoaderData();
 
   const [activeTab, setActiveTab] = useState("Design");
 
@@ -54,10 +59,15 @@ export default function CartEditor() {
     cart?.announcementSettings || defaultAnnouncementSettings
   );
 
+  const [rewardsSettings, setRewardsSettings] = useState(
+    cart?.rewardsSettings || defaultRewardsSettings
+  );
+
   const initialSettingsRef = useRef({
     design: designSettings,
     header: headerSettings,
     announcement: announcementSettings,
+    rewardsSettings: rewardsSettings
   });
 
   const [isDirty, setIsDirty] = useState(false);
@@ -69,6 +79,7 @@ export default function CartEditor() {
       design: setDesignSettings,
       header: setHeaderSettings,
       announcement: setAnnouncementSettings,
+      rewardsSettings: setRewardsSettings,
     };
 
     const setter = setters[type];
@@ -109,10 +120,15 @@ export default function CartEditor() {
         setAnnouncementSettings(cart.announcementSettings);
       }
 
+      if (cart.rewardsSettings) {
+        setRewardsSettings(cart.rewardsSettings);
+      }
+
       initialSettingsRef.current = {
         design: cart.designSettings || defaultSettings,
         header: cart.headerSettings || defaultHeaderSettings,
-        announcement: cart.announcementSettings || defaultAnnouncementSettings
+        announcement: cart.announcementSettings || defaultAnnouncementSettings,
+        rewardsSettings: cart.rewardsSettings || defaultRewardsSettings
       };
     }
   }, [cart]);
@@ -125,12 +141,14 @@ export default function CartEditor() {
         designSettings,
         headerSettings,
         announcementSettings,
+        rewardsSettings
       });
 
       initialSettingsRef.current = {
         design: designSettings,
         header: headerSettings,
         announcement: announcementSettings,
+        rewardsSettings: rewardsSettings
       };
       setIsDirty(false);
 
@@ -144,6 +162,7 @@ export default function CartEditor() {
     setDesignSettings(initialSettingsRef.current.design);
     setHeaderSettings(initialSettingsRef.current.header);
     setAnnouncementSettings(initialSettingsRef.current.announcement);
+    setRewardsSettings(initialSettingsRef.current.rewardsSettings);
     setIsDirty(false);
   };
 
@@ -163,14 +182,19 @@ export default function CartEditor() {
         designSettings={designSettings}
         headerSettings={headerSettings}
         announcementSettings={announcementSettings}
+        rewardsSettings={rewardsSettings}
         handleChange={handleChange}
         shop={shop}
         accessToken={accessToken}
         apiUrl={apiUrl}
+        currency={currency}
         Sidebar={Sidebar}
         MainContent={MainContent}
         CartPreview={CartPreview}
+        products={products}
+        nextCursor={nextCursor}
+        hasNextPage={hasNextPage}
       />
     </AppProvider>
   );
-}
+} 

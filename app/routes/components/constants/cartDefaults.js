@@ -39,7 +39,7 @@ export const defaultHeaderSettings = {
   iconBorderColor: "#000000",
   borderHoverColor: "#000000",
   iconHoverEnabled: false,
-  borderHoverEnabled: false
+  borderHoverEnabled: false,
 };
 
 export const defaultAnnouncementSettings = {
@@ -51,4 +51,31 @@ export const defaultAnnouncementSettings = {
   fontSize: 15,
   backgroundColor: "#f6f6f7",
   borderColor: "#e8e8e8",
+};
+
+export const defaultRewardsSettings = {
+  enabled: true,
+  showOnEmptyCart: true,
+  backgroundColor: "#E2E2E2",
+  textColor: "#000000",
+  completeIconColor: "#ffffff",
+  incompleteIconColor: "#4D4949",
+  successText: "Free shipping unlocked!",
+
+  calculationType: "total",
+  usePreDiscount: true,
+
+  tiers: [
+    {
+      id: 1,
+      type: "shipping",
+      minAmount: 1000,
+      minQuantity: 1,
+      description: "Free Shipping",
+      title: "You're {AMOUNT} away from free shipping!",
+      showIcon: true,
+      products: [],
+    },
+  ],
+  activeTier: 0,
 };

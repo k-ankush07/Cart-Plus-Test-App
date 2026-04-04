@@ -2,9 +2,10 @@ import { Card, Text } from "@shopify/polaris";
 import HeaderSettings from "./ui-cart-options/HeaderSettings";
 import AnnouncementsSettings from "./ui-cart-options/AnnouncementsSettings";
 import DesignSettings from "./ui-cart-options/DesignSettings";
+import TieredRewards from "./ui-cart-options/TieredRewardSetting";
 
 export default function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
-    announcementSettings
+    announcementSettings, rewardsSettings, products, hasNextPage, nextCursor, currency
 }) {
 
     const COMPONENT_MAP = {
@@ -27,6 +28,16 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
             announcementSettings={announcementSettings}
             handleChange={handleChange}
         />,
+        "Tiered rewards": (
+            <TieredRewards
+                rewardsSettings={rewardsSettings}
+                handleChange={handleChange}
+                products={products}
+                hasNextPage={hasNextPage}
+                nextCursor={nextCursor}
+                currency={currency}
+            />
+        ),
     };
 
     return (

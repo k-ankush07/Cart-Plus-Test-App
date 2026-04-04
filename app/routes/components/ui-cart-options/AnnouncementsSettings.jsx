@@ -94,11 +94,16 @@ export default function AnnouncementsSettings({
           helpText="Use this Format: MM:SS"
         />
 
-        {/* TEXT */}
+        <Text variant="bodyMd" fontWeight="medium">
+          Announcement text
+        </Text>
         <RichTextEditor
           value={announcementSettings.text}
           onChange={(val) => update("text", val)}
         />
+        <Text variant="bodySm" tone="subdued">
+          Use {"{TIMER}"} to show countdown
+        </Text>
 
         <InlineStack align="space-between">
           <Text>Font size</Text>

@@ -15,7 +15,12 @@ export default function CartLayout({
   shop,
   apiUrl,
   accessToken,
-  announcementSettings
+  announcementSettings,
+  rewardsSettings,
+  products,
+  hasNextPage,
+  nextCursor,
+  currency
 }) {
   return (
     <Page fullWidth>
@@ -24,7 +29,8 @@ export default function CartLayout({
       </div>
       <div className="appLayout">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab}
-          announcementSettings={announcementSettings} />
+          announcementSettings={announcementSettings}
+          rewardsSettings={rewardsSettings} />
 
         <MainContent
           activeTab={activeTab}
@@ -36,6 +42,11 @@ export default function CartLayout({
           accessToken={accessToken}
           apiUrl={apiUrl}
           announcementSettings={announcementSettings}
+          rewardsSettings={rewardsSettings}
+          products={products}
+          nextCursor={nextCursor}
+          hasNextPage={hasNextPage}
+          currency={currency}
         />
 
         <div className="cartPreviewWrapper">
@@ -43,6 +54,7 @@ export default function CartLayout({
             designSettings={designSettings}
             headerSettings={headerSettings}
             announcementSettings={announcementSettings}
+            rewardsSettings={rewardsSettings}
           />
         </div>
       </div>

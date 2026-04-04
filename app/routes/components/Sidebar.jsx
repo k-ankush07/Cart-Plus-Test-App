@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import MenuSection from "./MenuSection";
 
-export default function Sidebar({ activeTab, setActiveTab, announcementSettings }) {
+export default function Sidebar({ activeTab, setActiveTab, announcementSettings, rewardsSettings }) {
   const [visibility, setVisibility] = useState({});
 
   const toggle = (key) => {
@@ -34,16 +34,17 @@ export default function Sidebar({ activeTab, setActiveTab, announcementSettings 
     active: activeTab === label,
     onAction: () => setActiveTab(label),
     suffix: hasToggle ? (
-      <span
-        onClick={(e) => {
-          e.stopPropagation();
-          toggle(label);
-        }}
-      >
-        {(label !== "Announcements" || announcementSettings.enabled) &&
-          (visibility[label] !== false && <Icon source={HideIcon} />)}
-      </span>
-    ) : null,
+  <span
+    onClick={(e) => {
+      e.stopPropagation();
+      toggle(label);
+    }}
+  >
+    {((label !== "Announcements" || announcementSettings.enabled) &&
+      (label !== "Tiered rewards" || rewardsSettings.enabled)) &&
+      (visibility[label] !== false && <Icon source={HideIcon} />)}
+  </span>
+) : null,
   });
 
   return (

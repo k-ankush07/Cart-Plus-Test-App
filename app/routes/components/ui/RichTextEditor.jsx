@@ -73,9 +73,7 @@ function RichTextEditor({ value, onChange }) {
 
     return (
         <BlockStack gap="200">
-            <Text variant="bodyMd" fontWeight="medium">
-                Announcement text
-            </Text>
+           
 
             <div
                 style={{
@@ -131,10 +129,6 @@ function RichTextEditor({ value, onChange }) {
                     }}
                 />
             </div>
-
-            <Text variant="bodySm" tone="subdued">
-                Use {"{TIMER}"} to show countdown
-            </Text>
         </BlockStack>
     );
 }

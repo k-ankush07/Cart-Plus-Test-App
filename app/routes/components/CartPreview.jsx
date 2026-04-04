@@ -1,49 +1,10 @@
 import CartItem from "./cart-setting/CartItem";
 import "../../index.css";
 import Announcements from "../components/cart-setting/Announcements";
-
-import {
-    getFontWeight,
-    getHeadingSize,
-    getIconSize,
-    getBorderWidth,
-} from "../../routes/components/utils/helpers";
+import TieredReward from "../components/cart-setting/TieredRewards";
+import CartHeading from "../components/cart-setting/CartHeading";
 
 export default function CartPreview({ designSettings, headerSettings, announcementSettings }) {
-    const CloseButton = ({ headerSettings }) => {
-        return (
-            <button
-                className="cart-app__close custom-close-btn"
-                style={{
-                    flexShrink: 0,
-                    "--icon-color": headerSettings.iconColor,
-
-                    "--icon-bg": headerSettings.iconBgColor,
-                    "--icon-hover-bg": headerSettings.iconbgHoverColor,
-                    "--icon-hover-color": headerSettings.iconHoverColor,
-                    "--icon-border-hover": headerSettings.borderHoverColor,
-                    "--border-color": headerSettings.iconBorderColor,
-                    "--border-width": getBorderWidth(headerSettings.iconBorder),
-                }}
-            >
-                <svg
-                    width={getIconSize(headerSettings.iconSize)}
-                    height={getIconSize(headerSettings.iconSize)}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={
-                        headerSettings.iconThickNess === "thick" ? 3 : 2
-                    }
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-            </button>
-        );
-    };
 
     return (
         <div
@@ -58,112 +19,19 @@ export default function CartPreview({ designSettings, headerSettings, announceme
         >
             <div className="cart-app__container">
                 <div className="cart-app__header">
-                    <div
-                        className="cart-app__header-top"
-                        style={{
-                            padding:
-                                headerSettings.height === "slim"
-                                    ? "16px 30px"
-                                    : "30px 30px",
-                            background: headerSettings.backgroundColor
-                        }}
-                    >
-                        <div
-                            className="cart-app__row-between"
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                            }}
-                        >
-                            {headerSettings.closePosition === "left" && (
-                                <CloseButton headerSettings={headerSettings} />
-                            )}
-
-                            <div
-                                style={{
-                                    flex: 1,
-                                    textAlign:
-                                        headerSettings.alignment === "center"
-                                            ? "center"
-                                            : headerSettings.closePosition === "left"
-                                                ? "right"
-                                                : "left",
-                                }}
-                            >
-                                {headerSettings.titleType === "logo" ? (
-                                    <img
-                                        src={
-                                            headerSettings.logo && headerSettings.logo !== ""
-                                                ? headerSettings.logo
-                                                : "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/upcart_header_logo_1775234624267.png"
-                                        }
-                                        alt="Logo"
-                                        onError={(e) => {
-                                            e.target.src =
-                                                "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/upcart_header_logo_1775234624267.png";
-                                        }}
-                                        style={{
-                                            maxWidth: `${headerSettings.logoSize || 120}px`,
-                                            display: "block",
-                                            margin:
-                                                headerSettings.alignment === "center"
-                                                    ? "0 auto"
-                                                    : headerSettings.closePosition === "left"
-                                                        ? "0 0 0 auto"
-                                                        : "0",
-                                        }}
-                                    />
-                                ) : headerSettings.titleType === "custom" ? (
-                                    <span
-                                        className="cart-app__title"
-                                        style={{
-                                            color: headerSettings.textColor,
-                                            fontWeight: getFontWeight(headerSettings.fontWeight),
-                                            fontSize: `${headerSettings.fontSize}px`,
-                                            display: "block",
-                                            margin: 0,
-                                        }}
-                                    >
-                                        {headerSettings.titleText?.replace("{{cart_quantity}}", "2") ||
-                                            "Cart • 2"}
-                                    </span>
-                                ) : (
-                                    (() => {
-                                        const HeadingTag = headerSettings.heading || "h3";
-                                        const text =
-                                            headerSettings.titleText?.replace("{{cart_quantity}}", "2") ||
-                                            "Cart • 2";
-
-                                        return (
-                                            <HeadingTag
-                                                className="cart-app__title"
-                                                style={{
-                                                    margin: 0,
-                                                    color: designSettings.textColor,
-                                                    fontWeight: getFontWeight(headerSettings.fontWeight),
-                                                    fontSize: getHeadingSize(headerSettings.heading),
-                                                }}
-                                            >
-                                                {text}
-                                            </HeadingTag>
-                                        );
-                                    })()
-                                )}
-                            </div>
-
-                            {headerSettings.closePosition === "right" && (
-                                <CloseButton headerSettings={headerSettings} />
-                            )}
-                        </div>
-                    </div>
+                    <CartHeading 
+                    headerSettings={headerSettings} 
+                    designSettings ={designSettings } />
 
                     {headerSettings.border === "thin" && (<div className="cart-app__divider"></div>)}
+
 
                     {!announcementSettings.enabled &&
                         announcementSettings.position === "before" && (
                             <Announcements announcementSettings={announcementSettings} />
                         )}
+
+                    <TieredReward />
 
                     <div className="cart-app__items">
                         <CartItem
@@ -209,7 +77,6 @@ export default function CartPreview({ designSettings, headerSettings, announceme
                     >
                         Checkout • $84.00
                     </button>
-
                 </div>
 
             </div>
