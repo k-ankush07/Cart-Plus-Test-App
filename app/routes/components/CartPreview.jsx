@@ -1,10 +1,11 @@
-import CartItem from "./cart-setting/CartItem";
+import CartItem from "./cart-Items/CartItem";
 import "../../index.css";
-import Announcements from "../components/cart-setting/Announcements";
-import TieredReward from "../components/cart-setting/TieredRewards";
-import CartHeading from "../components/cart-setting/CartHeading";
+import Announcements from "./cart-Items/Announcements";
+import TieredReward from "./cart-Items/TieredRewards";
+import CartHeading from "./cart-Items/CartHeading";
+import CartFooter from "./cart-Items/CartFooter";
 
-export default function CartPreview({ designSettings, headerSettings, announcementSettings }) {
+export default function CartPreview({ designSettings, headerSettings, announcementSettings, rewardsSettings }) {
 
     return (
         <div
@@ -19,9 +20,9 @@ export default function CartPreview({ designSettings, headerSettings, announceme
         >
             <div className="cart-app__container">
                 <div className="cart-app__header">
-                    <CartHeading 
-                    headerSettings={headerSettings} 
-                    designSettings ={designSettings } />
+                    <CartHeading
+                        headerSettings={headerSettings}
+                        designSettings={designSettings} />
 
                     {headerSettings.border === "thin" && (<div className="cart-app__divider"></div>)}
 
@@ -30,8 +31,8 @@ export default function CartPreview({ designSettings, headerSettings, announceme
                         announcementSettings.position === "before" && (
                             <Announcements announcementSettings={announcementSettings} />
                         )}
-
-                    <TieredReward />
+                    {!rewardsSettings.enabled && (
+                        <TieredReward rewardsSettings={rewardsSettings} />)}
 
                     <div className="cart-app__items">
                         <CartItem
@@ -48,37 +49,7 @@ export default function CartPreview({ designSettings, headerSettings, announceme
 
                     <div className="cart-app__divider"></div>
                 </div>
-
-                <div className="cart-app__footer" style={{ backgroundColor: designSettings.accentColor }}>
-
-                    <div className="cart-app__row-between">
-                        <div className="cart-app__row cart-app__row--gap">
-                            <span style={{ color: designSettings.textColor }}>Discounts</span>
-                            <span className="cart-app__badge">Auto 5</span>
-                        </div>
-                        <span style={{ color: designSettings.textColor }}>- $36.00</span>
-                    </div>
-
-                    {designSettings.enableSubtotal && (
-                        <div className="cart-app__row-between" style={{ color: designSettings.subtotalColor }}>
-                            <span className="cart-app__subtotal">Subtotal</span>
-                            <span className="cart-app__subtotal">$84.00</span>
-                        </div>
-                    )}
-
-                    <button
-                        className="cart-app__checkout"
-                        style={{
-                            borderRadius: `${designSettings.buttonRadius}px`,
-                            backgroundColor: designSettings.buttonColor,
-                            "--btn-hover-text": designSettings.buttonHoverColor,
-                            "--btn-text": designSettings.buttonTextColor,
-                        }}
-                    >
-                        Checkout • $84.00
-                    </button>
-                </div>
-
+                <CartFooter designSettings={designSettings} />
             </div>
         </div>
     );

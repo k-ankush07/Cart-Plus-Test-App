@@ -1,0 +1,494 @@
+import {
+    Text,
+    Button,
+    InlineStack,
+    BlockStack,
+    Checkbox,
+    ResourceList, Thumbnail,
+    Badge,
+    Icon,
+    Spinner,
+    TextField,
+    ResourceItem
+} from "@shopify/polaris";
+import {
+    ChevronDownIcon,
+    ChevronUpIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon
+} from "@shopify/polaris-icons";
+import { useEffect, useState } from "react";
+
+export default function ProductItemCollections({ currency, onSelect }) {
+    const [cursorStack, setCursorStack] = useState([]);
+    const [openProducts, setOpenProducts] = useState({});
+    const [selectedVariants, setSelectedVariants] = useState([]);
+    const [localProducts, setLocalProducts] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [cursor, setCursor] = useState(null);
+    const [search, setSearch] = useState("");
+    const [showSelected, setShowSelected] = useState(false);
+    const [activeTab, setActiveTab] = useState("products");
+    const [hasNextPage, setHasNextPage] = useState(false);
+    const [collectionsLoading, setCollectionsLoading] = useState(false);
+
+    const toggleVariants = (id) => {
+        setOpenProducts((prev) => ({
+            ...prev,
+            [id]: !prev[id],
+        }));
+    };
+
+    const isSelected = (id) => selectedVariants.includes(id);
+
+    const toggleSelect = (variant, product) => {
+        setSelectedCollections([]);
+
+        setSelectedVariants((prev) => {
+            const updated = prev.includes(variant.id)
+                ? prev.filter((i) => i !== variant.id)
+                : [...prev, variant.id];
+
+            onSelect({
+                type: "products",
+                items: updated
+            });
+
+            return updated;
+        });
+    };
+
+    const isProductSelected = (product) =>
+        product.variants.some((v) => selectedVariants.includes(v.id));
+
+    const toggleProduct = (product) => {
+        setSelectedCollections([]);
+
+        const variantIds = product.variants.map((v) => v.id);
+
+        setSelectedVariants((prev) => {
+            const allSelected = variantIds.every((id) =>
+                prev.includes(id)
+            );
+
+            let updated;
+
+            if (allSelected) {
+                updated = prev.filter((id) => !variantIds.includes(id));
+            } else {
+                updated = [...new Set([...prev, ...variantIds])];
+            }
+
+            onSelect({
+                type: "products",
+                items: updated
+            });
+
+            return updated;
+        });
+    };
+
+    const selectedProductCount = new Set(
+        localProducts
+            .filter((product) =>
+                product.variants.some((v) =>
+                    selectedVariants.includes(v.id)
+                )
+            )
+            .map((p) => p.id)
+    ).size;
+
+    const handleNext = async () => {
+        if (!hasNextPage) return;
+
+        setCursorStack((prev) => [...prev, cursor]);
+
+        await loadMore(cursor);
+    };
+
+    const handlePrev = async () => {
+        if (cursorStack.length === 0) return;
+
+        const newStack = [...cursorStack];
+        const prevCursor = newStack.pop();
+
+        setCursorStack(newStack);
+
+        await loadMore(prevCursor || null);
+    };
+
+    useEffect(() => {
+        loadMore(null);
+    }, []);
+
+    const loadMore = async (cursorValue) => {
+        setLoading(true);
+
+        try {
+            const res = await fetch(`/api/products?cursor=${cursorValue || ""}`);
+            const data = await res.json();
+
+            const edges = data?.data?.products?.edges || [];
+
+            const newProducts = edges.map((p) => ({
+                id: p.node.id,
+                title: p.node.title,
+                image: p.node.images.edges[0]?.node?.url,
+                price: p.node.variants.edges[0]?.node?.price || "0",
+                variants: p.node.variants.edges.map((v) => ({
+                    id: v.node.id,
+                    title: v.node.title,
+                    price: v.node.price,
+                    available: v.node.availableForSale,
+                    image: v.node.image?.url || null,
+                }))
+            }));
+
+            setLocalProducts(newProducts);
+
+            const lastCursor = edges[edges.length - 1]?.cursor;
+            setCursor(lastCursor);
+
+            setHasNextPage(data?.data?.products?.pageInfo?.hasNextPage);
+
+        } catch (err) {
+            console.error(err);
+        }
+
+        setLoading(false);
+    };
+
+    const filteredProducts = localProducts.filter((product) => {
+        const matchesSearch = product.title
+            .toLowerCase()
+            .includes(search.toLowerCase());
+
+        const matchesSelected = showSelected
+            ? product.variants.some((v) =>
+                selectedVariants.includes(v.id)
+            )
+            : true;
+
+        return matchesSearch && matchesSelected;
+    });
+
+    const [collections, setCollections] = useState([]);
+    const [selectedCollections, setSelectedCollections] = useState([]);
+
+    const loadCollections = async () => {
+        setCollectionsLoading(true);
+
+        try {
+            const res = await fetch(`/api/collections`, {
+                credentials: "include",
+            });
+
+            const data = await res.json();
+
+            const edges = data?.collections || [];
+
+            const formatted = edges.map((c) => ({
+                id: c.node.id,
+                title: c.node.title,
+                image: c.node.image?.url || "",
+                productsCount: c.node.productsCount?.count || 0,
+            }));
+
+            setCollections(formatted);
+
+        } catch (err) {
+            console.error(err);
+        }
+
+        setCollectionsLoading(false);
+    };
+
+    useEffect(() => {
+        if (activeTab === "collections") {
+            loadCollections();
+        }
+    }, [activeTab]);
+
+    const filteredCollections = collections.filter((col) => {
+        const matchesSearch = col.title
+            .toLowerCase()
+            .includes(search.toLowerCase());
+
+        const matchesSelected = showSelected
+            ? selectedCollections.includes(col.id)
+            : true;
+
+        return matchesSearch && matchesSelected;
+    });
+
+    const handleCollectionSelect = (id) => {
+        setSelectedVariants([]);
+
+        setSelectedCollections((prev) => {
+            const updated = prev.includes(id) ? [] : [id];
+
+            onSelect({
+                type: "collections",
+                items: updated
+            });
+
+            return updated;
+        });
+    };
+
+    return (
+        <div>
+            <BlockStack gap="300">
+                <InlineStack gap="200">
+                    <Button
+                        variant={activeTab === "products" ? "primary" : "secondary"}
+                        onClick={() => setActiveTab("products")}
+                    >
+                        Products
+                    </Button>
+
+                    <Button
+                        variant={activeTab === "collections" ? "primary" : "secondary"}
+                        onClick={() => setActiveTab("collections")}
+                    >
+                        Collections
+                    </Button>
+                </InlineStack>
+
+                <div style={{ height: "12px" }} />
+            </BlockStack>
+
+            <BlockStack gap="300">
+                <InlineStack gap="200">
+                    <div style={{ flex: 1 }}>
+                        <TextField
+                            placeholder="Search products"
+                            value={search}
+                            onChange={setSearch}
+                            autoComplete="off"
+                        />
+                    </div>
+                </InlineStack>
+
+                <InlineStack align="space-between">
+                    <Text tone="subdued">
+                        {activeTab === "products"
+                            ? `${selectedProductCount} product${selectedProductCount !== 1 ? "s" : ""} selected`
+                            : `${selectedCollections.length} collection${selectedCollections.length !== 1 ? "s" : ""} selected`}
+                    </Text>
+                    <Checkbox
+                        label="Show only selected"
+                        checked={showSelected}
+                        onChange={(value) => setShowSelected(value)}
+                    />
+                </InlineStack>
+            </BlockStack>
+            {activeTab === "products" && (
+                <div style={{ position: "relative", minHeight: "200px" }}>
+                    {loading && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: "rgba(255,255,255,0.7)",
+                                zIndex: 10,
+                            }}
+                        >
+                            <Spinner accessibilityLabel="Loading products" size="large" />
+                        </div>
+                    )}
+
+                    {showSelected && filteredProducts.length === 0 && !loading && (
+                        <Text alignment="center" tone="subdued">
+                            No items to display
+                        </Text>
+                    )}
+
+                    <ResourceList
+                        resourceName={{ singular: "product", plural: "products" }}
+                        items={filteredProducts}
+                        renderItem={(product) => {
+                            return (
+                                <div key={product.id}>
+
+                                    {/* PRODUCT ROW */}
+                                    <div style={{
+                                        padding: "10px 0",
+                                        borderBottom: "1px solid #e1e3e5"
+                                    }}>
+
+                                        <InlineStack align="space-between" wrap={false}>
+
+                                            {/* LEFT */}
+                                            <InlineStack gap="200" wrap={false}>
+
+                                                <Checkbox
+                                                    checked={isProductSelected(product)}
+                                                    onChange={() => toggleProduct(product)}
+                                                />
+                                                <div style={{ minWidth: "40px" }}>
+                                                    <Thumbnail source={product.image} size="small" />
+                                                </div>
+                                                <div onClick={() => toggleVariants(product.id)} style={{ cursor: "pointer" }}>
+                                                    <BlockStack>
+                                                        <Text fontWeight="medium">{product.title}</Text>
+
+                                                        {product.variants.length > 1 && (<InlineStack gap="50" align="left">
+                                                            <div style={{ display: "inline-flex", alignItems: 'center' }}>
+                                                                <Text tone="subdued" variant="bodySm">
+                                                                    {product.variants.length} variants
+                                                                </Text>
+
+                                                                <Icon
+                                                                    source={openProducts[product.id] ? ChevronUpIcon : ChevronDownIcon}
+                                                                />
+                                                            </div>
+                                                        </InlineStack>)}
+                                                    </BlockStack>
+                                                </div>
+
+                                            </InlineStack>
+
+                                            <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end", minWidth: "140px" }}>
+                                                {product.variants.every((v) => !v.available) && (
+                                                    <Badge tone="warning">Out of stock</Badge>
+                                                )}
+                                                <Text alignment="end">{product.price} {currency}</Text>
+                                            </div>
+
+                                        </InlineStack>
+                                    </div>
+
+                                    {/* VARIANTS */}
+                                    {product.variants.length > 1 &&
+                                        openProducts[product.id] &&
+                                        product.variants.map((v) => (
+                                            <div
+                                                key={v.id}
+                                                style={{
+                                                    padding: "8px 0 8px 40px",
+                                                    borderBottom: "1px solid #f1f2f3",
+                                                }}
+                                            >
+                                                <InlineStack align="space-between">
+
+                                                    <InlineStack gap="200">
+                                                        <Checkbox
+                                                            checked={isSelected(v.id)}
+                                                            onChange={() => toggleSelect(v, product)}
+                                                        />
+
+                                                        <Thumbnail
+                                                            source={v.image || product.image}
+                                                            size="extraSmall"
+                                                        />
+
+                                                        <Text>{v.title}</Text>
+                                                    </InlineStack>
+
+                                                    <InlineStack gap="200">
+                                                        {!v.available && (
+                                                            <Badge tone="warning">Out of stock</Badge>
+                                                        )}
+                                                        <Text>{v.price} {currency}</Text>
+                                                    </InlineStack>
+
+                                                </InlineStack>
+                                            </div>
+                                        ))}
+
+                                </div>
+                            );
+                        }}
+                    />
+                </div>)}
+
+            {activeTab === "products" && (<div
+                style={{
+                    padding: "12px",
+                    borderTop: "1px solid #e1e3e5",
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "10px",
+                }}
+            >
+                <Button
+                    icon={ChevronLeftIcon}
+                    disabled={cursorStack.length === 0}
+                    onClick={handlePrev}
+                />
+
+                <Button
+                    icon={ChevronRightIcon}
+                    disabled={!hasNextPage}
+                    onClick={handleNext}
+                />
+            </div>)}
+
+            {activeTab === "collections" && (
+                <div style={{ position: "relative", minHeight: "200px" }}>
+                    {collectionsLoading && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: "rgba(255,255,255,0.7)",
+                                zIndex: 10,
+                            }}
+                        >
+                            <Spinner accessibilityLabel="Loading collections" size="large" />
+                        </div>
+                    )}
+                    <ResourceList
+                        resourceName={{ singular: "collection", plural: "collections" }}
+                        items={filteredCollections}
+                        renderItem={(item) => {
+                            const { id, title, image, productsCount } = item;
+
+                            return (
+                                <ResourceItem
+                                    id={id}
+                                    onClick={() =>
+                                        handleCollectionSelect(id)}
+                                >
+                                    <InlineStack align="space-between" blockAlign="center">
+
+                                        {/* LEFT */}
+                                        <InlineStack gap="300" blockAlign="center">
+
+                                            <Checkbox
+                                                checked={selectedCollections.includes(id)}
+                                                onChange={() => handleCollectionSelect(id)}
+                                            />
+
+                                            <Thumbnail source={image} size="small" />
+
+                                            <BlockStack gap="050">
+                                                <Text fontWeight="medium">{title}</Text>
+                                                <Text tone="subdued" variant="bodySm">
+                                                    {productsCount} products
+                                                </Text>
+                                            </BlockStack>
+                                        </InlineStack>
+                                    </InlineStack>
+                                </ResourceItem>
+                            );
+                        }}
+                    />
+                </div>
+            )}
+        </div>
+    )
+}

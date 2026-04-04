@@ -14,11 +14,12 @@ import {
   defaultSettings,
   defaultHeaderSettings,
   defaultAnnouncementSettings,
-  defaultRewardsSettings
+  defaultRewardsSettings,
+  defaultRecommendationsSettings
 } from "../routes/components/constants/cartDefaults";
 
 export const loader = async ({ request, params }) => {
-  const { shop, apiUrl, accessToken, products, nextCursor, hasNextPage, currency  } = await shopLoader(request);
+  const { shop, apiUrl, accessToken, currency } = await shopLoader(request);
   const cartId = params.id;
 
   let cart = null;
@@ -36,14 +37,11 @@ export const loader = async ({ request, params }) => {
     cart,
     accessToken,
     currency,
-    products,
-    nextCursor,
-    hasNextPage
   });
 };
 
 export default function CartEditor() {
-  const { shop, apiUrl, cart, accessToken, products, nextCursor, hasNextPage, currency  } = useLoaderData();
+  const { shop, apiUrl, cart, accessToken, currency } = useLoaderData();
 
   const [activeTab, setActiveTab] = useState("Design");
 
@@ -63,11 +61,16 @@ export default function CartEditor() {
     cart?.rewardsSettings || defaultRewardsSettings
   );
 
+  const [recommendationsSettings, setRecommendationsSettings] = useState(
+    cart?.recommendationsSettings || defaultRecommendationsSettings
+  );
+
   const initialSettingsRef = useRef({
     design: designSettings,
     header: headerSettings,
     announcement: announcementSettings,
-    rewardsSettings: rewardsSettings
+    rewardsSettings: rewardsSettings,
+    recommendationsSettings: recommendationsSettings
   });
 
   const [isDirty, setIsDirty] = useState(false);
@@ -80,6 +83,7 @@ export default function CartEditor() {
       header: setHeaderSettings,
       announcement: setAnnouncementSettings,
       rewardsSettings: setRewardsSettings,
+      recommendationsSettings: setRecommendationsSettings,
     };
 
     const setter = setters[type];
@@ -124,11 +128,17 @@ export default function CartEditor() {
         setRewardsSettings(cart.rewardsSettings);
       }
 
+      if (cart.recommendationsSettings) {
+        setRecommendationsSettings(cart.recommendationsSettings);
+      }
+
       initialSettingsRef.current = {
         design: cart.designSettings || defaultSettings,
         header: cart.headerSettings || defaultHeaderSettings,
         announcement: cart.announcementSettings || defaultAnnouncementSettings,
-        rewardsSettings: cart.rewardsSettings || defaultRewardsSettings
+        rewardsSettings: cart.rewardsSettings || defaultRewardsSettings,
+        recommendationsSettings:
+          cart.recommendationsSettings || defaultRecommendationsSettings
       };
     }
   }, [cart]);
@@ -141,14 +151,16 @@ export default function CartEditor() {
         designSettings,
         headerSettings,
         announcementSettings,
-        rewardsSettings
+        rewardsSettings,
+        recommendationsSettings
       });
 
       initialSettingsRef.current = {
         design: designSettings,
         header: headerSettings,
         announcement: announcementSettings,
-        rewardsSettings: rewardsSettings
+        rewardsSettings: rewardsSettings,
+        recommendationsSettings:recommendationsSettings
       };
       setIsDirty(false);
 
@@ -163,6 +175,7 @@ export default function CartEditor() {
     setHeaderSettings(initialSettingsRef.current.header);
     setAnnouncementSettings(initialSettingsRef.current.announcement);
     setRewardsSettings(initialSettingsRef.current.rewardsSettings);
+    setRecommendationsSettings(initialSettingsRef.current.recommendationsSettings);
     setIsDirty(false);
   };
 
@@ -183,6 +196,7 @@ export default function CartEditor() {
         headerSettings={headerSettings}
         announcementSettings={announcementSettings}
         rewardsSettings={rewardsSettings}
+        recommendationsSettings={recommendationsSettings}
         handleChange={handleChange}
         shop={shop}
         accessToken={accessToken}
@@ -191,9 +205,6 @@ export default function CartEditor() {
         Sidebar={Sidebar}
         MainContent={MainContent}
         CartPreview={CartPreview}
-        products={products}
-        nextCursor={nextCursor}
-        hasNextPage={hasNextPage}
       />
     </AppProvider>
   );

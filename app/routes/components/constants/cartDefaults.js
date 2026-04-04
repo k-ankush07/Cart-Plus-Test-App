@@ -79,3 +79,16 @@ export const defaultRewardsSettings = {
   ],
   activeTier: 0,
 };
+
+export const defaultRecommendationsSettings = {
+  enabled: true,
+  headerText: "Add your favourite items to your cart.",
+  productHeaderText: "You may also like",
+  showShopNowButton: false,
+  buttonText: "Shop Now",
+  buttonUrl: "/collections",
+  sourceType: "products",
+  maxRecommendations: 10,
+  layout: "block",
+  showReviews: false,
+};

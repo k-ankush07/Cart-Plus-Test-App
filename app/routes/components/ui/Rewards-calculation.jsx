@@ -59,12 +59,12 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                 defaultType = "discount";
                 minAmount = 2000;
                 title = "You're {AMOUNT} away from a discount!";
-                description = "Cool Product Reward";
+                description = "Cool discount";
             } else if (index === 2) {
                 defaultType = "product";
                 minAmount = 3000;
                 title = "You're {AMOUNT} away from a free gift!";
-                description = "Cool Product Reward";
+                description = "Cool Product";
             }
 
             return {
@@ -101,7 +101,6 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
         <Card>
             <BlockStack gap="300">
                 <Text variant="headingSm">Rewards calculation</Text>
-
                 <InlineStack gap="300">
 
                     <div
@@ -315,9 +314,9 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                         >
                             <div style={{ display: "flex", width: "100%", gap: "12px" }}>
 
-                              {current?.products?.map((item, index) => (
+                                {current?.products?.map((item, index) => (
                                     <div
-                                       key={item.id + index}
+                                        key={item.id + index}
                                         style={{
                                             flex: 1,
                                             minWidth: 0,

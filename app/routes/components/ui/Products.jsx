@@ -8,39 +8,50 @@ import {
     TextField,
     Badge,
     Spinner,
-    Icon
+    Icon,
+    Button
 } from "@shopify/polaris";
-import { ChevronDownIcon, ChevronUpIcon } from "@shopify/polaris-icons";
 
-export default function Products({ products: initialProducts, hasNextPage: initialHasNext, nextCursor: initialCursor,
-    currency, onSelect, selectedItems = [], }) {
+import {
+    ChevronDownIcon,
+    ChevronUpIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon
+} from "@shopify/polaris-icons";
 
-    const [products, setProducts] = useState(initialProducts);
-    const [cursor, setCursor] = useState(initialCursor);
-    const [hasNextPage, setHasNextPage] = useState(initialHasNext);
+
+export default function Products({ currency, onSelect, selectedItems = [], }) {
+
+    const [products, setProducts] = useState([]);
+    const [cursor, setCursor] = useState([]);
+    const [hasNextPage, setHasNextPage] = useState(false);
     const [loading, setLoading] = useState(false);
     const [openProducts, setOpenProducts] = useState({});
-
+    const [cursorStack, setCursorStack] = useState([]);
     const [search, setSearch] = useState("");
     const [selected, setSelected] = useState(selectedItems);
     const [showSelected, setShowSelected] = useState(false);
-
-    const loaderRef = useRef(null);
 
     useEffect(() => {
         setSelected(selectedItems);
     }, [selectedItems]);
 
-    const loadMore = async () => {
-        if (!hasNextPage || loading || (showSelected && selected.length === 0)) return;
+    useEffect(() => {
+        loadMore(null);
+    }, []);
 
+    const loadMore = async (cursorValue) => {
         setLoading(true);
-
         try {
-            const res = await fetch(`/api/products?cursor=${cursor}`);
+            const res = await fetch(`/api/products?cursor=${cursorValue || ""}`);
             const data = await res.json();
 
             const edges = data?.data?.products?.edges || [];
+
+            if (edges.length === 0) {
+                console.log("No products found");
+                return;
+            }
 
             const newProducts = edges.map((p) => ({
                 id: p.node.id,
@@ -51,49 +62,42 @@ export default function Products({ products: initialProducts, hasNextPage: initi
                     id: v.node.id,
                     title: v.node.title,
                     price: v.node.price,
-                    sku: v.node.sku,
                     available: v.node.availableForSale,
-                    image: v.node.image
-                        ? {
-                            url: v.node.image.url,
-                            altText: v.node.image.altText,
-                        }
-                        : null,
+                    image: v.node.image?.url || null,
                 }))
             }));
 
-            setProducts((prev) => [...prev, ...newProducts]);
+            setProducts(newProducts);
 
-            setCursor(edges[edges.length - 1]?.cursor);
+            const lastCursor = edges[edges.length - 1]?.cursor;
+            setCursor(lastCursor);
+
             setHasNextPage(data?.data?.products?.pageInfo?.hasNextPage);
 
         } catch (err) {
-            console.error(err);
+            console.error("ERROR:", err);
         }
 
         setLoading(false);
     };
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    loadMore();
-                }
-            },
-            { threshold: 1 }
-        );
+    const handleNext = async () => {
+        if (!hasNextPage) return;
 
-        if (loaderRef.current) {
-            observer.observe(loaderRef.current);
-        }
+        setCursorStack((prev) => [...prev, cursor]);
+        await loadMore(cursor);
+    };
 
-        return () => {
-            if (loaderRef.current) {
-                observer.unobserve(loaderRef.current);
-            }
-        };
-    }, [cursor, hasNextPage]);
+    const handlePrev = async () => {
+        if (cursorStack.length === 0) return;
+
+        const newStack = [...cursorStack];
+        const prevCursor = newStack.pop();
+
+        setCursorStack(newStack);
+
+        await loadMore(prevCursor || null);
+    };
 
     const toggleSelect = (variant, product) => {
         let updated;
@@ -167,6 +171,7 @@ export default function Products({ products: initialProducts, hasNextPage: initi
         );
     });
 
+
     return (
         <BlockStack gap="300">
 
@@ -192,6 +197,24 @@ export default function Products({ products: initialProducts, hasNextPage: initi
             </InlineStack>
 
             <div style={{ borderTop: "1px solid #e1e3e5" }}>
+                {loading && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: "rgba(255,255,255,0.7)",
+                            zIndex: 10,
+                        }}
+                    >
+                        <Spinner accessibilityLabel="Loading products" size="large" />
+                    </div>
+                )}
                 {visibleProducts.length === 0 ? (
                     <div style={{ padding: "20px", textAlign: "center" }}>
                         <Text tone="subdued">No items to display</Text>
@@ -226,7 +249,7 @@ export default function Products({ products: initialProducts, hasNextPage: initi
                                             <BlockStack>
                                                 <Text fontWeight="medium">{product.title}</Text>
 
-                                                <InlineStack gap="50" align="left">
+                                                {product.variants.length > 1 && (<InlineStack gap="50" align="left">
                                                     <div style={{ display: "inline-flex", alignItems: 'center' }}>
                                                         <Text tone="subdued" variant="bodySm">
                                                             {product.variants.length} variants
@@ -236,7 +259,7 @@ export default function Products({ products: initialProducts, hasNextPage: initi
                                                             source={openProducts[product.id] ? ChevronUpIcon : ChevronDownIcon}
                                                         />
                                                     </div>
-                                                </InlineStack>
+                                                </InlineStack>)}
                                             </BlockStack>
 
                                         </div>
@@ -297,18 +320,28 @@ export default function Products({ products: initialProducts, hasNextPage: initi
                 ))
                 )}
             </div>
-            {!showSelected && (
-                <div
-                    ref={loaderRef}
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        padding: "12px 0",
-                    }}
-                >
-                    {loading && <Spinner accessibilityLabel="Loading products" size="small" />}
-                </div>
-            )}
+            <div
+                style={{
+                    padding: "12px",
+                    borderTop: "1px solid #e1e3e5",
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "10px",
+                }}
+            >
+                <Button
+                    icon={ChevronLeftIcon}
+                    disabled={cursorStack.length === 0}
+                    onClick={handlePrev}
+                />
+
+                <Button
+                    icon={ChevronRightIcon}
+                    disabled={!hasNextPage}
+                    onClick={handleNext}
+                />
+            </div>
+
         </BlockStack>
     );
 }

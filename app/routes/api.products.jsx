@@ -15,21 +15,21 @@ export const loader = async ({ request }) => {
           node {
             id
             title
-            images(first: 250) {
+            images(first: 1) {
               edges {
                 node { url }
               }
             }
             variants(first: 100) {
-                edges {
-                  node {
-                    id
-                    title
-                    price
-                    sku
-                    availableForSale
-                  }
+              edges {
+                node {
+                  id
+                  title
+                  price
+                  sku
+                  availableForSale
                 }
+              }
             }
           }
         }

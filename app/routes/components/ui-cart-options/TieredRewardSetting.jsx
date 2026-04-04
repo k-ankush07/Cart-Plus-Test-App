@@ -10,7 +10,7 @@ import ColorInput from "../ui/ColorInput";
 import RichTextEditor from "../ui/RichTextEditor";
 import RewardsCalculation from "../ui/Rewards-calculation";
 
-export default function TieredRewards({ handleChange, rewardsSettings, products, hasNextPage, nextCursor, currency }) {
+export default function TieredRewards({ handleChange, rewardsSettings, currency }) {
 
     const update = (key, value) => {
         handleChange("rewardsSettings", (prev) => ({
@@ -33,12 +33,13 @@ export default function TieredRewards({ handleChange, rewardsSettings, products,
                         {rewardsSettings.enabled ? "Enable" : "Disabled"}
                     </Button>
                 </InlineStack>
-
-                <Checkbox
-                    label="Show rewards on empty cart"
-                    checked={rewardsSettings.showOnEmptyCart}
-                    onChange={(val) => update("showOnEmptyCart", val)}
-                />
+                <InlineStack>
+                    <Checkbox
+                        label="Show rewards on empty cart"
+                        checked={rewardsSettings.showOnEmptyCart}
+                        onChange={(val) => update("showOnEmptyCart", val)}
+                    />
+                </InlineStack>
 
                 <ColorInput
                     label="Bar background color"
@@ -47,7 +48,7 @@ export default function TieredRewards({ handleChange, rewardsSettings, products,
                 />
 
                 <ColorInput
-                    label="Bar text color"
+                    label="Bar foreground color"
                     value={rewardsSettings.textColor}
                     onChange={(val) => update("textColor", val)}
                 />
@@ -72,9 +73,6 @@ export default function TieredRewards({ handleChange, rewardsSettings, products,
                 </div>
                 <RewardsCalculation rewardsSettings={rewardsSettings}
                     handleChange={handleChange}
-                    products={products}
-                    hasNextPage={hasNextPage}
-                    nextCursor={nextCursor}
                     currency={currency}
                 />
             </BlockStack>

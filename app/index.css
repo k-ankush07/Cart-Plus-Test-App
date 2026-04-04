@@ -251,3 +251,88 @@ body,
     justify-content: space-between;
     align-items: center;
 }
+
+.tier-card {
+    border: 1px solid #e5e5e5;
+    padding: 18px 20px 30px;
+    background: #fff;
+}
+
+.tier-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.progress-wrapper {
+    position: relative;
+    padding: 20px 15px 15px 0;
+}
+
+.progress-bar {
+    height: 6px;
+    background: #e5e5e5;
+    border-radius: 10px;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #000;
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+
+.segments {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+/* ICON */
+.icon-circle {
+    width: 30px;
+    height: 30px;
+    background: #d9d9d9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -12px auto 0;
+    z-index: 2;
+}
+
+.icon-circle.active {
+    background: #000;
+    color: #fff;
+}
+
+.step-text {
+    font-size: 11px;
+    margin-top: 6px;
+    color: #555;
+    text-align: center;
+    line-height: 1.2;
+    white-space: normal;
+}
+
+.segment {
+  position: absolute;
+  width: 80px;
+  text-align: center;
+  top: 18px;
+}
+
+.segment:first-child {
+  transform: translateX(-80%);
+}
+
+.segment:nth-child(2) {
+  transform: translateX(-70%);
+}
+
+.segment:last-child {
+  transform: translateX(-80%);
+}

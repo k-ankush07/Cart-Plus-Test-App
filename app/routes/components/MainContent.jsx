@@ -3,9 +3,10 @@ import HeaderSettings from "./ui-cart-options/HeaderSettings";
 import AnnouncementsSettings from "./ui-cart-options/AnnouncementsSettings";
 import DesignSettings from "./ui-cart-options/DesignSettings";
 import TieredRewards from "./ui-cart-options/TieredRewardSetting";
+import Recommendations from "./ui-cart-options/Recommendations";
 
 export default function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
-    announcementSettings, rewardsSettings, products, hasNextPage, nextCursor, currency
+    announcementSettings, rewardsSettings, currency, recommendationsSettings
 }) {
 
     const COMPONENT_MAP = {
@@ -32,9 +33,13 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
             <TieredRewards
                 rewardsSettings={rewardsSettings}
                 handleChange={handleChange}
-                products={products}
-                hasNextPage={hasNextPage}
-                nextCursor={nextCursor}
+                currency={currency}
+            />
+        ),
+        Recommendations: (
+            <Recommendations
+                recommendationsSettings={recommendationsSettings}
+                handleChange={handleChange}
                 currency={currency}
             />
         ),
