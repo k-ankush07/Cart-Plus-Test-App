@@ -4,8 +4,9 @@ import Announcements from "./cart-Items/Announcements";
 import TieredReward from "./cart-Items/TieredRewards";
 import CartHeading from "./cart-Items/CartHeading";
 import CartFooter from "./cart-Items/CartFooter";
+import Recommendation from "./cart-Items/Recommendation";
 
-export default function CartPreview({ designSettings, headerSettings, announcementSettings, rewardsSettings }) {
+export default function CartPreview({ currency, designSettings, headerSettings, announcementSettings, rewardsSettings, recommendationsSettings }) {
 
     return (
         <div
@@ -24,32 +25,37 @@ export default function CartPreview({ designSettings, headerSettings, announceme
                         headerSettings={headerSettings}
                         designSettings={designSettings} />
 
-                    {headerSettings.border === "thin" && (<div className="cart-app__divider"></div>)}
+                    {recommendationsSettings.enabled && (
+                        <>
+                            {headerSettings.border === "thin" && (<div className="cart-app__divider"></div>)}
 
+                            {!announcementSettings.enabled &&
+                                announcementSettings.position === "before" && (
+                                    <Announcements announcementSettings={announcementSettings} />
+                                )}
+                            {!rewardsSettings.enabled && (
+                                <TieredReward rewardsSettings={rewardsSettings} />)}
 
-                    {!announcementSettings.enabled &&
-                        announcementSettings.position === "before" && (
-                            <Announcements announcementSettings={announcementSettings} />
-                        )}
-                    {!rewardsSettings.enabled && (
-                        <TieredReward rewardsSettings={rewardsSettings} />)}
+                            <div className="cart-app__items">
+                                <CartItem
+                                    showStrikethrough={designSettings.showStrikethrough}
+                                    textColor={designSettings.textColor}
+                                    savingColor={designSettings.savingsColor}
+                                />
+                            </div>
 
-                    <div className="cart-app__items">
-                        <CartItem
-                            showStrikethrough={designSettings.showStrikethrough}
-                            textColor={designSettings.textColor}
-                            savingColor={designSettings.savingsColor}
-                        />
-                    </div>
+                            {!announcementSettings.enabled &&
+                                announcementSettings.position === "after" && (
+                                    <Announcements announcementSettings={announcementSettings} />
+                                )}
 
-                    {!announcementSettings.enabled &&
-                        announcementSettings.position === "after" && (
-                            <Announcements announcementSettings={announcementSettings} />
-                        )}
-
-                    <div className="cart-app__divider"></div>
+                            <div className="cart-app__divider"></div>
+                        </>
+                    )}
                 </div>
-                <CartFooter designSettings={designSettings} />
+                {recommendationsSettings.enabled && (<CartFooter designSettings={designSettings} />)}
+
+                <Recommendation recommendationsSettings={recommendationsSettings} currency={currency} />
             </div>
         </div>
     );

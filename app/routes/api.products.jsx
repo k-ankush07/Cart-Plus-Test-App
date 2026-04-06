@@ -8,37 +8,40 @@ export const loader = async ({ request }) => {
   const cursor = url.searchParams.get("cursor");
 
   const query = `
-    {
-      products(first: 10 ${cursor ? `, after: "${cursor}"` : ""}) {
-        edges {
-          cursor
-          node {
-            id
-            title
-            images(first: 1) {
-              edges {
-                node { url }
-              }
-            }
-            variants(first: 100) {
-              edges {
-                node {
-                  id
-                  title
-                  price
-                  sku
-                  availableForSale
-                }
+{
+  products(first: 10 ${cursor ? `, after: "${cursor}"` : ""}) {
+    edges {
+      cursor
+      node {
+        id
+        title
+        images(first: 1) {
+          edges {
+            node { url }
+          }
+        }
+        variants(first: 100) {
+          edges {
+            node {
+              id
+              title
+              price
+              sku
+              availableForSale
+              image {
+                url
               }
             }
           }
         }
-        pageInfo {
-          hasNextPage
-        }
       }
     }
-  `;
+    pageInfo {
+      hasNextPage
+    }
+  }
+}
+`;
 
   const res = await admin.graphql(query);
   const data = await res.json();

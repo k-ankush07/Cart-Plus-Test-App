@@ -19,7 +19,7 @@ import {
 } from "@shopify/polaris-icons";
 import { useEffect, useState } from "react";
 
-export default function ProductItemCollections({ currency, onSelect }) {
+export default function ProductItemCollections({ currency, onSelect, initialSelected }) {
     const [cursorStack, setCursorStack] = useState([]);
     const [openProducts, setOpenProducts] = useState({});
     const [selectedVariants, setSelectedVariants] = useState([]);
@@ -31,6 +31,24 @@ export default function ProductItemCollections({ currency, onSelect }) {
     const [activeTab, setActiveTab] = useState("products");
     const [hasNextPage, setHasNextPage] = useState(false);
     const [collectionsLoading, setCollectionsLoading] = useState(false);
+
+    useEffect(() => {
+        if (!initialSelected) return;
+
+        if (initialSelected.type === "products") {
+            const variants = Array.isArray(initialSelected.items)
+                ? initialSelected.items
+                : initialSelected.items?.variants || [];
+
+            setSelectedVariants(variants);
+        }
+
+        if (initialSelected.type === "collections") {
+            setSelectedCollections(initialSelected.items || []);
+            setSelectedVariants([]);
+            setActiveTab("collections");
+        }
+    }, [initialSelected]);
 
     const toggleVariants = (id) => {
         setOpenProducts((prev) => ({
@@ -49,9 +67,18 @@ export default function ProductItemCollections({ currency, onSelect }) {
                 ? prev.filter((i) => i !== variant.id)
                 : [...prev, variant.id];
 
+            const productIds = localProducts
+                .filter((p) =>
+                    p.variants.some((v) => updated.includes(v.id))
+                )
+                .map((p) => p.id);
+
             onSelect({
                 type: "products",
-                items: updated
+                items: {
+                    variants: updated,
+                    products: productIds
+                }
             });
 
             return updated;
@@ -79,9 +106,18 @@ export default function ProductItemCollections({ currency, onSelect }) {
                 updated = [...new Set([...prev, ...variantIds])];
             }
 
+            const productIds = localProducts
+                .filter((p) =>
+                    p.variants.some((v) => updated.includes(v.id))
+                )
+                .map((p) => p.id);
+
             onSelect({
                 type: "products",
-                items: updated
+                items: {
+                    variants: updated,
+                    products: productIds
+                }
             });
 
             return updated;

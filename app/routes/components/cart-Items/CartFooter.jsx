@@ -1,7 +1,6 @@
 export default function CartFooter({designSettings}) {
     return (
         <div className="cart-app__footer" style={{ backgroundColor: designSettings.accentColor }}>
-
             <div className="cart-app__row-between">
                 <div className="cart-app__row cart-app__row--gap">
                     <span style={{ color: designSettings.textColor }}>Discounts</span>

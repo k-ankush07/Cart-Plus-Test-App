@@ -13,14 +13,15 @@ import {
 
 import ProductItemCollections from "../ui/ProductItem-Collections";
 import RichTextEditor from "../ui/RichTextEditor";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Recommendations({ recommendationsSettings, handleChange, currency }) {
 
     const [open, setOpen] = useState(false);
-    const [selected, setSelected] = useState(
-        recommendationsSettings.selectedProducts || []
-    );
+    const [selected, setSelected] = useState({
+        type: recommendationsSettings.sourceType || "products",
+        items: recommendationsSettings.selectedItems || []
+    });
 
     const update = (key, value) => {
         handleChange("recommendationsSettings", (prev) => ({
@@ -28,6 +29,13 @@ export default function Recommendations({ recommendationsSettings, handleChange,
             [key]: value,
         }));
     };
+
+    useEffect(() => {
+        setSelected({
+            type: recommendationsSettings.sourceType || "products",
+            items: recommendationsSettings.selectedItems || []
+        });
+    }, [open]);
 
     return (
         <Card>
@@ -139,9 +147,14 @@ export default function Recommendations({ recommendationsSettings, handleChange,
                     primaryAction={{
                         content: "Save",
                         onAction: () => {
-                            update("selectedProducts", selected);
+                            handleChange("recommendationsSettings", (prev) => ({
+                                ...prev,
+                                sourceType: selected?.type || "products",
+                                selectedItems: selected?.items || [],
+                            }));
+
                             setOpen(false);
-                        },
+                        }
                     }}
                     secondaryActions={[
                         {
@@ -155,9 +168,9 @@ export default function Recommendations({ recommendationsSettings, handleChange,
                             <ProductItemCollections
                                 currency={currency}
                                 onSelect={(data) => {
-                                    console.log("SELECTED DATA 👉", data);
                                     setSelected(data);
                                 }}
+                                initialSelected={selected}
                             />
                         </div>
                     </Modal.Section>

@@ -121,6 +121,8 @@ router.put("/update-cart/:cartId", async (req, res) => {
       updateData.announcementSettings = req.body.announcementSettings;
     if (req.body.rewardsSettings)
       updateData.rewardsSettings = req.body.rewardsSettings;
+    if (req.body.recommendationsSettings)
+      updateData.recommendationsSettings = req.body.recommendationsSettings;
 
     const updatedCart = await cartModels.findOneAndUpdate(
       { cartId },

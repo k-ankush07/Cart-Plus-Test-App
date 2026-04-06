@@ -54,6 +54,7 @@ export default function CartLayout({
             announcementSettings={announcementSettings}
             rewardsSettings={rewardsSettings}
             recommendationsSettings={recommendationsSettings}
+            currency={currency}
           />
         </div>
       </div>

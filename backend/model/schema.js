@@ -23,7 +23,11 @@ const cartSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
-  rewardsSettings : {
+  rewardsSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  recommendationsSettings: {
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
