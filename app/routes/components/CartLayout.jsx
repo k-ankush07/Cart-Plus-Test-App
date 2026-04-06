@@ -20,6 +20,8 @@ export default function CartLayout({
   currency,
   recommendationsSettings,
   subscriptionUpgradesSettings,
+  upsellsSettings,
+  additionalNotesSettings
 }) {
   return (
     <Page fullWidth>
@@ -32,6 +34,8 @@ export default function CartLayout({
           rewardsSettings={rewardsSettings}
           recommendationsSettings={recommendationsSettings}
           subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+          upsellsSettings={upsellsSettings}
+          additionalNotesSettings={additionalNotesSettings}
         />
 
         <MainContent
@@ -47,6 +51,8 @@ export default function CartLayout({
           rewardsSettings={rewardsSettings}
           recommendationsSettings={recommendationsSettings}
           subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+          upsellsSettings={upsellsSettings}
+          additionalNotesSettings={additionalNotesSettings}
           currency={currency}
         />
 
@@ -58,6 +64,8 @@ export default function CartLayout({
             rewardsSettings={rewardsSettings}
             recommendationsSettings={recommendationsSettings}
             subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+            upsellsSettings={upsellsSettings}
+            additionalNotesSettings={additionalNotesSettings}
             currency={currency}
             activeTab={activeTab}
           />

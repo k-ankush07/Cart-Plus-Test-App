@@ -16,7 +16,9 @@ import {
   defaultAnnouncementSettings,
   defaultRewardsSettings,
   defaultRecommendationsSettings,
-  defaultSubscriptionUpgradesSettings
+  defaultSubscriptionUpgradesSettings,
+  defaultUpsellsSettings,
+  defaultAdditionalNotesSettings,
 } from "../routes/components/constants/cartDefaults";
 
 export const loader = async ({ request, params }) => {
@@ -70,13 +72,23 @@ export default function CartEditor() {
     cart?.subscriptionUpgradesSettings || defaultSubscriptionUpgradesSettings
   );
 
+  const [upsellsSettings, setUpsellsSettings] = useState(
+    cart?.upsellsSettings || defaultUpsellsSettings
+  );
+
+  const [additionalNotesSettings, setAdditionalNotesSettings] = useState(
+    cart?.additionalNotesSettings || defaultAdditionalNotesSettings
+  );
+
   const initialSettingsRef = useRef({
     design: designSettings,
     header: headerSettings,
     announcement: announcementSettings,
     rewardsSettings: rewardsSettings,
     recommendationsSettings: recommendationsSettings,
-    subscriptionUpgradesSettings: subscriptionUpgradesSettings
+    subscriptionUpgradesSettings: subscriptionUpgradesSettings,
+    upsellsSettings: upsellsSettings,
+    additionalNotesSettings: additionalNotesSettings,
   });
 
   const [isDirty, setIsDirty] = useState(false);
@@ -91,6 +103,8 @@ export default function CartEditor() {
       rewardsSettings: setRewardsSettings,
       recommendationsSettings: setRecommendationsSettings,
       subscriptionUpgradesSettings: setSubscriptionUpgradesSettings,
+      upsellsSettings: setUpsellsSettings,
+      additionalNotesSettings: setAdditionalNotesSettings,
     };
 
     const setter = setters[type];
@@ -143,13 +157,23 @@ export default function CartEditor() {
         setSubscriptionUpgradesSettings(cart.subscriptionUpgradesSettings);
       }
 
+      if (cart.upsellsSettings) {
+        setUpsellsSettings(cart.upsellsSettings);
+      }
+
+      if (cart.additionalNotesSettings) {
+        setAdditionalNotesSettings(cart.additionalNotesSettings);
+      }
+
       initialSettingsRef.current = {
         design: cart.designSettings || defaultSettings,
         header: cart.headerSettings || defaultHeaderSettings,
         announcement: cart.announcementSettings || defaultAnnouncementSettings,
         rewardsSettings: cart.rewardsSettings || defaultRewardsSettings,
         recommendationsSettings: cart.recommendationsSettings || defaultRecommendationsSettings,
-        subscriptionUpgradesSettings: cart.subscriptionUpgradesSettings || defaultSubscriptionUpgradesSettings
+        subscriptionUpgradesSettings: cart.subscriptionUpgradesSettings || defaultSubscriptionUpgradesSettings,
+        upsellsSettings: cart.upsellsSettings || defaultUpsellsSettings,
+        additionalNotesSettings: cart.additionalNotesSettings || defaultAdditionalNotesSettings,
       };
     }
   }, [cart]);
@@ -164,7 +188,9 @@ export default function CartEditor() {
         announcementSettings,
         rewardsSettings,
         recommendationsSettings,
-        subscriptionUpgradesSettings
+        subscriptionUpgradesSettings,
+        upsellsSettings,
+        additionalNotesSettings,
       });
 
       initialSettingsRef.current = {
@@ -173,7 +199,9 @@ export default function CartEditor() {
         announcement: announcementSettings,
         rewardsSettings: rewardsSettings,
         recommendationsSettings: recommendationsSettings,
-        subscriptionUpgradesSettings: subscriptionUpgradesSettings
+        subscriptionUpgradesSettings: subscriptionUpgradesSettings,
+        upsellsSettings: upsellsSettings,
+        additionalNotesSettings: additionalNotesSettings,
       };
       setIsDirty(false);
 
@@ -190,6 +218,8 @@ export default function CartEditor() {
     setRewardsSettings(initialSettingsRef.current.rewardsSettings);
     setRecommendationsSettings(initialSettingsRef.current.recommendationsSettings);
     setSubscriptionUpgradesSettings(initialSettingsRef.current.subscriptionUpgradesSettings);
+    setUpsellsSettings(initialSettingsRef.current.upsellsSettings);
+    setAdditionalNotesSettings(initialSettingsRef.current.additionalNotesSettings);
     setIsDirty(false);
   };
 
@@ -212,6 +242,8 @@ export default function CartEditor() {
         rewardsSettings={rewardsSettings}
         recommendationsSettings={recommendationsSettings}
         subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+        upsellsSettings={upsellsSettings}
+        additionalNotesSettings={additionalNotesSettings}
         handleChange={handleChange}
         shop={shop}
         accessToken={accessToken}

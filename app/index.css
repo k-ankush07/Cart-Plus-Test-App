@@ -61,9 +61,18 @@ body,
     height: 100%;
 }
 
-.cart-app__header {
+.cart-app__heading {
+    flex-shrink: 0;
+}
+
+.cart-app__body {
     flex: 1;
     overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.cart-app__body::-webkit-scrollbar {
+    display: none;
 }
 
 .cart-app__items {
@@ -72,7 +81,6 @@ body,
 
 .cart-app__footer {
     flex-shrink: 0;
-    padding: 16px;
     border-top: 1px solid #eee;
     display: flex;
     flex-direction: column;
@@ -377,6 +385,26 @@ body,
     font-size: 15px;
 }
 
+/* Subscription Upgrade Preview */
+.subscription-upgrade-preview {
+    padding: 12px 0 4px;
+}
+
+.subscription-upgrade-btn {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    background-color: #000000;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    border-radius: 4px;
+    cursor: default;
+    font-family: inherit;
+}
+
 .upcart-internal-upsell__shop-now-button a {
     text-align: center;
     color: white;
@@ -625,4 +653,66 @@ body,
 .swiper-button-disabled {
     opacity: 0.3;
     cursor: not-allowed;
+}
+
+.upcart-public-upsell {
+    margin-bottom: 8px;
+    padding: 12px 0 8px;
+}
+
+.cart-additional-notes {
+    padding: 12px 16px;
+}
+
+.cart-additional-notes__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    color: inherit;
+    margin-bottom: 10px;
+}
+
+.cart-additional-notes__toggle .Polaris-Icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.cart-additional-notes__body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.cart-additional-notes__body--open {
+    max-height: 200px;
+}
+
+.cart-additional-notes__textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+    color: #333;
+    outline: none;
+}
+
+.cart-additional-notes__textarea:focus {
+    border-color: #999;
+}
+
+.cart-additional-notes__textarea::placeholder {
+    color: #b0b0b0;
 }

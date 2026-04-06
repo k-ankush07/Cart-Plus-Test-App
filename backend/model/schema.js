@@ -31,6 +31,14 @@ const cartSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
+  subscriptionUpgradesSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  upsellsSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

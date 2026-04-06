@@ -93,13 +93,38 @@ export const defaultRecommendationsSettings = {
   showReviews: false,
 };
 
+export const defaultUpsellsSettings = {
+  enabled: true,
+  useAiRecommended: true,
+  recommendationAlgorithm: "related",
+  useSmartVariantMatching: true,
+  sourceType: "products",
+  showIfAlreadyInCart: false,
+  limitUpsellsInCart: false,
+  maxUpsellsInCart: 3,
+  showReviews: false,
+  title: "You'll love these",
+  buttonText: "Add",
+  position: "bottom",
+  direction: "block",
+};
+
+export const defaultAdditionalNotesSettings = {
+  enabled: true,
+  title: "Add special instructions",
+  placeholder: "Special instructions for your order",
+  placement: "below_items",
+  customTemplate: "",
+};
+
 export const defaultSubscriptionUpgradesSettings = {
-  enabled: false,
+  enabled: true,
   buttonText: "Upgrade to {{selling_plan_group_name}}",
-  overridePlanOptionsText: true,
+  overridePlanOptionsText: false,
   planOptionsText: "{{selling_plan_group_name}} / {{selling_plan_name}}",
   planOptionsOneTimePurchaseText: "One-time purchase",
   planFullPriceText: "Full price",
   planHeadingText: "Subscription plans",
   preventDowngrades: false,
 };
+

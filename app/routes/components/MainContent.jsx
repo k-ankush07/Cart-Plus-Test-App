@@ -5,9 +5,12 @@ import DesignSettings from "./ui-cart-options/DesignSettings";
 import TieredRewards from "./ui-cart-options/TieredRewardSetting";
 import Recommendations from "./ui-cart-options/Recommendations";
 import SubscriptionUpgrades from "./ui-cart-options/SubscriptionUpgrades";
+import UpsellsSettings from "./ui-cart-options/UpsellsSettings";
+import AdditionalNotes from "./ui-cart-options/AdditionalNotes";
 
 export default function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
-    announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings
+    announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings, upsellsSettings,
+    additionalNotesSettings
 }) {
 
     const COMPONENT_MAP = {
@@ -47,6 +50,19 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
         "Subscription upgrades": (
             <SubscriptionUpgrades
                 subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+                handleChange={handleChange}
+            />
+        ),
+        "Upsells": (
+            <UpsellsSettings
+                upsellsSettings={upsellsSettings}
+                handleChange={handleChange}
+                currency={currency}
+            />
+        ),
+        "Additional notes": (
+            <AdditionalNotes
+                additionalNotesSettings={additionalNotesSettings}
                 handleChange={handleChange}
             />
         ),

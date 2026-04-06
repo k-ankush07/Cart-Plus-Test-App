@@ -12,7 +12,7 @@ import { useState } from "react";
 import MenuSection from "./MenuSection";
 
 export default function Sidebar({ activeTab, setActiveTab, announcementSettings, rewardsSettings, recommendationsSettings,
-  subscriptionUpgradesSettings
+  subscriptionUpgradesSettings, upsellsSettings, additionalNotesSettings
 }) {
 
   const [visibility, setVisibility] = useState({});
@@ -33,10 +33,12 @@ export default function Sidebar({ activeTab, setActiveTab, announcementSettings,
 
   const createItem = (label, icon, hasToggle = true) => {
     const isEnabled =
-      (label !== "Announcements" || announcementSettings.enabled) &&
-      (label !== "Tiered rewards" || rewardsSettings.enabled) &&
+      (label !== "Announcements" || announcementSettings?.enabled) &&
+      (label !== "Tiered rewards" || rewardsSettings?.enabled) &&
       (label !== "Recommendations" || recommendationsSettings?.enabled) &&
-      (label !== "Subscription upgrades" || subscriptionUpgradesSettings.enabled)
+      (label !== "Subscription upgrades" || subscriptionUpgradesSettings?.enabled) &&
+      (label !== "Upsells" || upsellsSettings?.enabled) &&
+      (label !== "Additional notes" || additionalNotesSettings?.enabled);
 
     return {
       content: label,
