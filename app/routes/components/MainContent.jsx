@@ -4,9 +4,10 @@ import AnnouncementsSettings from "./ui-cart-options/AnnouncementsSettings";
 import DesignSettings from "./ui-cart-options/DesignSettings";
 import TieredRewards from "./ui-cart-options/TieredRewardSetting";
 import Recommendations from "./ui-cart-options/Recommendations";
+import SubscriptionUpgrades from "./ui-cart-options/SubscriptionUpgrades";
 
 export default function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
-    announcementSettings, rewardsSettings, currency, recommendationsSettings
+    announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings
 }) {
 
     const COMPONENT_MAP = {
@@ -41,6 +42,12 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 recommendationsSettings={recommendationsSettings}
                 handleChange={handleChange}
                 currency={currency}
+            />
+        ),
+        "Subscription upgrades": (
+            <SubscriptionUpgrades
+                subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+                handleChange={handleChange}
             />
         ),
     };

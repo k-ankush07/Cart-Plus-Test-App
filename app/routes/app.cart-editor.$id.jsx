@@ -15,7 +15,8 @@ import {
   defaultHeaderSettings,
   defaultAnnouncementSettings,
   defaultRewardsSettings,
-  defaultRecommendationsSettings
+  defaultRecommendationsSettings,
+  defaultSubscriptionUpgradesSettings
 } from "../routes/components/constants/cartDefaults";
 
 export const loader = async ({ request, params }) => {
@@ -65,12 +66,17 @@ export default function CartEditor() {
     cart?.recommendationsSettings || defaultRecommendationsSettings
   );
 
+  const [subscriptionUpgradesSettings, setSubscriptionUpgradesSettings] = useState(
+    cart?.subscriptionUpgradesSettings || defaultSubscriptionUpgradesSettings
+  );
+
   const initialSettingsRef = useRef({
     design: designSettings,
     header: headerSettings,
     announcement: announcementSettings,
     rewardsSettings: rewardsSettings,
-    recommendationsSettings: recommendationsSettings
+    recommendationsSettings: recommendationsSettings,
+    subscriptionUpgradesSettings: subscriptionUpgradesSettings
   });
 
   const [isDirty, setIsDirty] = useState(false);
@@ -84,6 +90,7 @@ export default function CartEditor() {
       announcement: setAnnouncementSettings,
       rewardsSettings: setRewardsSettings,
       recommendationsSettings: setRecommendationsSettings,
+      subscriptionUpgradesSettings: setSubscriptionUpgradesSettings,
     };
 
     const setter = setters[type];
@@ -132,13 +139,17 @@ export default function CartEditor() {
         setRecommendationsSettings(cart.recommendationsSettings);
       }
 
+      if (cart.subscriptionUpgradesSettings) {
+        setSubscriptionUpgradesSettings(cart.subscriptionUpgradesSettings);
+      }
+
       initialSettingsRef.current = {
         design: cart.designSettings || defaultSettings,
         header: cart.headerSettings || defaultHeaderSettings,
         announcement: cart.announcementSettings || defaultAnnouncementSettings,
         rewardsSettings: cart.rewardsSettings || defaultRewardsSettings,
-        recommendationsSettings:
-          cart.recommendationsSettings || defaultRecommendationsSettings
+        recommendationsSettings: cart.recommendationsSettings || defaultRecommendationsSettings,
+        subscriptionUpgradesSettings: cart.subscriptionUpgradesSettings || defaultSubscriptionUpgradesSettings
       };
     }
   }, [cart]);
@@ -152,7 +163,8 @@ export default function CartEditor() {
         headerSettings,
         announcementSettings,
         rewardsSettings,
-        recommendationsSettings
+        recommendationsSettings,
+        subscriptionUpgradesSettings
       });
 
       initialSettingsRef.current = {
@@ -160,7 +172,8 @@ export default function CartEditor() {
         header: headerSettings,
         announcement: announcementSettings,
         rewardsSettings: rewardsSettings,
-        recommendationsSettings:recommendationsSettings
+        recommendationsSettings: recommendationsSettings,
+        subscriptionUpgradesSettings: subscriptionUpgradesSettings
       };
       setIsDirty(false);
 
@@ -176,6 +189,7 @@ export default function CartEditor() {
     setAnnouncementSettings(initialSettingsRef.current.announcement);
     setRewardsSettings(initialSettingsRef.current.rewardsSettings);
     setRecommendationsSettings(initialSettingsRef.current.recommendationsSettings);
+    setSubscriptionUpgradesSettings(initialSettingsRef.current.subscriptionUpgradesSettings);
     setIsDirty(false);
   };
 
@@ -197,6 +211,7 @@ export default function CartEditor() {
         announcementSettings={announcementSettings}
         rewardsSettings={rewardsSettings}
         recommendationsSettings={recommendationsSettings}
+        subscriptionUpgradesSettings={subscriptionUpgradesSettings}
         handleChange={handleChange}
         shop={shop}
         accessToken={accessToken}

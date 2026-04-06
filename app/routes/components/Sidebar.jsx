@@ -11,7 +11,10 @@ import {
 import { useState } from "react";
 import MenuSection from "./MenuSection";
 
-export default function Sidebar({ activeTab, setActiveTab, announcementSettings, rewardsSettings, recommendationsSettings }) {
+export default function Sidebar({ activeTab, setActiveTab, announcementSettings, rewardsSettings, recommendationsSettings,
+  subscriptionUpgradesSettings
+}) {
+
   const [visibility, setVisibility] = useState({});
 
   const toggle = (key) => {
@@ -28,27 +31,31 @@ export default function Sidebar({ activeTab, setActiveTab, announcementSettings,
     onAction: () => setActiveTab(label),
   });
 
-  const createItem = (label, icon, hasToggle = true) => ({
-    content: label,
-    prefix: <Icon source={icon} />,
-    active: activeTab === label,
-    onAction: () => setActiveTab(label),
-    suffix: hasToggle ? (
-      <span
-        onClick={(e) => {
-          e.stopPropagation();
-          toggle(label);
-        }}
-      >
-        {(
-          (label !== "Announcements" || announcementSettings.enabled) &&
-          (label !== "Tiered rewards" || rewardsSettings.enabled) &&
-          (label !== "Recommendations" || recommendationsSettings?.enabled)
-        ) &&
-          (visibility[label] !== false && <Icon source={HideIcon} />)}
-      </span>
-    ) : null,
-  });
+  const createItem = (label, icon, hasToggle = true) => {
+    const isEnabled =
+      (label !== "Announcements" || announcementSettings.enabled) &&
+      (label !== "Tiered rewards" || rewardsSettings.enabled) &&
+      (label !== "Recommendations" || recommendationsSettings?.enabled) &&
+      (label !== "Subscription upgrades" || subscriptionUpgradesSettings.enabled)
+
+    return {
+      content: label,
+      prefix: <Icon source={icon} />,
+      active: activeTab === label,
+      onAction: () => setActiveTab(label),
+      suffix: hasToggle && isEnabled ? (
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            toggle(label);
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          <Icon source={HideIcon} />
+        </span>
+      ) : null,
+    };
+  };
 
   return (
     <div className="sidebar">

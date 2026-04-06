@@ -92,3 +92,14 @@ export const defaultRecommendationsSettings = {
   layout: "block",
   showReviews: false,
 };
+
+export const defaultSubscriptionUpgradesSettings = {
+  enabled: false,
+  buttonText: "Upgrade to {{selling_plan_group_name}}",
+  overridePlanOptionsText: true,
+  planOptionsText: "{{selling_plan_group_name}} / {{selling_plan_name}}",
+  planOptionsOneTimePurchaseText: "One-time purchase",
+  planFullPriceText: "Full price",
+  planHeadingText: "Subscription plans",
+  preventDowngrades: false,
+};

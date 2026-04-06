@@ -299,7 +299,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
                                                 />
 
                                                 <Thumbnail
-                                                    source={v.image?.url || product.image}
+                                                    source={v.image || product.image}
                                                     size="extraSmall"
                                                 />
 

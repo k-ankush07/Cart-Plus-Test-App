@@ -6,7 +6,8 @@ import CartHeading from "./cart-Items/CartHeading";
 import CartFooter from "./cart-Items/CartFooter";
 import Recommendation from "./cart-Items/Recommendation";
 
-export default function CartPreview({ currency, designSettings, headerSettings, announcementSettings, rewardsSettings, recommendationsSettings }) {
+export default function CartPreview({ currency, designSettings, headerSettings, announcementSettings, rewardsSettings,
+    recommendationsSettings, activeTab }) {
 
     return (
         <div
@@ -25,7 +26,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                         headerSettings={headerSettings}
                         designSettings={designSettings} />
 
-                    {recommendationsSettings.enabled && (
+                    {activeTab !== "Recommendations" && (
                         <>
                             {headerSettings.border === "thin" && (<div className="cart-app__divider"></div>)}
 
@@ -53,9 +54,14 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                         </>
                     )}
                 </div>
-                {recommendationsSettings.enabled && (<CartFooter designSettings={designSettings} />)}
+                {activeTab !== "Recommendations" && (<CartFooter designSettings={designSettings} />)}
 
-                <Recommendation recommendationsSettings={recommendationsSettings} currency={currency} />
+                {!recommendationsSettings.enabled && activeTab === "Recommendations" && (
+                    <Recommendation
+                        recommendationsSettings={recommendationsSettings}
+                        currency={currency}
+                    />
+                )}
             </div>
         </div>
     );

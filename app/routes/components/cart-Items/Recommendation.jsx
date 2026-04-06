@@ -1,190 +1,187 @@
-// import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import { Navigation } from "swiper/modules";
+import "swiper/css/navigation";
 
-// export default function Recommendation({ recommendationsSettings, currency }) {
-
-//     const [products, setProducts] = useState([]);
-//     const [selectedVariant, setSelectedVariant] = useState({});
-
-//     const { selectedItems = [], sourceType, maxRecommendations } = recommendationsSettings;
-
-//     const normalizeId = (id) => id?.toString().trim();
-
-//     const getDefaultVariant = (variants) => {
-//         return variants.find(v => v.available) || variants[0];
-//     };
-
-//     useEffect(() => {
-//         if (!selectedItems.length || sourceType !== "products") return;
-
-//         fetch("/api/products", {
-//             method: "POST",
-//             headers: { "Content-Type": "application/json" },
-//             body: JSON.stringify({ variantIds: selectedItems }),
-//         })
-//             .then(async (res) => {
-//                 if (!res.ok) {
-//                     const text = await res.text();
-//                     console.error("API Error:", text);
-//                     return { products: [] };
-//                 }
-//                 return res.json();
-//             })
-//             .then(data => {
-//                 const items = data.products.slice(0, maxRecommendations);
-
-//                 const initial = {};
-
-//                 items.forEach(p => {
-//                     const matched = p.variants.find(v =>
-//                         selectedItems.some(id => normalizeId(id) === normalizeId(v.id))
-//                     );
-
-//                     initial[p.id] =
-//                         matched?.id ||
-//                         getDefaultVariant(p.variants)?.id;
-//                 });
-
-//                 setSelectedVariant(initial);
-//                 setProducts(items);
-//             });
-
-//     }, [selectedItems]);
-
-//     return (
-//         <div className="cart_CartPreview__empty__body">
-
-//             <div className="cart_CartPreview__empty__">
-//                 <h3>Your cart is empty</h3>
-//             </div>
-
-//             <div className="upcart-internal-upsell upcart-public-upsell">
-
-//                 {/* HEADER */}
-//                 <div className="upcart-internal-upsell__header">
-//                     <p
-//                         dangerouslySetInnerHTML={{
-//                             __html: recommendationsSettings.headerText
-//                         }}
-//                     />
-//                 </div>
-
-//                 {/* BUTTON */}
-//                 {recommendationsSettings.showShopNowButton && (
-//                     <div className="upcart-internal-upsell__shop-now-button">
-//                         <a href={recommendationsSettings.buttonUrl}>
-//                             {recommendationsSettings.buttonText}
-//                         </a>
-//                     </div>
-//                 )}
-
-//                 {/* TITLE */}
-//                 <div className="upcart-internal-style__title-large">
-//                     <p
-//                         dangerouslySetInnerHTML={{
-//                             __html: recommendationsSettings.productHeaderText
-//                         }}
-//                     />
-//                 </div>
-
-//                 {/* PRODUCTS */}
-//                 <div className="upcart-internal-upsell__vertical-layout-wrapper">
-
-//                     {products.map((product) => {
-
-//                         const currentVariant = product.variants.find(
-//                             v => v.id === selectedVariant[product.id]
-//                         ) || product.variants[0];
-
-//                         return (
-//                             <div key={product.id} className="upsell-item">
-
-//                                 {/* IMAGE (dynamic fallback) */}
-//                                 <img
-//                                     src={currentVariant?.image || product.image}
-//                                     width="80"
-//                                 />
-
-//                                 <div style={{ flex: 1 }}>
-
-//                                     <p>{product.title}</p>
-
-//                                     {/* ✅ hide dropdown if single variant */}
-//                                     {product.variants.length > 1 && (
-//                                         <select
-//                                             value={selectedVariant[product.id] || ""}
-//                                             onChange={(e) =>
-//                                                 setSelectedVariant(prev => ({
-//                                                     ...prev,
-//                                                     [product.id]: e.target.value
-//                                                 }))
-//                                             }
-//                                         >
-//                                             {product.variants.map(v => (
-//                                                 <option key={v.id} value={v.id}>
-//                                                     {v.title}
-//                                                 </option>
-//                                             ))}
-//                                         </select>
-//                                     )}
-
-//                                 </div>
-
-//                                 {/* PRICE */}
-//                                 <div>
-//                                     <p>{currentVariant?.price} {currency}</p>
-//                                 </div>
-
-//                                 {/* ADD BUTTON */}
-//                                 <button
-//                                     onClick={() => {
-//                                         console.log("Add to cart", currentVariant.id);
-//                                     }}
-//                                     className="upsell-add-btn"
-//                                 >
-//                                     Add
-//                                 </button>
-
-//                             </div>
-//                         );
-//                     })}
-
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }
-
-import { useEffect, useState } from "react";
+const DEFAULT_PRODUCT = {
+    id: "default-product",
+    title: "Recommended Product",
+    image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg",
+    price: "19.99",
+    compareAtPrice: "29.99",
+    rating: "4.5",
+    reviewCount: 120,
+    variants: [
+        {
+            id: "default-variant",
+            title: "Default",
+            price: "19.99",
+            compareAtPrice: "29.99",
+            available: true,
+            image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg"
+        }
+    ]
+};
 
 export default function Recommendation({ recommendationsSettings, currency }) {
 
     const [products, setProducts] = useState([]);
+    const [selectedVariants, setSelectedVariants] = useState({});
 
     const { selectedItems = [], sourceType, maxRecommendations } = recommendationsSettings;
+    const prevRef = useRef(null);
+    const nextRef = useRef(null);
 
     useEffect(() => {
-        console.log("CHECK:", selectedItems);
+        const noProductsSelected =
+            sourceType === "products" &&
+            !selectedItems?.variants?.length &&
+            !selectedItems?.products?.length;
 
-        if (!selectedItems?.variants?.length || sourceType !== "products") {
-            console.log("❌ Skip fetch");
+        const noCollectionsSelected =
+            sourceType === "collections" && !selectedItems?.length;
+
+        if (noProductsSelected || noCollectionsSelected) {
+            setProducts([DEFAULT_PRODUCT]);
+            setSelectedVariants({
+                [DEFAULT_PRODUCT.id]: DEFAULT_PRODUCT.variants[0]
+            });
             return;
         }
-
-        console.log("🚀 Fetching with variants:", selectedItems.variants);
-
-        fetch("/get-products", {
+        fetch("/app/get-products", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ variantIds: selectedItems.variants }),
+            body: JSON.stringify({
+                collectionIds: sourceType === "collections" ? selectedItems : [],
+                variantIds: sourceType === "products" ? selectedItems?.variants || [] : []
+            }),
         })
             .then(res => res.json())
             .then(data => {
-                console.log("✅ Data:", data);
-                setProducts(data.products.slice(0, maxRecommendations));
+
+                const productsData = data.products.slice(0, maxRecommendations);
+
+                setProducts(productsData);
+
+                const initial = {};
+                productsData.forEach(product => {
+                    if (product.variants.length) {
+                        initial[product.id] = product.variants[0];
+                    }
+                });
+
+                setSelectedVariants(initial);
             });
 
-    }, [JSON.stringify(selectedItems), sourceType]);
+    }, [selectedItems, sourceType, maxRecommendations]);
 
+    const handleVariantChange = (productId, variantId) => {
+        const product = products.find(p => p.id === productId);
+        const variant = product.variants.find(v => v.id === variantId);
+
+        setSelectedVariants(prev => ({
+            ...prev,
+            [productId]: variant
+        }));
+    };
+
+    const ProductCard = ({ product }) => {
+        const selectedVariant =
+            selectedVariants[product.id] || product.variants[0];
+
+        if (!selectedVariant) return null;
+
+        return (
+            <div className="upcart-internal-component-upsell-tile">
+                <div className="upcart-internal-component-upsell-tile__info_count">
+
+                    {/* IMAGE */}
+                    <div className="upcart-internal-component-upsell-tile__image-container">
+                        <img src={selectedVariant.image || product.image} />
+                    </div>
+
+                    {/* RIGHT CONTENT */}
+                    <div className="upcart-internal-component-upsell-tile__info">
+
+                        {/* TITLE */}
+                        <a href="#no" className="upcart-internal-component-upsell-tile__title-link">
+                            <h3 className="upcart-internal-component-upsell-tile__title">
+                                {product.title}
+                            </h3>
+                        </a>
+
+                        <p className="price">
+
+                            {selectedVariant.compareAtPrice &&
+                                parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
+                                    <span className="compare-price">
+                                        {selectedVariant.compareAtPrice} {currency}
+                                    </span>
+                                )}
+
+                            <span className="sale-price">
+                                {selectedVariant.price} {currency}
+                            </span>
+
+                        </p>
+
+                        {recommendationsSettings.showReviews && (
+                            <div className="rating">
+                                <span className="stars">
+                                    {"★★★★★".slice(0, Math.round(product.rating))}
+                                </span>
+                                <span className="rating-text">
+                                    {product.rating} ({product.reviewCount})
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="upcart-internal-component-upsell-tile__variant-row">
+                            <select
+                                value={selectedVariant.id}
+                                onChange={(e) =>
+                                    handleVariantChange(product.id, e.target.value)
+                                }
+                            >
+                                {product.variants.map(variant => (
+                                    <option key={variant.id} value={variant.id}>
+                                        {variant.title}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <button
+                                type="button"
+                                className="upcart-internal-component__button"
+                            >
+                                Add
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const renderProducts = () =>
+        products.map(product => {
+            const selectedVariant =
+                selectedVariants[product.id] || product.variants[0];
+
+            if (!selectedVariant) return null;
+
+            return recommendationsSettings.layout === "carousel" ? (
+                <SwiperSlide key={product.id}>
+                    <ProductCard product={product} />
+                </SwiperSlide>
+            ) : (
+                <div key={product.id} className="upcart-internal-component-upsell-tile">
+                    <ProductCard product={product} />
+                </div>
+            );
+        });
 
     return (
         <div className="cart_CartPreview__empty__body">
@@ -193,65 +190,69 @@ export default function Recommendation({ recommendationsSettings, currency }) {
                 <h3>Your cart is empty</h3>
             </div>
 
-            <div className="upcart-internal-upsell">
+            <div className="upcart-internal-upsell upcart-public-upsell">
 
                 {/* HEADER */}
-                <div>
+                <div className="upcart-internal-upsell__header">
                     <p dangerouslySetInnerHTML={{
                         __html: recommendationsSettings.headerText
                     }} />
                 </div>
 
-                {/* PRODUCTS */}
-                <div>
+                {/* BUTTON */}
+                {recommendationsSettings.showShopNowButton && (
+                    <div className="upcart-internal-style__title-large_button">
+                        <a href={recommendationsSettings.buttonUrl}>
+                            {recommendationsSettings.buttonText}
+                        </a>
+                    </div>
+                )}
 
-                    {products.map((product) => {
-                        const variant = product.variants[0]; // ✅ only matched variant
-
-                        return (
-                            <div key={product.id} className="upsell-item">
-
-                                {/* IMAGE */}
-                                <img
-                                    src={variant?.image || product.image}
-                                    width="80"
-                                />
-
-                                <div style={{ flex: 1 }}>
-                                    <p>{product.title}</p>
-                                    <p>{variant.title}</p>
-                                </div>
-
-                                {/* PRICE */}
-                                <div>
-                                    <p>{variant.price} {currency}</p>
-                                </div>
-
-                                {/* ADD TO CART */}
-                                <button
-                                    onClick={() => {
-                                        console.log("Add to cart:", variant.id);
-
-                                        fetch("/cart/add.js", {
-                                            method: "POST",
-                                            headers: {
-                                                "Content-Type": "application/json",
-                                            },
-                                            body: JSON.stringify({
-                                                id: variant.id.split("/").pop(),
-                                                quantity: 1,
-                                            }),
-                                        });
-                                    }}
-                                >
-                                    Add
-                                </button>
-
-                            </div>
-                        );
-                    })}
-
+                <div className="upcart-internal-style__title-large">
+                    <p dangerouslySetInnerHTML={{
+                        __html: recommendationsSettings.productHeaderText
+                    }} />
                 </div>
+
+                {recommendationsSettings.layout === "carousel" ? (
+                    <div className="upcart-slider-wrapper">
+                        <div ref={prevRef} className="custom-prev">‹</div>
+                        <Swiper
+                            modules={[Navigation]}
+                            onInit={(swiper) => {
+                                swiper.params.navigation.prevEl = prevRef.current;
+                                swiper.params.navigation.nextEl = nextRef.current;
+                                swiper.navigation.init();
+                                swiper.navigation.update();
+                            }}
+                            spaceBetween={12}
+                            slidesPerView={1.2}
+                            breakpoints={{
+                                768: { slidesPerView: 1 },
+                            }}
+                        >
+                            <Swiper
+                                modules={[Navigation]}
+                                navigation={{
+                                    nextEl: ".custom-next",
+                                    prevEl: ".custom-prev",
+                                }}
+                                spaceBetween={12}
+                                slidesPerView={1.2}
+                                breakpoints={{
+                                    768: { slidesPerView: 1 },
+                                }}
+                            >
+                                {renderProducts()}
+                            </Swiper>
+                        </Swiper>
+                        <div ref={nextRef} className="custom-next">›</div>
+                    </div>
+
+                ) : (
+                    <div className="upcart-internal-upsell__vertical-layout-wrapper">
+                        {renderProducts()}
+                    </div>)}
             </div>
         </div>
     );
