@@ -100,10 +100,10 @@ export default function TieredRewards({ rewardsSettings }) {
   };
 
   return (
-    <div className="tier-card">
+    <div className="tier-card upcart-rewards">
       <div className="tier-content">
         <p
-          className="tier-title"
+          className="tier-title upcart-rewards-message"
           dangerouslySetInnerHTML={{
             __html:
               totalValue >= maxAmount
@@ -119,11 +119,11 @@ export default function TieredRewards({ rewardsSettings }) {
 
         <div className="progress-wrapper">
           <div
-            className="progress-bar"
+            className="progress-bar upcart-rewards-bar-background"
             style={{ backgroundColor: rewardsSettings.backgroundColor }}
           >
             <div
-              className="progress-fill"
+              className="progress-fill upcart-rewards-bar-foreground"
               style={{
                 width: `${fillPercent}%`,
                 backgroundColor: rewardsSettings.textColor,
@@ -139,13 +139,13 @@ export default function TieredRewards({ rewardsSettings }) {
               return (
                 <div
                   key={tier.id}
-                  className="segment"
+                  className="segment upcart-rewards-tier"
                   style={{
                     left: `${getStepPosition(index)}%`,
                   }}
                 >
                   <div
-                    className={`icon-circle ${reached ? "active" : ""}`}
+                    className={`icon-circle upcart-rewards-tier-circle ${reached ? "active" : ""}`}
                     style={{
                       backgroundColor: reached
                         ? rewardsSettings.textColor
@@ -155,10 +155,12 @@ export default function TieredRewards({ rewardsSettings }) {
                         : rewardsSettings.incompleteIconColor,
                     }}
                   >
-                    <Icon source={getIcon(tier.type)} />
+                    <span className="upcart-rewards-tier-icon">
+                      <Icon source={getIcon(tier.type)} />
+                    </span>
                   </div>
 
-                  <p className="step-text">
+                  <p className="step-text upcart-rewards-tier-description">
                     {tier.description}
                   </p>
                 </div>

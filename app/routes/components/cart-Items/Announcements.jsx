@@ -41,6 +41,7 @@ export default function Announcements({ announcementSettings }) {
 
     return (
         <div
+            className="upcart-announcement"
             style={{
                 padding: paddingMap[announcementSettings.height],
                 textAlign: "center",

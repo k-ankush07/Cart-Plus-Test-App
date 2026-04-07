@@ -123,28 +123,28 @@ export default function Upsells({ upsellsSettings }) {
         if (!selectedVariant) return null;
 
         return (
-            <div className="upcart-internal-component-upsell-tile">
+            <div className="upcart-internal-component-upsell-tile upcart-upsell-item-card">
                 <div className="upcart-internal-component-upsell-tile__info_count">
-                    <div className="upcart-internal-component-upsell-tile__image-container">
-                        <img src={selectedVariant.image || product.image} alt={product.title} />
+                    <div className="upcart-internal-component-upsell-tile__image-container upcart-upsell-item-image-wrapper">
+                        <img className="upcart-upsell-item-image" src={selectedVariant.image || product.image} alt={product.title} />
                     </div>
 
                     <div className="upcart-internal-component-upsell-tile__info">
                         <a href="#no" className="upcart-internal-component-upsell-tile__title-link">
-                            <h3 className="upcart-internal-component-upsell-tile__title">
+                            <h3 className="upcart-internal-component-upsell-tile__title upcart-upsell-item-title">
                                 {product.title}
                             </h3>
                         </a>
 
-                        <p className="price">
+                        <div className="upcart-upsell-item-price-row">
                             {selectedVariant.compareAtPrice &&
                                 parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
-                                    <span className="compare-price">
+                                    <span className="compare-price upcart-upsell-item-compare-price">
                                         {selectedVariant.compareAtPrice}
                                     </span>
                                 )}
-                            <span className="sale-price">{selectedVariant.price}</span>
-                        </p>
+                            <span className="sale-price upcart-upsell-item-price">{selectedVariant.price}</span>
+                        </div>
 
                         {showReviews && (
                             <div className="rating">
@@ -159,6 +159,7 @@ export default function Upsells({ upsellsSettings }) {
 
                         <div className="upcart-internal-component-upsell-tile__variant-row">
                             <select
+                                className="upcart-upsell-item-variant-selector"
                                 value={selectedVariant.id}
                                 onChange={(e) => handleVariantChange(product.id, e.target.value)}
                             >
@@ -169,7 +170,7 @@ export default function Upsells({ upsellsSettings }) {
                                 ))}
                             </select>
 
-                            <button type="button" className="upcart-internal-component__button">
+                            <button type="button" className="upcart-internal-component__button upcart-upsells-button">
                                 {buttonText}
                             </button>
                         </div>
@@ -182,9 +183,9 @@ export default function Upsells({ upsellsSettings }) {
     if (!products.length) return null;
 
     return (
-        <div className="upcart-internal-upsell upcart-public-upsell">
+        <div className="upcart-internal-upsell upcart-public-upsell upcart-upsells upcart-upsells-module">
             {title && (
-                <div className="upcart-internal-style__title-large">
+                <div className="upcart-internal-style__title-large upcart-upsells-title">
                     <p dangerouslySetInnerHTML={{ __html: title }} />
                 </div>
             )}

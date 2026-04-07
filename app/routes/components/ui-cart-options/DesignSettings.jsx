@@ -151,6 +151,12 @@ export default function DesignSettings({ designSettings, setDesignSettings }) {
                             value={designSettings.buttonHoverColor}
                             onChange={(val) => handleChange("buttonHoverColor", val)}
                         />
+
+                        <Checkbox
+                            label=" Show continue shopping button"
+                            checked={designSettings.continueshopping}
+                            onChange={(val) => handleChange("continueshopping", val)}
+                        />
                     </BlockStack>
                 </BlockStack>
             </Card>

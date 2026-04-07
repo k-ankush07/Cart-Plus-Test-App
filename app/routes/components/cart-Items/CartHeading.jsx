@@ -10,7 +10,7 @@ export default function CartHeading({ headerSettings, designSettings }) {
     const CloseButton = ({ headerSettings }) => {
         return (
             <button
-                className="cart-app__close custom-close-btn"
+                className="cart-app__close custom-close-btn upcart-header-close-button"
                 style={{
                     flexShrink: 0,
                     "--icon-color": headerSettings.iconColor,
@@ -24,6 +24,7 @@ export default function CartHeading({ headerSettings, designSettings }) {
                 }}
             >
                 <svg
+                    className="upcart-header-close-button-icon"
                     width={getIconSize(headerSettings.iconSize)}
                     height={getIconSize(headerSettings.iconSize)}
                     viewBox="0 0 24 24"
@@ -44,7 +45,7 @@ export default function CartHeading({ headerSettings, designSettings }) {
 
     return (
         <div
-            className="cart-app__header-top"
+            className="cart-app__header-top upcart-header"
             style={{
                 padding:
                     headerSettings.height === "slim"
@@ -78,6 +79,7 @@ export default function CartHeading({ headerSettings, designSettings }) {
                 >
                     {headerSettings.titleType === "logo" ? (
                         <img
+                            className="upcart-header-logo"
                             src={
                                 headerSettings.logo && headerSettings.logo !== ""
                                     ? headerSettings.logo
@@ -101,7 +103,7 @@ export default function CartHeading({ headerSettings, designSettings }) {
                         />
                     ) : headerSettings.titleType === "custom" ? (
                         <span
-                            className="cart-app__title"
+                            className="cart-app__title upcart-header-text"
                             style={{
                                 color: headerSettings.textColor,
                                 fontWeight: getFontWeight(headerSettings.fontWeight),
@@ -122,7 +124,7 @@ export default function CartHeading({ headerSettings, designSettings }) {
 
                             return (
                                 <HeadingTag
-                                    className="cart-app__title"
+                                    className="cart-app__title upcart-header-text"
                                     style={{
                                         margin: 0,
                                         color: designSettings.textColor,

@@ -21,7 +21,12 @@ export default function CartLayout({
   recommendationsSettings,
   subscriptionUpgradesSettings,
   upsellsSettings,
-  additionalNotesSettings
+  additionalNotesSettings,
+  addonsSettings,
+  discountCodesSettings,
+  expressPaymentsSettings,
+  trustBadgesSettings,
+  cartSettings,
 }) {
   return (
     <Page fullWidth>
@@ -36,6 +41,11 @@ export default function CartLayout({
           subscriptionUpgradesSettings={subscriptionUpgradesSettings}
           upsellsSettings={upsellsSettings}
           additionalNotesSettings={additionalNotesSettings}
+          addonsSettings={addonsSettings}
+          discountCodesSettings={discountCodesSettings}
+          expressPaymentsSettings={expressPaymentsSettings}
+          trustBadgesSettings={trustBadgesSettings}
+          cartSettings={cartSettings}
         />
 
         <MainContent
@@ -53,6 +63,11 @@ export default function CartLayout({
           subscriptionUpgradesSettings={subscriptionUpgradesSettings}
           upsellsSettings={upsellsSettings}
           additionalNotesSettings={additionalNotesSettings}
+          addonsSettings={addonsSettings}
+          discountCodesSettings={discountCodesSettings}
+          expressPaymentsSettings={expressPaymentsSettings}
+          trustBadgesSettings={trustBadgesSettings}
+          cartSettings={cartSettings}
           currency={currency}
         />
 
@@ -66,6 +81,11 @@ export default function CartLayout({
             subscriptionUpgradesSettings={subscriptionUpgradesSettings}
             upsellsSettings={upsellsSettings}
             additionalNotesSettings={additionalNotesSettings}
+            addonsSettings={addonsSettings}
+            discountCodesSettings={discountCodesSettings}
+            expressPaymentsSettings={expressPaymentsSettings}
+            trustBadgesSettings={trustBadgesSettings}
+            cartSettings={cartSettings}
             currency={currency}
             activeTab={activeTab}
           />

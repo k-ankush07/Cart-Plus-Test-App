@@ -124,9 +124,23 @@ router.put("/update-cart/:cartId", async (req, res) => {
     if (req.body.recommendationsSettings)
       updateData.recommendationsSettings = req.body.recommendationsSettings;
     if (req.body.subscriptionUpgradesSettings)
-      updateData.subscriptionUpgradesSettings = req.body.subscriptionUpgradesSettings;
-     if (req.body.upsellsSettings)
+      updateData.subscriptionUpgradesSettings =
+        req.body.subscriptionUpgradesSettings;
+    if (req.body.upsellsSettings)
       updateData.upsellsSettings = req.body.upsellsSettings;
+    if (req.body.additionalNotesSettings)
+      updateData.additionalNotesSettings = req.body.additionalNotesSettings;
+    if (req.body.addonsSettings)
+      updateData.addonsSettings = req.body.addonsSettings;
+    if (req.body.discountCodesSettings)
+      updateData.discountCodesSettings = req.body.discountCodesSettings;
+    if (req.body.expressPaymentsSettings)
+      updateData.expressPaymentsSettings = req.body.expressPaymentsSettings;
+  if (req.body.trustBadgesSettings)
+      updateData.trustBadgesSettings = req.body.trustBadgesSettings;
+   if (req.body.cartSettings)
+      updateData.cartSettings = req.body.cartSettings;
+
     const updatedCart = await cartModels.findOneAndUpdate(
       { cartId },
       updateData,

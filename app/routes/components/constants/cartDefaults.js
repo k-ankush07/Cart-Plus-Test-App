@@ -13,6 +13,7 @@ export const defaultSettings = {
   buttonColor: "#000000",
   buttonTextColor: "#FFFFFF",
   buttonHoverColor: "#e9e9e9",
+  continueshopping:false
 };
 
 export const defaultHeaderSettings = {
@@ -115,6 +116,97 @@ export const defaultAdditionalNotesSettings = {
   placeholder: "Special instructions for your order",
   placement: "below_items",
   customTemplate: "",
+};
+
+export const defaultAddonsSettings = {
+  enabled: true,
+  type: "shipping_protection",
+  title: "Shipping Protection",
+  description: "Protect your order from damage, loss, or theft during shipping.",
+  price: "2.50",
+  sourceType: "products",
+  dynamicPricing: false,
+  includeInItemCount: true,
+  autoFulfill: true,
+  includeTracking: true,
+};
+
+export const defaultDiscountCodesSettings = {
+  enabled: true,
+  placeholder: "Discount code",
+  buttonText: "Apply",
+  customTemplate: "",
+};
+
+export const defaultExpressPaymentsSettings = {
+  enabled: true,
+  defaultButtonHeight: 42,
+  mobileButtonHeight: 38,
+  alignment: "center",
+  rowGap: 8,
+  hideBuyerConsent: true,
+  renderInShadowDom: true,
+};
+
+export const defaultTrustBadgesSettings = {
+  enabled: true,
+  customImage: "",
+  presetImage: "",
+  position: "top",
+  customTemplate: "",
+};
+
+export const defaultCartSettings = {
+  // Cart settings
+  cartPosition: "slide_from_left",
+  trafficAllocationPercent: 20,
+  disableFixedFooter: false,
+  openOnAddToCart: true,
+  goToCartPageOnCheckout: true,
+  showSavingsBelowPrices: true,
+  enableLoadingPreview: true,
+  // Advanced settings
+  showDiscountsFromBasePrice: false,
+  showCompareAtPriceSavingsInFooter: false,
+  hideSingleUnderscoreProperties: true,
+  enhancedAjaxCompatibility: false,
+  forceRerenderCustomHtml: false,
+  skipGoogleFonts: false,
+  overrideScrollLocking: false,
+  integrateYmqProductOptions: false,
+  renderCartInShadowDom: false,
+  trackCartEvents: true,
+  // Button selectors
+  openCartButtonSelector: "default",
+  openCartButtonCustomSelector: "",
+  addToCartButtonSelector: "default",
+  addToCartButtonCustomSelector: "",
+  accessCustomTemplates: false,
+  // Edit copy
+  savingsText: "Save",
+  emptyCartMessage: "Your cart is empty",
+  continueShoppingText: "Or continue shopping",
+  discountsSavingsText: "Discounts",
+  checkoutButtonText: "Checkout • {{total_price}}",
+  showBundleSingular: "Show 1 item",
+  showBundlePlural: "Show {NUMBER_OF_ITEMS} items",
+  hideBundleSingular: "Hide 1 item",
+  hideBundlePlural: "Hide {NUMBER_OF_ITEMS} items",
+  // Custom HTML — one block per position
+  customHtmlBlocks: {
+    above_announcements: "",
+    below_header: "",
+    between_line_items: "",
+    below_cart_items: "",
+    above_footer: "",
+    above_checkout: "",
+    below_checkout: "",
+    bottom_of_cart: "",
+    empty_cart: "",
+    scripts_before_load: "",
+  },
+  // Custom CSS
+  customCss: "",
 };
 
 export const defaultSubscriptionUpgradesSettings = {

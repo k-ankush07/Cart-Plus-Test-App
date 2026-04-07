@@ -12,7 +12,8 @@ import { useState } from "react";
 import MenuSection from "./MenuSection";
 
 export default function Sidebar({ activeTab, setActiveTab, announcementSettings, rewardsSettings, recommendationsSettings,
-  subscriptionUpgradesSettings, upsellsSettings, additionalNotesSettings
+  subscriptionUpgradesSettings, upsellsSettings, additionalNotesSettings, addonsSettings, discountCodesSettings,
+  expressPaymentsSettings, trustBadgesSettings
 }) {
 
   const [visibility, setVisibility] = useState({});
@@ -38,7 +39,11 @@ export default function Sidebar({ activeTab, setActiveTab, announcementSettings,
       (label !== "Recommendations" || recommendationsSettings?.enabled) &&
       (label !== "Subscription upgrades" || subscriptionUpgradesSettings?.enabled) &&
       (label !== "Upsells" || upsellsSettings?.enabled) &&
-      (label !== "Additional notes" || additionalNotesSettings?.enabled);
+      (label !== "Additional notes" || additionalNotesSettings?.enabled) &&
+      (label !== "Add-ons" || addonsSettings?.enabled) &&
+      (label !== "Discount codes" || discountCodesSettings?.enabled) &&
+      (label !== "Express payments" || expressPaymentsSettings?.enabled) && 
+      (label !== "Trust badges" || trustBadgesSettings?.enabled);
 
     return {
       content: label,
@@ -82,7 +87,7 @@ export default function Sidebar({ activeTab, setActiveTab, announcementSettings,
         items={[
           createItem("Announcements", NotificationIcon),
           createItem("Tiered rewards", GiftCardIcon),
-          createItem("Triggered rewards", GiftCardIcon),
+          createItem("Triggered rewards", GiftCardIcon, false),
           createItem("Recommendations", CartIcon),
           createItem("Cart items", CartIcon, false),
           createItem("Subscription upgrades", CartIcon),

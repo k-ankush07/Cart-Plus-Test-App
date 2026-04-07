@@ -19,6 +19,11 @@ import {
   defaultSubscriptionUpgradesSettings,
   defaultUpsellsSettings,
   defaultAdditionalNotesSettings,
+  defaultAddonsSettings,
+  defaultDiscountCodesSettings,
+  defaultExpressPaymentsSettings,
+  defaultTrustBadgesSettings,
+  defaultCartSettings,
 } from "../routes/components/constants/cartDefaults";
 
 export const loader = async ({ request, params }) => {
@@ -80,6 +85,26 @@ export default function CartEditor() {
     cart?.additionalNotesSettings || defaultAdditionalNotesSettings
   );
 
+  const [addonsSettings, setAddonsSettings] = useState(
+    cart?.addonsSettings || defaultAddonsSettings
+  );
+
+  const [discountCodesSettings, setDiscountCodesSettings] = useState(
+    cart?.discountCodesSettings || defaultDiscountCodesSettings
+  );
+
+  const [expressPaymentsSettings, setExpressPaymentsSettings] = useState(
+    cart?.expressPaymentsSettings || defaultExpressPaymentsSettings
+  );
+
+  const [trustBadgesSettings, setTrustBadgesSettings] = useState(
+    cart?.trustBadgesSettings || defaultTrustBadgesSettings
+  );
+
+  const [cartSettings, setCartSettings] = useState(
+    cart?.cartSettings || defaultCartSettings
+  );
+
   const initialSettingsRef = useRef({
     design: designSettings,
     header: headerSettings,
@@ -89,6 +114,11 @@ export default function CartEditor() {
     subscriptionUpgradesSettings: subscriptionUpgradesSettings,
     upsellsSettings: upsellsSettings,
     additionalNotesSettings: additionalNotesSettings,
+    addonsSettings: addonsSettings,
+    discountCodesSettings: discountCodesSettings,
+    expressPaymentsSettings: expressPaymentsSettings,
+    trustBadgesSettings: trustBadgesSettings,
+    cartSettings: cartSettings,
   });
 
   const [isDirty, setIsDirty] = useState(false);
@@ -105,6 +135,11 @@ export default function CartEditor() {
       subscriptionUpgradesSettings: setSubscriptionUpgradesSettings,
       upsellsSettings: setUpsellsSettings,
       additionalNotesSettings: setAdditionalNotesSettings,
+      addonsSettings: setAddonsSettings,
+      discountCodesSettings: setDiscountCodesSettings,
+      expressPaymentsSettings: setExpressPaymentsSettings,
+      trustBadgesSettings: setTrustBadgesSettings,
+      cartSettings: setCartSettings,
     };
 
     const setter = setters[type];
@@ -165,6 +200,26 @@ export default function CartEditor() {
         setAdditionalNotesSettings(cart.additionalNotesSettings);
       }
 
+      if (cart.addonsSettings) {
+        setAddonsSettings(cart.addonsSettings);
+      }
+
+      if (cart.discountCodesSettings) {
+        setDiscountCodesSettings(cart.discountCodesSettings);
+      }
+
+      if (cart.expressPaymentsSettings) {
+        setExpressPaymentsSettings(cart.expressPaymentsSettings);
+      }
+
+      if (cart.trustBadgesSettings) {
+        setTrustBadgesSettings(cart.trustBadgesSettings);
+      }
+
+      if (cart.cartSettings) {
+        setCartSettings(cart.cartSettings);
+      }
+
       initialSettingsRef.current = {
         design: cart.designSettings || defaultSettings,
         header: cart.headerSettings || defaultHeaderSettings,
@@ -174,6 +229,11 @@ export default function CartEditor() {
         subscriptionUpgradesSettings: cart.subscriptionUpgradesSettings || defaultSubscriptionUpgradesSettings,
         upsellsSettings: cart.upsellsSettings || defaultUpsellsSettings,
         additionalNotesSettings: cart.additionalNotesSettings || defaultAdditionalNotesSettings,
+        addonsSettings: cart.addonsSettings || defaultAddonsSettings,
+        discountCodesSettings: cart.discountCodesSettings || defaultDiscountCodesSettings,
+        expressPaymentsSettings: cart.expressPaymentsSettings || defaultExpressPaymentsSettings,
+        trustBadgesSettings: cart.trustBadgesSettings || defaultTrustBadgesSettings,
+        cartSettings: cart.cartSettings || defaultCartSettings,
       };
     }
   }, [cart]);
@@ -191,6 +251,11 @@ export default function CartEditor() {
         subscriptionUpgradesSettings,
         upsellsSettings,
         additionalNotesSettings,
+        addonsSettings,
+        discountCodesSettings,
+        expressPaymentsSettings,
+        trustBadgesSettings,
+        cartSettings,
       });
 
       initialSettingsRef.current = {
@@ -202,6 +267,11 @@ export default function CartEditor() {
         subscriptionUpgradesSettings: subscriptionUpgradesSettings,
         upsellsSettings: upsellsSettings,
         additionalNotesSettings: additionalNotesSettings,
+        addonsSettings: addonsSettings,
+        discountCodesSettings: discountCodesSettings,
+        expressPaymentsSettings: expressPaymentsSettings,
+        trustBadgesSettings: trustBadgesSettings,
+        cartSettings: cartSettings,
       };
       setIsDirty(false);
 
@@ -220,6 +290,11 @@ export default function CartEditor() {
     setSubscriptionUpgradesSettings(initialSettingsRef.current.subscriptionUpgradesSettings);
     setUpsellsSettings(initialSettingsRef.current.upsellsSettings);
     setAdditionalNotesSettings(initialSettingsRef.current.additionalNotesSettings);
+    setAddonsSettings(initialSettingsRef.current.addonsSettings);
+    setDiscountCodesSettings(initialSettingsRef.current.discountCodesSettings);
+    setExpressPaymentsSettings(initialSettingsRef.current.expressPaymentsSettings);
+    setTrustBadgesSettings(initialSettingsRef.current.trustBadgesSettings);
+    setCartSettings(initialSettingsRef.current.cartSettings);
     setIsDirty(false);
   };
 
@@ -244,6 +319,11 @@ export default function CartEditor() {
         subscriptionUpgradesSettings={subscriptionUpgradesSettings}
         upsellsSettings={upsellsSettings}
         additionalNotesSettings={additionalNotesSettings}
+        addonsSettings={addonsSettings}
+        discountCodesSettings={discountCodesSettings}
+        expressPaymentsSettings={expressPaymentsSettings}
+        trustBadgesSettings={trustBadgesSettings}
+        cartSettings={cartSettings}
         handleChange={handleChange}
         shop={shop}
         accessToken={accessToken}

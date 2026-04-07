@@ -24,7 +24,7 @@ const DEFAULT_PRODUCT = {
     ]
 };
 
-export default function Recommendation({ recommendationsSettings, currency }) {
+export default function Recommendation({ recommendationsSettings, currency, cartSettings }) {
 
     const [products, setProducts] = useState([]);
     const [selectedVariants, setSelectedVariants] = useState({});
@@ -184,16 +184,16 @@ export default function Recommendation({ recommendationsSettings, currency }) {
         });
 
     return (
-        <div className="cart_CartPreview__empty__body">
+        <div className="cart_CartPreview__empty__body upcart-recommendation-module">
 
             <div className="cart_CartPreview__empty__">
-                <h3>Your cart is empty</h3>
+                <h3>{cartSettings.emptyCartMessage}</h3>
             </div>
 
             <div className="upcart-internal-upsell upcart-public-upsell">
 
                 {/* HEADER */}
-                <div className="upcart-internal-upsell__header">
+                <div className="upcart-internal-upsell__header upcart-recommendations-title">
                     <p dangerouslySetInnerHTML={{
                         __html: recommendationsSettings.headerText
                     }} />
@@ -202,7 +202,7 @@ export default function Recommendation({ recommendationsSettings, currency }) {
                 {/* BUTTON */}
                 {recommendationsSettings.showShopNowButton && (
                     <div className="upcart-internal-style__title-large_button">
-                        <a href={recommendationsSettings.buttonUrl}>
+                        <a href={recommendationsSettings.buttonUrl} className="upcart-recommendations-shop-now-button">
                             {recommendationsSettings.buttonText}
                         </a>
                     </div>

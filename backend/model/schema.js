@@ -39,6 +39,31 @@ const cartSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
+  additionalNotesSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  addonsSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  discountCodesSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  expressPaymentsSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  trustBadgesSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+   cartSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  
   createdAt: { type: Date, default: Date.now },
 });
 

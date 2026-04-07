@@ -7,10 +7,15 @@ import Recommendations from "./ui-cart-options/Recommendations";
 import SubscriptionUpgrades from "./ui-cart-options/SubscriptionUpgrades";
 import UpsellsSettings from "./ui-cart-options/UpsellsSettings";
 import AdditionalNotes from "./ui-cart-options/AdditionalNotes";
+import AddonsSettings from "./ui-cart-options/Add-onsSettings";
+import DiscountCodes from "./ui-cart-options/DiscountCodes";
+import Expresspayments from "./ui-cart-options/Express-payments";
+import Trustbadges from "./ui-cart-options/Trustbadges";
+import CartSettings from "./ui-cart-options/CartSettings";
 
 export default function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
     announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings, upsellsSettings,
-    additionalNotesSettings
+    additionalNotesSettings, addonsSettings, discountCodesSettings, expressPaymentsSettings, trustBadgesSettings, cartSettings
 }) {
 
     const COMPONENT_MAP = {
@@ -63,6 +68,40 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
         "Additional notes": (
             <AdditionalNotes
                 additionalNotesSettings={additionalNotesSettings}
+                handleChange={handleChange}
+            />
+        ),
+        "Add-ons": (
+            <AddonsSettings
+                addonsSettings={addonsSettings}
+                handleChange={handleChange}
+                currency={currency}
+            />
+        ),
+        "Discount codes": (
+            <DiscountCodes
+                discountCodesSettings={discountCodesSettings}
+                handleChange={handleChange}
+            />
+        ),
+        "Express payments": (
+            <Expresspayments
+                expressPaymentsSettings={expressPaymentsSettings}
+                handleChange={handleChange}
+            />
+        ),
+        "Trust badges": (
+            <Trustbadges
+                trustBadgesSettings={trustBadgesSettings}
+                handleChange={handleChange}
+                shop={shop}
+                accessToken={accessToken}
+                apiUrl={apiUrl}
+            />
+        ),
+        "Settings": (
+            <CartSettings
+                cartSettings={cartSettings}
                 handleChange={handleChange}
             />
         ),

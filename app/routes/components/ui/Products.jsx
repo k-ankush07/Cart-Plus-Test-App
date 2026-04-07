@@ -19,7 +19,6 @@ import {
     ChevronRightIcon
 } from "@shopify/polaris-icons";
 
-
 export default function Products({ currency, onSelect, selectedItems = [], }) {
 
     const [products, setProducts] = useState([]);

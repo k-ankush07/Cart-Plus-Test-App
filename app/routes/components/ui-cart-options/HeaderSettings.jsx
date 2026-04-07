@@ -482,6 +482,7 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
               <ColorInput label="Border color" value="#000000" onChange={() => { }} />
             </div>
           )}
+
         </BlockStack>
       </BlockStack>
     </Card>
