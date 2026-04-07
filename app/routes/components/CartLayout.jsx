@@ -27,6 +27,7 @@ export default function CartLayout({
   expressPaymentsSettings,
   trustBadgesSettings,
   cartSettings,
+  triggeredRewardsSettings,
 }) {
   return (
     <Page fullWidth>
@@ -68,6 +69,7 @@ export default function CartLayout({
           expressPaymentsSettings={expressPaymentsSettings}
           trustBadgesSettings={trustBadgesSettings}
           cartSettings={cartSettings}
+          triggeredRewardsSettings={triggeredRewardsSettings}
           currency={currency}
         />
 

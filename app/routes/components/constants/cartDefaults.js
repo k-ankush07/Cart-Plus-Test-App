@@ -209,6 +209,15 @@ export const defaultCartSettings = {
   customCss: "",
 };
 
+export const defaultTriggeredRewardsSettings = {
+  rewards: [],
+  discountCombinations: {
+    productDiscounts: true,
+    orderDiscounts: true,
+    shippingDiscounts: true,
+  },
+};
+
 export const defaultSubscriptionUpgradesSettings = {
   enabled: true,
   buttonText: "Upgrade to {{selling_plan_group_name}}",

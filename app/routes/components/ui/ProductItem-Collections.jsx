@@ -19,7 +19,7 @@ import {
 } from "@shopify/polaris-icons";
 import { useEffect, useState } from "react";
 
-export default function ProductItemCollections({ currency, onSelect, initialSelected }) {
+export default function ProductItemCollections({ currency, onSelect, initialSelected, showCollections = true, showProducts = true }) {
     const [cursorStack, setCursorStack] = useState([]);
     const [openProducts, setOpenProducts] = useState({});
     const [selectedVariants, setSelectedVariants] = useState([]);
@@ -59,7 +59,7 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
 
     const isSelected = (id) => selectedVariants.includes(id);
 
-    const toggleSelect = (variant, product) => {
+    const toggleSelect = (variant) => {
         setSelectedCollections([]);
 
         setSelectedVariants((prev) => {
@@ -67,18 +67,16 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
                 ? prev.filter((i) => i !== variant.id)
                 : [...prev, variant.id];
 
-            const productIds = localProducts
-                .filter((p) =>
-                    p.variants.some((v) => updated.includes(v.id))
-                )
-                .map((p) => p.id);
+            const selectedProducts = localProducts.filter((p) =>
+                p.variants.some((v) => updated.includes(v.id))
+            );
+            const productIds = selectedProducts.map((p) => p.id);
+            const titles = selectedProducts.map((p) => p.title);
+            const images = selectedProducts.map((p) => p.image);
 
             onSelect({
                 type: "products",
-                items: {
-                    variants: updated,
-                    products: productIds
-                }
+                items: { variants: updated, products: productIds, titles, images }
             });
 
             return updated;
@@ -106,18 +104,16 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
                 updated = [...new Set([...prev, ...variantIds])];
             }
 
-            const productIds = localProducts
-                .filter((p) =>
-                    p.variants.some((v) => updated.includes(v.id))
-                )
-                .map((p) => p.id);
+            const selectedProducts = localProducts.filter((p) =>
+                p.variants.some((v) => updated.includes(v.id))
+            );
+            const productIds = selectedProducts.map((p) => p.id);
+            const titles = selectedProducts.map((p) => p.title);
+            const images = selectedProducts.map((p) => p.image);
 
             onSelect({
                 type: "products",
-                items: {
-                    variants: updated,
-                    products: productIds
-                }
+                items: { variants: updated, products: productIds, titles, images }
             });
 
             return updated;
@@ -262,10 +258,15 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
 
         setSelectedCollections((prev) => {
             const updated = prev.includes(id) ? [] : [id];
+            const selected = collections.filter((c) => updated.includes(c.id));
+            const titles = selected.map((c) => c.title);
+            const images = selected.map((c) => c.image);
 
             onSelect({
                 type: "collections",
-                items: updated
+                items: updated,
+                titles,
+                images
             });
 
             return updated;
@@ -276,19 +277,23 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
         <div>
             <BlockStack gap="300">
                 <InlineStack gap="200">
-                    <Button
-                        variant={activeTab === "products" ? "primary" : "secondary"}
-                        onClick={() => setActiveTab("products")}
-                    >
-                        Products
-                    </Button>
+                    {showProducts && (
+                        <Button
+                            variant={activeTab === "products" ? "primary" : "secondary"}
+                            onClick={() => setActiveTab("products")}
+                        >
+                            Products
+                        </Button>
+                    )}
 
-                    <Button
-                        variant={activeTab === "collections" ? "primary" : "secondary"}
-                        onClick={() => setActiveTab("collections")}
-                    >
-                        Collections
-                    </Button>
+                    {showCollections && (
+                        <Button
+                            variant={activeTab === "collections" ? "primary" : "secondary"}
+                            onClick={() => setActiveTab("collections")}
+                        >
+                            Collections
+                        </Button>
+                    )}
                 </InlineStack>
 
                 <div style={{ height: "12px" }} />

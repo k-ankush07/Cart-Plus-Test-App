@@ -59,11 +59,15 @@ const cartSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
-   cartSettings: {
+  cartSettings: {
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
-  
+  triggeredRewardsSettings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+
   createdAt: { type: Date, default: Date.now },
 });
 

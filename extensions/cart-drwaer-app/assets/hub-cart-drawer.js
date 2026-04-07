@@ -1,17 +1,28 @@
+const apiUrl = "https://ebc3-2401-4900-1c6f-9a87-b999-5f1-b9d4-31c.ngrok-free.app";
+
 (function () {
   const originalFetch = window.fetch;
 
   window.fetch = async function (...args) {
     const response = await originalFetch.apply(this, args);
 
-    if (
-      args[0].includes("/cart/add") ||
-      args[0].includes("/cart/change") ||
-      args[0].includes("/cart/clear")
-    ) {
-      const data = await response.clone().json();
+    // Skip event dispatch for internal reward updates
+    if (window._hubRewardUpdating) return response;
 
-      document.dispatchEvent(new CustomEvent("cart:updated", { detail: data }));
+    const url = typeof args[0] === "string" ? args[0] : args[0]?.url || "";
+
+    if (
+      url.includes("/cart/add") ||
+      url.includes("/cart/change") ||
+      url.includes("/cart/clear")
+    ) {
+      try {
+        const data = await response.clone().json();
+        document.dispatchEvent(new CustomEvent("cart:updated", { detail: data }));
+      } catch (_) {
+        // Non-JSON response (e.g. 429) — still dispatch so UI updates
+        document.dispatchEvent(new CustomEvent("cart:updated", { detail: null }));
+      }
     }
 
     return response;
@@ -138,13 +149,80 @@
         true,
       );
 
-      document.addEventListener("cart:updated", function (e) {
-        console.log("Cart updated:", e.detail);
-
-        openDrawer();
+      let _cartUpdateTimer = null;
+      document.addEventListener("cart:updated", function () {
+        if (window._hubRewardUpdating) return;
+        clearTimeout(_cartUpdateTimer);
+        _cartUpdateTimer = setTimeout(() => openDrawer(), 300);
       });
     }
   }
 
   window.addEventListener("load", initCart);
+})();
+
+// ── Announcement countdown timer ──
+let _annTimerInterval = null;
+
+window.startAnnTimer = function (blockId, timeStr) {
+  if (_annTimerInterval) clearInterval(_annTimerInterval);
+
+  const parts = timeStr.split(":").map(Number);
+  let totalSeconds = parts.length === 2
+    ? parts[0] * 60 + parts[1]
+    : parts[0] * 3600 + parts[1] * 60 + (parts[2] || 0);
+
+  function fmt(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+  }
+
+  function tick() {
+    const el = document.getElementById(`hub-timer-${blockId}`);
+    if (el) el.textContent = fmt(totalSeconds);
+    if (totalSeconds <= 0) { clearInterval(_annTimerInterval); return; }
+    totalSeconds--;
+  }
+
+  tick();
+  _annTimerInterval = setInterval(tick, 1000);
+};
+
+(function () {
+  window.addEventListener("load", async function () {
+    const shop = window.__SHOPIFY_SHOP__?.domain;
+
+    if (!shop ) {
+      console.warn(" Shop not set");
+      return;
+    }
+
+    console.log("Shop:", shop);
+
+    try {
+      const res = await fetch(`${apiUrl}/api/get-carts?shop=${shop}`, {
+        headers: { "ngrok-skip-browser-warning": "true" },
+      });
+      const result = await res.json();
+
+      if (!result.success || !result.data?.length) {
+        console.log("No carts found for this shop");
+        return;
+      }
+
+      const publishedCart = result.data.find(
+        (cart) => cart.status === "published"
+      );
+
+      if (publishedCart) {
+        console.log("Published cart found:", publishedCart);
+        window.__HUB_ACTIVE_CART__ = publishedCart;
+      } else {
+        console.log("No published cart found for this shop");
+      }
+    } catch (err) {
+      console.error("Cart settings fetch error:", err);
+    }
+  });
 })();

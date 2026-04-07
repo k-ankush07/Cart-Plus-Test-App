@@ -24,6 +24,7 @@ import {
   defaultExpressPaymentsSettings,
   defaultTrustBadgesSettings,
   defaultCartSettings,
+  defaultTriggeredRewardsSettings,
 } from "../routes/components/constants/cartDefaults";
 
 export const loader = async ({ request, params }) => {
@@ -105,6 +106,10 @@ export default function CartEditor() {
     cart?.cartSettings || defaultCartSettings
   );
 
+  const [triggeredRewardsSettings, setTriggeredRewardsSettings] = useState(
+    cart?.triggeredRewardsSettings || defaultTriggeredRewardsSettings
+  );
+
   const initialSettingsRef = useRef({
     design: designSettings,
     header: headerSettings,
@@ -119,6 +124,7 @@ export default function CartEditor() {
     expressPaymentsSettings: expressPaymentsSettings,
     trustBadgesSettings: trustBadgesSettings,
     cartSettings: cartSettings,
+    triggeredRewards: triggeredRewardsSettings,
   });
 
   const [isDirty, setIsDirty] = useState(false);
@@ -140,6 +146,7 @@ export default function CartEditor() {
       expressPaymentsSettings: setExpressPaymentsSettings,
       trustBadgesSettings: setTrustBadgesSettings,
       cartSettings: setCartSettings,
+      triggeredRewards: setTriggeredRewardsSettings,
     };
 
     const setter = setters[type];
@@ -220,6 +227,10 @@ export default function CartEditor() {
         setCartSettings(cart.cartSettings);
       }
 
+      if (cart.triggeredRewardsSettings) {
+        setTriggeredRewardsSettings(cart.triggeredRewardsSettings);
+      }
+
       initialSettingsRef.current = {
         design: cart.designSettings || defaultSettings,
         header: cart.headerSettings || defaultHeaderSettings,
@@ -234,6 +245,7 @@ export default function CartEditor() {
         expressPaymentsSettings: cart.expressPaymentsSettings || defaultExpressPaymentsSettings,
         trustBadgesSettings: cart.trustBadgesSettings || defaultTrustBadgesSettings,
         cartSettings: cart.cartSettings || defaultCartSettings,
+        triggeredRewards: cart.triggeredRewardsSettings || defaultTriggeredRewardsSettings,
       };
     }
   }, [cart]);
@@ -256,6 +268,7 @@ export default function CartEditor() {
         expressPaymentsSettings,
         trustBadgesSettings,
         cartSettings,
+        triggeredRewardsSettings,
       });
 
       initialSettingsRef.current = {
@@ -272,6 +285,7 @@ export default function CartEditor() {
         expressPaymentsSettings: expressPaymentsSettings,
         trustBadgesSettings: trustBadgesSettings,
         cartSettings: cartSettings,
+        triggeredRewards: triggeredRewardsSettings,
       };
       setIsDirty(false);
 
@@ -295,6 +309,7 @@ export default function CartEditor() {
     setExpressPaymentsSettings(initialSettingsRef.current.expressPaymentsSettings);
     setTrustBadgesSettings(initialSettingsRef.current.trustBadgesSettings);
     setCartSettings(initialSettingsRef.current.cartSettings);
+    setTriggeredRewardsSettings(initialSettingsRef.current.triggeredRewards);
     setIsDirty(false);
   };
 
@@ -324,6 +339,7 @@ export default function CartEditor() {
         expressPaymentsSettings={expressPaymentsSettings}
         trustBadgesSettings={trustBadgesSettings}
         cartSettings={cartSettings}
+        triggeredRewardsSettings={triggeredRewardsSettings}
         handleChange={handleChange}
         shop={shop}
         accessToken={accessToken}

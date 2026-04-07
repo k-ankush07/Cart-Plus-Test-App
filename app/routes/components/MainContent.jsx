@@ -3,6 +3,7 @@ import HeaderSettings from "./ui-cart-options/HeaderSettings";
 import AnnouncementsSettings from "./ui-cart-options/AnnouncementsSettings";
 import DesignSettings from "./ui-cart-options/DesignSettings";
 import TieredRewards from "./ui-cart-options/TieredRewardSetting";
+import TriggeredReward from "./ui-cart-options/TriggeredReward";
 import Recommendations from "./ui-cart-options/Recommendations";
 import SubscriptionUpgrades from "./ui-cart-options/SubscriptionUpgrades";
 import UpsellsSettings from "./ui-cart-options/UpsellsSettings";
@@ -15,7 +16,8 @@ import CartSettings from "./ui-cart-options/CartSettings";
 
 export default function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
     announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings, upsellsSettings,
-    additionalNotesSettings, addonsSettings, discountCodesSettings, expressPaymentsSettings, trustBadgesSettings, cartSettings
+    additionalNotesSettings, addonsSettings, discountCodesSettings, expressPaymentsSettings, trustBadgesSettings, cartSettings,
+    triggeredRewardsSettings
 }) {
 
     const COMPONENT_MAP = {
@@ -43,6 +45,12 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 rewardsSettings={rewardsSettings}
                 handleChange={handleChange}
                 currency={currency}
+            />
+        ),
+        "Triggered rewards": (
+            <TriggeredReward
+                triggeredRewardsSettings={triggeredRewardsSettings}
+                handleChange={handleChange}
             />
         ),
         Recommendations: (

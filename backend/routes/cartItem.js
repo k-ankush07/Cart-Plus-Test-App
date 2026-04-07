@@ -140,6 +140,8 @@ router.put("/update-cart/:cartId", async (req, res) => {
       updateData.trustBadgesSettings = req.body.trustBadgesSettings;
    if (req.body.cartSettings)
       updateData.cartSettings = req.body.cartSettings;
+  if (req.body.triggeredRewardsSettings)
+      updateData.triggeredRewardsSettings = req.body.triggeredRewardsSettings;
 
     const updatedCart = await cartModels.findOneAndUpdate(
       { cartId },

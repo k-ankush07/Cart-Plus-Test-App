@@ -12,6 +12,17 @@
     symbol: "{{ localization.country.currency.symbol }}",
     format: "{{ shop.money_format }}"
   };
+
+  window.__SHOPIFY_SHOP__ = {
+    name: {{ shop.name | json }},
+    domain: {{ shop.domain | json }},
+    permanent_domain: {{ shop.permanent_domain | json }},
+    email: {{ shop.email | json }},
+    currency: {{ shop.currency | json }},
+    money_format: {{ shop.money_format | json }},
+    timezone: {{ shop.timezone | json }},
+    locale: {{ request.locale.iso_code | json }}
+  };
 </script>
 
 <script src="{{ 'hub-cart-html.js' | asset_url }}"></script>
@@ -57,10 +68,11 @@
 </localization-form>
 
 <style>
+  
 .hub-visible-{{ block.id }} {
   opacity: 1 !important;
   visibility: visible !important;
-  display:block !important;
+  display: block !important;
 }
 
 #hub-cart-drawer-{{ block.id }} {
@@ -70,8 +82,8 @@
 
 #hub-cart-drawer-{{ block.id }}.hub-visible-{{ block.id }} {
   transform: translateX(0);
+  display: flex !important;
 }
-
 
 </style>
 

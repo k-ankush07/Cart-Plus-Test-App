@@ -1,4 +1,9 @@
-window.updateQty = async function (key, qty) {
+function getDrawer() {
+  const blockId = window.HUB_CART_BLOCK_ID;
+  return document.getElementById(`hub-cart-drawer-${blockId}`) || document;
+}
+
+async function updateQty(key, qty) {
   if (qty < 1) {
     return removeItem(key);
   }
@@ -13,14 +18,9 @@ window.updateQty = async function (key, qty) {
       quantity: qty,
     }),
   });
+}
 
-  const drawer = document.querySelector("#hub-cart-drawer");
-  window.hubCartRender(drawer || document);
-
-  window.updateCartCount();
-};
-
-window.removeItem = async function (key) {
+async function removeItem(key) {
   await fetch("/cart/change.js", {
     method: "POST",
     headers: {
@@ -31,14 +31,9 @@ window.removeItem = async function (key) {
       quantity: 0,
     }),
   });
+}
 
-  const drawer = document.querySelector("#hub-cart-drawer");
-  window.hubCartRender(drawer || document);
-
-  window.updateCartCount();
-};
-
-window.handleQtyInput = function (key, value) {
+function handleQtyInput(key, value) {
   let qty = value.replace(/\D/g, "");
   qty = parseInt(qty);
 
@@ -47,7 +42,7 @@ window.handleQtyInput = function (key, value) {
   }
 
   updateQty(key, qty);
-};
+}
 
 function showMessage(el, text, color = "black") {
   el.style.color = color;
@@ -80,9 +75,16 @@ window.applyDiscountCode = async function () {
     const res = await fetch("/cart.js");
     const cart = await res.json();
 
-    const hasRealDiscount = cart.items.some(
+    // Check both line-level and cart-level discounts
+    const hasLineDiscount = cart.items.some(
       (item) => item.line_level_discount_allocations?.length > 0
     );
+    const hasCartDiscount = cart.cart_level_discount_applications?.length > 0;
+    const hasCodeDiscount = cart.discount_codes?.some(
+      (d) => d.code.toLowerCase() === code.toLowerCase() && d.applicable
+    );
+
+    const hasRealDiscount = hasLineDiscount || hasCartDiscount || hasCodeDiscount;
 
     if (!hasRealDiscount) {
       await fetch(`/discount/INVALID_REMOVE`, {
@@ -92,8 +94,7 @@ window.applyDiscountCode = async function () {
       await new Promise(r => setTimeout(r, 300));
     }
 
-    const drawer = document.querySelector("#hub-cart-drawer");
-    await window.hubCartRender(drawer || document);
+    await window.hubCartRender(getDrawer());
 
     const newMessage = document.getElementById("discount-message");
 
@@ -122,10 +123,7 @@ window.removeDiscountCode = async function () {
       }),
     });
 
-    localStorage.removeItem("applied_discount_code");
-
-    const drawer = document.querySelector("#hub-cart-drawer");
-    await window.hubCartRender(drawer || document);
+    await window.hubCartRender(getDrawer());
 
     const newMessage = document.getElementById("discount-message");
     showMessage(newMessage, "Discount removed", "green");
