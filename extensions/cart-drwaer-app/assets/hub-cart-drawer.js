@@ -1,5 +1,5 @@
 const apiUrl =
-  "https://ebc3-2401-4900-1c6f-9a87-b999-5f1-b9d4-31c.ngrok-free.app";
+  "https://6e4a-2401-4900-1c71-48c-c50a-7b04-be03-2327.ngrok-free.app";
 
 (function () {
   const originalFetch = window.fetch;
@@ -7,7 +7,6 @@ const apiUrl =
   window.fetch = async function (...args) {
     const response = await originalFetch.apply(this, args);
 
-    // Skip event dispatch for internal reward updates
     if (window._hubRewardUpdating) return response;
 
     const url = typeof args[0] === "string" ? args[0] : args[0]?.url || "";
@@ -257,7 +256,6 @@ window.loadCartRecommendations = async function (settings = {}) {
 
     const selectedItems = settings?.selectedItems || [];
 
-    // 🛒 Cart
     const cartRes = await fetch("/cart.js");
     const cart = await cartRes.json();
     const cartHandles = new Set(cart.items.map((item) => item.handle));

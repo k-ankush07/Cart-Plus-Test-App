@@ -14,11 +14,30 @@ function formatMoney(cents) {
   }).format(cents / 100);
 }
 
-pending review add this 
+async function getSellingPlans(handle) {
+  const res = await fetch(`/products/${handle}.js`);
+  const product = await res.json();
+  return product.selling_plan_groups || [];
+}
+
+function getAdditionalNotesHTML(blockId, settings, note = "") {
+  if (!settings?.enabled) return "";
+
+  return `
+    <div class="hub-additional-notes ${settings.placement}">
+      <p class="hub-notes-title">${settings.title}</p>
+      <textarea 
+        id="hub-cart-note-${blockId}" 
+        class="hub-notes-textarea"
+        placeholder="${settings.placeholder}"
+      >${note || ""}</textarea>
+    </div>
+  `;
+}
+
 window.getProductCardHTML = function (product) {
   const variants = product.variants || [];
   const mainImage = product?.images?.[0]?.src || product?.featured_image || "";
-
   const firstVariant = variants[0];
 
   const variantOptions = variants
@@ -309,7 +328,10 @@ function renderRewardsBar(blockId, cart, rewards) {
 
 window.hubCartRender = async function (drawer) {
   if (window._hubRenderInProgress) return;
+  window._subscriptionOpen = {};
+
   window._hubRenderInProgress = true;
+
   try {
     const res = await fetch("/cart.js");
     let cart = await res.json();
@@ -524,8 +546,8 @@ window.hubCartRender = async function (drawer) {
       footerRec.innerHTML = "";
     }
 
-    container.innerHTML = cart.items
-      .map((item) => {
+    const itemsHTML = await Promise.all(
+      cart.items.map(async (item) => {
         const hasDiscount = item.original_line_price !== item.final_line_price;
 
         const priceHtml = hasDiscount
@@ -560,7 +582,80 @@ window.hubCartRender = async function (drawer) {
 
         const isReward = !!item.properties?._hub_reward;
 
+        const subscriptionSettings =
+          window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;
+
+        const sellingPlan = item.selling_plan_allocation;
+
+        let sellingPlanHtml = "";
+
+        const planOptionsText =
+          subscriptionSettings?.planOptionsText ||
+          "{{selling_plan_group_name}} / {{selling_plan_name}}";
+
+        const groups = await getSellingPlans(item.handle);
+
+        if (groups.length > 0 && subscriptionSettings?.enabled) {
+          let options = "";
+
+          groups.forEach((group) => {
+            group.selling_plans.forEach((plan) => {
+              const optionText = planOptionsText
+                .replace("{{selling_plan_group_name}}", group.name)
+                .replace("{{selling_plan_name}}", plan.name);
+
+              options += `
+      <option value="${plan.id}" 
+        ${sellingPlan && plan.id === sellingPlan.selling_plan.id ? "selected" : ""}>
+        ${optionText}
+      </option>
+    `;
+            });
+          });
+
+          const selectedPlanName = sellingPlan
+            ? sellingPlan.selling_plan.name
+            : "Select subscription";
+
+          const groupName = groups?.[0]?.name || "Subscribe and save";
+
+          const buttonText = subscriptionSettings?.buttonText?.replace(
+            "{{selling_plan_group_name}}",
+            groupName,
+          );
+          const planHeadingText =
+            subscriptionSettings?.planHeadingText || "Subscription plans";
+
+          sellingPlanHtml = `
+     <div class="hub-selling-plan-wrapper ${
+       window._subscriptionOpen?.[item.key] || sellingPlan
+         ? "show-subscription"
+         : ""
+     }">
+      <div class="hub-one-time-view">
+        <button class="hub-upgrade-btn">
+            ${buttonText}
+        </button>
+      </div>
+
+     <div class="hub-subscription-view">
+        
+        <div class="hub-selected-plan">
+          Subscribe and save / ${selectedPlanName}
+        </div>
+        <select class="hub-selling-plan-select" data-key="${item.key}">
+   <option value="" disabled ${!sellingPlan ? "selected" : ""}>
+    ${planHeadingText}
+   </option>
+     ${options}
+    </select>
+      </div>
+    </div>
+    `;
+        }
+
         return `
+        <div class="hub-cart-for-item">
         <div class="hub-cart-item">
           <div class="hub-item-img-wrap">
             <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
@@ -599,9 +694,46 @@ window.hubCartRender = async function (drawer) {
             }
           </div>
           <div class="hub-item-total">${isReward ? `<span class="hub-price hub-price-free">FREE</span>` : priceHtml}</div>
+        </div>
+        <div class="hub-selling-plan-container">
+        ${sellingPlanHtml}
+        </div>
         </div>`;
-      })
-      .join("");
+      }),
+    );
+
+    container.innerHTML = itemsHTML.join("");
+    const notesSettings = window.__HUB_ACTIVE_CART__?.additionalNotesSettings;
+
+    const belowEl = document.getElementById(`hub-notes-below-${blockId}`);
+    const footerEl = document.getElementById(`hub-notes-footer-${blockId}`);
+
+    if (belowEl) belowEl.innerHTML = "";
+    if (footerEl) footerEl.innerHTML = "";
+
+    drawer
+      .querySelectorAll(".hub-additional-notes")
+      .forEach((el) => el.remove());
+
+    if (
+      notesSettings?.enabled &&
+      notesSettings.placement === "below_items" &&
+      cart.items.length > 0
+    ) {
+      if (belowEl) {
+        belowEl.innerHTML = getAdditionalNotesHTML(blockId, notesSettings, cart.note);
+      }
+    }
+
+    if (
+      notesSettings?.enabled &&
+      notesSettings.placement === "top_of_footer" &&
+      cart.items.length > 0
+    ) {
+      if (footerEl) {
+        footerEl.innerHTML = getAdditionalNotesHTML(blockId, notesSettings, cart.note);
+      }
+    }
 
     if (cart.total_discount > 0) {
       container.insertAdjacentHTML(
@@ -610,7 +742,6 @@ window.hubCartRender = async function (drawer) {
       );
     }
 
-    /* UPDATE FOOTER DISCOUNT STATUS */
     const hasAutoDiscount = cart.items.some(
       (i) => i.line_level_discount_allocations?.length > 0,
     );
@@ -640,3 +771,99 @@ window.hubCartRender = async function (drawer) {
     window._hubRenderInProgress = false;
   }
 };
+
+document.addEventListener("click", (e) => {
+  const upgradeBtn = e.target.closest(".hub-upgrade-btn");
+
+  if (upgradeBtn) {
+    const wrapper = upgradeBtn.closest(".hub-selling-plan-wrapper");
+    const select = wrapper.querySelector(".hub-selling-plan-select");
+    const key = select?.dataset.key;
+
+    if (key) {
+      window._subscriptionOpen[key] = true;
+    }
+    wrapper.classList.add("show-subscription");
+
+    if (select) {
+      const firstOption = select.querySelector("option:not([disabled])");
+
+      if (firstOption) {
+        select.value = firstOption.value;
+
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+  }
+
+  const backBtn = e.target.closest(".hub-back-to-one-time");
+  if (backBtn) {
+    const wrapper = backBtn.closest(".hub-selling-plan-wrapper");
+    const key = wrapper.querySelector(".hub-selling-plan-select")?.dataset.key;
+
+    if (key) {
+      window._subscriptionOpen[key] = false;
+    }
+
+    wrapper.classList.remove("show-subscription");
+  }
+});
+
+document.addEventListener("change", async (e) => {
+  const select = e.target.closest(".hub-selling-plan-select");
+  if (!select) return;
+
+  const key = select.dataset.key;
+  const selling_plan = select.value;
+
+  try {
+    await fetch("/cart/change.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: key,
+        quantity: 1,
+        selling_plan: selling_plan,
+      }),
+    });
+
+    document.dispatchEvent(new CustomEvent("cart:updated"));
+  } catch (err) {
+    console.error("Selling plan update error:", err);
+  }
+});
+
+function debounce(fn, delay) {
+  let t;
+  return function (...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+document.addEventListener(
+  "input",
+  debounce(async (e) => {
+    if (!e.target.classList.contains("hub-notes-textarea")) return;
+
+    const note = e.target.value;
+
+    try {
+      const res = await fetch("/cart/update.js", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ note }),
+      });
+
+      const data = await res.json();
+      console.log("NOTE SAVED:", data);
+
+    } catch (err) {
+      console.error("Note save error:", err);
+    }
+  }, 500)
+);

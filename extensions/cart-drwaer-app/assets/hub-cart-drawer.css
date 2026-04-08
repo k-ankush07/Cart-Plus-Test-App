@@ -778,3 +778,15 @@ cart-notification {
 .hub-empty-footer .hub-continue-shopping {
   display: none !important;
 }
+
+.hub-selling-plan-wrapper .hub-subscription-view {
+  display: none;
+}
+
+.hub-selling-plan-wrapper.show-subscription .hub-subscription-view {
+  display: block;
+}
+
+.hub-selling-plan-wrapper.show-subscription .hub-one-time-view {
+  display: none;
+}
