@@ -14,16 +14,84 @@ function formatMoney(cents) {
   }).format(cents / 100);
 }
 
+pending review add this 
+window.getProductCardHTML = function (product) {
+  const variants = product.variants || [];
+  const mainImage = product?.images?.[0]?.src || product?.featured_image || "";
+
+  const firstVariant = variants[0];
+
+  const variantOptions = variants
+    .map(
+      (v) => `
+      <option value="${v.id}" 
+        data-price="${Math.round(Number(v.price) * 100)}" 
+        data-image="${v.featured_image?.src || mainImage}">
+        ${v.title}
+      </option>
+    `,
+    )
+    .join("");
+
+  return `
+    <div class="hub-rec-product upcart-internal-component-upsell-tile">
+
+      <div class="upcart-internal-component-upsell-tile__info_count">
+
+        <div class="upcart-internal-component-upsell-tile__image-container">
+          <img class="hub-product-img"
+               src="${mainImage}"
+               alt="${product.title}" />
+        </div>
+
+        <div class="upcart-internal-component-upsell-tile__info">
+          <a href="/products/${product.handle}" 
+            class="upcart-internal-component-upsell-tile__title-link">
+            <h4 class="upcart-internal-component-upsell-tile__title">
+              ${product.title}
+            </h4>
+          </a>
+
+          <div class="price">
+            <span class="sale-price">
+              ${formatMoney(Math.round(Number(firstVariant?.price || 0) * 100))}
+            </span>
+          </div>
+        </div>
+
+        <div class="upcart-internal-component-upsell-tile__variant-row">
+          <select class="hub-variant-select">
+            ${variantOptions}
+          </select>
+        <button class="hub-add-btn" data-variant="${firstVariant?.id}">
+       Add
+      </button>
+        </div>
+
+      </div>
+    </div>
+  `;
+};
+
 async function maybeUpdateRewardProducts(cart, rewards) {
-  if (!rewards?.enabled || !rewards?.tiers?.length) return false;
+  if (rewards?.enabled || !rewards?.tiers?.length) return false;
   if (window._hubRewardUpdating) return false;
 
   const isQuantity = rewards.calculationType === "quantity";
 
-  const rewardCartItems = cart.items.filter((item) => item.properties?._hub_reward);
+  const rewardCartItems = cart.items.filter(
+    (item) => item.properties?._hub_reward,
+  );
   const rewardDeduction = isQuantity
     ? rewardCartItems.reduce((n, item) => n + item.quantity, 0)
-    : rewardCartItems.reduce((n, item) => n + (rewards.usePreDiscount ? item.original_line_price : item.final_line_price), 0) / 100;
+    : rewardCartItems.reduce(
+        (n, item) =>
+          n +
+          (rewards.usePreDiscount
+            ? item.original_line_price
+            : item.final_line_price),
+        0,
+      ) / 100;
 
   const rawValue = isQuantity
     ? cart.item_count
@@ -34,26 +102,28 @@ async function maybeUpdateRewardProducts(cart, rewards) {
   const cartValue = rawValue - rewardDeduction;
 
   // Collect all needed changes first, then apply atomically
-  const toAdd = [];    // { id, tierId }
+  const toAdd = []; // { id, tierId }
   const toRemove = []; // cart item keys
 
   for (const tier of rewards.tiers) {
     if (tier.type !== "product" && tier.type !== "shipping") continue;
     if (!tier.products?.length) continue;
 
-    const threshold = isQuantity ? (tier.minQuantity || 0) : (tier.minAmount || 0);
+    const threshold = isQuantity ? tier.minQuantity || 0 : tier.minAmount || 0;
     const reached = cartValue >= threshold;
 
     // All reward items already in cart for this tier (filter = ALL, not just first)
     const rewardItems = cart.items.filter(
-      (item) => String(item.properties?._hub_reward) === String(tier.id)
+      (item) => String(item.properties?._hub_reward) === String(tier.id),
     );
 
     if (reached) {
       // Add every available product not yet in cart
       for (const product of tier.products) {
         if (!product.available) continue;
-        const numericId = Number(product.id.replace("gid://shopify/ProductVariant/", ""));
+        const numericId = Number(
+          product.id.replace("gid://shopify/ProductVariant/", ""),
+        );
         if (!rewardItems.some((item) => item.variant_id === numericId)) {
           toAdd.push({ id: numericId, tierId: String(tier.id) });
         }
@@ -116,7 +186,7 @@ function renderRewardsBar(blockId, cart, rewards) {
   const el = document.getElementById(`hub-rewards-${blockId}`);
   if (!el) return;
 
-  if (!rewards?.enabled || !rewards?.tiers?.length) {
+  if (rewards?.enabled || !rewards?.tiers?.length) {
     el.style.display = "none";
     return;
   }
@@ -127,13 +197,23 @@ function renderRewardsBar(blockId, cart, rewards) {
   }
 
   const isQuantity = rewards.calculationType === "quantity";
-  const getTierValue = (tier) => isQuantity ? (tier.minQuantity || 0) : (tier.minAmount || 0);
+  const getTierValue = (tier) =>
+    isQuantity ? tier.minQuantity || 0 : tier.minAmount || 0;
 
   // Exclude reward items so the bar reflects qualifying spend only
-  const rewardCartItems = cart.items.filter((item) => item.properties?._hub_reward);
+  const rewardCartItems = cart.items.filter(
+    (item) => item.properties?._hub_reward,
+  );
   const rewardDeduction = isQuantity
     ? rewardCartItems.reduce((n, item) => n + item.quantity, 0)
-    : rewardCartItems.reduce((n, item) => n + (rewards.usePreDiscount ? item.original_line_price : item.final_line_price), 0) / 100;
+    : rewardCartItems.reduce(
+        (n, item) =>
+          n +
+          (rewards.usePreDiscount
+            ? item.original_line_price
+            : item.final_line_price),
+        0,
+      ) / 100;
 
   const rawTotal = isQuantity
     ? cart.item_count
@@ -143,7 +223,9 @@ function renderRewardsBar(blockId, cart, rewards) {
 
   const cartTotal = rawTotal - rewardDeduction;
 
-  const sorted = [...rewards.tiers].sort((a, b) => getTierValue(a) - getTierValue(b));
+  const sorted = [...rewards.tiers].sort(
+    (a, b) => getTierValue(a) - getTierValue(b),
+  );
   const len = sorted.length;
   const maxAmount = getTierValue(sorted[len - 1]) || 1;
 
@@ -165,8 +247,13 @@ function renderRewardsBar(blockId, cart, rewards) {
       const curr = sorted[i];
       const next = sorted[i + 1];
       if (cartTotal >= getTierValue(curr) && cartTotal < getTierValue(next)) {
-        const progress = (cartTotal - getTierValue(curr)) / (getTierValue(next) - getTierValue(curr));
-        return getStepPosition(i) + progress * (getStepPosition(i + 1) - getStepPosition(i));
+        const progress =
+          (cartTotal - getTierValue(curr)) /
+          (getTierValue(next) - getTierValue(curr));
+        return (
+          getStepPosition(i) +
+          progress * (getStepPosition(i + 1) - getStepPosition(i))
+        );
       }
     }
     return 100;
@@ -182,7 +269,9 @@ function renderRewardsBar(blockId, cart, rewards) {
     titleHtml = `<p class="hub-rewards-title" style="color:${textColor}">${rewards.successText || "All rewards unlocked!"}</p>`;
   } else if (currentTier) {
     const remaining = getTierValue(currentTier) - cartTotal;
-    const amountStr = isQuantity ? `${remaining} items` : formatMoney(remaining * 100);
+    const amountStr = isQuantity
+      ? `${remaining} items`
+      : formatMoney(remaining * 100);
     const raw = currentTier.title || "You're {AMOUNT} away!";
     titleHtml = `<p class="hub-rewards-title" style="color:${textColor}">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
   }
@@ -191,7 +280,9 @@ function renderRewardsBar(blockId, cart, rewards) {
     .map((tier, index) => {
       const pct = getStepPosition(index).toFixed(2);
       const done = cartTotal >= getTierValue(tier);
-      const iconColor = done ? (rewards.completeIconColor || "#ffffff") : (rewards.incompleteIconColor || "#000000");
+      const iconColor = done
+        ? rewards.completeIconColor || "#ffffff"
+        : rewards.incompleteIconColor || "#000000";
       const dotBg = done ? fillColor : trackColor;
 
       return `<div class="hub-rewards-milestone" style="left:${pct}%">
@@ -223,6 +314,14 @@ window.hubCartRender = async function (drawer) {
     const res = await fetch("/cart.js");
     let cart = await res.json();
 
+    const footer = drawer.querySelector(".hub-cart-footer");
+    if (footer) {
+      if (cart.items.length === 0) {
+        footer.classList.add("hub-empty-footer");
+      } else {
+        footer.classList.remove("hub-empty-footer");
+      }
+    }
     const blockId = window.HUB_CART_BLOCK_ID;
     const rewards = window.__HUB_ACTIVE_CART__?.rewardsSettings;
 
@@ -239,16 +338,18 @@ window.hubCartRender = async function (drawer) {
     /* ── ANNOUNCEMENT ── */
     const ann = window.__HUB_ACTIVE_CART__?.announcementSettings;
     const annBefore = document.getElementById(`hub-announcement-${blockId}`);
-    const annAfter  = document.getElementById(`hub-announcement-after-${blockId}`);
+    const annAfter = document.getElementById(
+      `hub-announcement-after-${blockId}`,
+    );
 
     if (annBefore) annBefore.style.display = "none";
-    if (annAfter)  annAfter.style.display  = "none";
+    if (annAfter) annAfter.style.display = "none";
 
-    if (!ann?.enabled) {
+    if (!ann?.enabled && cart.items.length > 0) {
       const isBefore = ann.position !== "after";
-      const target   = isBefore ? annBefore : annAfter;
+      const target = isBefore ? annBefore : annAfter;
       if (target) {
-        const height    = ann.height === "thick" ? "14px 20px" : "8px 20px";
+        const height = ann.height === "thick" ? "14px 20px" : "8px 20px";
         const timerText = ann.timer || "10:00";
 
         target.style.cssText = `
@@ -261,7 +362,10 @@ window.hubCartRender = async function (drawer) {
         `;
 
         target.innerHTML = ann.text
-          ? ann.text.replace("{TIMER}", `<span id="hub-timer-${blockId}">${timerText}</span>`)
+          ? ann.text.replace(
+              "{TIMER}",
+              `<span id="hub-timer-${blockId}">${timerText}</span>`,
+            )
           : "";
 
         if (ann.text?.includes("{TIMER}")) {
@@ -280,58 +384,201 @@ window.hubCartRender = async function (drawer) {
     /* ── REWARDS BAR ── */
     renderRewardsBar(blockId, cart, rewards);
 
-    /* EMPTY CART */
+    window.renderProducts = function (container, products, settings = {}) {
+      const layout = settings.layout || "block";
+
+      const html = products.map((p) => getProductCardHTML(p)).join("");
+
+      if (layout === "carousel") {
+        container.innerHTML = `
+      <div class="hub-slider">
+        <button class="hub-prev">‹</button>
+        <div class="hub-slider-track">
+          ${html}
+        </div>
+        <button class="hub-next">›</button>
+      </div>
+    `;
+      } else {
+        container.innerHTML = `
+      <div class="upcart-internal-upsell__vertical-layout-wrapper">
+        ${html}
+      </div>
+    `;
+      }
+
+      container.querySelectorAll(".hub-rec-product").forEach((card) => {
+        const select = card.querySelector(".hub-variant-select");
+        const priceEl = card.querySelector(".sale-price");
+        const imgEl = card.querySelector(".hub-product-img");
+
+        select.addEventListener("change", function () {
+          const selected = this.options[this.selectedIndex];
+
+          priceEl.textContent = formatMoney(Number(selected.dataset.price));
+          if (selected.dataset.image) imgEl.src = selected.dataset.image;
+        });
+      });
+
+      document.addEventListener("click", async (e) => {
+        const btn = e.target.closest(".hub-add-btn");
+        if (!btn) return;
+
+        const parent = btn.closest(".hub-rec-product");
+        const select = parent.querySelector(".hub-variant-select");
+
+        const variantId = select?.value || btn.dataset.variant;
+
+        await fetch("/cart/add.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: variantId, quantity: 1 }),
+        });
+
+        document.dispatchEvent(new CustomEvent("cart:updated"));
+      });
+
+      if (layout === "carousel") {
+        const track = container.querySelector(".hub-slider-track");
+        const prev = container.querySelector(".hub-prev");
+        const next = container.querySelector(".hub-next");
+
+        let index = 0;
+        const items = track.children;
+
+        function updateSlider() {
+          track.style.transform = `translateX(-${index * 100}%)`;
+        }
+
+        next.addEventListener("click", () => {
+          if (index < items.length - 1) {
+            index++;
+            updateSlider();
+          }
+        });
+
+        prev.addEventListener("click", () => {
+          if (index > 0) {
+            index--;
+            updateSlider();
+          }
+        });
+      }
+    };
+
     if (cart.items.length === 0) {
+      const recommendations =
+        window.__HUB_ACTIVE_CART__?.recommendationsSettings;
+
+      let recHTML = "";
+
+      if (!recommendations?.enabled) {
+        recHTML = `
+      <div class="hub-cart-recommendations">
+        <p class="hub-rec-subtitle">${recommendations.headerText || ""}</p>
+        <h3 class="hub-rec-title">${recommendations.productHeaderText || "You may also like"}</h3>
+        ${
+          recommendations.showShopNowButton
+            ? `<a href="${recommendations.buttonUrl}" class="hub-rec-btn">
+                ${recommendations.buttonText || "Shop Now"}
+               </a>`
+            : ""
+        }
+        <div id="hub-rec-products"></div>
+      </div>
+    `;
+      }
+
       container.innerHTML = `
-        <div class="hub-cart-empty">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#ccc" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/>
-          </svg>
-          <p>Your cart is empty</p>
-        </div>`;
+    <div class="hub-cart-empty">
+      <p class="hub-empty-title">Your cart is empty</p>
+    </div>
+  `;
+
+      const footerRec = document.getElementById(`hub-footer-rec-${blockId}`);
+
+      if (footerRec && !footerRec.innerHTML.trim()) {
+        footerRec.innerHTML = recHTML;
+      }
+
+      if (footer) {
+        footer.classList.add("hub-empty-footer");
+      }
+
+      if (!recommendations?.enabled) {
+        const recContainer = document.getElementById("hub-rec-products");
+
+        if (
+          recContainer &&
+          recContainer.children.length === 0 &&
+          !window._hubRecInitialized
+        ) {
+          loadCartRecommendations(recommendations);
+        }
+      }
       return;
     }
 
-    /* ── ITEMS ── */
-    container.innerHTML = cart.items.map((item) => {
-      const hasDiscount = item.original_line_price !== item.final_line_price;
+    const footerRec = document.getElementById(`hub-footer-rec-${blockId}`);
+    if (footerRec) {
+      footerRec.innerHTML = "";
+    }
 
-      const priceHtml = hasDiscount
-        ? `<span class="hub-price-original">${formatMoney(item.original_line_price)}</span>
+    container.innerHTML = cart.items
+      .map((item) => {
+        const hasDiscount = item.original_line_price !== item.final_line_price;
+
+        const priceHtml = hasDiscount
+          ? `<span class="hub-price-original">${formatMoney(item.original_line_price)}</span>
            <span class="hub-price">${formatMoney(item.final_line_price)}</span>`
-        : `<span class="hub-price">${formatMoney(item.final_line_price)}</span>`;
+          : `<span class="hub-price">${formatMoney(item.final_line_price)}</span>`;
 
-      const variantHtml = item.variant_title && item.variant_title !== "Default Title"
-        ? `<p class="hub-item-variant">${item.variant_title}</p>` : "";
+        const variantHtml =
+          item.variant_title && item.variant_title !== "Default Title"
+            ? `<p class="hub-item-variant">${item.variant_title}</p>`
+            : "";
 
-      const propertiesHtml = item.properties && Object.keys(item.properties).length > 0
-        ? Object.entries(item.properties)
-            .filter(([k]) => !k.startsWith("_"))
-            .map(([k, v]) => v ? `<p class="hub-item-variant">${k}: ${v}</p>` : "")
-            .join("")
-        : "";
+        const propertiesHtml =
+          item.properties && Object.keys(item.properties).length > 0
+            ? Object.entries(item.properties)
+                .filter(([k]) => !k.startsWith("_"))
+                .map(([k, v]) =>
+                  v ? `<p class="hub-item-variant">${k}: ${v}</p>` : "",
+                )
+                .join("")
+            : "";
 
-      const discountHtml = item.line_level_discount_allocations?.length > 0
-        ? item.line_level_discount_allocations.map((d) =>
-            `<p class="hub-item-discount">- ${d.discount_application.title} (${formatMoney(d.amount)})</p>`
-          ).join("") : "";
+        const discountHtml =
+          item.line_level_discount_allocations?.length > 0
+            ? item.line_level_discount_allocations
+                .map(
+                  (d) =>
+                    `<p class="hub-item-discount">- ${d.discount_application.title} (${formatMoney(d.amount)})</p>`,
+                )
+                .join("")
+            : "";
 
-      const isReward = !!item.properties?._hub_reward;
+        const isReward = !!item.properties?._hub_reward;
 
-      return `
+        return `
         <div class="hub-cart-item">
           <div class="hub-item-img-wrap">
             <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
           </div>
           <div class="hub-item-info">
             <a href="/products/${item.handle}" class="hub-item-title">${item.product_title || item.title}</a>
-            ${isReward
-              ? `<p class="hub-item-reward-badge">Free gift</p>`
-              : `<p class="hub-item-unit-price">${formatMoney(item.price)}</p>`}
+            ${
+              isReward
+                ? `<p class="hub-item-reward-badge">Free gift</p>`
+                : `<p class="hub-item-unit-price">${formatMoney(item.price)}</p>`
+            }
             ${variantHtml}
             ${propertiesHtml}
             ${discountHtml}
-            ${isReward ? "" : `
+            ${
+              isReward
+                ? ""
+                : `
             <div class="hub-item-actions">
               <div class="hub-qty-control">
                 <button class="hub-qty-btn" onclick="updateQty('${item.key}', ${item.quantity - 1})">−</button>
@@ -348,26 +595,35 @@ window.hubCartRender = async function (drawer) {
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
               </button>
-            </div>`}
+            </div>`
+            }
           </div>
           <div class="hub-item-total">${isReward ? `<span class="hub-price hub-price-free">FREE</span>` : priceHtml}</div>
         </div>`;
-    }).join("");
+      })
+      .join("");
 
-    /* SAVINGS */
     if (cart.total_discount > 0) {
-      container.insertAdjacentHTML("beforeend",
-        `<p class="hub-savings">You saved ${formatMoney(cart.total_discount)}</p>`);
+      container.insertAdjacentHTML(
+        "beforeend",
+        `<p class="hub-savings">You saved ${formatMoney(cart.total_discount)}</p>`,
+      );
     }
 
     /* UPDATE FOOTER DISCOUNT STATUS */
-    const hasAutoDiscount = cart.items.some((i) => i.line_level_discount_allocations?.length > 0);
+    const hasAutoDiscount = cart.items.some(
+      (i) => i.line_level_discount_allocations?.length > 0,
+    );
     const code = cart.discount_codes?.[0]?.code;
     const hasRealDiscount = cart.total_discount > 0;
     const hasManualDiscount = code && hasRealDiscount;
-    const appliedTitle = cart.items[0]?.line_level_discount_allocations?.[0]?.discount_application?.title;
+    const appliedTitle =
+      cart.items[0]?.line_level_discount_allocations?.[0]?.discount_application
+        ?.title;
 
-    const discountStatus = document.getElementById(`hub-discount-status-${blockId}`);
+    const discountStatus = document.getElementById(
+      `hub-discount-status-${blockId}`,
+    );
     if (discountStatus) {
       discountStatus.innerHTML = hasManualDiscount
         ? `<div class="hub-discount-applied">
@@ -375,10 +631,9 @@ window.hubCartRender = async function (drawer) {
              <button onclick="removeDiscountCode()" class="hub-discount-remove">Remove</button>
            </div>`
         : hasAutoDiscount
-        ? `<div class="hub-discount-auto">Automatic discount applied</div>`
-        : "";
+          ? `<div class="hub-discount-auto">Automatic discount applied</div>`
+          : "";
     }
-
   } catch (err) {
     console.error("Cart render error:", err);
   } finally {

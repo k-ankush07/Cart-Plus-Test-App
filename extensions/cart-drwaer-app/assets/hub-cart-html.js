@@ -32,14 +32,30 @@ window.injectCartHTML = function (blockId, root) {
       <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;"></div>
 
       <!-- ITEMS (scrollable) -->
-      <div class="hub-cart-items"></div>
+      <div class="hub-cart-items">
+        <!-- skeleton shown while cart data loads -->
+        <div class="hub-skeleton-lines">
+          <div class="hub-skeleton hub-skeleton-line" style="width:65%;"></div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:4px;"></div>
+        </div>
+        <div class="hub-skeleton-item">
+          <div class="hub-skeleton hub-skeleton-img"></div>
+          <div class="hub-skeleton-info">
+            <div class="hub-skeleton hub-skeleton-line" style="width:90%;"></div>
+            <div class="hub-skeleton hub-skeleton-line" style="width:55%;"></div>
+            <div class="hub-skeleton hub-skeleton-line" style="width:45%;"></div>
+            <div class="hub-skeleton hub-skeleton-line" style="width:60%;height:28px;border-radius:4px;margin-top:4px;"></div>
+          </div>
+        </div>
+      </div>
 
       <!-- ANNOUNCEMENT (position: after) -->
       <div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>
 
       <!-- FOOTER (fixed bottom) -->
+       <div id="hub-footer-rec-${blockId}"></div> 
+       
       <div class="hub-cart-footer">
-
         <!-- DISCOUNT -->
         <div id="hub-discount-status-${blockId}"></div>
         <div class="hub-discount-input-row">
@@ -57,6 +73,10 @@ window.injectCartHTML = function (blockId, root) {
 
         <!-- CHECKOUT -->
         <a href="/checkout" class="hub-cart-checkout-btn">Check out</a>
+        <a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping"
+           onclick="(function(e){e.preventDefault();document.getElementById('hub-close-${blockId}').click();})(event)">
+          Or continue shopping
+        </a>
       </div>
 
     </div>

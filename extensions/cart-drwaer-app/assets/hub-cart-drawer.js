@@ -1,4 +1,5 @@
-const apiUrl = "https://ebc3-2401-4900-1c6f-9a87-b999-5f1-b9d4-31c.ngrok-free.app";
+const apiUrl =
+  "https://ebc3-2401-4900-1c6f-9a87-b999-5f1-b9d4-31c.ngrok-free.app";
 
 (function () {
   const originalFetch = window.fetch;
@@ -18,10 +19,13 @@ const apiUrl = "https://ebc3-2401-4900-1c6f-9a87-b999-5f1-b9d4-31c.ngrok-free.ap
     ) {
       try {
         const data = await response.clone().json();
-        document.dispatchEvent(new CustomEvent("cart:updated", { detail: data }));
+        document.dispatchEvent(
+          new CustomEvent("cart:updated", { detail: data }),
+        );
       } catch (_) {
-        // Non-JSON response (e.g. 429) — still dispatch so UI updates
-        document.dispatchEvent(new CustomEvent("cart:updated", { detail: null }));
+        document.dispatchEvent(
+          new CustomEvent("cart:updated", { detail: null }),
+        );
       }
     }
 
@@ -158,7 +162,11 @@ const apiUrl = "https://ebc3-2401-4900-1c6f-9a87-b999-5f1-b9d4-31c.ngrok-free.ap
     }
   }
 
-  window.addEventListener("load", initCart);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCart);
+  } else {
+    initCart();
+  }
 })();
 
 // ── Announcement countdown timer ──
@@ -168,9 +176,10 @@ window.startAnnTimer = function (blockId, timeStr) {
   if (_annTimerInterval) clearInterval(_annTimerInterval);
 
   const parts = timeStr.split(":").map(Number);
-  let totalSeconds = parts.length === 2
-    ? parts[0] * 60 + parts[1]
-    : parts[0] * 3600 + parts[1] * 60 + (parts[2] || 0);
+  let totalSeconds =
+    parts.length === 2
+      ? parts[0] * 60 + parts[1]
+      : parts[0] * 3600 + parts[1] * 60 + (parts[2] || 0);
 
   function fmt(s) {
     const m = Math.floor(s / 60);
@@ -181,7 +190,10 @@ window.startAnnTimer = function (blockId, timeStr) {
   function tick() {
     const el = document.getElementById(`hub-timer-${blockId}`);
     if (el) el.textContent = fmt(totalSeconds);
-    if (totalSeconds <= 0) { clearInterval(_annTimerInterval); return; }
+    if (totalSeconds <= 0) {
+      clearInterval(_annTimerInterval);
+      return;
+    }
     totalSeconds--;
   }
 
@@ -190,11 +202,11 @@ window.startAnnTimer = function (blockId, timeStr) {
 };
 
 (function () {
-  window.addEventListener("load", async function () {
+  async function fetchCartSettings() {
     const shop = window.__SHOPIFY_SHOP__?.domain;
 
-    if (!shop ) {
-      console.warn(" Shop not set");
+    if (!shop) {
+      console.warn("Shop not set");
       return;
     }
 
@@ -212,17 +224,133 @@ window.startAnnTimer = function (blockId, timeStr) {
       }
 
       const publishedCart = result.data.find(
-        (cart) => cart.status === "published"
+        (cart) => cart.status === "published",
       );
 
       if (publishedCart) {
         console.log("Published cart found:", publishedCart);
         window.__HUB_ACTIVE_CART__ = publishedCart;
+        loadCartRecommendations(publishedCart.recommendationsSettings);
       } else {
         console.log("No published cart found for this shop");
       }
     } catch (err) {
       console.error("Cart settings fetch error:", err);
     }
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", fetchCartSettings);
+  } else {
+    fetchCartSettings();
+  }
 })();
+
+window.loadCartRecommendations = async function (settings = {}) {
+  try {
+    const container = document.getElementById("hub-rec-products");
+    if (!container) return;
+
+    const limit = settings.maxRecommendations || settings.productCount || 4;
+
+    const sourceType = settings.sourceType;
+
+    const selectedItems = settings?.selectedItems || [];
+
+    // 🛒 Cart
+    const cartRes = await fetch("/cart.js");
+    const cart = await cartRes.json();
+    const cartHandles = new Set(cart.items.map((item) => item.handle));
+
+    let finalProducts = [];
+
+    if (sourceType === "products") {
+      const selectedProductIds =
+        settings?.selectedItems?.products?.map((gid) => gid.split("/").pop()) ||
+        [];
+
+      if (selectedProductIds.length) {
+        let allProducts = [];
+        let page = 1;
+        let more = true;
+
+        while (more) {
+          const res = await fetch(`/products.json?limit=250&page=${page}`);
+          const data = await res.json();
+
+          if (data.products.length > 0) {
+            allProducts.push(...data.products);
+            page++;
+          } else {
+            more = false;
+          }
+        }
+
+        finalProducts = allProducts.filter((p) =>
+          selectedProductIds.includes(String(p.id)),
+        );
+      }
+    }
+
+    else if (sourceType === "collections") {
+      const collectionIds = selectedItems.map((gid) => gid.split("/").pop());
+
+      const colRes = await fetch(`/collections.json`);
+      const colData = await colRes.json();
+
+      const matchedCollections = colData.collections.filter((c) =>
+        collectionIds.includes(String(c.id)),
+      );
+
+      let allProducts = [];
+
+      for (const col of matchedCollections) {
+        let page = 1;
+        let more = true;
+
+        while (more) {
+          const res = await fetch(
+            `/collections/${col.handle}/products.json?limit=250&page=${page}`,
+          );
+          const data = await res.json();
+
+          if (data.products.length > 0) {
+            allProducts.push(...data.products);
+            page++;
+          } else {
+            more = false;
+          }
+        }
+      }
+
+      finalProducts = allProducts;
+    }
+
+    if (!finalProducts.length) {
+
+      let allProducts = [];
+      let page = 1;
+      let more = true;
+
+      while (more) {
+        const res = await fetch(`/products.json?limit=250&page=${page}`);
+        const data = await res.json();
+
+        if (data.products.length > 0) {
+          allProducts.push(...data.products);
+          page++;
+        } else {
+          more = false;
+        }
+      }
+
+      finalProducts = allProducts;
+    }
+    finalProducts = finalProducts.filter((p) => !cartHandles.has(p.handle));
+
+    finalProducts = finalProducts.slice(0, limit);
+    window.renderProducts(container, finalProducts, settings);
+  } catch (err) {
+    console.error(" Error:", err);
+  }
+};
