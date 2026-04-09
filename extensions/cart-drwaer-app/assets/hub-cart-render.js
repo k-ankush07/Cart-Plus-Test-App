@@ -404,6 +404,28 @@ window.hubCartRender = async function (drawer) {
     /* ── REWARDS BAR ── */
     renderRewardsBar(blockId, cart, rewards);
 
+    /* ── DISCOUNT CODES ── */
+    const discountCodesSettings =
+      window.__HUB_ACTIVE_CART__?.discountCodesSettings;
+    const discountRow = document.getElementById(`hub-discount-row-${blockId}`);
+    if (discountRow) {
+      if (discountCodesSettings?.enabled !== false) {
+        discountRow.style.display = "none";
+      } else {
+        discountRow.style.display = "";
+        const discountInput = discountRow.querySelector("#discount-code-input");
+        const discountApplyBtn = discountRow.querySelector(
+          ".hub-discount-apply-btn",
+        );
+        if (discountInput && discountCodesSettings.placeholder) {
+          discountInput.placeholder = discountCodesSettings.placeholder;
+        }
+        if (discountApplyBtn && discountCodesSettings.buttonText) {
+          discountApplyBtn.textContent = discountCodesSettings.buttonText;
+        }
+      }
+    }
+
     window.renderProducts = function (container, products, settings = {}) {
       const layout = settings.layout || "block";
 
@@ -554,7 +576,6 @@ window.hubCartRender = async function (drawer) {
 
     const itemsHTML = await Promise.all(
       cart.items.map(async (item) => {
-        
         if (item.properties?._hub_addon) {
           return "";
         }
@@ -605,7 +626,7 @@ window.hubCartRender = async function (drawer) {
 
         const groups = await getSellingPlans(item.handle);
 
-        if (groups.length > 0 && subscriptionSettings?.enabled) {
+        if (groups.length > 0 && !subscriptionSettings?.enabled) {
           let options = "";
 
           groups.forEach((group) => {

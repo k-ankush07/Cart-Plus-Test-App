@@ -71,10 +71,10 @@ window.injectCartHTML = function (blockId, root) {
         <div id="hub-notes-footer-${blockId}"></div>
         <!-- DISCOUNT -->
         <div id="hub-discount-status-${blockId}"></div>
-        <div class="hub-discount-input-row">
-          <input type="text" id="discount-code-input" placeholder="Discount code" class="hub-discount-input" />
-          <button onclick="applyDiscountCode()" class="hub-discount-apply-btn">Apply</button>
-        </div>
+        <div class="hub-discount-input-row" id="hub-discount-row-${blockId}">
+        <input type="text" id="discount-code-input" placeholder="Discount code" class="hub-discount-input" />
+       <button onclick="applyDiscountCode()" class="hub-discount-apply-btn">Apply</button>
+      </div>
         <p id="discount-message" class="hub-discount-message"></p>
 
         <!-- TOTAL -->
@@ -93,6 +93,6 @@ window.injectCartHTML = function (blockId, root) {
       </div>
 
     </div>
-    `
+    `,
   );
 };

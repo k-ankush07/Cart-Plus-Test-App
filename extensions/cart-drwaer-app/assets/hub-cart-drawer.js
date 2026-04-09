@@ -1,5 +1,5 @@
 const apiUrl =
-  "https://6e4a-2401-4900-1c71-48c-c50a-7b04-be03-2327.ngrok-free.app";
+  "https://0844-2401-4900-1c71-48c-997b-113a-6a24-2141.ngrok-free.app";
 
 (function () {
   const originalFetch = window.fetch;
