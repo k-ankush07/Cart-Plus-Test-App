@@ -27,6 +27,9 @@ window.injectCartHTML = function (blockId, root) {
       <!-- ANNOUNCEMENT (position: before) -->
       <div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>
 
+      <!-- UPSSELLS (position: top of cart) -->
+      <div id="hub-upsell-top-${blockId}" class="hub-upsell"></div>
+
       <!-- REWARDS -->
       <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;"></div>
 
@@ -54,10 +57,16 @@ window.injectCartHTML = function (blockId, root) {
       <!-- ANNOUNCEMENT (position: after) -->
       <div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>
 
+      <!-- UPSSELLS (position: bottom of cart) -->
+      <div id="hub-upsell-bottom-${blockId}" class="hub-upsell"></div>
+
       <!-- FOOTER (fixed bottom) -->
        <div id="hub-footer-rec-${blockId}"></div> 
        
       <div class="hub-cart-footer">
+         <!-- ── ADD-ONS ── -->
+        <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
+
           <!-- NOTES (position: top of footer) -->
         <div id="hub-notes-footer-${blockId}"></div>
         <!-- DISCOUNT -->

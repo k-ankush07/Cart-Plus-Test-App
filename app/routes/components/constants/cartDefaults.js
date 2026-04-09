@@ -129,6 +129,7 @@ export const defaultAddonsSettings = {
   includeInItemCount: true,
   autoFulfill: true,
   includeTracking: true,
+  saveShippingProtectionWithOrder: false,
 };
 
 export const defaultDiscountCodesSettings = {

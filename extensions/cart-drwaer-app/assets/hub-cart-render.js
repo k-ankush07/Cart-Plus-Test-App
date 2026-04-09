@@ -21,7 +21,7 @@ async function getSellingPlans(handle) {
 }
 
 function getAdditionalNotesHTML(blockId, settings, note = "") {
-  if (!settings?.enabled) return "";
+  if (settings?.enabled) return "";
 
   return `
     <div class="hub-additional-notes ${settings.placement}">
@@ -120,7 +120,6 @@ async function maybeUpdateRewardProducts(cart, rewards) {
 
   const cartValue = rawValue - rewardDeduction;
 
-  // Collect all needed changes first, then apply atomically
   const toAdd = []; // { id, tierId }
   const toRemove = []; // cart item keys
 
@@ -157,7 +156,6 @@ async function maybeUpdateRewardProducts(cart, rewards) {
   window._hubRewardUpdating = true;
   let success = false;
   try {
-    // Add each product individually so one failure does not block others
     for (const p of toAdd) {
       const res = await fetch("/cart/add.js", {
         method: "POST",
@@ -329,7 +327,7 @@ function renderRewardsBar(blockId, cart, rewards) {
 window.hubCartRender = async function (drawer) {
   if (window._hubRenderInProgress) return;
   window._subscriptionOpen = {};
-
+  window._upsellCache = window._upsellCache || {};
   window._hubRenderInProgress = true;
 
   try {
@@ -492,6 +490,14 @@ window.hubCartRender = async function (drawer) {
       const recommendations =
         window.__HUB_ACTIVE_CART__?.recommendationsSettings;
 
+      const upsellTop = document.getElementById(`hub-upsell-top-${blockId}`);
+      const upsellBottom = document.getElementById(
+        `hub-upsell-bottom-${blockId}`,
+      );
+
+      if (upsellTop) upsellTop.innerHTML = "";
+      if (upsellBottom) upsellBottom.innerHTML = "";
+
       let recHTML = "";
 
       if (!recommendations?.enabled) {
@@ -548,6 +554,10 @@ window.hubCartRender = async function (drawer) {
 
     const itemsHTML = await Promise.all(
       cart.items.map(async (item) => {
+        
+        if (item.properties?._hub_addon) {
+          return "";
+        }
         const hasDiscount = item.original_line_price !== item.final_line_price;
 
         const priceHtml = hasDiscount
@@ -703,6 +713,156 @@ window.hubCartRender = async function (drawer) {
     );
 
     container.innerHTML = itemsHTML.join("");
+
+    const addonsSettings = window.__HUB_ACTIVE_CART__?.addonsSettings;
+    const addonsEl = document.getElementById(`hub-addons-${blockId}`);
+
+    if (!addonsEl || addonsSettings?.enabled || cart.items.length === 0) {
+      if (addonsEl) addonsEl.style.display = "none";
+    } else {
+      const type = addonsSettings.type;
+      const isShipping = type === "shipping_protection";
+      const isProduct = type === "product_addon";
+
+      const rawVariantId = isShipping
+        ? addonsSettings.customShippingProduct?.variantId
+        : isProduct
+          ? addonsSettings.selectedProduct?.id
+          : null;
+
+      const variantId = rawVariantId?.replace(
+        "gid://shopify/ProductVariant/",
+        "",
+      );
+
+      if (!variantId || (!isShipping && !isProduct)) {
+        addonsEl.style.display = "none";
+      } else {
+        const isInCart = cart.items.some(
+          (i) => String(i.variant_id) === String(variantId),
+        );
+        const price = formatMoney(
+          Math.round(
+            Number(
+              isShipping
+                ? addonsSettings.price
+                : addonsSettings.selectedProduct?.price,
+            ) * 100,
+          ),
+        );
+
+        // ── Render HTML ──
+        addonsEl.style.display = "block";
+        if (isShipping) {
+          addonsEl.innerHTML = `
+        <div class="hub-addon-shipping-protection">
+          <div class="hub-addon-sp-info">
+            <p class="hub-addon-sp-title">${addonsSettings.title || "Shipping Protection"}</p>
+            <p class="hub-addon-sp-desc">${addonsSettings.description || ""}</p>
+          </div>
+          <div class="hub-addon-sp-right">
+            <span class="hub-addon-sp-price">${price}</span>
+            <label class="hub-addon-sp-toggle">
+              <input type="checkbox" id="hub-sp-toggle-${blockId}" class="hub-sp-checkbox"
+                data-variant="${variantId}" ${isInCart ? "checked" : ""} />
+              <span class="hub-addon-sp-slider"></span>
+            </label>
+          </div>
+        </div>`;
+        } else {
+          const selected = addonsSettings.selectedProduct;
+          addonsEl.innerHTML = `
+        <div class="hub-addon-product">
+          ${selected.image ? `<img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img" />` : ""}
+          <div class="hub-addon-product-info">
+            <p class="hub-addon-product-title">${selected.title || ""}</p>
+            <span class="hub-addon-product-price">${price}</span>
+          </div>
+          <label class="hub-addon-sp-toggle">
+            <input type="checkbox" id="hub-addon-toggle-${blockId}" class="hub-addon-checkbox"
+              data-variant="${variantId}" ${isInCart ? "checked" : ""} />
+            <span class="hub-addon-sp-slider"></span>
+          </label>
+        </div>`;
+        }
+
+        // ── Wire toggle ──
+        const checkboxId = isShipping
+          ? `hub-sp-toggle-${blockId}`
+          : `hub-addon-toggle-${blockId}`;
+        const checkbox = addonsEl.querySelector(`#${checkboxId}`);
+
+        if (checkbox) {
+          checkbox.addEventListener("change", async function () {
+            const vid = this.dataset.variant;
+
+            if (this.checked) {
+              await fetch("/cart/add.js", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id: Number(vid),
+                  quantity: 1,
+                  properties: {
+                    _hub_addon: isShipping
+                      ? "shipping_protection"
+                      : "product_addon",
+                  },
+                }),
+              });
+            } else {
+              const latestCart = await (await fetch("/cart.js")).json();
+              const match = latestCart.items.find(
+                (i) => String(i.variant_id) === String(vid),
+              );
+              if (match) {
+                await fetch("/cart/change.js", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ id: match.key, quantity: 0 }),
+                });
+              }
+            }
+
+            document.dispatchEvent(new CustomEvent("cart:updated"));
+          });
+        }
+      }
+    }
+
+    const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
+
+    if (!upsellSettings?.enabled && cart.items.length > 0) {
+      const productId = cart.items[0].product_id;
+
+      const upsellProducts = await window.getUpsellProducts(
+        upsellSettings,
+        productId,
+      );
+
+      const position = upsellSettings.position || "bottom";
+
+      let upsellContainer = null;
+
+      if (position === "top") {
+        upsellContainer = document.getElementById(`hub-upsell-top-${blockId}`);
+      } else {
+        upsellContainer = document.getElementById(
+          `hub-upsell-bottom-${blockId}`,
+        );
+      }
+
+      if (upsellContainer) {
+        upsellContainer.innerHTML = "";
+
+        if (upsellProducts.length > 0) {
+          window.renderProducts(upsellContainer, upsellProducts, {
+            layout: upsellSettings.direction,
+          });
+        }
+      }
+    }
+
     const notesSettings = window.__HUB_ACTIVE_CART__?.additionalNotesSettings;
 
     const belowEl = document.getElementById(`hub-notes-below-${blockId}`);
@@ -716,22 +876,30 @@ window.hubCartRender = async function (drawer) {
       .forEach((el) => el.remove());
 
     if (
-      notesSettings?.enabled &&
+      notesSettings?.enabled === false &&
       notesSettings.placement === "below_items" &&
       cart.items.length > 0
     ) {
       if (belowEl) {
-        belowEl.innerHTML = getAdditionalNotesHTML(blockId, notesSettings, cart.note);
+        belowEl.innerHTML = getAdditionalNotesHTML(
+          blockId,
+          notesSettings,
+          cart.note,
+        );
       }
     }
 
     if (
-      notesSettings?.enabled &&
+      notesSettings?.enabled === false &&
       notesSettings.placement === "top_of_footer" &&
       cart.items.length > 0
     ) {
       if (footerEl) {
-        footerEl.innerHTML = getAdditionalNotesHTML(blockId, notesSettings, cart.note);
+        footerEl.innerHTML = getAdditionalNotesHTML(
+          blockId,
+          notesSettings,
+          cart.note,
+        );
       }
     }
 
@@ -771,99 +939,3 @@ window.hubCartRender = async function (drawer) {
     window._hubRenderInProgress = false;
   }
 };
-
-document.addEventListener("click", (e) => {
-  const upgradeBtn = e.target.closest(".hub-upgrade-btn");
-
-  if (upgradeBtn) {
-    const wrapper = upgradeBtn.closest(".hub-selling-plan-wrapper");
-    const select = wrapper.querySelector(".hub-selling-plan-select");
-    const key = select?.dataset.key;
-
-    if (key) {
-      window._subscriptionOpen[key] = true;
-    }
-    wrapper.classList.add("show-subscription");
-
-    if (select) {
-      const firstOption = select.querySelector("option:not([disabled])");
-
-      if (firstOption) {
-        select.value = firstOption.value;
-
-        select.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-    }
-  }
-
-  const backBtn = e.target.closest(".hub-back-to-one-time");
-  if (backBtn) {
-    const wrapper = backBtn.closest(".hub-selling-plan-wrapper");
-    const key = wrapper.querySelector(".hub-selling-plan-select")?.dataset.key;
-
-    if (key) {
-      window._subscriptionOpen[key] = false;
-    }
-
-    wrapper.classList.remove("show-subscription");
-  }
-});
-
-document.addEventListener("change", async (e) => {
-  const select = e.target.closest(".hub-selling-plan-select");
-  if (!select) return;
-
-  const key = select.dataset.key;
-  const selling_plan = select.value;
-
-  try {
-    await fetch("/cart/change.js", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: key,
-        quantity: 1,
-        selling_plan: selling_plan,
-      }),
-    });
-
-    document.dispatchEvent(new CustomEvent("cart:updated"));
-  } catch (err) {
-    console.error("Selling plan update error:", err);
-  }
-});
-
-function debounce(fn, delay) {
-  let t;
-  return function (...args) {
-    clearTimeout(t);
-    t = setTimeout(() => fn.apply(this, args), delay);
-  };
-}
-
-document.addEventListener(
-  "input",
-  debounce(async (e) => {
-    if (!e.target.classList.contains("hub-notes-textarea")) return;
-
-    const note = e.target.value;
-
-    try {
-      const res = await fetch("/cart/update.js", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ note }),
-      });
-
-      const data = await res.json();
-      console.log("NOTE SAVED:", data);
-
-    } catch (err) {
-      console.error("Note save error:", err);
-    }
-  }, 500)
-);

@@ -17,7 +17,8 @@ import {
 import { DeliveryIcon, ProductIcon } from "@shopify/polaris-icons";
 import Products from "../ui/Products";
 
-export default function AddOnsSettings({ addonsSettings, handleChange, currency }) {
+export default function AddOnsSettings({ addonsSettings, handleChange, currency, }) {
+
     const [productModalOpen, setProductModalOpen] = useState(false);
     const [modalKey, setModalKey] = useState(0);
     const [tempProduct, setTempProduct] = useState(addonsSettings.selectedProduct || null);
@@ -64,6 +65,52 @@ export default function AddOnsSettings({ addonsSettings, handleChange, currency 
             {label}
         </button>
     );
+
+    useEffect(() => {
+        if (
+            addonsSettings.type !== "shipping_protection" ||
+            !addonsSettings.title ||
+            !addonsSettings.description ||
+            !addonsSettings.price
+        ) return;
+
+        const timer = setTimeout(async () => {
+            await createOrUpdateShippingProduct();
+        }, 1500);
+
+        return () => clearTimeout(timer); 
+
+    }, [addonsSettings.title, addonsSettings.description, addonsSettings.price]);
+
+    const createOrUpdateShippingProduct = async () => {
+        try {
+            const res = await fetch(`/api/create-or-update-shipping`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: addonsSettings.title,
+                    description: addonsSettings.description,
+                    price: addonsSettings.price,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                update("customShippingProduct", {
+                    productId: data.productId,
+                    variantId: data.variantId,
+                });
+                shopify.toast.show(data.updated ? "Shipping product updated!" : "Shipping product created!");
+            } else {
+                shopify.toast.show("Failed to save product", { isError: true });
+            }
+
+        } catch (err) {
+            console.error(err);
+            shopify.toast.show("Something went wrong", { isError: true });
+        }
+    };
 
     return (
         <BlockStack gap="400">
@@ -216,7 +263,7 @@ export default function AddOnsSettings({ addonsSettings, handleChange, currency 
                                 label="Accept offer by default"
                                 checked={false}
                                 disabled
-                                onChange={() => {}}
+                                onChange={() => { }}
                             />
                             <Badge tone="warning">Deprecated</Badge>
                         </InlineStack>

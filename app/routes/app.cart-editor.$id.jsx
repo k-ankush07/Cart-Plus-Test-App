@@ -253,7 +253,7 @@ export default function CartEditor() {
   const handleSave = async () => {
     try {
       const cartId = window.location.pathname.split("/").pop();
-
+     
       await updateCart(apiUrl, cartId, {
         designSettings,
         headerSettings,

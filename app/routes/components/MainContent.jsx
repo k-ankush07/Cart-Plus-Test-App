@@ -84,6 +84,9 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 addonsSettings={addonsSettings}
                 handleChange={handleChange}
                 currency={currency}
+                shop={shop}
+                accessToken={accessToken}
+                apiUrl={apiUrl}
             />
         ),
         "Discount codes": (
