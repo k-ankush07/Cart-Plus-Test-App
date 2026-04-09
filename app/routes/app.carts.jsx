@@ -38,20 +38,18 @@ export default function AppCarts() {
         setLoading(true);
 
         try {
-            const res = await createCart(apiUrl, {
+            const data = await createCart(apiUrl, {
                 shop: shop.myshopifyDomain,
                 shopEmail: shop.email,
                 storeOwner: shop.name,
             });
-
-            const data = await res.json();
 
             if (data.success) {
                 navigate(`/app/cart-editor/${data.data.cartId}`, {
                     replace: true,
                 });
             }
-
+            shopify.toast.show(data.updated ? "CreateCart" : "Cart updated successfully", {});
         } catch (err) {
             console.error(err);
         } finally {

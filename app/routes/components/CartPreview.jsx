@@ -58,12 +58,9 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 <div className="cart-app__body upcart-cart-body">
                     {activeTab !== "Recommendations" && (
                         <>
-                            {/* above_announcements */}
-                            <CustomHtml cartSettings={cartSettings} position="above_announcements" />
-
                             {!announcementSettings.enabled &&
                                 announcementSettings.position === "before" && (
-                                    <Announcements announcementSettings={announcementSettings} />
+                                    <Announcements announcementSettings={announcementSettings} cartSettings ={cartSettings} />
                                 )}
 
                             {trustBadgesSettings?.position === "top" && (
@@ -97,7 +94,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
 
                             {!announcementSettings.enabled &&
                                 announcementSettings.position === "after" && (
-                                    <Announcements announcementSettings={announcementSettings} />
+                                    <Announcements announcementSettings={announcementSettings} cartSettings={cartSettings} />
                                 )}
                         </>
                     )}

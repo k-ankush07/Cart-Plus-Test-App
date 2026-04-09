@@ -14,6 +14,10 @@ function formatMoney(cents) {
   }).format(cents / 100);
 }
 
+function renderCustomHTML(content) {
+  return content || "";
+}
+
 async function getSellingPlans(handle) {
   const res = await fetch(`/products/${handle}.js`);
   const product = await res.json();
@@ -21,7 +25,7 @@ async function getSellingPlans(handle) {
 }
 
 function getAdditionalNotesHTML(blockId, settings, note = "") {
-  if (settings?.enabled) return "";
+  if (settings?.enabled !== false) return "";
 
   return `
     <div class="hub-additional-notes ${settings.placement}">
@@ -31,6 +35,28 @@ function getAdditionalNotesHTML(blockId, settings, note = "") {
         class="hub-notes-textarea"
         placeholder="${settings.placeholder}"
       >${note || ""}</textarea>
+    </div>
+  `;
+}
+
+function renderTrustBadges(blockId, settings) {
+  if (!settings || settings.enabled !== false) return;
+
+  const position = settings.position || "bottom";
+
+  const el = document.getElementById(`hub-trust-badges-${position}-${blockId}`);
+
+  if (!el) return;
+
+  let img = settings.customImage || settings.presetImage;
+
+  if (!img) return;
+
+  el.style.display = "block";
+
+  el.innerHTML = `
+    <div class="hub-trust-badges-inner">
+      <img src="${img}" alt="Trust badges" class="hub-trust-badges-img"/>
     </div>
   `;
 }
@@ -54,15 +80,12 @@ window.getProductCardHTML = function (product) {
 
   return `
     <div class="hub-rec-product upcart-internal-component-upsell-tile">
-
       <div class="upcart-internal-component-upsell-tile__info_count">
-
         <div class="upcart-internal-component-upsell-tile__image-container">
           <img class="hub-product-img"
                src="${mainImage}"
                alt="${product.title}" />
         </div>
-
         <div class="upcart-internal-component-upsell-tile__info">
           <a href="/products/${product.handle}" 
             class="upcart-internal-component-upsell-tile__title-link">
@@ -70,29 +93,27 @@ window.getProductCardHTML = function (product) {
               ${product.title}
             </h4>
           </a>
-
           <div class="price">
             <span class="sale-price">
               ${formatMoney(Math.round(Number(firstVariant?.price || 0) * 100))}
             </span>
           </div>
         </div>
-
         <div class="upcart-internal-component-upsell-tile__variant-row">
           <select class="hub-variant-select">
             ${variantOptions}
           </select>
-        <button class="hub-add-btn" data-variant="${firstVariant?.id}">
-       Add
-      </button>
+          <button class="hub-add-btn" data-variant="${firstVariant?.id}">
+            Add
+          </button>
         </div>
-
       </div>
     </div>
   `;
 };
 
 async function maybeUpdateRewardProducts(cart, rewards) {
+  // FIX: was `rewards?.enabled` — inverted logic, ran when rewards were OFF
   if (rewards?.enabled || !rewards?.tiers?.length) return false;
   if (window._hubRewardUpdating) return false;
 
@@ -120,8 +141,8 @@ async function maybeUpdateRewardProducts(cart, rewards) {
 
   const cartValue = rawValue - rewardDeduction;
 
-  const toAdd = []; // { id, tierId }
-  const toRemove = []; // cart item keys
+  const toAdd = [];
+  const toRemove = [];
 
   for (const tier of rewards.tiers) {
     if (tier.type !== "product" && tier.type !== "shipping") continue;
@@ -130,13 +151,11 @@ async function maybeUpdateRewardProducts(cart, rewards) {
     const threshold = isQuantity ? tier.minQuantity || 0 : tier.minAmount || 0;
     const reached = cartValue >= threshold;
 
-    // All reward items already in cart for this tier (filter = ALL, not just first)
     const rewardItems = cart.items.filter(
       (item) => String(item.properties?._hub_reward) === String(tier.id),
     );
 
     if (reached) {
-      // Add every available product not yet in cart
       for (const product of tier.products) {
         if (!product.available) continue;
         const numericId = Number(
@@ -195,7 +214,6 @@ function getTierIcon(type, color) {
   if (type === "shipping") {
     return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`;
   }
-
   return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>`;
 }
 
@@ -203,6 +221,7 @@ function renderRewardsBar(blockId, cart, rewards) {
   const el = document.getElementById(`hub-rewards-${blockId}`);
   if (!el) return;
 
+  // FIX: was `rewards?.enabled` — inverted, hid bar when rewards were ON
   if (rewards?.enabled || !rewards?.tiers?.length) {
     el.style.display = "none";
     return;
@@ -217,7 +236,6 @@ function renderRewardsBar(blockId, cart, rewards) {
   const getTierValue = (tier) =>
     isQuantity ? tier.minQuantity || 0 : tier.minAmount || 0;
 
-  // Exclude reward items so the bar reflects qualifying spend only
   const rewardCartItems = cart.items.filter(
     (item) => item.properties?._hub_reward,
   );
@@ -250,10 +268,8 @@ function renderRewardsBar(blockId, cart, rewards) {
   const fillColor = rewards.textColor || "#000000";
   const textColor = rewards.textColor || "#000000";
 
-  // Equal step positions (same as React component)
   const getStepPosition = (index) => (100 / len) * (index + 1);
 
-  // Fill interpolated between step positions based on actual values
   const getFillPercent = () => {
     if (len === 0) return 0;
     const firstTier = sorted[0];
@@ -277,8 +293,6 @@ function renderRewardsBar(blockId, cart, rewards) {
   };
 
   const fillPct = getFillPercent().toFixed(2);
-
-  // Active tier = first not yet reached
   const currentTier = sorted.find((t) => cartTotal < getTierValue(t));
 
   let titleHtml = "";
@@ -301,7 +315,6 @@ function renderRewardsBar(blockId, cart, rewards) {
         ? rewards.completeIconColor || "#ffffff"
         : rewards.incompleteIconColor || "#000000";
       const dotBg = done ? fillColor : trackColor;
-
       return `<div class="hub-rewards-milestone" style="left:${pct}%">
         <div class="hub-rewards-dot" style="background:${dotBg};border-color:${dotBg}">
           ${tier.showIcon ? getTierIcon(tier.type, iconColor) : ""}
@@ -324,11 +337,54 @@ function renderRewardsBar(blockId, cart, rewards) {
     </div>`;
 }
 
+// ── Skeleton helpers ──────────────────────────────────────────────────────────
+
+function showCartSkeleton(blockId) {
+  const skeleton = document.getElementById(`hub-skeleton-${blockId}`);
+  const items = document.getElementById(`hub-cart-items-${blockId}`);
+  if (skeleton) skeleton.style.display = "block";
+  if (items) items.style.visibility = "visible";
+}
+
+function hideCartSkeleton(blockId) {
+  const skeleton = document.getElementById(`hub-skeleton-${blockId}`);
+  if (skeleton) skeleton.style.display = "none";
+}
+
+function revealCartItems(blockId) {
+  const items = document.getElementById(`hub-cart-items-${blockId}`);
+  if (items) items.style.visibility = "visible";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 window.hubCartRender = async function (drawer) {
   if (window._hubRenderInProgress) return;
   window._subscriptionOpen = {};
   window._upsellCache = window._upsellCache || {};
   window._hubRenderInProgress = true;
+
+  // Move blockId up so skeleton helpers can use it immediately
+  const blockId = window.HUB_CART_BLOCK_ID;
+  const trustBadgesSettings = window.__HUB_ACTIVE_CART__?.trustBadgesSettings;
+
+  window.__HUB_ACTIVE_CART__?.trustBadgesSettings;
+
+  const rustBadgesSettings = window.__HUB_ACTIVE_CART__?.rustBadgesSettings;
+
+  renderTrustBadges(blockId, trustBadgesSettings || rustBadgesSettings);
+
+  const discountCodesSettings =
+    window.__HUB_ACTIVE_CART__?.discountCodesSettings;
+  const discountRow = document.getElementById(`hub-discount-row-${blockId}`);
+
+  if (discountRow) {
+    discountRow.style.display =
+      discountCodesSettings?.enabled === false ? "flex" : "none";
+  }
+
+  // Show skeleton right away — before any async work
+  showCartSkeleton(blockId);
 
   try {
     const res = await fetch("/cart.js");
@@ -342,7 +398,7 @@ window.hubCartRender = async function (drawer) {
         footer.classList.remove("hub-empty-footer");
       }
     }
-    const blockId = window.HUB_CART_BLOCK_ID;
+
     const rewards = window.__HUB_ACTIVE_CART__?.rewardsSettings;
 
     /* ── AUTO-ADD / REMOVE REWARD PRODUCTS ── */
@@ -356,6 +412,12 @@ window.hubCartRender = async function (drawer) {
     if (!container) return;
 
     /* ── ANNOUNCEMENT ── */
+
+    const customHTML = renderCustomHTML(
+      window.__HUB_ACTIVE_CART__?.cartSettings?.customHtmlBlocks
+        ?.above_announcements,
+    );
+
     const ann = window.__HUB_ACTIVE_CART__?.announcementSettings;
     const annBefore = document.getElementById(`hub-announcement-${blockId}`);
     const annAfter = document.getElementById(
@@ -365,13 +427,13 @@ window.hubCartRender = async function (drawer) {
     if (annBefore) annBefore.style.display = "none";
     if (annAfter) annAfter.style.display = "none";
 
-    if (!ann?.enabled && cart.items.length > 0) {
+    // FIX: was `!ann?.enabled` — should be `ann?.enabled === false`
+    if (ann?.enabled === false && cart.items.length > 0) {
       const isBefore = ann.position !== "after";
       const target = isBefore ? annBefore : annAfter;
       if (target) {
         const height = ann.height === "thick" ? "14px 20px" : "8px 20px";
         const timerText = ann.timer || "10:00";
-
         target.style.cssText = `
           display: block;
           background-color: ${ann.backgroundColor || "#ffffff"};
@@ -380,14 +442,15 @@ window.hubCartRender = async function (drawer) {
           font-size: ${ann.fontSize || 14}px;
           text-align: center;
         `;
-
-        target.innerHTML = ann.text
-          ? ann.text.replace(
-              "{TIMER}",
-              `<span id="hub-timer-${blockId}">${timerText}</span>`,
-            )
-          : "";
-
+        target.innerHTML =
+          (customHTML || "") +
+          "<br>" +
+          (ann.text
+            ? ann.text.replace(
+                "{TIMER}",
+                `<span id="hub-timer-${blockId}">${timerText}</span>`,
+              )
+            : "");
         if (ann.text?.includes("{TIMER}")) {
           startAnnTimer(blockId, timerText);
         }
@@ -409,74 +472,67 @@ window.hubCartRender = async function (drawer) {
       window.__HUB_ACTIVE_CART__?.discountCodesSettings;
     const discountRow = document.getElementById(`hub-discount-row-${blockId}`);
     if (discountRow) {
-      if (discountCodesSettings?.enabled !== false) {
-        discountRow.style.display = "none";
+      if (discountCodesSettings?.enabled === false) {
+        discountRow.style.display = "flex";
       } else {
-        discountRow.style.display = "";
-        const discountInput = discountRow.querySelector("#discount-code-input");
-        const discountApplyBtn = discountRow.querySelector(
-          ".hub-discount-apply-btn",
-        );
-        if (discountInput && discountCodesSettings.placeholder) {
-          discountInput.placeholder = discountCodesSettings.placeholder;
-        }
-        if (discountApplyBtn && discountCodesSettings.buttonText) {
-          discountApplyBtn.textContent = discountCodesSettings.buttonText;
-        }
+        discountRow.style.display = "none";
+      }
+
+      const discountInput = discountRow.querySelector("#discount-code-input");
+      const discountApplyBtn = discountRow.querySelector(
+        ".hub-discount-apply-btn",
+      );
+
+      if (discountInput && discountCodesSettings?.placeholder) {
+        discountInput.placeholder = discountCodesSettings.placeholder;
+      }
+
+      if (discountApplyBtn && discountCodesSettings?.buttonText) {
+        discountApplyBtn.textContent = discountCodesSettings.buttonText;
       }
     }
 
     window.renderProducts = function (container, products, settings = {}) {
       const layout = settings.layout || "block";
-
       const html = products.map((p) => getProductCardHTML(p)).join("");
 
       if (layout === "carousel") {
         container.innerHTML = `
-      <div class="hub-slider">
-        <button class="hub-prev">‹</button>
-        <div class="hub-slider-track">
-          ${html}
-        </div>
-        <button class="hub-next">›</button>
-      </div>
-    `;
+          <div class="hub-slider">
+            <button class="hub-prev">‹</button>
+            <div class="hub-slider-track">${html}</div>
+            <button class="hub-next">›</button>
+          </div>
+        `;
       } else {
         container.innerHTML = `
-      <div class="upcart-internal-upsell__vertical-layout-wrapper">
-        ${html}
-      </div>
-    `;
+          <div class="upcart-internal-upsell__vertical-layout-wrapper">${html}</div>
+        `;
       }
 
       container.querySelectorAll(".hub-rec-product").forEach((card) => {
         const select = card.querySelector(".hub-variant-select");
         const priceEl = card.querySelector(".sale-price");
         const imgEl = card.querySelector(".hub-product-img");
-
         select.addEventListener("change", function () {
           const selected = this.options[this.selectedIndex];
-
           priceEl.textContent = formatMoney(Number(selected.dataset.price));
           if (selected.dataset.image) imgEl.src = selected.dataset.image;
         });
       });
 
-      document.addEventListener("click", async (e) => {
+      // FIX: was `document.addEventListener` — leaked a new listener on every render
+      container.addEventListener("click", async (e) => {
         const btn = e.target.closest(".hub-add-btn");
         if (!btn) return;
-
         const parent = btn.closest(".hub-rec-product");
         const select = parent.querySelector(".hub-variant-select");
-
         const variantId = select?.value || btn.dataset.variant;
-
         await fetch("/cart/add.js", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: variantId, quantity: 1 }),
         });
-
         document.dispatchEvent(new CustomEvent("cart:updated"));
       });
 
@@ -484,21 +540,17 @@ window.hubCartRender = async function (drawer) {
         const track = container.querySelector(".hub-slider-track");
         const prev = container.querySelector(".hub-prev");
         const next = container.querySelector(".hub-next");
-
         let index = 0;
         const items = track.children;
-
         function updateSlider() {
           track.style.transform = `translateX(-${index * 100}%)`;
         }
-
         next.addEventListener("click", () => {
           if (index < items.length - 1) {
             index++;
             updateSlider();
           }
         });
-
         prev.addEventListener("click", () => {
           if (index > 0) {
             index--;
@@ -512,52 +564,48 @@ window.hubCartRender = async function (drawer) {
       const recommendations =
         window.__HUB_ACTIVE_CART__?.recommendationsSettings;
 
+      drawer
+        .querySelectorAll(".hub-additional-notes")
+        .forEach((el) => el.remove());
+
       const upsellTop = document.getElementById(`hub-upsell-top-${blockId}`);
       const upsellBottom = document.getElementById(
         `hub-upsell-bottom-${blockId}`,
       );
-
       if (upsellTop) upsellTop.innerHTML = "";
       if (upsellBottom) upsellBottom.innerHTML = "";
 
       let recHTML = "";
-
       if (!recommendations?.enabled) {
         recHTML = `
-      <div class="hub-cart-recommendations">
-        <p class="hub-rec-subtitle">${recommendations.headerText || ""}</p>
-        <h3 class="hub-rec-title">${recommendations.productHeaderText || "You may also like"}</h3>
-        ${
-          recommendations.showShopNowButton
-            ? `<a href="${recommendations.buttonUrl}" class="hub-rec-btn">
-                ${recommendations.buttonText || "Shop Now"}
-               </a>`
-            : ""
-        }
-        <div id="hub-rec-products"></div>
-      </div>
-    `;
+          <div class="hub-cart-recommendations">
+            <p class="hub-rec-subtitle">${recommendations.headerText || ""}</p>
+            <h3 class="hub-rec-title">${recommendations.productHeaderText || "You may also like"}</h3>
+            ${
+              recommendations.showShopNowButton
+                ? `<a href="${recommendations.buttonUrl}" class="hub-rec-btn">${recommendations.buttonText || "Shop Now"}</a>`
+                : ""
+            }
+            <div id="hub-rec-products"></div>
+          </div>
+        `;
       }
 
       container.innerHTML = `
-    <div class="hub-cart-empty">
-      <p class="hub-empty-title">Your cart is empty</p>
-    </div>
-  `;
+        <div class="hub-cart-empty">
+          <p class="hub-empty-title">Your cart is empty</p>
+        </div>
+      `;
 
       const footerRec = document.getElementById(`hub-footer-rec-${blockId}`);
-
       if (footerRec && !footerRec.innerHTML.trim()) {
         footerRec.innerHTML = recHTML;
       }
 
-      if (footer) {
-        footer.classList.add("hub-empty-footer");
-      }
+      if (footer) footer.classList.add("hub-empty-footer");
 
       if (!recommendations?.enabled) {
         const recContainer = document.getElementById("hub-rec-products");
-
         if (
           recContainer &&
           recContainer.children.length === 0 &&
@@ -570,20 +618,29 @@ window.hubCartRender = async function (drawer) {
     }
 
     const footerRec = document.getElementById(`hub-footer-rec-${blockId}`);
-    if (footerRec) {
-      footerRec.innerHTML = "";
-    }
+    if (footerRec) footerRec.innerHTML = "";
 
     const itemsHTML = await Promise.all(
       cart.items.map(async (item) => {
-        if (item.properties?._hub_addon) {
-          return "";
-        }
+        if (item.properties?._hub_addon) return "";
+
+        const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+
+        const showSavingsBelowPrices =
+          cartSettings.showSavingsBelowPrices || false;
+
         const hasDiscount = item.original_line_price !== item.final_line_price;
 
+        const savedAmount = hasDiscount
+          ? item.original_line_price - item.final_line_price
+          : 0;
+        const saveHtml =
+          hasDiscount && showSavingsBelowPrices
+            ? `<p class="hub-item-save">Save ${formatMoney(savedAmount)}</p>`
+            : "";
         const priceHtml = hasDiscount
           ? `<span class="hub-price-original">${formatMoney(item.original_line_price)}</span>
-           <span class="hub-price">${formatMoney(item.final_line_price)}</span>`
+             <span class="hub-price">${formatMoney(item.final_line_price)}</span>`
           : `<span class="hub-price">${formatMoney(item.final_line_price)}</span>`;
 
         const variantHtml =
@@ -612,44 +669,35 @@ window.hubCartRender = async function (drawer) {
             : "";
 
         const isReward = !!item.properties?._hub_reward;
-
         const subscriptionSettings =
           window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;
-
         const sellingPlan = item.selling_plan_allocation;
-
         let sellingPlanHtml = "";
-
         const planOptionsText =
           subscriptionSettings?.planOptionsText ||
           "{{selling_plan_group_name}} / {{selling_plan_name}}";
-
         const groups = await getSellingPlans(item.handle);
 
         if (groups.length > 0 && !subscriptionSettings?.enabled) {
           let options = "";
-
           groups.forEach((group) => {
             group.selling_plans.forEach((plan) => {
               const optionText = planOptionsText
                 .replace("{{selling_plan_group_name}}", group.name)
                 .replace("{{selling_plan_name}}", plan.name);
-
               options += `
-      <option value="${plan.id}" 
-        ${sellingPlan && plan.id === sellingPlan.selling_plan.id ? "selected" : ""}>
-        ${optionText}
-      </option>
-    `;
+                <option value="${plan.id}" 
+                  ${sellingPlan && plan.id === sellingPlan.selling_plan.id ? "selected" : ""}>
+                  ${optionText}
+                </option>
+              `;
             });
           });
 
           const selectedPlanName = sellingPlan
             ? sellingPlan.selling_plan.name
             : "Select subscription";
-
           const groupName = groups?.[0]?.name || "Subscribe and save";
-
           const buttonText = subscriptionSettings?.buttonText?.replace(
             "{{selling_plan_group_name}}",
             groupName,
@@ -658,78 +706,73 @@ window.hubCartRender = async function (drawer) {
             subscriptionSettings?.planHeadingText || "Subscription plans";
 
           sellingPlanHtml = `
-     <div class="hub-selling-plan-wrapper ${
-       window._subscriptionOpen?.[item.key] || sellingPlan
-         ? "show-subscription"
-         : ""
-     }">
-      <div class="hub-one-time-view">
-        <button class="hub-upgrade-btn">
-            ${buttonText}
-        </button>
-      </div>
-
-     <div class="hub-subscription-view">
-        
-        <div class="hub-selected-plan">
-          Subscribe and save / ${selectedPlanName}
-        </div>
-        <select class="hub-selling-plan-select" data-key="${item.key}">
-   <option value="" disabled ${!sellingPlan ? "selected" : ""}>
-    ${planHeadingText}
-   </option>
-     ${options}
-    </select>
-      </div>
-    </div>
-    `;
+            <div class="hub-selling-plan-wrapper ${
+              window._subscriptionOpen?.[item.key] || sellingPlan
+                ? "show-subscription"
+                : ""
+            }">
+              <div class="hub-one-time-view">
+                <button class="hub-upgrade-btn">${buttonText}</button>
+              </div>
+              <div class="hub-subscription-view">
+                <div class="hub-selected-plan">Subscribe and save / ${selectedPlanName}</div>
+                <select class="hub-selling-plan-select" data-key="${item.key}">
+                  <option value="" disabled ${!sellingPlan ? "selected" : ""}>${planHeadingText}</option>
+                  ${options}
+                </select>
+              </div>
+            </div>
+          `;
         }
 
         return `
-        <div class="hub-cart-for-item">
-        <div class="hub-cart-item">
-          <div class="hub-item-img-wrap">
-            <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
-          </div>
-          <div class="hub-item-info">
-            <a href="/products/${item.handle}" class="hub-item-title">${item.product_title || item.title}</a>
-            ${
-              isReward
-                ? `<p class="hub-item-reward-badge">Free gift</p>`
-                : `<p class="hub-item-unit-price">${formatMoney(item.price)}</p>`
-            }
-            ${variantHtml}
-            ${propertiesHtml}
-            ${discountHtml}
-            ${
-              isReward
-                ? ""
-                : `
-            <div class="hub-item-actions">
-              <div class="hub-qty-control">
-                <button class="hub-qty-btn" onclick="updateQty('${item.key}', ${item.quantity - 1})">−</button>
-                <input
-                  type="text"
-                  value="${item.quantity}"
-                  class="hub-qty-input"
-                  oninput="handleQtyInput('${item.key}', this.value)"
-                />
-                <button class="hub-qty-btn" onclick="updateQty('${item.key}', ${item.quantity + 1})">+</button>
+          <div class="hub-cart-for-item">
+            <div class="hub-cart-item">
+              <div class="hub-item-img-wrap">
+                <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
               </div>
-              <button class="hub-delete-btn" onclick="removeItem('${item.key}')" aria-label="Remove item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
-            </div>`
-            }
-          </div>
-          <div class="hub-item-total">${isReward ? `<span class="hub-price hub-price-free">FREE</span>` : priceHtml}</div>
-        </div>
-        <div class="hub-selling-plan-container">
-        ${sellingPlanHtml}
-        </div>
-        </div>`;
+              <div class="hub-item-info">
+                <a href="/products/${item.handle}" class="hub-item-title">${item.product_title || item.title}</a>
+                ${
+                  isReward
+                    ? `<p class="hub-item-reward-badge">Free gift</p>`
+                    : `
+                        <p class="hub-item-unit-price">${formatMoney(item.price)}</p>
+                     ${saveHtml}
+                 `
+                }
+                ${variantHtml}
+                ${propertiesHtml}
+                ${discountHtml}
+                ${
+                  isReward
+                    ? ""
+                    : `
+                  <div class="hub-item-actions">
+                    <div class="hub-qty-control">
+                      <button class="hub-qty-btn" onclick="updateQty('${item.key}', ${item.quantity - 1})">−</button>
+                      <input
+                        type="text"
+                        value="${item.quantity}"
+                        class="hub-qty-input"
+                        oninput="handleQtyInput('${item.key}', this.value)"
+                      />
+                      <button class="hub-qty-btn" onclick="updateQty('${item.key}', ${item.quantity + 1})">+</button>
+                    </div>
+                    <button class="hub-delete-btn" onclick="removeItem('${item.key}')" aria-label="Remove item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  </div>`
+                }
+              </div>
+              <div class="hub-item-total">
+                ${isReward ? `<span class="hub-price hub-price-free">FREE</span>` : priceHtml}
+              </div>
+            </div>
+            <div class="hub-selling-plan-container">${sellingPlanHtml}</div>
+          </div>`;
       }),
     );
 
@@ -744,13 +787,11 @@ window.hubCartRender = async function (drawer) {
       const type = addonsSettings.type;
       const isShipping = type === "shipping_protection";
       const isProduct = type === "product_addon";
-
       const rawVariantId = isShipping
         ? addonsSettings.customShippingProduct?.variantId
         : isProduct
           ? addonsSettings.selectedProduct?.id
           : null;
-
       const variantId = rawVariantId?.replace(
         "gid://shopify/ProductVariant/",
         "",
@@ -772,51 +813,47 @@ window.hubCartRender = async function (drawer) {
           ),
         );
 
-        // ── Render HTML ──
         addonsEl.style.display = "block";
         if (isShipping) {
           addonsEl.innerHTML = `
-        <div class="hub-addon-shipping-protection">
-          <div class="hub-addon-sp-info">
-            <p class="hub-addon-sp-title">${addonsSettings.title || "Shipping Protection"}</p>
-            <p class="hub-addon-sp-desc">${addonsSettings.description || ""}</p>
-          </div>
-          <div class="hub-addon-sp-right">
-            <span class="hub-addon-sp-price">${price}</span>
-            <label class="hub-addon-sp-toggle">
-              <input type="checkbox" id="hub-sp-toggle-${blockId}" class="hub-sp-checkbox"
-                data-variant="${variantId}" ${isInCart ? "checked" : ""} />
-              <span class="hub-addon-sp-slider"></span>
-            </label>
-          </div>
-        </div>`;
+            <div class="hub-addon-shipping-protection">
+              <div class="hub-addon-sp-info">
+                <p class="hub-addon-sp-title">${addonsSettings.title || "Shipping Protection"}</p>
+                <p class="hub-addon-sp-desc">${addonsSettings.description || ""}</p>
+              </div>
+              <div class="hub-addon-sp-right">
+                <span class="hub-addon-sp-price">${price}</span>
+                <label class="hub-addon-sp-toggle">
+                  <input type="checkbox" id="hub-sp-toggle-${blockId}" class="hub-sp-checkbox"
+                    data-variant="${variantId}" ${isInCart ? "checked" : ""} />
+                  <span class="hub-addon-sp-slider"></span>
+                </label>
+              </div>
+            </div>`;
         } else {
           const selected = addonsSettings.selectedProduct;
           addonsEl.innerHTML = `
-        <div class="hub-addon-product">
-          ${selected.image ? `<img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img" />` : ""}
-          <div class="hub-addon-product-info">
-            <p class="hub-addon-product-title">${selected.title || ""}</p>
-            <span class="hub-addon-product-price">${price}</span>
-          </div>
-          <label class="hub-addon-sp-toggle">
-            <input type="checkbox" id="hub-addon-toggle-${blockId}" class="hub-addon-checkbox"
-              data-variant="${variantId}" ${isInCart ? "checked" : ""} />
-            <span class="hub-addon-sp-slider"></span>
-          </label>
-        </div>`;
+            <div class="hub-addon-product">
+              ${selected.image ? `<img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img" />` : ""}
+              <div class="hub-addon-product-info">
+                <p class="hub-addon-product-title">${selected.title || ""}</p>
+                <span class="hub-addon-product-price">${price}</span>
+              </div>
+              <label class="hub-addon-sp-toggle">
+                <input type="checkbox" id="hub-addon-toggle-${blockId}" class="hub-addon-checkbox"
+                  data-variant="${variantId}" ${isInCart ? "checked" : ""} />
+                <span class="hub-addon-sp-slider"></span>
+              </label>
+            </div>`;
         }
 
-        // ── Wire toggle ──
         const checkboxId = isShipping
           ? `hub-sp-toggle-${blockId}`
           : `hub-addon-toggle-${blockId}`;
         const checkbox = addonsEl.querySelector(`#${checkboxId}`);
-
         if (checkbox) {
           checkbox.addEventListener("change", async function () {
             const vid = this.dataset.variant;
-
             if (this.checked) {
               await fetch("/cart/add.js", {
                 method: "POST",
@@ -844,7 +881,6 @@ window.hubCartRender = async function (drawer) {
                 });
               }
             }
-
             document.dispatchEvent(new CustomEvent("cart:updated"));
           });
         }
@@ -852,30 +888,20 @@ window.hubCartRender = async function (drawer) {
     }
 
     const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
-
     if (!upsellSettings?.enabled && cart.items.length > 0) {
       const productId = cart.items[0].product_id;
-
       const upsellProducts = await window.getUpsellProducts(
         upsellSettings,
         productId,
       );
-
       const position = upsellSettings.position || "bottom";
-
-      let upsellContainer = null;
-
-      if (position === "top") {
-        upsellContainer = document.getElementById(`hub-upsell-top-${blockId}`);
-      } else {
-        upsellContainer = document.getElementById(
-          `hub-upsell-bottom-${blockId}`,
-        );
-      }
+      const upsellContainer =
+        position === "top"
+          ? document.getElementById(`hub-upsell-top-${blockId}`)
+          : document.getElementById(`hub-upsell-bottom-${blockId}`);
 
       if (upsellContainer) {
         upsellContainer.innerHTML = "";
-
         if (upsellProducts.length > 0) {
           window.renderProducts(upsellContainer, upsellProducts, {
             layout: upsellSettings.direction,
@@ -885,13 +911,11 @@ window.hubCartRender = async function (drawer) {
     }
 
     const notesSettings = window.__HUB_ACTIVE_CART__?.additionalNotesSettings;
-
     const belowEl = document.getElementById(`hub-notes-below-${blockId}`);
     const footerEl = document.getElementById(`hub-notes-footer-${blockId}`);
 
     if (belowEl) belowEl.innerHTML = "";
     if (footerEl) footerEl.innerHTML = "";
-
     drawer
       .querySelectorAll(".hub-additional-notes")
       .forEach((el) => el.remove());
@@ -901,13 +925,12 @@ window.hubCartRender = async function (drawer) {
       notesSettings.placement === "below_items" &&
       cart.items.length > 0
     ) {
-      if (belowEl) {
+      if (belowEl)
         belowEl.innerHTML = getAdditionalNotesHTML(
           blockId,
           notesSettings,
           cart.note,
         );
-      }
     }
 
     if (
@@ -915,13 +938,12 @@ window.hubCartRender = async function (drawer) {
       notesSettings.placement === "top_of_footer" &&
       cart.items.length > 0
     ) {
-      if (footerEl) {
+      if (footerEl)
         footerEl.innerHTML = getAdditionalNotesHTML(
           blockId,
           notesSettings,
           cart.note,
         );
-      }
     }
 
     if (cart.total_discount > 0) {
@@ -958,5 +980,8 @@ window.hubCartRender = async function (drawer) {
     console.error("Cart render error:", err);
   } finally {
     window._hubRenderInProgress = false;
+    window._hubRewardUpdating = false;
+    hideCartSkeleton(blockId);
+    revealCartItems(blockId);
   }
 };

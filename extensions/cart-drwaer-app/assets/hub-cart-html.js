@@ -1,13 +1,26 @@
 window.injectCartHTML = function (blockId, root) {
   if (!blockId) return;
-  if (document.getElementById(`hub-cart-drawer-${blockId}`)) return;
+
+  const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+
+  const positionMap = {
+    slide_from_left: "hub-cart-left",
+    slide_from_right: "hub-cart-right",
+  };
+
+  const positionClass =
+    positionMap[cartSettings.cartPosition] || "hub-cart-right";
+
+  const disableFixedFooter = cartSettings.disableFixedFooter || false;
+
+  const goToCartPageOnCheckout = cartSettings.goToCartPageOnCheckout || false;
 
   root.insertAdjacentHTML(
     "beforeend",
     `
     <div id="hub-cart-bg-${blockId}" class="hub-cart-bg"></div>
 
-    <div id="hub-cart-drawer-${blockId}" class="hub-cart-drawer">
+    <div id="hub-cart-drawer-${blockId}" class="hub-cart-drawer ${positionClass}">
 
       <!-- HEADER -->
       <div class="hub-cart-header">
@@ -27,6 +40,9 @@ window.injectCartHTML = function (blockId, root) {
       <!-- ANNOUNCEMENT (position: before) -->
       <div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>
 
+      <!-- TRUST BADGES (position: top of cart) -->
+      <div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges" style="display:none;"></div>
+
       <!-- UPSSELLS (position: top of cart) -->
       <div id="hub-upsell-top-${blockId}" class="hub-upsell"></div>
 
@@ -34,7 +50,8 @@ window.injectCartHTML = function (blockId, root) {
       <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;"></div>
 
       <!-- ITEMS (scrollable) -->
-      <div class="hub-cart-items">
+      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview">
+      <div class="hub-cart-items ${disableFixedFooter ? "no-fixed-footer" : ""}">
         <!-- skeleton shown while cart data loads -->
         <div class="hub-skeleton-lines">
           <div class="hub-skeleton hub-skeleton-line" style="width:65%;">&nbsp;</div>
@@ -59,11 +76,15 @@ window.injectCartHTML = function (blockId, root) {
 
       <!-- UPSSELLS (position: bottom of cart) -->
       <div id="hub-upsell-bottom-${blockId}" class="hub-upsell"></div>
-
+   </div>
       <!-- FOOTER (fixed bottom) -->
        <div id="hub-footer-rec-${blockId}"></div> 
        
       <div class="hub-cart-footer">
+     
+      <!----TRUST BADGES (position: top of footer) -->
+      <div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges" style="display:none;"></div>
+
          <!-- ── ADD-ONS ── -->
         <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
 
@@ -71,7 +92,7 @@ window.injectCartHTML = function (blockId, root) {
         <div id="hub-notes-footer-${blockId}"></div>
         <!-- DISCOUNT -->
         <div id="hub-discount-status-${blockId}"></div>
-        <div class="hub-discount-input-row" id="hub-discount-row-${blockId}">
+      <div class="hub-discount-input-row" id="hub-discount-row-${blockId}">
         <input type="text" id="discount-code-input" placeholder="Discount code" class="hub-discount-input" />
        <button onclick="applyDiscountCode()" class="hub-discount-apply-btn">Apply</button>
       </div>
@@ -84,8 +105,12 @@ window.injectCartHTML = function (blockId, root) {
         </div>
         <p class="hub-cart-tax-note">Taxes, discounts and shipping calculated at checkout.</p>
 
+       <div id="hub-express-payments-${blockId}" class="hub-express-payments"></div>
+        
         <!-- CHECKOUT -->
-        <a href="/checkout" class="hub-cart-checkout-btn">Check out</a>
+        <a href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" class="hub-cart-checkout-btn">
+         Check out
+        </a>
         <a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping"
            onclick="(function(e){e.preventDefault();document.getElementById('hub-close-${blockId}').click();})(event)">
           Or continue shopping

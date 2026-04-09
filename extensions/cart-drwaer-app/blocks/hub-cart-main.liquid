@@ -75,10 +75,10 @@
   display: block !important;
 }
 
-#hub-cart-drawer-{{ block.id }} {
+{% comment %} #hub-cart-drawer-{{ block.id }} {
   transform: translateX(100%);
   transition: transform 0.3s ease;
-}
+} {% endcomment %}
 
 #hub-cart-drawer-{{ block.id }}.hub-visible-{{ block.id }} {
   transform: translateX(0);

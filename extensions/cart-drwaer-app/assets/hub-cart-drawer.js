@@ -1,6 +1,19 @@
 const apiUrl =
   "https://0844-2401-4900-1c71-48c-997b-113a-6a24-2141.ngrok-free.app";
 
+function initCartDrawerAfterData() {
+  const blockId = window.HUB_CART_BLOCK_ID;
+  if (!blockId) return;
+
+  const root =
+    document.getElementById(`cart-drawer-App-${blockId}`) || document.body;
+
+  document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
+  document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
+
+  window.injectCartHTML(blockId, root);
+}
+
 (function () {
   const originalFetch = window.fetch;
 
@@ -59,14 +72,21 @@ const apiUrl =
       return;
     }
 
-    window.injectCartHTML(blockId, root);
+    // window.injectCartHTML(blockId, root);
 
-    const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
-    const bg = document.getElementById(`hub-cart-bg-${blockId}`);
+    let drawer = null;
+    let bg = null;
 
-    if (!drawer || !bg) {
-      console.error("Drawer not found");
-      return;
+    function ensureDrawerReady(callback) {
+      const interval = setInterval(() => {
+        drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+        bg = document.getElementById(`hub-cart-bg-${blockId}`);
+
+        if (drawer && bg) {
+          clearInterval(interval);
+          callback();
+        }
+      }, 100);
     }
 
     window.updateCartCount = async function () {
@@ -95,19 +115,21 @@ const apiUrl =
     };
 
     function openDrawer() {
-      drawer.classList.add(`hub-visible-${blockId}`);
-      bg.classList.add(`hub-visible-${blockId}`);
+      ensureDrawerReady(() => {
+        drawer.classList.add(`hub-visible-${blockId}`);
+        bg.classList.add(`hub-visible-${blockId}`);
 
-      document.body.classList.add("no-scroll", "overflow-hidden");
-      document.documentElement.classList.add("overflow-hidden");
+        document.body.classList.add("no-scroll", "overflow-hidden");
+        document.documentElement.classList.add("overflow-hidden");
 
-      document.body.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
 
-      if (window.hubCartRender) {
-        window.hubCartRender(drawer);
-      }
+        if (window.hubCartRender) {
+          window.hubCartRender(drawer);
+        }
 
-      updateCartCount();
+        updateCartCount();
+      });
     }
 
     function closeDrawer() {
@@ -177,7 +199,7 @@ window.startAnnTimer = function (blockId, timeStr) {
     delete _annTimerIntervals[blockId];
   }
 
-  const storageKey     = `hub-timer-${blockId}`;
+  const storageKey = `hub-timer-${blockId}`;
   const storageMetaKey = `hub-timer-${blockId}-src`; // ← NEW: tracks which timeStr was saved
 
   // ← NEW: parse the intended duration from the API value first
@@ -189,7 +211,7 @@ window.startAnnTimer = function (blockId, timeStr) {
 
   let totalSeconds;
   const savedEndTime = localStorage.getItem(storageKey);
-  const savedSrc     = localStorage.getItem(storageMetaKey); // ← NEW: what timeStr was saved
+  const savedSrc = localStorage.getItem(storageMetaKey); // ← NEW: what timeStr was saved
 
   // ← NEW: if the API timeStr changed, throw away the old saved timer
   if (savedSrc !== timeStr) {
@@ -216,12 +238,12 @@ window.startAnnTimer = function (blockId, timeStr) {
   } else {
     // Fresh start — either first visit or API changed the timeStr
     totalSeconds = intendedSeconds;
-    localStorage.setItem(storageKey,     String(Date.now() + totalSeconds * 1000));
+    localStorage.setItem(storageKey, String(Date.now() + totalSeconds * 1000));
     localStorage.setItem(storageMetaKey, timeStr); // ← NEW: record which timeStr we saved
   }
 
   function fmt(s) {
-    const m   = Math.floor(s / 60);
+    const m = Math.floor(s / 60);
     const sec = s % 60;
     return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   }
@@ -275,6 +297,8 @@ window.startAnnTimer = function (blockId, timeStr) {
       if (publishedCart) {
         console.log("Published cart found:", publishedCart);
         window.__HUB_ACTIVE_CART__ = publishedCart;
+        initCartDrawerAfterData();
+
         loadCartRecommendations(publishedCart.recommendationsSettings);
       } else {
         console.log("No published cart found for this shop");
@@ -334,9 +358,7 @@ window.loadCartRecommendations = async function (settings = {}) {
           selectedProductIds.includes(String(p.id)),
         );
       }
-    }
-
-    else if (sourceType === "collections") {
+    } else if (sourceType === "collections") {
       const collectionIds = selectedItems.map((gid) => gid.split("/").pop());
 
       const colRes = await fetch(`/collections.json`);
@@ -371,7 +393,6 @@ window.loadCartRecommendations = async function (settings = {}) {
     }
 
     if (!finalProducts.length) {
-
       let allProducts = [];
       let page = 1;
       let more = true;
@@ -488,11 +509,10 @@ document.addEventListener(
 
       const data = await res.json();
       console.log("NOTE SAVED:", data);
-
     } catch (err) {
       console.error("Note save error:", err);
     }
-  }, 500)
+  }, 500),
 );
 
 window.getUpsellProducts = async function (settings, productId) {
@@ -537,8 +557,9 @@ window.getUpsellProducts = async function (settings, productId) {
         products = allProducts.filter((p) => ids.includes(String(p.id)));
       }
     } else if (sourceType === "collections") {
-
-      const colIds = (selectedItems.collections || []).map((gid) => gid.split("/").pop());
+      const colIds = (selectedItems.collections || []).map((gid) =>
+        gid.split("/").pop(),
+      );
 
       const colRes = await fetch(`/collections.json`);
       const colData = await colRes.json();

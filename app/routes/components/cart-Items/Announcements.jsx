@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import CustomHtml from "./CustomHtml";
 
 const paddingMap = {
     slim: "4px 33px",
@@ -6,7 +7,7 @@ const paddingMap = {
     thick: "18px 33px",
 };
 
-export default function Announcements({ announcementSettings }) {
+export default function Announcements({ announcementSettings, cartSettings }) {
     const [timeLeft, setTimeLeft] = useState(0);
 
     useEffect(() => {
@@ -52,6 +53,9 @@ export default function Announcements({ announcementSettings }) {
                 borderBottom: `1px solid ${announcementSettings.borderColor}`,
             }}
         >
+            {/* above_announcements */}
+            <CustomHtml cartSettings={cartSettings} position="above_announcements" />
+
             <span
                 dangerouslySetInnerHTML={{
                     __html: finalHTML,

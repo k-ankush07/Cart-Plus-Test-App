@@ -78,9 +78,15 @@ export default function AddOnsSettings({ addonsSettings, handleChange, currency,
             await createOrUpdateShippingProduct();
         }, 1500);
 
-        return () => clearTimeout(timer); 
+        return () => clearTimeout(timer);
 
-    }, [addonsSettings.title, addonsSettings.description, addonsSettings.price]);
+    }, [
+        addonsSettings.type,
+        addonsSettings.title,
+        addonsSettings.description,
+        addonsSettings.price,
+        addonsSettings.customShippingProduct 
+    ]);
 
     const createOrUpdateShippingProduct = async () => {
         try {
