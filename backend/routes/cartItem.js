@@ -2,6 +2,10 @@ import express from "express";
 import { cartModels } from "../model/schema.js";
 import crypto from "crypto";
 
+const generateNewCartId = () => {
+  return "cart_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+};
+
 const router = express.Router();
 
 router.get("/get-carts", async (req, res) => {
@@ -179,6 +183,94 @@ router.delete("/delete-cart", async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+});
+
+router.post("/toggle-publish", async (req, res) => {
+  try {
+    const { cartId } = req.body;
+
+    if (!cartId) {
+      return res.status(400).json({
+        success: false,
+        message: "cartId required",
+      });
+    }
+
+    // current cart find karo
+    const currentCart = await cartModels.findOne({ cartId });
+
+    if (!currentCart) {
+      return res.status(404).json({
+        success: false,
+        message: "Cart not found",
+      });
+    }
+
+    if (currentCart.status === "published") {
+      await cartModels.updateOne(
+        { cartId },
+        { $set: { status: "unpublished" } }
+      );
+
+      return res.json({
+        success: true,
+        message: "Cart unpublished",
+      });
+    }
+
+    await cartModels.updateMany(
+      { shop: currentCart.shop, status: "published" },
+      { $set: { status: "unpublished" } }
+    );
+
+    await cartModels.updateOne(
+      { cartId },
+      { $set: { status: "published" } }
+    );
+
+    return res.json({
+      success: true,
+      message: "Cart published",
+    });
+
+  } catch (error) {
+    console.error("TOGGLE PUBLISH ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+router.post("/duplicate-cart", async (req, res) => {
+  try {
+    const { cartId } = req.body;
+
+    const existingCart = await cartModels.findOne({ cartId });
+
+    if (!existingCart) {
+      return res.json({ success: false, message: "Cart not found" });
+    }
+
+    const newCart = {
+      ...existingCart._doc,
+      _id: undefined, 
+      cartId: generateNewCartId(), 
+      cartName: `Copy of ${existingCart.cartName || "Untitled cart"}`,
+      status: "unpublished",
+      createdAt: new Date(),
+    };
+
+    const savedCart = await cartModels.create(newCart);
+
+    res.json({
+      success: true,
+      data: savedCart,
+    });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false });
   }
 });
 

@@ -67,3 +67,29 @@ export const uploadImage = async (apiUrl, file, shop, accessToken) => {
 
   return res.json();
 };
+
+export const togglePublishCart = async (apiUrl, cartId) => {
+  const res = await fetch(`${apiUrl}/api/toggle-publish`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ cartId }),
+  });
+
+  return res.json();
+};
+
+export const duplicateCart = async (apiUrl, cartId) => {
+  const res = await fetch(`${apiUrl}/api/duplicate-cart`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ cartId }),
+  });
+
+  return res.json();
+};

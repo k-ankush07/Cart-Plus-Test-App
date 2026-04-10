@@ -7,21 +7,30 @@ import {
     Badge,
     IndexTable,
     Button,
-    Tooltip
+    Tooltip,
+    Modal
 } from "@shopify/polaris";
+
 import {
     EditIcon,
     ViewIcon,
     DuplicateIcon,
     DeleteIcon,
+    PlusIcon,
 } from "@shopify/polaris-icons";
 
-import { PlusIcon } from "@shopify/polaris-icons";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { json } from "@remix-run/node";
 import { useState, useEffect } from "react";
+
 import { shopLoader } from "./components/shop.server";
-import { createCart, getCarts, deleteCart } from "../services/apiRoutes";
+import {
+    createCart,
+    getCarts,
+    deleteCart,
+    togglePublishCart,
+    duplicateCart,
+} from "../services/apiRoutes";
 
 export const loader = async ({ request }) => {
     const data = await shopLoader(request);
@@ -31,56 +40,176 @@ export const loader = async ({ request }) => {
 export default function AppCarts() {
     const { shop, apiUrl } = useLoaderData();
     const navigate = useNavigate();
+    const [deleteModal, setDeleteModal] = useState(false);
+    const [selectedCart, setSelectedCart] = useState(null);
+
     const [carts, setCarts] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchCarts = async () => {
+            const data = await getCarts(apiUrl, shop.myshopifyDomain);
+            setCarts(data.data || []);
+        };
+        fetchCarts();
+    }, [shop.myshopifyDomain, apiUrl]);
 
     const handleCreateCart = async () => {
         setLoading(true);
 
-        try {
-            const data = await createCart(apiUrl, {
-                shop: shop.myshopifyDomain,
-                shopEmail: shop.email,
-                storeOwner: shop.name,
-            });
+        const data = await createCart(apiUrl, {
+            shop: shop.myshopifyDomain,
+            shopEmail: shop.email,
+            storeOwner: shop.name,
+        });
 
-            if (data.success) {
-                navigate(`/app/cart-editor/${data.data.cartId}`, {
-                    replace: true,
-                });
-            }
-            shopify.toast.show(data.updated ? "CreateCart" : "Cart updated successfully", {});
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
+        if (data.success) {
+            shopify.toast.show("Cart created successfully");
+            navigate(`/app/cart-editor/${data.data.cartId}`, { replace: true });
+        }
+
+        setLoading(false);
+    };
+
+    const confirmDeleteCart = async () => {
+        if (!selectedCart) return;
+
+        const data = await deleteCart(apiUrl, selectedCart.cartId);
+
+        if (data.success) {
+            setCarts((prev) =>
+                prev.filter((c) => c.cartId !== selectedCart.cartId)
+            );
+
+            shopify.toast.show("Cart deleted successfully");
+        }
+
+        setDeleteModal(false);
+        setSelectedCart(null);
+    };
+
+    const handleTogglePublish = async (id) => {
+        const data = await togglePublishCart(apiUrl, id);
+
+        if (data.success) {
+
+            setCarts((prev) =>
+                prev.map((c) =>
+                    c.cartId === id
+                        ? { ...c, status: c.status === "published" ? "unpublished" : "published" }
+                        : { ...c, status: c.status === "published" ? "unpublished" : c.status }
+                )
+            );
+
+            shopify.toast.show(
+                data.message || "Cart status updated"
+            );
         }
     };
 
-    useEffect(() => {
-        const fetchCarts = async () => {
-            try {
-                const data = await getCarts(apiUrl, shop.myshopifyDomain);
-                setCarts(data.data)
-            } catch (error) {
-                console.error("FETCH CARTS ERROR:", error);
-            }
-        };
+    const handleDuplicateCart = async (cart) => {
+        const data = await duplicateCart(apiUrl, cart.cartId);
 
-        fetchCarts();
-    }, [shop.myshopifyDomain, apiUrl]);
+        if (data.success) {
+            setCarts((prev) => [data.data, ...prev]);
 
-    const handleDeleteCart = async (cartId) => {
-        try {
-            const data = await deleteCart(apiUrl, cartId);
-
-            if (data.success) {
-                setCarts(carts.filter((cart) => cart.cartId !== cartId));
-            }
-        } catch (error) {
-            console.error("DELETE CART ERROR:", error);
+            shopify.toast.show("Cart duplicated successfully");
         }
     };
+
+    const liveCarts = carts
+        .filter((cart) => cart.status === "published")
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const draftCarts = carts
+        .filter((cart) => cart.status !== "published")
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const CartTable = ({ carts, emptyText, isDraft }) => (
+        <div style={{ paddingTop: 12 }}>
+            {carts.length === 0 ? (
+                <Text tone="subdued">{emptyText}</Text>
+            ) : (
+                <IndexTable
+                    resourceName={{ singular: "cart", plural: "carts" }}
+                    itemCount={carts.length}
+                    headings={[
+                        { title: "Cart name" },
+                        { title: "Cart conversion rate (%)" },
+                        { title: "Added revenue" },
+                        { title: "" },
+                    ]}
+                    selectable={false}
+                >
+                    {carts.map((cart, i) => (
+                        <IndexTable.Row key={cart.cartId} id={cart.cartId} position={i}>
+                            <IndexTable.Cell>
+                                <div style={{ maxWidth: "100px" }}>
+                                    <Text
+                                        fontWeight="medium"
+                                        truncate
+                                        as="span"
+                                    >
+                                        {cart.cartName || "Untitled cart"}
+                                    </Text>
+                                </div>
+                            </IndexTable.Cell>
+
+                            <IndexTable.Cell>—</IndexTable.Cell>
+                            <IndexTable.Cell>—</IndexTable.Cell>
+
+                            <IndexTable.Cell>
+                                <InlineStack gap="200" align="end">
+
+                                    <Tooltip content="Edit cart">
+                                        <Button
+                                            icon={EditIcon}
+                                            onClick={() => navigate(`/app/cart-editor/${cart.cartId}`)}
+                                        />
+                                    </Tooltip>
+
+                                    <Tooltip content="Preview cart">
+                                        <Button icon={ViewIcon} />
+                                    </Tooltip>
+
+                                    <Tooltip content="Duplicate cart">
+                                        <Button
+                                            icon={DuplicateIcon}
+                                            onClick={() => handleDuplicateCart(cart)}
+                                        />
+                                    </Tooltip>
+
+                                    <Tooltip content={cart.status === "published" ? "Unpublish cart" : "Publish cart"}>
+                                        <Button
+                                            size="slim"
+                                            tone={cart.status === "published" ? "critical" : "success"}
+                                            onClick={() => handleTogglePublish(cart.cartId)}
+                                        >
+                                            {cart.status === "published" ? "Unpublish" : "Publish"}
+                                        </Button>
+                                    </Tooltip>
+
+                                    {isDraft && (
+                                        <Tooltip content="Delete cart">
+                                            <Button
+                                                icon={DeleteIcon}
+                                                tone="critical"
+                                                onClick={() => {
+                                                    setSelectedCart(cart);
+                                                    setDeleteModal(true);
+                                                }}
+                                            />
+                                        </Tooltip>
+                                    )}
+
+                                </InlineStack>
+                            </IndexTable.Cell>
+                        </IndexTable.Row>
+                    ))}
+                </IndexTable>
+            )}
+        </div>
+    );
 
     return (
         <Page
@@ -88,106 +217,63 @@ export default function AppCarts() {
             primaryAction={{
                 content: loading ? "Creating..." : "Create cart",
                 icon: PlusIcon,
+                loading,
                 onAction: handleCreateCart,
-                loading: loading,
             }}
         >
             <Layout>
+
                 <Layout.Section>
                     <Card>
-                        <InlineStack align="space-between">
-                            <InlineStack gap="200" align="center">
-                                <Badge tone="success">Live cart</Badge>
-                            </InlineStack>
+                        <InlineStack gap="200">
+                            <Badge tone="success">Live cart</Badge>
                         </InlineStack>
 
-                        <div style={{ paddingTop: "12px" }}>
-                            <Text variant="bodyMd" tone="subdued">
-                                No live cart configured
-                            </Text>
-                            <Text variant="bodySm" tone="subdued">
-                                Publish a draft cart to see your cart live and start earning.
-                            </Text>
-                        </div>
+                        <CartTable
+                            carts={liveCarts}
+                            emptyText="No live cart configured"
+                        />
                     </Card>
                 </Layout.Section>
 
                 <Layout.Section>
                     <Card>
-                        <Text variant="headingSm" as="h2">
-                            Draft carts
-                        </Text>
+                        <Text variant="headingSm">Draft carts</Text>
 
-                        <div style={{ paddingTop: "12px" }}>
-                            {carts.length === 0 ? (
-                                <Text variant="bodyMd" tone="subdued">
-                                    No draft carts yet.
-                                </Text>
-                            ) : (
-                                <IndexTable
-                                    resourceName={{ singular: "cart", plural: "carts" }}
-                                    itemCount={carts.length}
-                                    headings={[
-                                        { title: "Cart name" },
-                                        { title: "Cart conversion rate (%)" },
-                                        { title: "Added revenue" },
-                                        { title: "" },
-                                    ]}
-                                    selectable={false}
-                                >
-                                    {carts.map((cart, index) => (
-                                        <IndexTable.Row id={cart.cartId} key={cart.cartId} position={index}>
-
-                                            {/* Cart Name */}
-                                            <IndexTable.Cell>
-                                                <Text fontWeight="medium">
-                                                    {cart.cartName || "Untitled cart"}
-                                                </Text>
-                                            </IndexTable.Cell>
-
-                                            {/* Conversion */}
-                                            <IndexTable.Cell>—</IndexTable.Cell>
-
-                                            {/* Revenue */}
-                                            <IndexTable.Cell>—</IndexTable.Cell>
-
-                                            {/* Actions */}
-                                            <IndexTable.Cell>
-                                                <InlineStack gap="200" align="end">
-
-                                                    <Tooltip content="Edit cart">
-                                                        <Button
-                                                            icon={EditIcon}
-                                                            onClick={() => navigate(`/app/cart-editor/${cart.cartId}`)}
-                                                        />
-                                                    </Tooltip>
-
-                                                    <Tooltip content="Preview cart">
-                                                        <Button icon={ViewIcon} />
-                                                    </Tooltip>
-
-                                                    <Tooltip content="Duplicate cart">
-                                                        <Button icon={DuplicateIcon} />
-                                                    </Tooltip>
-
-                                                    <Tooltip content="Publish cart">
-                                                        <Button size="slim">Publish</Button>
-                                                    </Tooltip>
-
-                                                    <Tooltip content="Delete cart">
-                                                        <Button icon={DeleteIcon} tone="critical" onClick={() => handleDeleteCart(cart.cartId)} />
-                                                    </Tooltip>
-                                                </InlineStack>
-                                            </IndexTable.Cell>
-
-                                        </IndexTable.Row>
-                                    ))}
-                                </IndexTable>
-                            )}
-                        </div>
+                        <CartTable
+                            carts={draftCarts}
+                            emptyText="No draft carts yet."
+                            isDraft
+                        />
                     </Card>
                 </Layout.Section>
+
             </Layout>
+
+            <Modal
+                open={deleteModal}
+                onClose={() => setDeleteModal(false)}
+                title={`Are you sure you want to delete "${selectedCart?.cartName || "Untitled cart"}"?`}
+                primaryAction={{
+                    content: "Delete cart",
+                    destructive: true,
+                    onAction: confirmDeleteCart,
+                }}
+                secondaryActions={[
+                    {
+                        content: "Cancel",
+                        onAction: () => setDeleteModal(false),
+                    },
+                ]}
+            >
+                <Modal.Section>
+                    <Text tone="subdued">
+                        Deleting this cart will permanently remove it and it cannot be recovered.
+                        <br />
+                        This action cannot be undone.
+                    </Text>
+                </Modal.Section>
+            </Modal>
         </Page>
     );
 }

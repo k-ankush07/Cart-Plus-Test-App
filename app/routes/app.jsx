@@ -30,7 +30,7 @@ export default function App() {
             Home
           </s-link>
            <s-link href="/app/carts">Carts</s-link>
-           <s-link href="/app/additional">Additional page</s-link>
+           <s-link href="/app/sticky-cart">Sticky Cart</s-link>
         </s-app-nav>
         <Outlet />
       </PolarisAppProvider>
