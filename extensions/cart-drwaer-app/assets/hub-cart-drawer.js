@@ -10,9 +10,7 @@ function initCartDrawerAfterData() {
 
   document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
   document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
-
   window.injectCartHTML(blockId, root);
-
 }
 
 (function () {
@@ -134,6 +132,11 @@ function initCartDrawerAfterData() {
     }
 
     function closeDrawer() {
+      const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+      const bg = document.getElementById(`hub-cart-bg-${blockId}`);
+
+      if (!drawer || !bg) return;
+
       drawer.classList.remove(`hub-visible-${blockId}`);
       bg.classList.remove(`hub-visible-${blockId}`);
 
@@ -141,11 +144,6 @@ function initCartDrawerAfterData() {
       document.documentElement.classList.remove("overflow-hidden");
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
-
-      setTimeout(() => {
-        document.body.style.overflow = "";
-        document.documentElement.style.overflow = "";
-      }, 50);
     }
 
     if (!isEventBound) {
@@ -270,6 +268,68 @@ window.startAnnTimer = function (blockId, timeStr) {
 };
 
 (function () {
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+  function getCacheKey(shop) {
+    return `hub-cart-settings-${shop}`;
+  }
+
+  function readCache(shop) {
+    try {
+      const raw = localStorage.getItem(getCacheKey(shop));
+      if (!raw) return null;
+      const { data, ts } = JSON.parse(raw);
+      if (Date.now() - ts > CACHE_TTL) return null;
+      return data;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeCache(shop, data) {
+    try {
+      localStorage.setItem(
+        getCacheKey(shop),
+        JSON.stringify({ data, ts: Date.now() })
+      );
+    } catch (_) {}
+  }
+
+  function applyCartData({ cartResult, stickyResult }) {
+    // ── Cart drawer ──
+    if (cartResult?.success && cartResult.data?.length) {
+      const publishedCart = cartResult.data.find(
+        (cart) => cart.status === "published"
+      );
+
+      if (publishedCart) {
+        console.log("Published cart found:", publishedCart);
+        window.__HUB_ACTIVE_CART__ = publishedCart;
+        initCartDrawerAfterData();
+        loadCartRecommendations(publishedCart.recommendationsSettings);
+      } else {
+        console.log("No published cart found");
+      }
+    } else {
+      console.log("No carts found for this shop");
+    }
+
+    // ── Sticky cart ──
+    if (stickyResult?.success) {
+      console.log("Sticky Cart found:", stickyResult.data);
+      window.__HUB_STICKY_CART__ = stickyResult.data;
+      renderStickyCart();
+
+      if (stickyResult.data.enabled) {
+        console.log("Sticky cart is enabled");
+      } else {
+        console.log("Sticky cart is disabled");
+      }
+    } else {
+      console.log("No sticky cart found");
+    }
+  }
+
   async function fetchCartSettings() {
     const shop = window.__SHOPIFY_SHOP__?.domain;
 
@@ -280,32 +340,50 @@ window.startAnnTimer = function (blockId, timeStr) {
 
     console.log("Shop:", shop);
 
+    // ── 1. Render from cache immediately (zero wait) ──
+    const cached = readCache(shop);
+    if (cached) {
+      console.log("[hub] Rendering from cache");
+      applyCartData(cached);
+    }
+
+    // ── 2. Fetch fresh data in background (both requests in parallel) ──
     try {
-      const res = await fetch(`${apiUrl}/api/get-carts?shop=${shop}`, {
-        headers: { "ngrok-skip-browser-warning": "true" },
-      });
-      const result = await res.json();
+      const [cartResult, stickyResult] = await Promise.all([
+        fetch(`${apiUrl}/api/get-carts?shop=${shop}`, {
+          headers: { "ngrok-skip-browser-warning": "true" },
+        }).then((r) => r.json()),
 
-      if (!result.success || !result.data?.length) {
-        console.log("No carts found for this shop");
-        return;
-      }
+        fetch(`${apiUrl}/api/get-sticky-cart/${shop}`, {
+          headers: { "ngrok-skip-browser-warning": "true" },
+        }).then((r) => r.json()),
+      ]);
 
-      const publishedCart = result.data.find(
-        (cart) => cart.status === "published",
+      const freshData = { cartResult, stickyResult };
+
+      // Save fresh data to cache
+      writeCache(shop, freshData);
+
+      const prevCart = JSON.stringify(window.__HUB_ACTIVE_CART__ ?? null);
+      const prevSticky = JSON.stringify(window.__HUB_STICKY_CART__ ?? null);
+
+      const nextCart = JSON.stringify(
+        cartResult.data?.find((c) => c.status === "published") ?? null
       );
+      const nextSticky = JSON.stringify(stickyResult.data ?? null);
 
-      if (publishedCart) {
-        console.log("Published cart found:", publishedCart);
-        window.__HUB_ACTIVE_CART__ = publishedCart;
-        initCartDrawerAfterData();
-
-        loadCartRecommendations(publishedCart.recommendationsSettings);
+      if (prevCart !== nextCart || prevSticky !== nextSticky) {
+        console.log("[hub] Fresh data differs from cache — re-applying");
+        applyCartData(freshData);
       } else {
-        console.log("No published cart found for this shop");
+        console.log("[hub] Fresh data matches cache — no re-render needed");
       }
     } catch (err) {
       console.error("Cart settings fetch error:", err);
+
+      if (!cached) {
+        console.warn("[hub] No cache and fetch failed — cart will not render");
+      }
     }
   }
 

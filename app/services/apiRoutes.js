@@ -93,3 +93,23 @@ export const duplicateCart = async (apiUrl, cartId) => {
 
   return res.json();
 };
+
+export const createStickyCart = async (apiUrl, data) => {
+  const res = await fetch(`${apiUrl}/api/save-sticky-cart`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+};
+
+export const getStickyCart = async (apiUrl, shop) => {
+  const res = await fetch(`${apiUrl}/api/get-sticky-cart/${shop}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  return res.json();
+};

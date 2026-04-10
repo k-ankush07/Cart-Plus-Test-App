@@ -71,6 +71,26 @@ const cartSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-const cartModels = mongoose.model("cartItems", cartSchema);
+const stickyCartSchema = new mongoose.Schema({
+   shop: { type: String, required: true, unique: true },
+  cartId: { type: String, required: true, unique: true },
+  position: {
+    type: String,
+    enum: ["bottom-right", "center-right", "top-right", "bottom-left", "center-left", "top-left"],
+    default: "bottom-right",
+  },
+  enabled: { type: Boolean, default: true },
+  selectedIcon: { type: String, default: "bag" },
+  bgColor: { type: String, default: "#000000" },
+  iconColor: { type: String, default: "#ffffff" },
+  qBgColor: { type: String, default: "#e42626" },
+  qTextColor: { type: String, default: "#ffffff" },
+  device: { type: String, default: "all" },
+  customCss: { type: String, default: "" },
+  createdAt: { type: Date, default: Date.now },
+});
 
-export { cartModels };
+const cartModels = mongoose.model("cartItems", cartSchema);
+const stickyCartModel = mongoose.model("stickyCart", stickyCartSchema);
+
+export { cartModels, stickyCartModel };

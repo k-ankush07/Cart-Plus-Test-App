@@ -1,5 +1,5 @@
 import express from "express";
-import { cartModels } from "../model/schema.js";
+import { cartModels, stickyCartModel } from "../model/schema.js";
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -271,6 +271,81 @@ router.post("/duplicate-cart", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.json({ success: false });
+  }
+});
+
+router.post("/save-sticky-cart", async (req, res) => {
+  try {
+    let {
+      shop,
+      cartId,
+      position,
+      enabled,
+      selectedIcon,
+      bgColor,
+      iconColor,
+      qBgColor,
+      qTextColor,
+      device,
+      customCss,
+    } = req.body;
+
+    if (!cartId) {
+      cartId = generateNewCartId();
+    }
+
+    const updatedStickyCart = await stickyCartModel.findOneAndUpdate(
+      { shop }, // 🔍 find by shop
+      {
+        shop,
+        cartId,
+        position,
+        enabled,
+        selectedIcon,
+        bgColor,
+        iconColor,
+        qBgColor,
+        qTextColor,
+        device,
+        customCss,
+      },
+      {
+        new: true,
+        upsert: true, 
+      }
+    );
+
+    res.json({
+      success: true,
+      data: updatedStickyCart,
+    });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false });
+  }
+});
+
+router.get("/get-sticky-cart/:shop", async (req, res) => {
+  try {
+    const { shop } = req.params;
+    const stickyCart = await stickyCartModel.findOne({ shop });
+
+    if (!stickyCart) {
+      return res.status(404).json({
+        success: false,
+        message: "Sticky cart not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: stickyCart,
+    });
+  } catch (error) {
+    console.error("GET STICKY CART ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 });
 

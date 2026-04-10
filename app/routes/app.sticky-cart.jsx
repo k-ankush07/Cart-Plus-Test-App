@@ -13,8 +13,51 @@ import {
   Banner, Collapsible,
   AppProvider,
 } from "@shopify/polaris";
+
 import ColorInput from "./components/ui/ColorInput";
 import HtmlEditor from "./components/ui-cart-options/HtmlEditor";
+import { shopLoader } from "./components/shop.server";
+import { useLoaderData } from "react-router-dom";
+import { json } from "@remix-run/node";
+import { createStickyCart, getStickyCart } from "../services/apiRoutes";
+
+function scopeCss(css, scope) {
+  if (!css) return "";
+  let result = css.replace(/([^{}@][^{}]*)\{/g, (_match, selectors) => {
+    const scoped = selectors.split(",").map(s => {
+      const t = s.trim();
+      if (!t) return t;
+      return `${scope} ${t}`;
+    }).join(", ");
+    return `${scoped} {`;
+  });
+  result = result.replace(/([\w-]+\s*:\s*)([^;!{}]+?)(\s*;)/g, (_m, prop, val, semi) => {
+    return `${prop}${val.trim()} !important${semi}`;
+  });
+  return result;
+}
+
+export const loader = async ({ request, params }) => {
+  const { shop, apiUrl, accessToken, currency } = await shopLoader(request);
+  const cartId = params.id;
+
+  let cart = null;
+
+  try {
+    const data = await getCart(apiUrl, cartId);
+    cart = data.data;
+  } catch (err) {
+    console.error("GET CART ERROR:", err);
+  }
+
+  return json({
+    shop,
+    apiUrl,
+    cart,
+    accessToken,
+    currency,
+  });
+};
 
 const ICONS = [
   {
@@ -50,20 +93,20 @@ const ICONS = [
 
 const ICON_SVGS = {
   bag: (color) => (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="45" height="45" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
       <line x1="3" y1="6" x2="21" y2="6" />
       <path d="M16 10a4 4 0 01-8 0" />
     </svg>
   ),
   tote: (color) => (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="45" height="45" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="4" y="7" width="16" height="14" rx="2" />
       <path d="M8 7V5a4 4 0 018 0v2" />
     </svg>
   ),
   cart: (color) => (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="45" height="45" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="9" cy="21" r="1" />
       <circle cx="20" cy="21" r="1" />
       <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57L23 6H6" />
@@ -94,16 +137,17 @@ const DEVICE_OPTIONS = [
 ];
 
 const positionStyles = {
-  "bottom-right": { bottom: 24, right: 24 },
-  "center-right": { top: "50%", right: 24, transform: "translateY(-50%)" },
-  "top-right": { top: 24, right: 24 },
+  "bottom-right": { bottom: 5, right: 5 },
+  "center-right": { top: "50%", right: 5, transform: "translateY(-50%)" },
+  "top-right": { top: 5, right: 5 },
 
-  "bottom-left": { bottom: 24, left: 24 },
-  "center-left": { top: "50%", left: 24, transform: "translateY(-50%)" },
-  "top-left": { top: 24, left: 24 },
+  "bottom-left": { bottom: 5, left: 5 },
+  "center-left": { top: "50%", left: 5, transform: "translateY(-50%)" },
+  "top-left": { top: 5, left: 5 },
 };
 
 export default function StickyCart() {
+  const { shop, apiUrl, cart, accessToken, } = useLoaderData();
   const [enabled, setEnabled] = useState(true);
   const [saved, setSaved] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState("bag");
@@ -114,6 +158,10 @@ export default function StickyCart() {
   const [position, setPosition] = useState("bottom-right");
   const [device, setDevice] = useState("all");
   const [cssListOpen, setCssListOpen] = useState(false);
+  const skipDirtyCheck = useRef(false);
+  const [loading, setLoading] = useState(false);
+
+  const Storeshop = shop?.myshopifyDomain;
 
   const [isDirty, setIsDirty] = useState(false);
 
@@ -132,25 +180,6 @@ export default function StickyCart() {
     }));
   };
 
-  const handleChange = (type, updater) => {
-    const setters = {
-
-    };
-
-    const setter = setters[type];
-    if (!setter) return;
-
-    setter((prev) => {
-      const updated =
-        typeof updater === "function" ? updater(prev) : updater;
-
-      const isSame = isEqual(initialSettingsRef.current[type], updated);
-      setIsDirty(!isSame);
-
-      return updated;
-    });
-  };
-
   useEffect(() => {
     initialSettingsRef.current = {
       enabled,
@@ -166,6 +195,8 @@ export default function StickyCart() {
   }, []);
 
   useEffect(() => {
+    if (skipDirtyCheck.current) return;
+
     const current = {
       enabled,
       selectedIcon,
@@ -205,9 +236,54 @@ export default function StickyCart() {
     }
   }, [isDirty]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getStickyCart(apiUrl, Storeshop);
+
+        if (res?.data) {
+          const data = res.data;
+
+          setEnabled(data.enabled ?? true);
+          setSelectedIcon(data.selectedIcon ?? "bag");
+          setBgColor(data.bgColor ?? "#000000");
+          setIconColor(data.iconColor ?? "#ffffff");
+          setQBgColor(data.qBgColor ?? "#e42626");
+          setQTextColor(data.qTextColor ?? "#ffffff");
+          setPosition(data.position ?? "bottom-right");
+          setDevice(data.device ?? "all");
+
+          setCartSettings({
+            customCss: data.customCss ?? "",
+          });
+          const formattedInitial = {
+            enabled: data.enabled ?? true,
+            selectedIcon: data.selectedIcon ?? "bag",
+            bgColor: data.bgColor ?? "#000000",
+            iconColor: data.iconColor ?? "#ffffff",
+            qBgColor: data.qBgColor ?? "#e42626",
+            qTextColor: data.qTextColor ?? "#ffffff",
+            position: data.position ?? "bottom-right",
+            device: data.device ?? "all",
+            customCss: data.customCss ?? "",
+          };
+
+          initialSettingsRef.current = formattedInitial;
+        }
+      } catch (err) {
+        console.error("GET STICKY CART ERROR:", err);
+      }
+    };
+
+    fetchData();
+  }, [apiUrl, Storeshop]);
+
   const handleSave = async () => {
     try {
+      setLoading(true);
       const payload = {
+        shop: Storeshop,
+        cartId: cart?.id,
         enabled,
         selectedIcon,
         bgColor,
@@ -219,21 +295,27 @@ export default function StickyCart() {
         customCss: cartSettings.customCss,
       };
 
-      // API call here
-      console.log("Saving:", payload);
+      const res = await createStickyCart(apiUrl, payload);
 
-      // update initial state after save
-      initialSettingsRef.current = payload;
+      if (res?.success) {
+        initialSettingsRef.current = res.data;
 
-      setIsDirty(false);
+        setIsDirty(false);
+        setSaved(true);
 
-      console.log("Saved successfully");
+        setTimeout(() => setSaved(false), 3000);
+      }
+
     } catch (error) {
       console.error("Save error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDiscard = () => {
+    skipDirtyCheck.current = true;
+
     const initial = initialSettingsRef.current;
 
     setEnabled(initial.enabled);
@@ -250,6 +332,14 @@ export default function StickyCart() {
     });
 
     setIsDirty(false);
+
+    if (window.shopify) {
+      window.shopify.saveBar.hide("my-save-bar");
+    }
+
+    setTimeout(() => {
+      skipDirtyCheck.current = false;
+    }, 0);
   };
 
   return (
@@ -300,6 +390,8 @@ export default function StickyCart() {
               variant={isDirty ? "primary" : "secondary"}
               onClick={handleSave}
               tone={saved ? "success" : undefined}
+              loading={loading}
+              disabled={loading}
               className={isDirty ? "black-btn" : ""}
             >
               {saved ? "Saved!" : "Save"}
@@ -429,7 +521,10 @@ export default function StickyCart() {
                 </Box>
 
                 {/* Preview viewport */}
-                <div style={{ position: "relative", height: 340, background: "#f3f4f6" }}>
+                <div style={{ position: "relative", height: 340, background: "#f3f4f6" }} className="sticky-cart">
+                  {cartSettings?.customCss && (
+                    <style dangerouslySetInnerHTML={{ __html: scopeCss(cartSettings.customCss, ".sticky-cart") }} />
+                  )}
                   {enabled && (
                     <div
                       style={{
@@ -452,14 +547,14 @@ export default function StickyCart() {
                       <div
                         style={{
                           position: "absolute",
-                          top: -4,
-                          right: -4,
-                          width: 20,
-                          height: 20,
+                          top: 4,
+                          right: 0,
+                          width: 24,
+                          height: 24,
                           borderRadius: "50%",
                           background: qBgColor,
                           color: qTextColor,
-                          fontSize: 11,
+                          fontSize: 14,
                           fontWeight: 600,
                           display: "flex",
                           alignItems: "center",
@@ -499,7 +594,6 @@ export default function StickyCart() {
                   style={{
                     fontSize: 13,
                     lineHeight: 1.8,
-                    color: "#444",
                     padding: "8px 0",
                   }}
                 >
