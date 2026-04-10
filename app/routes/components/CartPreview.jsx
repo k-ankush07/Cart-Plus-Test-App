@@ -58,9 +58,12 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 <div className="cart-app__body upcart-cart-body">
                     {activeTab !== "Recommendations" && (
                         <>
+                            {/* above_announcements */}
+                            <CustomHtml cartSettings={cartSettings} position="above_announcements" />
+
                             {!announcementSettings.enabled &&
                                 announcementSettings.position === "before" && (
-                                    <Announcements announcementSettings={announcementSettings} cartSettings ={cartSettings} />
+                                    <Announcements announcementSettings={announcementSettings} cartSettings={cartSettings} />
                                 )}
 
                             {trustBadgesSettings?.position === "top" && (

@@ -12,6 +12,7 @@ function initCartDrawerAfterData() {
   document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
 
   window.injectCartHTML(blockId, root);
+
 }
 
 (function () {

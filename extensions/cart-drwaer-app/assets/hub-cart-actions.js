@@ -20,17 +20,94 @@ async function updateQty(key, qty) {
   });
 }
 
-async function removeItem(key) {
+const _hubPendingRemovals = {};
+const UNDO_DURATION_MS = 4000;
+
+async function removeItem(key, title) {
+  const drawer = getDrawer();
+  const el = drawer.querySelector(`[data-item-key="${key}"]`);
+  if (!el) return;
+
+  if (_hubPendingRemovals[key]) {
+    clearTimeout(_hubPendingRemovals[key].timer);
+    _hubPendingRemovals[key].toastEl?.remove();
+  }
+
+  const inner = el.querySelector(".hub-cart-item");
+  if (inner) {
+    inner.style.opacity = "0.4";
+    inner.style.transition = "opacity 0.25s ease";
+    inner.style.pointerEvents = "none";
+  }
+
+  const toastEl = _createUndoToast(key, title || "item");
+  el.appendChild(toastEl);
+
+  const fill = toastEl.querySelector(".hub-undo-fill");
+  if (fill) {
+    fill.style.transition = `width ${UNDO_DURATION_MS}ms linear`;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      fill.style.width = "0%";
+    }));
+  }
+
+  _hubPendingRemovals[key] = {
+    toastEl,
+    itemEl: el,
+    innerEl: inner,
+    timer: setTimeout(() => _commitRemoval(key), UNDO_DURATION_MS),
+  };
+}
+
+async function _commitRemoval(key) {
+  const p = _hubPendingRemovals[key];
+  if (!p) return;
+
+  p.toastEl?.classList.add("hub-toast-hiding");
+  setTimeout(() => p.toastEl?.remove(), 220);
+  delete _hubPendingRemovals[key];
+
   await fetch("/cart/change.js", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id: key,
-      quantity: 0,
-    }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: key, quantity: 0 }),
   });
+
+  if (Object.keys(_hubPendingRemovals).length === 0) {
+    document.dispatchEvent(new CustomEvent("cart:updated"));
+  }
+}
+
+function _undoRemoval(key) {
+  const p = _hubPendingRemovals[key];
+  if (!p) return;
+
+  clearTimeout(p.timer);
+
+  if (p.innerEl) {
+    p.innerEl.style.opacity = "1";
+    p.innerEl.style.pointerEvents = "";
+  }
+
+  p.toastEl?.classList.add("hub-toast-hiding");
+  setTimeout(() => {
+    p.toastEl?.remove();
+    window._hubRenderInProgress = false;
+    document.dispatchEvent(new CustomEvent("cart:updated"));
+  }, 220);
+
+  delete _hubPendingRemovals[key];
+}
+
+function _createUndoToast(key, title) {
+  const el = document.createElement("div");
+  el.className = "hub-undo-toast";
+  el.innerHTML = `
+    <span class="hub-undo-msg" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Removed '${title}'</span>
+    <button class="hub-undo-btn" onclick="_undoRemoval('${key}')">Undo</button>
+    <div class="hub-undo-progress"><div class="hub-undo-fill" style="width:100%"></div></div>
+  `;
+  return el;
 }
 
 function handleQtyInput(key, value) {

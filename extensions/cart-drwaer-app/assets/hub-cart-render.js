@@ -14,6 +14,48 @@ function formatMoney(cents) {
   }).format(cents / 100);
 }
 
+function executeBeforeLoadScripts(scriptContent, scope) {
+  if (!scriptContent) return;
+
+  try {
+    const fn = new Function("scope", scriptContent);
+    fn(scope);
+  } catch (e) {
+    console.error("Error executing custom script:", e);
+  }
+}
+
+function scopeCss(css, scope) {
+  if (!css) return "";
+  css = css.replace(/\s*!important/gi, "");
+  return css
+    .replace(/([^{}@][^{}]*)\{/g, (_match, selectors) => {
+      const scoped = selectors
+        .split(",")
+        .map((s) => {
+          const t = s.trim();
+          if (!t) return t;
+          return `${scope} ${t}`;
+        })
+        .join(", ");
+      return `${scoped} {`;
+    })
+    .replace(/([\w-]+\s*:\s*)([^;!{}]+?)(\s*;)/g, (_m, prop, val, semi) => {
+      return `${prop}${val.trim()} !important${semi}`;
+    });
+}
+
+function applyCustomCSS(blockId, css) {
+  const styleId = `hub-custom-css-${blockId}`;
+  let el = document.getElementById(styleId);
+  if (!el) {
+    el = document.createElement("style");
+    el.id = styleId;
+    document.head.appendChild(el);
+  }
+  el.textContent = scopeCss(css, `.hub-cart-block-${blockId}`);
+}
+
 function renderCustomHTML(content) {
   return content || "";
 }
@@ -366,6 +408,10 @@ window.hubCartRender = async function (drawer) {
 
   // Move blockId up so skeleton helpers can use it immediately
   const blockId = window.HUB_CART_BLOCK_ID;
+
+  if (drawer && !drawer.classList.contains(`hub-cart-block-${blockId}`)) {
+    drawer.classList.add(`hub-cart-block-${blockId}`);
+  }
   const trustBadgesSettings = window.__HUB_ACTIVE_CART__?.trustBadgesSettings;
 
   window.__HUB_ACTIVE_CART__?.trustBadgesSettings;
@@ -390,6 +436,16 @@ window.hubCartRender = async function (drawer) {
     const res = await fetch("/cart.js");
     let cart = await res.json();
 
+    const headerEl = document.querySelector(".upcart-header-text");
+
+    if (headerEl) {
+      const headerSettings = window.__HUB_ACTIVE_CART__?.headerSettings || {};
+
+      headerEl.innerText = (
+        headerSettings.titleText || "Cart • {{cart_quantity}}"
+      ).replace("{{cart_quantity}}", cart.item_count || 0);
+    }
+
     const footer = drawer.querySelector(".hub-cart-footer");
     if (footer) {
       if (cart.items.length === 0) {
@@ -412,12 +468,6 @@ window.hubCartRender = async function (drawer) {
     if (!container) return;
 
     /* ── ANNOUNCEMENT ── */
-
-    const customHTML = renderCustomHTML(
-      window.__HUB_ACTIVE_CART__?.cartSettings?.customHtmlBlocks
-        ?.above_announcements,
-    );
-
     const ann = window.__HUB_ACTIVE_CART__?.announcementSettings;
     const annBefore = document.getElementById(`hub-announcement-${blockId}`);
     const annAfter = document.getElementById(
@@ -442,15 +492,12 @@ window.hubCartRender = async function (drawer) {
           font-size: ${ann.fontSize || 14}px;
           text-align: center;
         `;
-        target.innerHTML =
-          (customHTML || "") +
-          "<br>" +
-          (ann.text
-            ? ann.text.replace(
-                "{TIMER}",
-                `<span id="hub-timer-${blockId}">${timerText}</span>`,
-              )
-            : "");
+        target.innerHTML = ann.text
+          ? ann.text.replace(
+              "{TIMER}",
+              `<span id="hub-timer-${blockId}">${timerText}</span>`,
+            )
+          : "";
         if (ann.text?.includes("{TIMER}")) {
           startAnnTimer(blockId, timerText);
         }
@@ -464,6 +511,11 @@ window.hubCartRender = async function (drawer) {
       totalEl.textContent = `${formatMoney(cart.total_price)} ${currencyCode}`;
     }
 
+    const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+    const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
+
+    applyCustomCSS(blockId, cartSettings.customCss);
+    executeBeforeLoadScripts(customHtmlBlocks.scripts_before_load, drawer);
     /* ── REWARDS BAR ── */
     renderRewardsBar(blockId, cart, rewards);
 
@@ -593,6 +645,7 @@ window.hubCartRender = async function (drawer) {
 
       container.innerHTML = `
         <div class="hub-cart-empty">
+         <div>${renderCustomHTML(customHtmlBlocks.empty_cart)}</div>
           <p class="hub-empty-title">Your cart is empty</p>
         </div>
       `;
@@ -623,8 +676,6 @@ window.hubCartRender = async function (drawer) {
     const itemsHTML = await Promise.all(
       cart.items.map(async (item) => {
         if (item.properties?._hub_addon) return "";
-
-        const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
 
         const showSavingsBelowPrices =
           cartSettings.showSavingsBelowPrices || false;
@@ -726,7 +777,7 @@ window.hubCartRender = async function (drawer) {
         }
 
         return `
-          <div class="hub-cart-for-item">
+          <div class="hub-cart-for-item" data-item-key="${item.key}" style="position:relative">
             <div class="hub-cart-item">
               <div class="hub-item-img-wrap">
                 <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
@@ -759,7 +810,7 @@ window.hubCartRender = async function (drawer) {
                       />
                       <button class="hub-qty-btn" onclick="updateQty('${item.key}', ${item.quantity + 1})">+</button>
                     </div>
-                    <button class="hub-delete-btn" onclick="removeItem('${item.key}')" aria-label="Remove item">
+                    <button class="hub-delete-btn" onclick="removeItem('${item.key}', '${item.product_title?.replace(/'/g, "\\'")}')" aria-label="Remove item">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                       </svg>
@@ -772,7 +823,10 @@ window.hubCartRender = async function (drawer) {
               </div>
             </div>
             <div class="hub-selling-plan-container">${sellingPlanHtml}</div>
-          </div>`;
+            <div>${renderCustomHTML(customHtmlBlocks.between_line_items)}</div>
+          </div>
+          <div>${renderCustomHTML(customHtmlBlocks.below_cart_items)}</div>
+          `;
       }),
     );
 
