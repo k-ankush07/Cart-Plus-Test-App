@@ -1,5 +1,5 @@
 const apiUrl =
-  "https://0844-2401-4900-1c71-48c-997b-113a-6a24-2141.ngrok-free.app";
+  "https://ed1d-2401-4900-1c71-48c-2890-1134-3b25-da99.ngrok-free.app";
 
 function initCartDrawerAfterData() {
   const blockId = window.HUB_CART_BLOCK_ID;

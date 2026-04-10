@@ -51,14 +51,6 @@ export default function CartSettings({ handleChange, cartSettings }) {
     const [cssListOpen, setCssListOpen] = useState(false);
     const [htmlPosition, setHtmlPosition] = useState("above_announcements");
 
-    const insertCssClass = (cls) => {
-        const snippet = `.${cls} {\n  \n}\n`;
-        handleChange("cartSettings", (prev) => ({
-            ...prev,
-            customCss: (prev.customCss || "") + snippet,
-        }));
-    };
-
     const update = (key, value) => {
         handleChange("cartSettings", (prev) => ({ ...prev, [key]: value }));
     };

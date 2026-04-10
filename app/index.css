@@ -838,6 +838,7 @@ body,
     font-size: 13px;
     color: #c9cccf;
 }
+
 .html-editor {
     display: flex;
     flex-direction: column;
@@ -868,3 +869,11 @@ a.upcart-product-title-link {
     text-decoration: none;
 }
 
+.black-btn {
+    background-color: #000 !important;
+    border-color: #000 !important;
+}
+
+.black-btn span {
+    color: #fff !important;
+}

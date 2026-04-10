@@ -21,7 +21,6 @@ export const action = async ({ request }) => {
     "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/shipping-protection.png";
 
   try {
-    //  STEP 1: GET ONLINE STORE PUBLICATION ID
     const pubRes = await admin.graphql(`
       {
         publications(first: 10) {
