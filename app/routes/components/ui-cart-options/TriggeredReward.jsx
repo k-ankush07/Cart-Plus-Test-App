@@ -12,32 +12,65 @@ import ProductItemCollections from "../ui/ProductItem-Collections";
 
 // ─── Metadata ────────────────────────────────────────────────────────────────
 
+function getDiscountItems(triggers) {
+  console.log("🔍 [getDiscountItems] Called with triggers:", JSON.stringify(triggers, null, 2));
+
+  const productTrigger = triggers.find(t => t.type === "specific_products");
+  const collectionTrigger = triggers.find(t => t.type === "specific_collections");
+
+  console.log("🔍 [getDiscountItems] productTrigger:", JSON.stringify(productTrigger, null, 2));
+  console.log("🔍 [getDiscountItems] collectionTrigger:", JSON.stringify(collectionTrigger, null, 2));
+
+  if (Array.isArray(productTrigger?.items?.products) && productTrigger.items.products.length > 0) {
+    const result = {
+      products: {
+        productsToAdd: productTrigger.items.products.filter(Boolean), // already GID strings
+      },
+    };
+    console.log("✅ [getDiscountItems] Resolved → PRODUCTS:", JSON.stringify(result));
+    return result;
+  }
+
+  if (Array.isArray(collectionTrigger?.items) && collectionTrigger.items.length > 0) {
+    const result = {
+      collections: {
+        collectionsToAdd: collectionTrigger.items.filter(Boolean), // already GID strings
+      },
+    };
+    console.log("✅ [getDiscountItems] Resolved → COLLECTIONS:", JSON.stringify(result));
+    return result;
+  }
+
+  console.log("⚠️ [getDiscountItems] Resolved → ALL (fallback)");
+  return { all: true };
+}
+
 const TRIGGER_OPTIONS = [
-  { type: "specific_products",    label: "Specific products",    description: "Any item in the cart belongs to selected products or variants" },
+  { type: "specific_products", label: "Specific products", description: "Any item in the cart belongs to selected products or variants" },
   { type: "specific_collections", label: "Specific collections", description: "Any item in the cart belongs to selected collections" },
-  { type: "cart_total",           label: "Cart total",           description: "Combined value of all items before discounts" },
-  { type: "cart_quantity",        label: "Cart quantity",        description: "Total quantity of all items in the cart" },
-  { type: "subscription",         label: "Subscription",         description: "Any item in the cart has a subscription" },
-  { type: "customer_logged_in",   label: "Customer is logged in",description: "Targeted customer who is logged in" },
+  { type: "cart_total", label: "Cart total", description: "Combined value of all items before discounts" },
+  { type: "cart_quantity", label: "Cart quantity", description: "Total quantity of all items in the cart" },
+  { type: "subscription", label: "Subscription", description: "Any item in the cart has a subscription" },
+  { type: "customer_logged_in", label: "Customer is logged in", description: "Targeted customer who is logged in" },
 ];
 
 const REWARD_OPTIONS = [
-  { type: "free_gift",     label: "Free gift",     description: "Give a free gift" },
+  { type: "free_gift", label: "Free gift", description: "Give a free gift" },
   { type: "cart_discount", label: "Cart discount", description: "Discount apply on cart total" },
   { type: "free_shipping", label: "Free shipping", description: "No standard shipping costs for the cart" },
 ];
 
 const TRIGGER_ICON = {
-  specific_products:    CartIcon,
+  specific_products: CartIcon,
   specific_collections: CartIcon,
-  cart_total:           CashDollarIcon,
-  cart_quantity:        CartIcon,
-  subscription:         RefreshIcon,
-  customer_logged_in:   PersonIcon,
+  cart_total: CashDollarIcon,
+  cart_quantity: CartIcon,
+  subscription: RefreshIcon,
+  customer_logged_in: PersonIcon,
 };
 
 const REWARD_ICON = {
-  free_gift:     GiftCardIcon,
+  free_gift: GiftCardIcon,
   cart_discount: CashDollarIcon,
   free_shipping: CartIcon,
 };
@@ -50,12 +83,12 @@ const emptyForm = { id: null, title: "", discountCode: "", description: "", trig
 function triggerBadgeLabel(t) {
   if (!t) return "";
   switch (t.type) {
-    case "cart_total":           return `Cart total ($${(t.minAmount || 0).toFixed(2)}+)`;
-    case "cart_quantity":        return `Cart quantity (${t.minQuantity || 0}+)`;
-    case "specific_products":    return "Specific product";
+    case "cart_total": return `Cart total ($${(t.minAmount || 0).toFixed(2)}+)`;
+    case "cart_quantity": return `Cart quantity (${t.minQuantity || 0}+)`;
+    case "specific_products": return "Specific product";
     case "specific_collections": return "Specific collection";
-    case "subscription":         return "Subscription";
-    case "customer_logged_in":   return "Customer logged in";
+    case "subscription": return "Subscription";
+    case "customer_logged_in": return "Customer logged in";
     default: return t.type;
   }
 }
@@ -64,7 +97,7 @@ function rewardBadgeLabel(r) {
   if (!r) return "";
   switch (r.type) {
     case "cart_discount": return r.discountType === "fixed" ? `$${r.value || 0} cart discount` : `${r.value || 0}% cart discount`;
-    case "free_gift":     return "Free gift";
+    case "free_gift": return "Free gift";
     case "free_shipping": return "Free shipping";
     default: return r.type;
   }
@@ -80,25 +113,18 @@ function TriggerSlot({ trigger, onRemove, onEdit }) {
   const count = trigger.type === "specific_products"
     ? (trigger.items?.products?.length || 0)
     : trigger.type === "specific_collections"
-    ? (trigger.items?.length || 0)
-    : null;
+      ? (trigger.items?.length || 0)
+      : null;
 
-  const titleLine = titles.length > 0
-    ? titles.join(", ")
-    : meta?.description || "";
-
-  const label = count !== null
-    ? `${meta?.label} (${count} selected)`
-    : meta?.label || trigger.type;
+  const titleLine = titles.length > 0 ? titles.join(", ") : meta?.description || "";
+  const label = count !== null ? `${meta?.label} (${count} selected)` : meta?.label || trigger.type;
 
   return (
     <div style={{ border: "1px solid #e1e3e5", borderRadius: "8px", padding: "12px 16px" }}>
       <InlineStack align="space-between" blockAlign="center">
         <InlineStack gap="300" blockAlign="center">
           <div style={{ background: ICON_BG, borderRadius: "8px", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", flexShrink: 0 }}>
-            <div style={{ filter: "brightness(0) invert(1)" }}>
-              <Icon source={icon} />
-            </div>
+            <div style={{ filter: "brightness(0) invert(1)" }}><Icon source={icon} /></div>
           </div>
           <BlockStack gap="0">
             <Text variant="bodyMd" fontWeight="semibold">{label}</Text>
@@ -122,9 +148,7 @@ function RewardSlot({ reward, onRemove }) {
       <InlineStack align="space-between" blockAlign="center">
         <InlineStack gap="300" blockAlign="center">
           <div style={{ background: ICON_BG, borderRadius: "8px", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", flexShrink: 0 }}>
-            <div style={{ filter: "brightness(0) invert(1)" }}>
-              <Icon source={icon} />
-            </div>
+            <div style={{ filter: "brightness(0) invert(1)" }}><Icon source={icon} /></div>
           </div>
           <BlockStack gap="0">
             <Text variant="bodyMd" fontWeight="semibold">{meta?.label || reward.type}</Text>
@@ -157,27 +181,22 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   const rewards = triggeredRewardsSettings?.rewards || [];
   const discountCombinations = triggeredRewardsSettings?.discountCombinations || { productDiscounts: true, orderDiscounts: true, shippingDiscounts: true };
 
-  // Form state
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
   const [formErrors, setFormErrors] = useState({});
   const [expandedCards, setExpandedCards] = useState({});
 
-  const toggleCardExpand = (id) =>
-    setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleCardExpand = (id) => setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
+
   const updateForm = (key, value) => {
+    console.log(`📝 [updateForm] key="${key}" value=`, value);
     setForm((prev) => ({ ...prev, [key]: value }));
     setFormErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
-  // Trigger list modal
   const [triggerListOpen, setTriggerListOpen] = useState(false);
   const [activeSlot, setActiveSlot] = useState(null);
-
-  // Reward list modal
   const [rewardListOpen, setRewardListOpen] = useState(false);
-
-  // Config modals
   const [specificProductsOpen, setSpecificProductsOpen] = useState(false);
   const [specificCollectionsOpen, setSpecificCollectionsOpen] = useState(false);
   const [cartTotalOpen, setCartTotalOpen] = useState(false);
@@ -185,7 +204,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   const [freeGiftOpen, setFreeGiftOpen] = useState(false);
   const [cartDiscountOpen, setCartDiscountOpen] = useState(false);
 
-  // Pending config state
   const [pendingMinItems, setPendingMinItems] = useState("1");
   const [pendingItems, setPendingItems] = useState({ type: "products", items: {} });
   const [pendingCartTotal, setPendingCartTotal] = useState("0.00");
@@ -193,15 +211,18 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   const [pendingGiftItems, setPendingGiftItems] = useState({ type: "products", items: {} });
   const [pendingDiscountType, setPendingDiscountType] = useState("percentage");
   const [pendingDiscountValue, setPendingDiscountValue] = useState("0");
-
-  // editing trigger index (null = adding new)
   const [editingTriggerIdx, setEditingTriggerIdx] = useState(null);
 
-  // ── Trigger helpers ──
-  const openTriggerList = (slot) => { setActiveSlot(slot); setEditingTriggerIdx(null); setTriggerListOpen(true); };
+  const openTriggerList = (slot) => {
+    console.log("📂 [openTriggerList] slot:", slot);
+    setActiveSlot(slot);
+    setEditingTriggerIdx(null);
+    setTriggerListOpen(true);
+  };
 
   const openEditTrigger = (idx) => {
     const t = form.triggers[idx];
+    console.log("✏️ [openEditTrigger] idx:", idx, "trigger:", JSON.stringify(t));
     setEditingTriggerIdx(idx);
     setTriggerListOpen(false);
     if (t.type === "specific_products") {
@@ -222,6 +243,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   };
 
   const selectTrigger = (type) => {
+    console.log("🎯 [selectTrigger] type:", type);
     setTriggerListOpen(false);
     if (type === "specific_products") {
       setPendingMinItems("1"); setPendingItems({ type: "products", items: {} });
@@ -234,52 +256,62 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
     } else if (type === "cart_quantity") {
       setPendingCartQty("0"); setCartQuantityOpen(true);
     } else {
-      // subscription / customer_logged_in — no config needed
       addTrigger({ type });
     }
   };
 
   const addTrigger = (trigger) => {
+    console.log("➕ [addTrigger] Adding trigger:", JSON.stringify(trigger));
+    console.log("➕ [addTrigger] editingTriggerIdx:", editingTriggerIdx, "activeSlot:", activeSlot);
     const newTriggers = [...form.triggers];
     if (editingTriggerIdx !== null) {
       newTriggers[editingTriggerIdx] = trigger;
+      console.log("✏️ [addTrigger] Replaced at index", editingTriggerIdx);
     } else if (activeSlot !== null && activeSlot < 2) {
       newTriggers[activeSlot] = trigger;
+      console.log("📌 [addTrigger] Set at slot", activeSlot);
     } else {
       if (newTriggers.length < 2) newTriggers.push(trigger);
+      console.log("📎 [addTrigger] Pushed to end");
     }
     setEditingTriggerIdx(null);
+    console.log("✅ [addTrigger] Final triggers array:", JSON.stringify(newTriggers, null, 2));
     updateForm("triggers", newTriggers);
   };
 
   const removeTrigger = (idx) => {
+    console.log("🗑️ [removeTrigger] Removing index:", idx);
     const t = [...form.triggers];
     t.splice(idx, 1);
     updateForm("triggers", t);
   };
 
   const confirmSpecificProducts = () => {
+    console.log("✅ [confirmSpecificProducts] pendingItems:", JSON.stringify(pendingItems, null, 2));
     addTrigger({ type: "specific_products", minItems: parseInt(pendingMinItems) || 1, items: pendingItems.items });
     setSpecificProductsOpen(false);
   };
 
   const confirmSpecificCollections = () => {
+    console.log("✅ [confirmSpecificCollections] pendingItems:", JSON.stringify(pendingItems, null, 2));
     addTrigger({ type: "specific_collections", minItems: parseInt(pendingMinItems) || 1, items: pendingItems.items });
     setSpecificCollectionsOpen(false);
   };
 
   const confirmCartTotal = () => {
+    console.log("✅ [confirmCartTotal] pendingCartTotal:", pendingCartTotal);
     addTrigger({ type: "cart_total", minAmount: parseFloat(pendingCartTotal) || 0 });
     setCartTotalOpen(false);
   };
 
   const confirmCartQty = () => {
+    console.log("✅ [confirmCartQty] pendingCartQty:", pendingCartQty);
     addTrigger({ type: "cart_quantity", minQuantity: parseInt(pendingCartQty) || 0 });
     setCartQuantityOpen(false);
   };
 
-  // ── Reward helpers ──
   const selectReward = (type) => {
+    console.log("🎁 [selectReward] type:", type);
     setRewardListOpen(false);
     if (type === "free_gift") {
       setPendingGiftItems({ type: "products", items: {} });
@@ -293,45 +325,135 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   };
 
   const confirmFreeGift = () => {
+    console.log("✅ [confirmFreeGift] pendingGiftItems:", JSON.stringify(pendingGiftItems, null, 2));
     updateForm("reward", { type: "free_gift", items: pendingGiftItems.items });
     setFreeGiftOpen(false);
   };
 
   const confirmCartDiscount = () => {
-    updateForm("reward", { type: "cart_discount", discountType: pendingDiscountType, value: parseFloat(pendingDiscountValue) || 0 });
+    const parsed = parseFloat(pendingDiscountValue);
+
+    if (isNaN(parsed) || parsed <= 0) {
+      alert("Enter valid discount value");
+      return;
+    }
+
+    updateForm("reward", {
+      type: "cart_discount",
+      discountType: pendingDiscountType,
+      value: parsed,
+    });
+
     setCartDiscountOpen(false);
   };
 
-  // ── Save / cancel ──
-  const handleSave = () => {
+  const handleSave = async () => {
+    console.log("===========================================");
+    console.log("💾 [handleSave] CALLED");
+    console.log("===========================================");
+    console.log("📋 [handleSave] Current form state:", JSON.stringify(form, null, 2));
+
     const errors = {};
-    if (!form.title.trim())       errors.title = "Title is required";
+    if (!form.title.trim()) errors.title = "Title is required";
     if (!form.discountCode.trim()) errors.discountCode = "Discount code is required";
     if (!form.description.trim()) errors.description = "Description is required";
     if (form.triggers.length === 0) errors.triggers = "At least one trigger is required";
-    if (!form.reward)             errors.reward = "Reward is required";
+    if (!form.reward) errors.reward = "Reward is required";
 
     if (Object.keys(errors).length > 0) {
+      console.warn("⚠️ [handleSave] Validation errors:", errors);
       setFormErrors(errors);
       return;
     }
 
+    console.log("✅ [handleSave] Validation passed");
+    console.log("🎁 [handleSave] form.reward:", JSON.stringify(form.reward));
+
+    // Only block save if cart_discount has invalid value
+    if (form.reward?.type === "cart_discount" && (!form.reward?.value || form.reward.value <= 0)) {
+      console.warn("⚠️ [handleSave] cart_discount has invalid value:", form.reward?.value);
+      alert("Enter valid discount value");
+      return;
+    }
+
+    const cartTotalTrigger = form.triggers.find(t => t.type === "cart_total");
+    console.log("💰 [handleSave] cartTotalTrigger:", JSON.stringify(cartTotalTrigger));
+
+    const discountItems = getDiscountItems(form.triggers);
+    console.log("📦 [handleSave] discountItems resolved:", JSON.stringify(discountItems, null, 2));
+
+    const requestBody = {
+      code: form.discountCode,
+      rewardType: form.reward.type,                        // ✅ NEW — tells server which mutation to use
+      value: form.reward.value,
+      type: form.reward.discountType || "percentage",
+      discountCombinations: triggeredRewardsSettings?.discountCombinations || {},
+      items: discountItems,
+      minimumSubtotal: cartTotalTrigger?.minAmount ?? null,
+    };
+
+    console.log("📤 [handleSave] Sending to /api/create-discount:", JSON.stringify(requestBody, null, 2));
+
+    try {
+      const res = await fetch("/api/create-discount", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log("📥 [handleSave] Response status:", res.status);
+      const data = await res.json();
+      console.log("📥 [handleSave] Response data:", JSON.stringify(data, null, 2));
+
+      if (data.error) {
+        console.error("❌ [handleSave] API returned error:", data.error);
+        alert(data.error);
+        return;
+      }
+
+      console.log("✅ [handleSave] Discount created! discountId:", data.discountId);
+      alert("Discount created successfully");
+
+    } catch (err) {
+      console.error("❌ [handleSave] Fetch exception:", err);
+      alert("API error");
+      return;
+    }
+
     const newReward = { ...form, id: form.id || Date.now() };
-    const newRewards = form.id ? rewards.map((r) => (r.id === form.id ? newReward : r)) : [...rewards, newReward];
+    const newRewards = form.id
+      ? rewards.map((r) => (r.id === form.id ? newReward : r))
+      : [...rewards, newReward];
+
+    console.log("💾 [handleSave] Saving rewards list:", JSON.stringify(newRewards, null, 2));
     update("rewards", newRewards);
+
+    setShowForm(false);
+    setForm({ ...emptyForm });
+    setFormErrors({});
+    console.log("✅ [handleSave] Form reset, done.");
+  };
+
+  const handleCancel = () => {
+    console.log("❌ [handleCancel] Cancelled form");
     setShowForm(false);
     setForm({ ...emptyForm });
     setFormErrors({});
   };
 
-  const handleCancel = () => { setShowForm(false); setForm({ ...emptyForm }); setFormErrors({}); };
-  const deleteReward = (id) => update("rewards", rewards.filter((r) => r.id !== id));
-  const toggleReward = (id) => update("rewards", rewards.map((r) => r.id === id ? { ...r, enabled: !r.enabled } : r));
+  const deleteReward = (id) => {
+    console.log("🗑️ [deleteReward] Deleting reward id:", id);
+    update("rewards", rewards.filter((r) => r.id !== id));
+  };
+
+  const toggleReward = (id) => {
+    console.log("🔄 [toggleReward] Toggling reward id:", id);
+    update("rewards", rewards.map((r) => r.id === id ? { ...r, enabled: !r.enabled } : r));
+  };
 
   return (
     <>
       <BlockStack gap="400">
-        {/* Main card */}
         <Card>
           <BlockStack gap="400">
             <BlockStack gap="100">
@@ -342,10 +464,9 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
             </BlockStack>
 
             {!showForm && rewards.length < 10 && (
-              <div><Button onClick={() => setShowForm(true)}>+ Add rewards</Button></div>
+              <div><Button onClick={() => { console.log("➕ [UI] Add rewards clicked"); setShowForm(true); }}>+ Add rewards</Button></div>
             )}
 
-            {/* Empty state */}
             {rewards.length === 0 && !showForm && (
               <div style={{ textAlign: "center", padding: "32px 0" }}>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
@@ -358,7 +479,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
               </div>
             )}
 
-            {/* Add/edit form */}
             {showForm && (
               <div style={{ border: "1px solid #e1e3e5", borderRadius: "8px", padding: "16px" }}>
                 <BlockStack gap="300">
@@ -366,7 +486,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
                   <TextField label="Discount Code" value={form.discountCode} onChange={(v) => updateForm("discountCode", v)} placeholder="e.g. FREESHIP50" requiredIndicator autoComplete="off" error={formErrors.discountCode} />
                   <TextField label="Description" value={form.description} onChange={(v) => updateForm("description", v)} placeholder="e.g. Get free shipping when you spend $50 or more" requiredIndicator autoComplete="off" error={formErrors.description} />
 
-                  {/* Triggers */}
                   <BlockStack gap="200">
                     <InlineStack gap="100" blockAlign="center">
                       <Text variant="bodyMd" fontWeight="medium">Triggers</Text>
@@ -374,7 +493,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
                       <Text variant="bodySm" tone="subdued">({form.triggers.length} of 2)</Text>
                     </InlineStack>
                     {form.triggers.map((t, i) => (
-                      <TriggerSlot key={i} trigger={t} onRemove={() => removeTrigger(i)} onEdit={["specific_products","specific_collections","cart_total","cart_quantity"].includes(t.type) ? () => openEditTrigger(i) : null} />
+                      <TriggerSlot key={i} trigger={t} onRemove={() => removeTrigger(i)} onEdit={["specific_products", "specific_collections", "cart_total", "cart_quantity"].includes(t.type) ? () => openEditTrigger(i) : null} />
                     ))}
                     {form.triggers.length < 2 && (
                       <div style={slotBox}>
@@ -384,7 +503,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
                     {formErrors.triggers && <Text tone="critical" variant="bodySm">{formErrors.triggers}</Text>}
                   </BlockStack>
 
-                  {/* Reward */}
                   <BlockStack gap="200">
                     <InlineStack gap="100" blockAlign="center">
                       <Text variant="bodyMd" fontWeight="medium">Reward</Text>
@@ -400,7 +518,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
                     {formErrors.reward && <Text tone="critical" variant="bodySm">{formErrors.reward}</Text>}
                   </BlockStack>
 
-                  {/* Footer */}
                   <InlineStack align="space-between" blockAlign="center">
                     <InlineStack gap="200" blockAlign="center">
                       <Badge tone={form.enabled ? "success" : "critical"}>{form.enabled ? "Enabled" : "Disabled"}</Badge>
@@ -415,7 +532,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
               </div>
             )}
 
-            {/* Saved reward cards */}
             {rewards.map((reward) => {
               const isExpanded = !!expandedCards[reward.id];
               const hasConditions = reward.triggers.some((t) =>
@@ -441,10 +557,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
                       <Text variant="bodySm" fontWeight="medium">Trigger type</Text>
                       {reward.triggers.map((t, i) => <Badge key={i}>{triggerBadgeLabel(t)}</Badge>)}
                       {hasConditions && (
-                        <button
-                          onClick={() => toggleCardExpand(reward.id)}
-                          style={{ background: "none", border: "none", cursor: "pointer", padding: "0", display: "flex", alignItems: "center" }}
-                        >
+                        <button onClick={() => toggleCardExpand(reward.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "0", display: "flex", alignItems: "center" }}>
                           <Icon source={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
                         </button>
                       )}
@@ -452,7 +565,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
                       {reward.reward && <Badge>{rewardBadgeLabel(reward.reward)}</Badge>}
                     </InlineStack>
 
-                    {/* Trigger conditions expandable */}
                     {isExpanded && hasConditions && (
                       <div style={{ borderTop: "1px solid #e1e3e5", paddingTop: "12px", marginTop: "4px" }}>
                         <BlockStack gap="200">
@@ -494,7 +606,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
           </BlockStack>
         </Card>
 
-        {/* Discount combinations */}
         <Card>
           <BlockStack gap="300">
             <Text variant="headingMd">Discount combinations</Text>
@@ -505,7 +616,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
           </BlockStack>
         </Card>
 
-        {/* Custom template */}
         <Card>
           <BlockStack gap="100">
             <InlineStack gap="200" blockAlign="center">
@@ -517,7 +627,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         </Card>
       </BlockStack>
 
-      {/* ── Trigger list modal ── */}
       <Modal open={triggerListOpen} onClose={() => setTriggerListOpen(false)} title="Select a trigger condition">
         <Modal.Section flush>
           {TRIGGER_OPTIONS.map((opt) => (
@@ -532,8 +641,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         </Modal.Section>
       </Modal>
 
-      {/* ── Specific products modal ── */}
-      <Modal open={specificProductsOpen} onClose={() => setSpecificProductsOpen(false)} title="Specific products" 
+      <Modal open={specificProductsOpen} onClose={() => setSpecificProductsOpen(false)} title="Specific products"
         primaryAction={{ content: "Confirm", onAction: confirmSpecificProducts }}
         secondaryActions={[{ content: "Back", onAction: () => { setSpecificProductsOpen(false); setTriggerListOpen(true); } }]}
       >
@@ -545,8 +653,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         </Modal.Section>
       </Modal>
 
-      {/* ── Specific collections modal ── */}
-      <Modal open={specificCollectionsOpen} onClose={() => setSpecificCollectionsOpen(false)} title="Specific collections" 
+      <Modal open={specificCollectionsOpen} onClose={() => setSpecificCollectionsOpen(false)} title="Specific collections"
         primaryAction={{ content: "Confirm", onAction: confirmSpecificCollections }}
         secondaryActions={[{ content: "Back", onAction: () => { setSpecificCollectionsOpen(false); setTriggerListOpen(true); } }]}
       >
@@ -558,7 +665,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         </Modal.Section>
       </Modal>
 
-      {/* ── Cart total modal ── */}
       <Modal open={cartTotalOpen} onClose={() => setCartTotalOpen(false)} title="Cart total"
         primaryAction={{ content: "Confirm", onAction: confirmCartTotal }}
         secondaryActions={[{ content: "Back", onAction: () => { setCartTotalOpen(false); setTriggerListOpen(true); } }]}
@@ -568,7 +674,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         </Modal.Section>
       </Modal>
 
-      {/* ── Cart quantity modal ── */}
       <Modal open={cartQuantityOpen} onClose={() => setCartQuantityOpen(false)} title="Cart quantity"
         primaryAction={{ content: "Confirm", onAction: confirmCartQty }}
         secondaryActions={[{ content: "Back", onAction: () => { setCartQuantityOpen(false); setTriggerListOpen(true); } }]}
@@ -578,7 +683,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         </Modal.Section>
       </Modal>
 
-      {/* ── Reward list modal ── */}
       <Modal open={rewardListOpen} onClose={() => setRewardListOpen(false)} title="Select a reward">
         <Modal.Section flush>
           {REWARD_OPTIONS.map((opt) => (
@@ -593,8 +697,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         </Modal.Section>
       </Modal>
 
-      {/* ── Free gift modal ── */}
-      <Modal open={freeGiftOpen} onClose={() => setFreeGiftOpen(false)} title="Select a free Gift" 
+      <Modal open={freeGiftOpen} onClose={() => setFreeGiftOpen(false)} title="Select a free Gift"
         primaryAction={{ content: "Confirm", onAction: confirmFreeGift }}
         secondaryActions={[{ content: "Back", onAction: () => { setFreeGiftOpen(false); setRewardListOpen(true); } }]}
       >
@@ -603,7 +706,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         </Modal.Section>
       </Modal>
 
-      {/* ── Cart discount modal ── */}
       <Modal open={cartDiscountOpen} onClose={() => setCartDiscountOpen(false)} title="Configure cart discount"
         primaryAction={{ content: "Confirm", onAction: confirmCartDiscount }}
         secondaryActions={[{ content: "Back", onAction: () => { setCartDiscountOpen(false); setRewardListOpen(true); } }]}

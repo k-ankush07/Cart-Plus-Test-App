@@ -272,7 +272,7 @@ window.injectCartHTML = function (blockId, root) {
         <p class="hub-cart-tax-note">Taxes, discounts and shipping calculated at checkout.</p>
 
         <div id="hub-express-payments-${blockId}" class="hub-express-payments"></div>
-
+       
         <!-- CHECKOUT -->
         <div>${renderCustomHTML(customHtmlBlocks.above_checkout)}</div>
         <a href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" class="hub-cart-checkout-btn">
