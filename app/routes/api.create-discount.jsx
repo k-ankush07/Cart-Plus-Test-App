@@ -165,23 +165,7 @@ export const action = async ({ request }) => {
         }
     `;
 
-    const variables = {
-        discount: {
-            title: code,
-            functionId: FUNCTION_ID,
-            startsAt: new Date().toISOString(),
-            combinesWith,
-            discountClasses: ["ORDER"], 
-            metafields: [
-                {
-                    namespace: "$app:cart-drawer-discount",
-                    key: "config",
-                    type: "json",
-                    value: metafieldConfig,
-                },
-            ],
-        },
-    };
+    
 
     console.log("📤 Final GraphQL variables:", JSON.stringify(variables, null, 2));
 
