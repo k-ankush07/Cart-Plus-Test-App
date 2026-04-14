@@ -10,41 +10,6 @@ import {
 } from "@shopify/polaris-icons";
 import ProductItemCollections from "../ui/ProductItem-Collections";
 
-// ─── Metadata ────────────────────────────────────────────────────────────────
-
-function getDiscountItems(triggers) {
-  console.log("🔍 [getDiscountItems] Called with triggers:", JSON.stringify(triggers, null, 2));
-
-  const productTrigger = triggers.find(t => t.type === "specific_products");
-  const collectionTrigger = triggers.find(t => t.type === "specific_collections");
-
-  console.log("🔍 [getDiscountItems] productTrigger:", JSON.stringify(productTrigger, null, 2));
-  console.log("🔍 [getDiscountItems] collectionTrigger:", JSON.stringify(collectionTrigger, null, 2));
-
-  if (Array.isArray(productTrigger?.items?.products) && productTrigger.items.products.length > 0) {
-    const result = {
-      products: {
-        productsToAdd: productTrigger.items.products.filter(Boolean), // already GID strings
-      },
-    };
-    console.log("✅ [getDiscountItems] Resolved → PRODUCTS:", JSON.stringify(result));
-    return result;
-  }
-
-  if (Array.isArray(collectionTrigger?.items) && collectionTrigger.items.length > 0) {
-    const result = {
-      collections: {
-        collectionsToAdd: collectionTrigger.items.filter(Boolean), // already GID strings
-      },
-    };
-    console.log("✅ [getDiscountItems] Resolved → COLLECTIONS:", JSON.stringify(result));
-    return result;
-  }
-
-  console.log("⚠️ [getDiscountItems] Resolved → ALL (fallback)");
-  return { all: true };
-}
-
 const TRIGGER_OPTIONS = [
   { type: "specific_products", label: "Specific products", description: "Any item in the cart belongs to selected products or variants" },
   { type: "specific_collections", label: "Specific collections", description: "Any item in the cart belongs to selected collections" },
@@ -189,7 +154,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   const toggleCardExpand = (id) => setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const updateForm = (key, value) => {
-    console.log(`📝 [updateForm] key="${key}" value=`, value);
     setForm((prev) => ({ ...prev, [key]: value }));
     setFormErrors((prev) => ({ ...prev, [key]: undefined }));
   };
@@ -214,7 +178,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   const [editingTriggerIdx, setEditingTriggerIdx] = useState(null);
 
   const openTriggerList = (slot) => {
-    console.log("📂 [openTriggerList] slot:", slot);
     setActiveSlot(slot);
     setEditingTriggerIdx(null);
     setTriggerListOpen(true);
@@ -222,7 +185,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
 
   const openEditTrigger = (idx) => {
     const t = form.triggers[idx];
-    console.log("✏️ [openEditTrigger] idx:", idx, "trigger:", JSON.stringify(t));
     setEditingTriggerIdx(idx);
     setTriggerListOpen(false);
     if (t.type === "specific_products") {
@@ -243,7 +205,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   };
 
   const selectTrigger = (type) => {
-    console.log("🎯 [selectTrigger] type:", type);
     setTriggerListOpen(false);
     if (type === "specific_products") {
       setPendingMinItems("1"); setPendingItems({ type: "products", items: {} });
@@ -261,21 +222,15 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   };
 
   const addTrigger = (trigger) => {
-    console.log("➕ [addTrigger] Adding trigger:", JSON.stringify(trigger));
-    console.log("➕ [addTrigger] editingTriggerIdx:", editingTriggerIdx, "activeSlot:", activeSlot);
     const newTriggers = [...form.triggers];
     if (editingTriggerIdx !== null) {
       newTriggers[editingTriggerIdx] = trigger;
-      console.log("✏️ [addTrigger] Replaced at index", editingTriggerIdx);
     } else if (activeSlot !== null && activeSlot < 2) {
       newTriggers[activeSlot] = trigger;
-      console.log("📌 [addTrigger] Set at slot", activeSlot);
     } else {
       if (newTriggers.length < 2) newTriggers.push(trigger);
-      console.log("📎 [addTrigger] Pushed to end");
     }
     setEditingTriggerIdx(null);
-    console.log("✅ [addTrigger] Final triggers array:", JSON.stringify(newTriggers, null, 2));
     updateForm("triggers", newTriggers);
   };
 
@@ -287,31 +242,26 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   };
 
   const confirmSpecificProducts = () => {
-    console.log("✅ [confirmSpecificProducts] pendingItems:", JSON.stringify(pendingItems, null, 2));
     addTrigger({ type: "specific_products", minItems: parseInt(pendingMinItems) || 1, items: pendingItems.items });
     setSpecificProductsOpen(false);
   };
 
   const confirmSpecificCollections = () => {
-    console.log("✅ [confirmSpecificCollections] pendingItems:", JSON.stringify(pendingItems, null, 2));
     addTrigger({ type: "specific_collections", minItems: parseInt(pendingMinItems) || 1, items: pendingItems.items });
     setSpecificCollectionsOpen(false);
   };
 
   const confirmCartTotal = () => {
-    console.log("✅ [confirmCartTotal] pendingCartTotal:", pendingCartTotal);
     addTrigger({ type: "cart_total", minAmount: parseFloat(pendingCartTotal) || 0 });
     setCartTotalOpen(false);
   };
 
   const confirmCartQty = () => {
-    console.log("✅ [confirmCartQty] pendingCartQty:", pendingCartQty);
     addTrigger({ type: "cart_quantity", minQuantity: parseInt(pendingCartQty) || 0 });
     setCartQuantityOpen(false);
   };
 
   const selectReward = (type) => {
-    console.log("🎁 [selectReward] type:", type);
     setRewardListOpen(false);
     if (type === "free_gift") {
       setPendingGiftItems({ type: "products", items: {} });
@@ -325,7 +275,6 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   };
 
   const confirmFreeGift = () => {
-    console.log("✅ [confirmFreeGift] pendingGiftItems:", JSON.stringify(pendingGiftItems, null, 2));
     updateForm("reward", { type: "free_gift", items: pendingGiftItems.items });
     setFreeGiftOpen(false);
   };
@@ -347,12 +296,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
     setCartDiscountOpen(false);
   };
 
-  const handleSave = async () => {
-    console.log("===========================================");
-    console.log("💾 [handleSave] CALLED");
-    console.log("===========================================");
-    console.log("📋 [handleSave] Current form state:", JSON.stringify(form, null, 2));
-
+  const handleSave = () => {
     const errors = {};
     if (!form.title.trim()) errors.title = "Title is required";
     if (!form.discountCode.trim()) errors.discountCode = "Discount code is required";
@@ -361,62 +305,12 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
     if (!form.reward) errors.reward = "Reward is required";
 
     if (Object.keys(errors).length > 0) {
-      console.warn("⚠️ [handleSave] Validation errors:", errors);
       setFormErrors(errors);
       return;
     }
 
-    console.log("✅ [handleSave] Validation passed");
-    console.log("🎁 [handleSave] form.reward:", JSON.stringify(form.reward));
-
-    // Only block save if cart_discount has invalid value
     if (form.reward?.type === "cart_discount" && (!form.reward?.value || form.reward.value <= 0)) {
-      console.warn("⚠️ [handleSave] cart_discount has invalid value:", form.reward?.value);
       alert("Enter valid discount value");
-      return;
-    }
-
-    const cartTotalTrigger = form.triggers.find(t => t.type === "cart_total");
-    console.log("💰 [handleSave] cartTotalTrigger:", JSON.stringify(cartTotalTrigger));
-
-    const discountItems = getDiscountItems(form.triggers);
-    console.log("📦 [handleSave] discountItems resolved:", JSON.stringify(discountItems, null, 2));
-
-    const requestBody = {
-      code: form.discountCode,
-      rewardType: form.reward.type,                        // ✅ NEW — tells server which mutation to use
-      value: form.reward.value,
-      type: form.reward.discountType || "percentage",
-      discountCombinations: triggeredRewardsSettings?.discountCombinations || {},
-      items: discountItems,
-      minimumSubtotal: cartTotalTrigger?.minAmount ?? null,
-    };
-
-    console.log("📤 [handleSave] Sending to /api/create-discount:", JSON.stringify(requestBody, null, 2));
-
-    try {
-      const res = await fetch("/api/create-discount", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
-
-      console.log("📥 [handleSave] Response status:", res.status);
-      const data = await res.json();
-      console.log("📥 [handleSave] Response data:", JSON.stringify(data, null, 2));
-
-      if (data.error) {
-        console.error("❌ [handleSave] API returned error:", data.error);
-        alert(data.error);
-        return;
-      }
-
-      console.log("✅ [handleSave] Discount created! discountId:", data.discountId);
-      alert("Discount created successfully");
-
-    } catch (err) {
-      console.error("❌ [handleSave] Fetch exception:", err);
-      alert("API error");
       return;
     }
 
@@ -425,30 +319,44 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
       ? rewards.map((r) => (r.id === form.id ? newReward : r))
       : [...rewards, newReward];
 
-    console.log("💾 [handleSave] Saving rewards list:", JSON.stringify(newRewards, null, 2));
     update("rewards", newRewards);
 
     setShowForm(false);
     setForm({ ...emptyForm });
     setFormErrors({});
-    console.log("✅ [handleSave] Form reset, done.");
   };
 
   const handleCancel = () => {
-    console.log("❌ [handleCancel] Cancelled form");
+    console.log(" [handleCancel] Cancelled form");
     setShowForm(false);
     setForm({ ...emptyForm });
     setFormErrors({});
   };
 
+  const syncRewards = async (newRewards) => {
+    const existingDiscountId = triggeredRewardsSettings?.shopifyDiscountId || null;
+    const discountCombinations = triggeredRewardsSettings?.discountCombinations || {};
+    try {
+      await fetch("/api/create-discount", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rewards: newRewards, discountCombinations, existingDiscountId }),
+      });
+    } catch (e) {
+      console.error(" [syncRewards] Failed to sync:", e);
+    }
+  };
+
   const deleteReward = (id) => {
-    console.log("🗑️ [deleteReward] Deleting reward id:", id);
-    update("rewards", rewards.filter((r) => r.id !== id));
+    const newRewards = rewards.filter((r) => r.id !== id);
+    update("rewards", newRewards);
+    syncRewards(newRewards);
   };
 
   const toggleReward = (id) => {
-    console.log("🔄 [toggleReward] Toggling reward id:", id);
-    update("rewards", rewards.map((r) => r.id === id ? { ...r, enabled: !r.enabled } : r));
+    const newRewards = rewards.map((r) => r.id === id ? { ...r, enabled: !r.enabled } : r);
+    update("rewards", newRewards);
+    syncRewards(newRewards);
   };
 
   return (
@@ -702,7 +610,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         secondaryActions={[{ content: "Back", onAction: () => { setFreeGiftOpen(false); setRewardListOpen(true); } }]}
       >
         <Modal.Section>
-          <ProductItemCollections currency={currency} onSelect={setPendingGiftItems} initialSelected={{ type: "products", items: pendingGiftItems.items }} showCollections={false} />
+          <ProductItemCollections currency={currency} onSelect={setPendingGiftItems} initialSelected={{ type: "products", items: pendingGiftItems.items }} showCollections={false} maxSelect={1} />
         </Modal.Section>
       </Modal>
 

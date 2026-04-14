@@ -1,5 +1,5 @@
 {
-  "name": "cart-drawer-function",
+  "name": "cart-drawer-discount",
   "version": "0.0.1",
   "license": "UNLICENSED",
   "type": "module",
@@ -26,7 +26,7 @@
     }
   },
   "dependencies": {
-    "@shopify/shopify_function": "^2.0.1"
+    "@shopify/shopify_function": "~2.0.0"
   },
   "devDependencies": {
     "@shopify/shopify-function-test-helpers": "^1.0.0",

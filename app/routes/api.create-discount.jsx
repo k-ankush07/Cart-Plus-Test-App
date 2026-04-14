@@ -1,199 +1,153 @@
 import { authenticate } from "../shopify.server";
-import { json } from "@remix-run/node";
 
-const FUNCTION_ID = "019d7a2b-43f5-7e17-b7dd-594ab755c24d";
+const jsonResponse = (data, init) =>
+    new Response(JSON.stringify(data), {
+        ...init,
+        headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    });
+
+const FUNCTION_ID = "019d8ce5-9dab-7fc8-87a0-a25693375429";
+
+// ══════════════════════════════════════════════════════════════════
+// POST /api/create-discount
+//
+// Syncs ALL triggered rewards into ONE automatic app discount.
+//   - If existingDiscountId is provided → update its metafield only
+//   - Otherwise → create a new discount and return the id
+//
+// Body: { rewards, discountCombinations, existingDiscountId? }
+// ══════════════════════════════════════════════════════════════════
 
 export const action = async ({ request }) => {
-    console.log("===========================================");
-    console.log("🚀 [create-discount] ACTION CALLED");
-    console.log("===========================================");
+    console.log("🚀 [sync-discount] ACTION CALLED");
 
     const { admin } = await authenticate.admin(request);
-    console.log("✅ [create-discount] Admin authenticated");
 
     let body;
     try {
         body = await request.json();
-        console.log("📦 [create-discount] Raw request body:", JSON.stringify(body, null, 2));
     } catch {
-        console.error("❌ [create-discount] Failed to parse JSON body");
-        return json({ error: "Invalid JSON body" }, { status: 400 });
+        return jsonResponse({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const {
-        code,
-        value,
-        type,
-        rewardType,
-        discountCombinations = {},
-        items,
-        minimumSubtotal,
-    } = body;
+    const { rewards = [], discountCombinations = {}, existingDiscountId } = body;
 
-    console.log("📋 [create-discount] Destructured values:");
-    console.log("  → code:", code);
-    console.log("  → value:", value);
-    console.log("  → type:", type);
-    console.log("  → rewardType:", rewardType);
-    console.log("  → discountCombinations:", JSON.stringify(discountCombinations));
-    console.log("  → items:", JSON.stringify(items, null, 2));
-    console.log("  → minimumSubtotal:", minimumSubtotal);
+    const combinesWith = {
+        productDiscounts: !!discountCombinations.productDiscounts,
+        orderDiscounts: !!discountCombinations.orderDiscounts,
+        shippingDiscounts: !!discountCombinations.shippingDiscounts,
+    };
 
-    // ✅ CombinesWith
-    let combinesWith;
-    if (rewardType === "free_shipping") {
-        combinesWith = {
-            productDiscounts: true,
-            orderDiscounts: true,
-            shippingDiscounts: false,
-        };
-    } else {
-        combinesWith = {
-            productDiscounts: !!discountCombinations.productDiscounts,
-            orderDiscounts: !!discountCombinations.orderDiscounts,
-            shippingDiscounts: !!discountCombinations.shippingDiscounts,
-        };
-    }
+    // Build the config that the Shopify Function will read
+    const metafieldConfig = JSON.stringify({ rewards });
 
-    // ✅ Normalize value
-    const numericValue = Number(value);
-    let normalizedValue;
-    if (rewardType === "free_gift") {
-        normalizedValue = 1;
-    } else if (type === "percentage") {
-        normalizedValue = numericValue > 1 ? numericValue / 100 : numericValue;
-    } else {
-        normalizedValue = numericValue;
-    }
-    console.log("🔢 normalizedValue:", normalizedValue);
-
-    // ══════════════════════════════════════════════════
-    // ✅ FREE SHIPPING — code discount mutation
-    // ══════════════════════════════════════════════════
-    if (rewardType === "free_shipping") {
-        console.log("🚚 [create-discount] Routing to FREE SHIPPING mutation");
-
-        let minimumRequirement;
-        if (minimumSubtotal && Number(minimumSubtotal) > 0) {
-            minimumRequirement = {
-                subtotal: {
-                    greaterThanOrEqualToSubtotal: String(Number(minimumSubtotal)),
-                },
-            };
-        }
-
-        const freeShippingMutation = `
-            mutation CreateFreeShipping($freeShippingCodeDiscount: DiscountCodeFreeShippingInput!) {
-                discountCodeFreeShippingCreate(freeShippingCodeDiscount: $freeShippingCodeDiscount) {
-                    codeDiscountNode { id }
+    // ── UPDATE existing discount's metafield ──────────────────────
+    if (existingDiscountId) {
+    
+        const updateMutation = `
+            mutation UpdateAppDiscount($id: ID!, $discount: DiscountAutomaticAppInput!) {
+                discountAutomaticAppUpdate(id: $id, automaticAppDiscount: $discount) {
+                    automaticAppDiscount { discountId }
                     userErrors { field message }
                 }
             }
         `;
 
-        const freeShippingVariables = {
-            freeShippingCodeDiscount: {
-                title: code,
-                code: code,
-                startsAt: new Date().toISOString(),
-                appliesOncePerCustomer: false,
-                combinesWith,
-                destination: { all: true },
-                ...(minimumRequirement ? { minimumRequirement } : {}),
-            },
-        };
-
-        console.log("📤 Free shipping variables:", JSON.stringify(freeShippingVariables, null, 2));
-
         try {
-            const response = await admin.graphql(freeShippingMutation, { variables: freeShippingVariables });
+            const response = await admin.graphql(updateMutation, {
+                variables: {
+                    id: existingDiscountId,
+                    discount: {
+                        combinesWith,
+                        metafields: [
+                            {
+                                namespace: "$app:cart-drawer-discount",
+                                key: "config",
+                                type: "json",
+                                value: metafieldConfig,
+                            },
+                        ],
+                    },
+                },
+            });
+
             const data = await response.json();
-            console.log("📥 Free shipping Shopify response:", JSON.stringify(data, null, 2));
-
+          
             if (data.errors) {
-                console.error("❌ Free shipping GraphQL errors:", data.errors);
-                return json({ error: data.errors[0].message }, { status: 500 });
+                return jsonResponse({ error: data.errors[0].message }, { status: 500 });
             }
 
-            const userErrors = data?.data?.discountCodeFreeShippingCreate?.userErrors;
+            const userErrors = data?.data?.discountAutomaticAppUpdate?.userErrors;
             if (userErrors?.length) {
-                console.error("❌ Free shipping userErrors:", userErrors[0].message);
-                return json({ error: userErrors[0].message }, { status: 422 });
+                const isNotFound = userErrors.some(e => e.message.toLowerCase().includes("does not exist"));
+                if (isNotFound) {
+                    console.warn(" [sync-discount] Stored discount no longer exists in Shopify, will create a new one");
+                    // fall through to create below
+                } else {
+                    return jsonResponse({ error: userErrors[0].message }, { status: 422 });
+                }
+            } else {
+                console.log("[sync-discount] Discount updated successfully");
+                return jsonResponse({ success: true, discountId: existingDiscountId });
             }
-
-            const discountId = data?.data?.discountCodeFreeShippingCreate?.codeDiscountNode?.id;
-            console.log("✅ Free shipping discount created! ID:", discountId);
-            return json({ success: true, discountId });
 
         } catch (error) {
-            console.error("❌ Free shipping exception:", error?.message || error);
-            return json({ error: error?.message || "Failed to create free shipping discount" }, { status: 500 });
+            console.error(" [sync-discount] Update exception:", error?.message || error);
+            return jsonResponse({ error: error?.message || "Failed to update discount" }, { status: 500 });
         }
     }
 
-    // ══════════════════════════════════════════════════
-    // ✅ CART DISCOUNT / FREE GIFT — App Function mutation
-    // ══════════════════════════════════════════════════
-    console.log("💰 [create-discount] Routing to APP FUNCTION mutation");
+    // ── CREATE new discount (first time or after stale id) ────────
+    console.log(" [sync-discount] Creating new discount");
 
-    if (rewardType === "cart_discount" && (value === undefined || value === null)) {
-        return json({ error: "Discount value is required" }, { status: 400 });
-    }
-
-    // ✅ Metafield config jo function padega
-    const metafieldConfig = JSON.stringify({
-        rewardType,
-        value: normalizedValue,
-        type,
-        items,
-        minimumSubtotal: minimumSubtotal ?? null,
-    });
-
-    console.log("📦 metafieldConfig:", metafieldConfig);
-
-    const mutation = `
+    const createMutation = `
         mutation CreateAppDiscount($discount: DiscountAutomaticAppInput!) {
             discountAutomaticAppCreate(automaticAppDiscount: $discount) {
-                automaticAppDiscount {
-                    discountId
-                }
-                userErrors {
-                    field
-                    message
-                }
+                automaticAppDiscount { discountId }
+                userErrors { field message }
             }
         }
     `;
 
-    
-
-    console.log("📤 Final GraphQL variables:", JSON.stringify(variables, null, 2));
-
     try {
-        console.log("📡 Sending GraphQL mutation...");
-        const response = await admin.graphql(mutation, { variables });
+        const response = await admin.graphql(createMutation, {
+            variables: {
+                discount: {
+                    title: "Cart Drawer - Triggered Rewards",
+                    functionId: FUNCTION_ID,
+                    startsAt: new Date().toISOString(),
+                    combinesWith,
+                    discountClasses: ["PRODUCT", "SHIPPING", "ORDER"],
+                    metafields: [
+                        {
+                            namespace: "$app:cart-drawer-discount",
+                            key: "config",
+                            type: "json",
+                            value: metafieldConfig,
+                        },
+                    ],
+                },
+            },
+        });
+
         const data = await response.json();
-        console.log("📥 Shopify raw response:", JSON.stringify(data, null, 2));
+        console.log(" [sync-discount] Create response:", JSON.stringify(data, null, 2));
 
         if (data.errors) {
-            console.error("❌ GraphQL body errors:", JSON.stringify(data.errors, null, 2));
-            return json({ error: data.errors[0].message }, { status: 500 });
+            return jsonResponse({ error: data.errors[0].message }, { status: 500 });
         }
 
         const userErrors = data?.data?.discountAutomaticAppCreate?.userErrors;
-        console.log("🔍 userErrors:", JSON.stringify(userErrors, null, 2));
-
         if (userErrors?.length) {
-            console.error("❌ Shopify userErrors:", userErrors[0].message);
-            return json({ error: userErrors[0].message }, { status: 422 });
+            return jsonResponse({ error: userErrors[0].message }, { status: 422 });
         }
 
         const discountId = data?.data?.discountAutomaticAppCreate?.automaticAppDiscount?.discountId;
-        console.log("✅ Discount created successfully! ID:", discountId);
-        return json({ success: true, discountId });
+        console.log(" [sync-discount] Discount created! ID:", discountId);
+        return jsonResponse({ success: true, discountId });
 
     } catch (error) {
-        console.error("❌ Caught exception:", error?.message || error);
-        return json({ error: error?.message || "Failed to create discount" }, { status: 500 });
+        console.error(" [sync-discount] Create exception:", error?.message || error);
+        return jsonResponse({ error: error?.message || "Failed to create discount" }, { status: 500 });
     }
 };

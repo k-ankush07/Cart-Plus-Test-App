@@ -2,9 +2,9 @@ api_version = "2026-01"
 
 [[extensions]]
 name = "t:name"
-handle = "cart-drawer-function"
+handle = "cart-drawer-discount"
 type = "function"
-uid = "ed5275bf-a5ff-ca45-c84f-f45b69cb2c44c2e6e035"
+uid = "caa37f3b-ee89-62c7-783c-8099cf4c93636921e876"
 description = "t:description"
 
   [[extensions.targeting]]

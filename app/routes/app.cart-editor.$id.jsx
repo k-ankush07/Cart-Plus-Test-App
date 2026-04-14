@@ -253,7 +253,31 @@ export default function CartEditor() {
   const handleSave = async () => {
     try {
       const cartId = window.location.pathname.split("/").pop();
-     
+
+      // Sync all triggered rewards into ONE Shopify discount
+      const rewards = triggeredRewardsSettings?.rewards || [];
+      const discountCombinations = triggeredRewardsSettings?.discountCombinations || {};
+      const existingDiscountId = triggeredRewardsSettings?.shopifyDiscountId || null;
+
+      let shopifyDiscountId = existingDiscountId;
+
+      if (rewards.length > 0) {
+        const syncRes = await fetch("/api/create-discount", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rewards, discountCombinations, existingDiscountId }),
+        });
+        const syncData = await syncRes.json();
+        if (syncData.discountId) {
+          shopifyDiscountId = syncData.discountId;
+        }
+      }
+
+      const updatedTriggeredRewardsSettings = {
+        ...triggeredRewardsSettings,
+        shopifyDiscountId,
+      };
+
       await updateCart(apiUrl, cartId, {
         designSettings,
         headerSettings,
@@ -268,8 +292,10 @@ export default function CartEditor() {
         expressPaymentsSettings,
         trustBadgesSettings,
         cartSettings,
-        triggeredRewardsSettings,
+        triggeredRewardsSettings: updatedTriggeredRewardsSettings,
       });
+
+      setTriggeredRewardsSettings(updatedTriggeredRewardsSettings);
 
       initialSettingsRef.current = {
         design: designSettings,
@@ -285,7 +311,7 @@ export default function CartEditor() {
         expressPaymentsSettings: expressPaymentsSettings,
         trustBadgesSettings: trustBadgesSettings,
         cartSettings: cartSettings,
-        triggeredRewards: triggeredRewardsSettings,
+        triggeredRewards: updatedTriggeredRewardsSettings,
       };
       setIsDirty(false);
 

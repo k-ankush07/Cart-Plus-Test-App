@@ -19,7 +19,7 @@ import {
 } from "@shopify/polaris-icons";
 import { useEffect, useState } from "react";
 
-export default function ProductItemCollections({ currency, onSelect, initialSelected, showCollections = true, showProducts = true }) {
+export default function ProductItemCollections({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null }) {
     const [cursorStack, setCursorStack] = useState([]);
     const [openProducts, setOpenProducts] = useState({});
     const [selectedVariants, setSelectedVariants] = useState([]);
@@ -63,9 +63,14 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
         setSelectedCollections([]);
 
         setSelectedVariants((prev) => {
-            const updated = prev.includes(variant.id)
-                ? prev.filter((i) => i !== variant.id)
-                : [...prev, variant.id];
+            let updated;
+            if (prev.includes(variant.id)) {
+                updated = prev.filter((i) => i !== variant.id);
+            } else if (maxSelect === 1) {
+                updated = [variant.id]; // replace — only one allowed
+            } else {
+                updated = [...prev, variant.id];
+            }
 
             const selectedProducts = localProducts.filter((p) =>
                 p.variants.some((v) => updated.includes(v.id))
@@ -100,6 +105,8 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
 
             if (allSelected) {
                 updated = prev.filter((id) => !variantIds.includes(id));
+            } else if (maxSelect === 1) {
+                updated = [variantIds[0]]; // replace with first variant only
             } else {
                 updated = [...new Set([...prev, ...variantIds])];
             }

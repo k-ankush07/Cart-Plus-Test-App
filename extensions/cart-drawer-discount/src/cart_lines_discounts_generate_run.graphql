@@ -1,0 +1,36 @@
+query CartInput {
+  cart {
+    lines {
+      id
+      quantity
+      cost {
+        subtotalAmount {
+          amount
+        }
+      }
+      merchandise {
+        ... on ProductVariant {
+          id
+          product {
+            id
+          }
+        }
+      }
+    }
+    buyerIdentity {
+      isAuthenticated
+      customer {
+        id
+      }
+    }
+    attribute(key: "_cart_has_subscription") {
+      value
+    }
+  }
+  discount {
+    discountClasses
+    metafield(namespace: "$app:cart-drawer-discount", key: "config") {
+      value
+    }
+  }
+}

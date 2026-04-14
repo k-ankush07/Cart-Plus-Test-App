@@ -1,5 +1,5 @@
 const apiUrl =
-  "https://ed1d-2401-4900-1c71-48c-2890-1134-3b25-da99.ngrok-free.app";
+  "https://b8ae-2401-4900-1c2b-c97c-1df6-3be6-73c8-d146.ngrok-free.app";
 
 function initCartDrawerAfterData() {
   const blockId = window.HUB_CART_BLOCK_ID;
@@ -306,7 +306,7 @@ window.startAnnTimer = function (blockId, timeStr) {
         console.log("Published cart found:", publishedCart);
         window.__HUB_ACTIVE_CART__ = publishedCart;
         initCartDrawerAfterData();
-        loadCartRecommendations(publishedCart.recommendationsSettings);
+        window.loadCartRecommendations?.(publishedCart.recommendationsSettings);
       } else {
         console.log("No published cart found");
       }
