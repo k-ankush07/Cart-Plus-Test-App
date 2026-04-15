@@ -491,8 +491,28 @@ window.loadCartRecommendations = async function (settings = {}) {
       finalProducts = allProducts;
     }
     finalProducts = finalProducts.filter((p) => !cartHandles.has(p.handle));
-
     finalProducts = finalProducts.slice(0, limit);
+
+    // Fetch ratings from Admin API via the Remix app
+    try {
+      const shop = window.__SHOPIFY_SHOP__?.permanent_domain;
+      const appUrl = window.__HUB_APP_URL__;
+      if (shop && appUrl && finalProducts.length) {
+        const handles = finalProducts.map((p) => p.handle).join(",");
+        const ratingsRes = await fetch(
+          `${appUrl}/api/hub-ratings?shop=${encodeURIComponent(shop)}&handles=${encodeURIComponent(handles)}`
+        );
+        if (ratingsRes.ok) {
+          const ratings = await ratingsRes.json();
+          finalProducts = finalProducts.map((p) => ({
+            ...p,
+            _hubRating: ratings[p.handle]?.rating ?? null,
+            _hubReviewCount: ratings[p.handle]?.count ?? null,
+          }));
+        }
+      }
+    } catch (_) {}
+
     window.renderProducts(container, finalProducts, settings);
   } catch (err) {
     console.error(" Error:", err);

@@ -79,7 +79,8 @@ window.hubUtils = {
     </div>
   `;
   },
-  renderTrustBadges(blockId, settings) {
+
+  renderTrustBadges(blockId, settings, itemCount) {
     if (!settings || settings.enabled !== false) return;
 
     const position = settings.position || "bottom";
@@ -89,6 +90,11 @@ window.hubUtils = {
     );
 
     if (!el) return;
+
+    if (itemCount === 0) {
+      el.style.display = "none";
+      return;
+    }
 
     let img = settings.customImage || settings.presetImage;
 
@@ -102,6 +108,7 @@ window.hubUtils = {
     </div>
   `;
   },
+
   getProductCardHTML(product) {
     const variants = product.variants || [];
     const mainImage =
@@ -382,13 +389,17 @@ window.hubUtils = {
   // ── Skeleton helpers ──────────────────────────────────────────────────────────
   showCartSkeleton(blockId) {
     const skeleton = document.getElementById(`hub-skeleton-${blockId}`);
+    const skeletonFooter = document.getElementById(`hub-skeleton-footer-${blockId}`);
     const items = document.getElementById(`hub-cart-items-${blockId}`);
     if (skeleton) skeleton.style.display = "block";
+    if (skeletonFooter) skeletonFooter.style.display = "block";
     if (items) items.style.visibility = "visible";
   },
   hideCartSkeleton(blockId) {
     const skeleton = document.getElementById(`hub-skeleton-${blockId}`);
+    const skeletonFooter = document.getElementById(`hub-skeleton-footer-${blockId}`);
     if (skeleton) skeleton.style.display = "none";
+    if (skeletonFooter) skeletonFooter.style.display = "none";
   },
   revealCartItems(blockId) {
     const items = document.getElementById(`hub-cart-items-${blockId}`);

@@ -1,4 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
+
 window.hubCartRender = async function (drawer) {
   if (window._hubRenderInProgress) return;
   window._subscriptionOpen = {};
@@ -31,8 +32,13 @@ window.hubCartRender = async function (drawer) {
       discountCodesSettings?.enabled === false ? "flex" : "none";
   }
 
-  // Show skeleton right away — before any async work
-  hubUtils.showCartSkeleton(blockId);
+  // Hide footer while cart is loading to avoid flash
+  drawer?.querySelector(".hub-cart-footer")?.classList.add("hub-empty-footer");
+
+  // Show skeleton only on the very first page load; skip on every re-open
+  if (!window._hubCartEverRendered) {
+    hubUtils.showCartSkeleton(blockId);
+  }
 
   try {
     const res = await fetch("/cart.js");

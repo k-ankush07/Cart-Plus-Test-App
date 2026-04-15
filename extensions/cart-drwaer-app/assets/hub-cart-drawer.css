@@ -563,6 +563,44 @@ cart-notification {
   padding-top: 4px;
 }
 
+.hub-skeleton-footer {
+  border-top: 1px solid #e5e5e5;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+/* ── Product card reviews ── */
+.hub-product-reviews {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0 4px;
+}
+
+/* ── Judge.me badge inside cart drawer ── */
+.hub-rec-product .jdgm-preview-badge {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin: 2px 0 4px;
+}
+
+.hub-rec-product .jdgm-preview-badge * {
+  display: inline !important;
+  visibility: visible !important;
+}
+
+.hub-stars {
+  font-size: 13px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.hub-review-count {
+  font-size: 11px;
+  color: #888;
+}
+
 /* ── Continue shopping link ── */
 .hub-continue-shopping {
   display: block;
@@ -766,11 +804,7 @@ cart-notification {
   right: 5px;
 }
 
-.hub-empty-footer .hub-discount-input-row,
-.hub-empty-footer .hub-cart-total-row,
-.hub-empty-footer .hub-cart-tax-note,
-.hub-empty-footer .hub-cart-checkout-btn,
-.hub-empty-footer .hub-continue-shopping {
+.hub-empty-footer {
   display: none !important;
 }
 
