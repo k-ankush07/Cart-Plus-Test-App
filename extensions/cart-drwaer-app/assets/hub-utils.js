@@ -428,17 +428,13 @@ window.hubUtils = {
   // ── Skeleton helpers ──────────────────────────────────────────────────────────
   showCartSkeleton(blockId) {
     const skeleton = document.getElementById(`hub-skeleton-${blockId}`);
-    const skeletonFooter = document.getElementById(`hub-skeleton-footer-${blockId}`);
     const items = document.getElementById(`hub-cart-items-${blockId}`);
     if (skeleton) skeleton.style.display = "block";
-    if (skeletonFooter) skeletonFooter.style.display = "block";
     if (items) items.style.visibility = "visible";
   },
   hideCartSkeleton(blockId) {
     const skeleton = document.getElementById(`hub-skeleton-${blockId}`);
-    const skeletonFooter = document.getElementById(`hub-skeleton-footer-${blockId}`);
     if (skeleton) skeleton.style.display = "none";
-    if (skeletonFooter) skeletonFooter.style.display = "none";
   },
   revealCartItems(blockId) {
     const items = document.getElementById(`hub-cart-items-${blockId}`);

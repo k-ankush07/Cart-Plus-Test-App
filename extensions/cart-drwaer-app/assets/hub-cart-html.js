@@ -169,6 +169,26 @@ window.injectCartHTML = function (blockId, root) {
   const goToCartPageOnCheckout = cartSettings.goToCartPageOnCheckout || false;
   const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
 
+  // Inject a style tag once to hide the theme's native cart drawers
+  if (!document.getElementById("hub-hide-theme-cart")) {
+    const s = document.createElement("style");
+    s.id = "hub-hide-theme-cart";
+    s.textContent = `
+      cart-drawer,
+      #CartDrawer,
+      .cart-drawer,
+      .drawer,
+      ajax-cart,
+      cart-notification {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+    `;
+    document.head.appendChild(s);
+  }
+
   root.insertAdjacentHTML(
     "beforeend",
     `
@@ -245,16 +265,6 @@ window.injectCartHTML = function (blockId, root) {
       <!-- FOOTER (fixed bottom) -->
       <div id="hub-footer-rec-${blockId}"></div>
 
-      <!-- SKELETON FOOTER shown while cart loads -->
-      <div id="hub-skeleton-footer-${blockId}" class="hub-skeleton-footer" style="display:none;">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px 10px;">
-          <div class="hub-skeleton hub-skeleton-line" style="width:100px;height:13px;">&nbsp;</div>
-          <div class="hub-skeleton hub-skeleton-line" style="width:80px;height:13px;">&nbsp;</div>
-        </div>
-        <div style="padding:8px 20px 16px;">
-          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:46px;border-radius:8px;">&nbsp;</div>
-        </div>
-      </div>
 
       <div class="hub-cart-footer">
 

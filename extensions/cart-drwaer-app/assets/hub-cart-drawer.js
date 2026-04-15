@@ -11,6 +11,15 @@ function initCartDrawerAfterData() {
   const root =
     document.getElementById(`cart-drawer-App-${blockId}`) || document.body;
 
+  // Only remove theme's native cart elements when our custom drawer is being injected
+  if (window.__HUB_ACTIVE_CART__) {
+    document
+      .querySelectorAll(
+        "cart-drawer, #CartDrawer, .cart-drawer, ajax-cart, cart-notification"
+      )
+      .forEach((el) => el.remove());
+  }
+
   document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
   document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
   window.injectCartHTML(blockId, root);
@@ -53,18 +62,6 @@ function initCartDrawerAfterData() {
   function initCart() {
     const blockId = window.HUB_CART_BLOCK_ID;
     if (!blockId) return;
-
-    document
-      .querySelectorAll(
-        `
-      cart-drawer,
-      #CartDrawer,
-      .cart-drawer,
-      ajax-cart,
-      cart-notification
-    `,
-      )
-      .forEach((el) => el.remove());
 
     let root =
       document.getElementById(`cart-drawer-App-${blockId}`) || document.body;
@@ -160,6 +157,7 @@ function initCartDrawerAfterData() {
           );
 
           if (cartLink) {
+            if (!window.__HUB_ACTIVE_CART__) return; // no published cart — let native cart handle it
             e.preventDefault();
             openDrawer();
             return;
@@ -300,6 +298,8 @@ window.startAnnTimer = function (blockId, timeStr) {
 
   function applyCartData({ cartResult, stickyResult }) {
     // ── Cart drawer ──
+    let hasPublishedCart = false;
+
     if (cartResult?.success && cartResult.data?.length) {
       const publishedCart = cartResult.data.find(
         (cart) => cart.status === "published"
@@ -308,6 +308,7 @@ window.startAnnTimer = function (blockId, timeStr) {
       if (publishedCart) {
         console.log("Published cart found:", publishedCart);
         window.__HUB_ACTIVE_CART__ = publishedCart;
+        hasPublishedCart = true;
         initCartDrawerAfterData();
         window.loadCartRecommendations?.(publishedCart.recommendationsSettings);
       } else {
@@ -321,7 +322,13 @@ window.startAnnTimer = function (blockId, timeStr) {
     if (stickyResult?.success) {
       console.log("Sticky Cart found:", stickyResult.data);
       window.__HUB_STICKY_CART__ = stickyResult.data;
-      renderStickyCart();
+
+      if (hasPublishedCart) {
+        renderStickyCart();
+      } else {
+        const existingBtn = document.getElementById("hub-sticky-cart-btn");
+        if (existingBtn) existingBtn.remove();
+      }
 
       if (stickyResult.data.enabled) {
         console.log("Sticky cart is enabled");

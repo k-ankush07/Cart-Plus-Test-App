@@ -493,17 +493,6 @@
 }
 
 /* ── Suppress native Shopify cart ── */
-cart-drawer,
-#CartDrawer,
-.cart-drawer,
-.drawer,
-ajax-cart,
-cart-notification {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
 
 .hub-rewards-fill:empty {
   display: block !important;
