@@ -42,6 +42,9 @@ export default function AppCarts() {
     const navigate = useNavigate();
     const [deleteModal, setDeleteModal] = useState(false);
     const [selectedCart, setSelectedCart] = useState(null);
+    const [publishModal, setPublishModal] = useState(false);
+    const [cartToPublish, setCartToPublish] = useState(null);
+    const [publishHasLive, setPublishHasLive] = useState(false);
 
     const [carts, setCarts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -92,7 +95,6 @@ export default function AppCarts() {
         const data = await togglePublishCart(apiUrl, id);
 
         if (data.success) {
-
             setCarts((prev) =>
                 prev.map((c) =>
                     c.cartId === id
@@ -100,11 +102,21 @@ export default function AppCarts() {
                         : { ...c, status: c.status === "published" ? "unpublished" : c.status }
                 )
             );
-
-            shopify.toast.show(
-                data.message || "Cart status updated"
-            );
+            shopify.toast.show(data.message || "Cart status updated");
         }
+    };
+
+    const handlePublishClick = (cart) => {
+        setCartToPublish(cart);
+        setPublishHasLive(carts.some((c) => c.status === "published"));
+        setPublishModal(true);
+    };
+
+    const confirmPublish = async () => {
+        if (!cartToPublish) return;
+        await handleTogglePublish(cartToPublish.cartId);
+        setPublishModal(false);
+        setCartToPublish(null);
     };
 
     const handleDuplicateCart = async (cart) => {
@@ -144,7 +156,10 @@ export default function AppCarts() {
                     {carts.map((cart, i) => (
                         <IndexTable.Row key={cart.cartId} id={cart.cartId} position={i}>
                             <IndexTable.Cell>
-                                <div style={{ maxWidth: "100px" }}>
+                                <div
+                                    style={{ maxWidth: "100px", cursor: "pointer" }}
+                                    onClick={() => navigate(`/app/cart-editor/${cart.cartId}`)}
+                                >
                                     <Text
                                         fontWeight="medium"
                                         truncate
@@ -183,7 +198,11 @@ export default function AppCarts() {
                                         <Button
                                             size="slim"
                                             tone={cart.status === "published" ? "critical" : "success"}
-                                            onClick={() => handleTogglePublish(cart.cartId)}
+                                            onClick={() =>
+                                                cart.status === "published"
+                                                    ? handleTogglePublish(cart.cartId)
+                                                    : handlePublishClick(cart)
+                                            }
                                         >
                                             {cart.status === "published" ? "Unpublish" : "Publish"}
                                         </Button>
@@ -218,6 +237,7 @@ export default function AppCarts() {
                 content: loading ? "Creating..." : "Create cart",
                 icon: PlusIcon,
                 loading,
+                disabled: loading, 
                 onAction: handleCreateCart,
             }}
         >
@@ -249,6 +269,30 @@ export default function AppCarts() {
                 </Layout.Section>
 
             </Layout>
+
+            <Modal
+                open={publishModal}
+                onClose={() => { setPublishModal(false); setCartToPublish(null); }}
+                title={`Publish "${cartToPublish?.cartName || "Untitled cart"}"?`}
+                primaryAction={{
+                    content: "Publish cart",
+                    onAction: confirmPublish,
+                }}
+                secondaryActions={[
+                    {
+                        content: "Cancel",
+                        onAction: () => { setPublishModal(false); setCartToPublish(null); },
+                    },
+                ]}
+            >
+                <Modal.Section>
+                    <Text tone="subdued">
+                        {publishHasLive
+                            ? "Publishing this cart will make it live. The current live cart will be moved to draft."
+                            : "Publishing this cart will make it live."}
+                    </Text>
+                </Modal.Section>
+            </Modal>
 
             <Modal
                 open={deleteModal}

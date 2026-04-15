@@ -29,7 +29,7 @@ import {
 
 export const loader = async ({ request, params }) => {
   const { shop, apiUrl, accessToken, currency } = await shopLoader(request);
-  const cartId = params.id;
+  const cartId = params.cartId;
 
   let cart = null;
 
@@ -174,81 +174,45 @@ export default function CartEditor() {
   }, [isDirty]);
 
   useEffect(() => {
-    if (cart) {
-      if (cart.designSettings) {
-        setDesignSettings(cart.designSettings);
-      }
+    if (!cart) return;
 
-      if (cart.headerSettings) {
-        setHeaderSettings(cart.headerSettings);
-      }
+    // Always reset ALL settings to the new cart's values (or defaults).
+    // Using `if (cart.X)` guards caused the previous cart's data to persist
+    // when switching to a cart that had no saved settings for that field.
+    setDesignSettings(cart.designSettings || defaultSettings);
+    setHeaderSettings(cart.headerSettings || defaultHeaderSettings);
+    setAnnouncementSettings(cart.announcementSettings || defaultAnnouncementSettings);
+    setRewardsSettings(cart.rewardsSettings || defaultRewardsSettings);
+    setRecommendationsSettings(cart.recommendationsSettings || defaultRecommendationsSettings);
+    setSubscriptionUpgradesSettings(cart.subscriptionUpgradesSettings || defaultSubscriptionUpgradesSettings);
+    setUpsellsSettings(cart.upsellsSettings || defaultUpsellsSettings);
+    setAdditionalNotesSettings(cart.additionalNotesSettings || defaultAdditionalNotesSettings);
+    setAddonsSettings(cart.addonsSettings || defaultAddonsSettings);
+    setDiscountCodesSettings(cart.discountCodesSettings || defaultDiscountCodesSettings);
+    setExpressPaymentsSettings(cart.expressPaymentsSettings || defaultExpressPaymentsSettings);
+    setTrustBadgesSettings(cart.trustBadgesSettings || defaultTrustBadgesSettings);
+    setCartSettings(cart.cartSettings || defaultCartSettings);
+    setTriggeredRewardsSettings(cart.triggeredRewardsSettings || defaultTriggeredRewardsSettings);
 
-      if (cart.announcementSettings) {
-        setAnnouncementSettings(cart.announcementSettings);
-      }
+    initialSettingsRef.current = {
+      design: cart.designSettings || defaultSettings,
+      header: cart.headerSettings || defaultHeaderSettings,
+      announcement: cart.announcementSettings || defaultAnnouncementSettings,
+      rewardsSettings: cart.rewardsSettings || defaultRewardsSettings,
+      recommendationsSettings: cart.recommendationsSettings || defaultRecommendationsSettings,
+      subscriptionUpgradesSettings: cart.subscriptionUpgradesSettings || defaultSubscriptionUpgradesSettings,
+      upsellsSettings: cart.upsellsSettings || defaultUpsellsSettings,
+      additionalNotesSettings: cart.additionalNotesSettings || defaultAdditionalNotesSettings,
+      addonsSettings: cart.addonsSettings || defaultAddonsSettings,
+      discountCodesSettings: cart.discountCodesSettings || defaultDiscountCodesSettings,
+      expressPaymentsSettings: cart.expressPaymentsSettings || defaultExpressPaymentsSettings,
+      trustBadgesSettings: cart.trustBadgesSettings || defaultTrustBadgesSettings,
+      cartSettings: cart.cartSettings || defaultCartSettings,
+      triggeredRewards: cart.triggeredRewardsSettings || defaultTriggeredRewardsSettings,
+    };
 
-      if (cart.rewardsSettings) {
-        setRewardsSettings(cart.rewardsSettings);
-      }
-
-      if (cart.recommendationsSettings) {
-        setRecommendationsSettings(cart.recommendationsSettings);
-      }
-
-      if (cart.subscriptionUpgradesSettings) {
-        setSubscriptionUpgradesSettings(cart.subscriptionUpgradesSettings);
-      }
-
-      if (cart.upsellsSettings) {
-        setUpsellsSettings(cart.upsellsSettings);
-      }
-
-      if (cart.additionalNotesSettings) {
-        setAdditionalNotesSettings(cart.additionalNotesSettings);
-      }
-
-      if (cart.addonsSettings) {
-        setAddonsSettings(cart.addonsSettings);
-      }
-
-      if (cart.discountCodesSettings) {
-        setDiscountCodesSettings(cart.discountCodesSettings);
-      }
-
-      if (cart.expressPaymentsSettings) {
-        setExpressPaymentsSettings(cart.expressPaymentsSettings);
-      }
-
-      if (cart.trustBadgesSettings) {
-        setTrustBadgesSettings(cart.trustBadgesSettings);
-      }
-
-      if (cart.cartSettings) {
-        setCartSettings(cart.cartSettings);
-      }
-
-      if (cart.triggeredRewardsSettings) {
-        setTriggeredRewardsSettings(cart.triggeredRewardsSettings);
-      }
-
-      initialSettingsRef.current = {
-        design: cart.designSettings || defaultSettings,
-        header: cart.headerSettings || defaultHeaderSettings,
-        announcement: cart.announcementSettings || defaultAnnouncementSettings,
-        rewardsSettings: cart.rewardsSettings || defaultRewardsSettings,
-        recommendationsSettings: cart.recommendationsSettings || defaultRecommendationsSettings,
-        subscriptionUpgradesSettings: cart.subscriptionUpgradesSettings || defaultSubscriptionUpgradesSettings,
-        upsellsSettings: cart.upsellsSettings || defaultUpsellsSettings,
-        additionalNotesSettings: cart.additionalNotesSettings || defaultAdditionalNotesSettings,
-        addonsSettings: cart.addonsSettings || defaultAddonsSettings,
-        discountCodesSettings: cart.discountCodesSettings || defaultDiscountCodesSettings,
-        expressPaymentsSettings: cart.expressPaymentsSettings || defaultExpressPaymentsSettings,
-        trustBadgesSettings: cart.trustBadgesSettings || defaultTrustBadgesSettings,
-        cartSettings: cart.cartSettings || defaultCartSettings,
-        triggeredRewards: cart.triggeredRewardsSettings || defaultTriggeredRewardsSettings,
-      };
-    }
-  }, [cart]);
+    setIsDirty(false);
+  }, [cart?.cartId]);
 
   const handleSave = async () => {
     try {
@@ -349,6 +313,7 @@ export default function CartEditor() {
       </ui-save-bar>
 
       <CartLayout
+        cart={cart}
         cartName={cart?.cartName}
         activeTab={activeTab}
         setActiveTab={setActiveTab}

@@ -81,6 +81,16 @@ export const togglePublishCart = async (apiUrl, cartId) => {
   return res.json();
 };
 
+export const renameCart = async (apiUrl, cartId, cartName) => {
+  const res = await fetch(`${apiUrl}/api/update-cart/${cartId}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cartName }),
+  });
+  return res.json();
+};
+
 export const duplicateCart = async (apiUrl, cartId) => {
   const res = await fetch(`${apiUrl}/api/duplicate-cart`, {
     method: "POST",
