@@ -65,11 +65,17 @@ export default function DesignSettings({ designSettings, setDesignSettings }) {
                             }
                         />
 
-                        {/* <Select
+                        <Select
                             label="Mobile"
-                            options={[{ label: "Full", value: "full" }]}
-                            value="full"
-                        /> */}
+                            options={[
+                                { label: "Full", value: "full" },
+                                { label: "Nearly", value: "nearly" },
+                            ]}
+                            value={designSettings.mobileWidth}
+                            onChange={(value) =>
+                                handleChange("mobileWidth", value)
+                            }
+                        />
                     </BlockStack>
 
                     <BlockStack gap="200">

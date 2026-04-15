@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
-window.hubCartRender = async function (drawer) {
+window.hubCartRender = async function (drawer, opts = {}) {
   if (window._hubRenderInProgress) return;
   window._subscriptionOpen = {};
   window._upsellCache = window._upsellCache || {};
@@ -32,12 +32,10 @@ window.hubCartRender = async function (drawer) {
       discountCodesSettings?.enabled === false ? "flex" : "none";
   }
 
-  // Hide footer while cart is loading to avoid flash
-  drawer?.querySelector(".hub-cart-footer")?.classList.add("hub-empty-footer");
-
-  // Show skeleton only on the very first page load; skip on every re-open
-  if (!window._hubCartEverRendered) {
+  if (opts.showSkeleton) {
     hubUtils.showCartSkeleton(blockId);
+  } else {
+    drawer?.querySelector(".hub-cart-footer")?.classList.add("hub-empty-footer");
   }
 
   try {
@@ -128,6 +126,7 @@ window.hubCartRender = async function (drawer) {
 
     const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
     const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
+    const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
 
     hubUtils.applyCustomCSS(blockId, cartSettings.customCss);
     hubUtils.executeBeforeLoadScripts(
@@ -164,7 +163,9 @@ window.hubCartRender = async function (drawer) {
 
     window.renderProducts = function (container, products, settings = {}) {
       const layout = settings.layout || "block";
-      const html = products.map((p) => hubUtils.getProductCardHTML(p, settings)).join("");
+      const html = products
+        .map((p) => hubUtils.getProductCardHTML(p, settings))
+        .join("");
 
       if (layout === "carousel") {
         container.innerHTML = `
@@ -303,6 +304,9 @@ window.hubCartRender = async function (drawer) {
         const showSavingsBelowPrices =
           cartSettings.showSavingsBelowPrices || false;
 
+        const colorItems =
+          designSettings.textColor || '#000';
+
         const hasDiscount = item.original_line_price !== item.final_line_price;
 
         const savedAmount = hasDiscount
@@ -401,12 +405,12 @@ window.hubCartRender = async function (drawer) {
 
         return `
           <div class="hub-cart-for-item" data-item-key="${item.key}" style="position:relative">
-            <div class="hub-cart-item">
+            <div class="hub-cart-item" style="color:${colorItems}">
               <div class="hub-item-img-wrap">
                 <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
               </div>
               <div class="hub-item-info">
-                <a href="/products/${item.handle}" class="hub-item-title">${item.product_title || item.title}</a>
+                <a href="/products/${item.handle}" class="hub-item-title" style="color:${colorItems}">${item.product_title || item.title}</a>
                 ${
                   isReward
                     ? `
@@ -672,12 +676,15 @@ window.hubCartRender = async function (drawer) {
 async function handleTriggeredRewards(cart) {
   if (window._hubRewardUpdating) return false;
 
-  const triggeredSettings = window.__HUB_ACTIVE_CART__?.triggeredRewardsSettings;
+  const triggeredSettings =
+    window.__HUB_ACTIVE_CART__?.triggeredRewardsSettings;
   const rewards = triggeredSettings?.rewards || [];
-  const enabledRewards = rewards.filter(r => r.enabled && r.reward?.type === "free_gift");
+  const enabledRewards = rewards.filter(
+    (r) => r.enabled && r.reward?.type === "free_gift",
+  );
 
   // Collect all active reward IDs so we can detect orphans
-  const activeRewardIds = new Set(enabledRewards.map(r => String(r.id)));
+  const activeRewardIds = new Set(enabledRewards.map((r) => String(r.id)));
 
   // ── Remove orphaned gift items (reward was deleted or disabled) ──
   let changed = false;
@@ -692,7 +699,10 @@ async function handleTriggeredRewards(cart) {
           body: JSON.stringify({ id: item.key, quantity: 0 }),
         });
         changed = true;
-        console.log("[triggered-reward] Removed orphaned gift item:", item.variant_id);
+        console.log(
+          "[triggered-reward] Removed orphaned gift item:",
+          item.variant_id,
+        );
       } catch (e) {
         console.error("[triggered-reward] Failed to remove orphan:", e);
       } finally {
@@ -704,18 +714,29 @@ async function handleTriggeredRewards(cart) {
   if (!enabledRewards.length) return changed;
 
   const cartTotal = cart.total_price / 100;
-  const cartProductIds = new Set(cart.items.map(i => `gid://shopify/Product/${i.product_id}`));
-  const cartVariantIds = new Set(cart.items.map(i => `gid://shopify/ProductVariant/${i.variant_id}`));
+  const cartProductIds = new Set(
+    cart.items.map((i) => `gid://shopify/Product/${i.product_id}`),
+  );
+  const cartVariantIds = new Set(
+    cart.items.map((i) => `gid://shopify/ProductVariant/${i.variant_id}`),
+  );
 
   for (const reward of enabledRewards) {
-    const qualifies = checkTriggers(reward.triggers, { cartTotal, cartProductIds, cartVariantIds, cart });
+    const qualifies = checkTriggers(reward.triggers, {
+      cartTotal,
+      cartProductIds,
+      cartVariantIds,
+      cart,
+    });
     const giftItems = reward.reward?.items || {};
     const giftVariantIds = giftItems.variants || [];
     const giftProductIds = new Set(giftItems.products || []);
 
-    const giftInCart = cart.items.find(i =>
-      giftVariantIds.includes(`gid://shopify/ProductVariant/${i.variant_id}`) ||
-      giftProductIds.has(`gid://shopify/Product/${i.product_id}`)
+    const giftInCart = cart.items.find(
+      (i) =>
+        giftVariantIds.includes(
+          `gid://shopify/ProductVariant/${i.variant_id}`,
+        ) || giftProductIds.has(`gid://shopify/Product/${i.product_id}`),
     );
 
     if (qualifies && !giftInCart && giftVariantIds.length > 0) {
@@ -729,12 +750,22 @@ async function handleTriggeredRewards(cart) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            items: [{ id: Number(variantId), quantity: 1, properties: { _triggered_reward: reward.id } }],
+            items: [
+              {
+                id: Number(variantId),
+                quantity: 1,
+                properties: { _triggered_reward: reward.id },
+              },
+            ],
           }),
         });
         if (!addRes.ok) {
           const errBody = await addRes.text();
-          console.error("[triggered-reward] /cart/add.js failed:", addRes.status, errBody);
+          console.error(
+            "[triggered-reward] /cart/add.js failed:",
+            addRes.status,
+            errBody,
+          );
         } else {
           changed = true;
           console.log("[triggered-reward] Added free gift:", variantId);
@@ -755,7 +786,10 @@ async function handleTriggeredRewards(cart) {
           body: JSON.stringify({ id: giftInCart.key, quantity: 0 }),
         });
         changed = true;
-        console.log("[triggered-reward] Removed free gift (trigger failed):", giftInCart.variant_id);
+        console.log(
+          "[triggered-reward] Removed free gift (trigger failed):",
+          giftInCart.variant_id,
+        );
       } catch (e) {
         console.error("[triggered-reward] Failed to remove gift:", e);
       } finally {
@@ -767,12 +801,20 @@ async function handleTriggeredRewards(cart) {
   return changed;
 }
 
-function checkTriggers(triggers, { cartTotal, cartProductIds, cartVariantIds, cart }) {
+function checkTriggers(
+  triggers,
+  { cartTotal, cartProductIds, cartVariantIds, cart },
+) {
   if (!triggers || triggers.length === 0) return true;
-  return triggers.every(t => checkTrigger(t, { cartTotal, cartProductIds, cartVariantIds, cart }));
+  return triggers.every((t) =>
+    checkTrigger(t, { cartTotal, cartProductIds, cartVariantIds, cart }),
+  );
 }
 
-function checkTrigger(trigger, { cartTotal, cartProductIds, cartVariantIds, cart }) {
+function checkTrigger(
+  trigger,
+  { cartTotal, cartProductIds, cartVariantIds, cart },
+) {
   switch (trigger.type) {
     case "cart_total":
       return cartTotal >= Number(trigger.minAmount || 0);
@@ -783,19 +825,22 @@ function checkTrigger(trigger, { cartTotal, cartProductIds, cartVariantIds, cart
     }
 
     case "specific_products": {
-      const pids = (trigger.items?.products || []);
-      const vids = (trigger.items?.variants || []);
-      return pids.some(id => cartProductIds.has(id)) || vids.some(id => cartVariantIds.has(id));
+      const pids = trigger.items?.products || [];
+      const vids = trigger.items?.variants || [];
+      return (
+        pids.some((id) => cartProductIds.has(id)) ||
+        vids.some((id) => cartVariantIds.has(id))
+      );
     }
 
     case "specific_collections":
-      return true; 
+      return true;
 
     case "customer_logged_in":
       return false;
 
     case "subscription":
-      return false; 
+      return false;
 
     default:
       return true;

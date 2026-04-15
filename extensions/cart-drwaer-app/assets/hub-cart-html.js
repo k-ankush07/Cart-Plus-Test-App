@@ -39,6 +39,7 @@ window.injectCartHTML = function (blockId, root) {
 
   const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
   const headerSettings = window.__HUB_ACTIVE_CART__?.headerSettings || {};
+  const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
 
   const cartCount =
     window.__HUB_ACTIVE_CART__?.cart?.item_count ??
@@ -130,7 +131,7 @@ window.injectCartHTML = function (blockId, root) {
         <div style="${wrapperStyle}">
           <span
             class="cart-app__title upcart-header-text"
-            style="color:${headerSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${headerSettings.fontSize}px;display:block;margin:0;"
+            style="color:${headerSettings.textColor || designSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${headerSettings.fontSize}px;display:block;margin:0;"
           >${titleDisplayText}</span>
         </div>`;
     }
@@ -141,7 +142,7 @@ window.injectCartHTML = function (blockId, root) {
       <div style="${wrapperStyle}">
         <${HeadingTag}
           class="cart-app__title upcart-header-text"
-          style="margin:0;color:${headerSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${getHeadingSize(headerSettings.heading)};"
+          style="margin:0;color:${headerSettings.textColor || designSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${getHeadingSize(headerSettings.heading)};"
         >${titleDisplayText}</${HeadingTag}>
       </div>`;
   }
@@ -169,6 +170,46 @@ window.injectCartHTML = function (blockId, root) {
   const goToCartPageOnCheckout = cartSettings.goToCartPageOnCheckout || false;
   const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
 
+  // Inject button color + hover style for this drawer
+  const btnStyleId = `hub-btn-style-${blockId}`;
+  if (!document.getElementById(btnStyleId)) {
+    const bs = document.createElement("style");
+    bs.id = btnStyleId;
+    const btnColor = designSettings.buttonColor || "#000000";
+    const btnHoverColor = designSettings.buttonHoverColor || "#333333";
+    const textColor = designSettings.buttonTextColor || "#000";
+
+    bs.textContent = `
+      #hub-cart-drawer-${blockId} .hub-cart-checkout-btn {
+        background: ${btnColor} !important;
+      }
+      #hub-cart-drawer-${blockId} .hub-cart-checkout-btn:hover {
+        color: ${btnHoverColor} !important;
+      }
+      #hub-cart-drawer-${blockId} .hub-cart-checkout-btn {
+        color: ${textColor} !important;
+      }
+    `;
+    document.head.appendChild(bs);
+  }
+
+  // Inject mobile-width style for this drawer
+  const mobileStyleId = `hub-mobile-width-${blockId}`;
+  if (!document.getElementById(mobileStyleId)) {
+    const ms = document.createElement("style");
+    ms.id = mobileStyleId;
+    const mobileWidth = designSettings.mobileWidth === "full" ? "100vw" : "90vw";
+    ms.textContent = `
+      @media (max-width: 480px) {
+        #hub-cart-drawer-${blockId} {
+          width: ${mobileWidth} !important;
+          max-width: 100vw !important;
+        }
+      }
+    `;
+    document.head.appendChild(ms);
+  }
+
   // Inject a style tag once to hide the theme's native cart drawers
   if (!document.getElementById("hub-hide-theme-cart")) {
     const s = document.createElement("style");
@@ -194,12 +235,15 @@ window.injectCartHTML = function (blockId, root) {
     `
     <div id="hub-cart-bg-${blockId}" class="hub-cart-bg"></div>
 
-    <div id="hub-cart-drawer-${blockId}" class="hub-cart-drawer ${positionClass}">
+    <div id="hub-cart-drawer-${blockId}" class="hub-cart-drawer cart-app upcart-cart 
+    ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"}"
+     style="background-color:${designSettings.backgroundColor || ""};
+     width:${designSettings.desktopWidth === "wide" ? "500px" : "440px"};">
 
       <!-- HEADER -->
       <div
         class="cart-app__header-top upcart-header hub-cart-header"
-        style="padding:${headerPadding};background:${headerSettings.backgroundColor};"
+        style="padding:${headerPadding}; background:${headerSettings.backgroundColor};"
       >
         <div
           class="cart-app__row-between"
@@ -265,9 +309,7 @@ window.injectCartHTML = function (blockId, root) {
       <!-- FOOTER (fixed bottom) -->
       <div id="hub-footer-rec-${blockId}"></div>
 
-
-      <div class="hub-cart-footer">
-
+      <div class="hub-cart-footer" style="background-color:${designSettings.accentColor || ""};">
         <!-- TRUST BADGES (position: top of footer) -->
         <div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges" style="display:none;"></div>
 
@@ -296,14 +338,14 @@ window.injectCartHTML = function (blockId, root) {
        
         <!-- CHECKOUT -->
         <div>${renderCustomHTML(customHtmlBlocks.above_checkout)}</div>
-        <a href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" class="hub-cart-checkout-btn">
+        <a href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" class="hub-cart-checkout-btn" style="border-radius:${designSettings.buttonRadius}px;">
           Check out
         </a>
         <div>${renderCustomHTML(customHtmlBlocks.below_checkout)}</div>
-        <a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping"
+        ${designSettings.continueshopping ? `<a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping"
            onclick="(function(e){e.preventDefault();document.getElementById('hub-close-${blockId}').click();})(event)">
           Or continue shopping
-        </a>
+        </a>` : ""}
       </div>
 
       <div>${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>

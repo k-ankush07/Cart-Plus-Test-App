@@ -17,7 +17,13 @@ function initCartDrawerAfterData() {
       .querySelectorAll(
         "cart-drawer, #CartDrawer, .cart-drawer, ajax-cart, cart-notification"
       )
-      .forEach((el) => el.remove());
+      .forEach((el) => {
+        // Patch theme methods to no-ops before removal so product-form.js
+        // doesn't crash when it calls renderContents on the detached element
+        if (typeof el.renderContents === "function") el.renderContents = () => {};
+        if (typeof el.open === "function") el.open = () => {};
+        el.remove();
+      });
   }
 
   document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
@@ -113,7 +119,7 @@ function initCartDrawerAfterData() {
       }
     };
 
-    function openDrawer() {
+    function openDrawer(showSkeleton = false) {
       ensureDrawerReady(() => {
         drawer.classList.add(`hub-visible-${blockId}`);
         bg.classList.add(`hub-visible-${blockId}`);
@@ -124,7 +130,7 @@ function initCartDrawerAfterData() {
         document.body.style.overflow = "hidden";
 
         if (window.hubCartRender) {
-          window.hubCartRender(drawer);
+          window.hubCartRender(drawer, { showSkeleton });
         }
 
         updateCartCount();
@@ -178,7 +184,7 @@ function initCartDrawerAfterData() {
       document.addEventListener("cart:updated", function () {
         if (window._hubRewardUpdating) return;
         clearTimeout(_cartUpdateTimer);
-        _cartUpdateTimer = setTimeout(() => openDrawer(), 300);
+        _cartUpdateTimer = setTimeout(() => openDrawer(true), 300);
       });
     }
   }

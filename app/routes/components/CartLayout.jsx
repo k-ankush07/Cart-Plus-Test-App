@@ -1,5 +1,5 @@
 import { Page, Button, Modal, TextField, InlineStack, Badge, Popover, ActionList } from "@shopify/polaris";
-import { EditIcon, ChevronDownIcon } from "@shopify/polaris-icons";
+import { EditIcon, ArrowLeftIcon } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../index.css";
@@ -56,6 +56,7 @@ export default function CartLayout({
   const [renameLoading, setRenameLoading] = useState(false);
 
   const [publishLoading, setPublishLoading] = useState(false);
+  const [unpublishModal, setUnpublishModal] = useState(false);
 
   // Fetch all carts when popover opens
   useEffect(() => {
@@ -80,13 +81,22 @@ export default function CartLayout({
     }
   };
 
-  const handleTogglePublish = async () => {
+  const handleTogglePublish = () => {
+    if (isPublished) {
+      setUnpublishModal(true);
+    } else {
+      handlePublish();
+    }
+  };
+
+  const handlePublish = async () => {
     setPublishLoading(true);
     try {
       const data = await togglePublishCart(apiUrl, cart?.cartId);
       if (data.success) {
         const next = cartStatus === "published" ? "unpublished" : "published";
         setCartStatus(next);
+        setUnpublishModal(false);
         shopify.toast.show(next === "published" ? "Cart published" : "Cart unpublished");
       }
     } catch (e) {
@@ -133,150 +143,118 @@ export default function CartLayout({
   ];
 
   return (
-    <Page fullWidth>
-      {/* ── Top bar ── */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+    <>
+      <Page fullWidth>
+        {/* ── Top bar ── */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", paddingRight: designSettings?.desktopWidth === "wide" ? "500px" : "440px", transition: "padding-right 0.35s cubic-bezier(0.4, 0, 0.2, 1)" }}>
 
-        {/* Left: cart switcher + badge */}
-        <InlineStack gap="200" blockAlign="center">
-          <Popover
-            active={switcherOpen}
-            activator={
-              <>
+          {/* Left: cart switcher + badge */}
+          <InlineStack gap="200" blockAlign="center">
+            <Button
+              icon={ArrowLeftIcon}
+              variant="plain"
+              onClick={() => navigate("/app/carts")}
+              accessibilityLabel="Go back"
+            />
+            <Popover
+              active={switcherOpen}
+              activator={
+                <>
+                  <Button
+                    disclosure="down"
+                    onClick={() => setSwitcherOpen((o) => !o)}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      {cartName}
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSwitcherOpen(false);
+                          setNewCartName(cartName);
+                          setRenameModal(true);
+                        }}
+                        style={{ display: "flex", alignItems: "center", opacity: 0.6 }}
+                        title="Rename cart"
+                      >
+                      </span>
+                    </span>
+                  </Button>
+                </>
+              }
+              onClose={() => setSwitcherOpen(false)}
+            >
+              <ActionList sections={switcherItems} />
+            </Popover>
+
+
+            {/* Edit icon — opens rename modal directly */}
+            <Button
+              icon={EditIcon}
+              variant="plain"
+              onClick={() => { setNewCartName(cartName); setRenameModal(true); }}
+              accessibilityLabel="Rename cart"
+            />
+
+            <Badge tone={isPublished ? "success" : "info"}>
+              {isPublished ? "Live" : "Draft"}
+            </Badge>
+          </InlineStack>
+
+          {/* Right: actions */}
+          <InlineStack gap="200">
+            <Popover
+              active={previewPopoverOpen}
+              activator={
                 <Button
                   disclosure="down"
-                  onClick={() => setSwitcherOpen((o) => !o)}
+                  onClick={() => setPreviewPopoverOpen((prev) => !prev)}
                 >
-                  <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    {cartName}
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSwitcherOpen(false);
-                        setNewCartName(cartName);
-                        setRenameModal(true);
-                      }}
-                      style={{ display: "flex", alignItems: "center", opacity: 0.6 }}
-                      title="Rename cart"
-                    >
-                    </span>
-                  </span>
+                  {previewMode === "items" ? "Show items in cart" : "Show empty cart"}
                 </Button>
-              </>
-            }
-            onClose={() => setSwitcherOpen(false)}
-          >
-            <ActionList sections={switcherItems} />
-          </Popover>
-
-
-          {/* Edit icon — opens rename modal directly */}
-          <Button
-            icon={EditIcon}
-            variant="plain"
-            onClick={() => { setNewCartName(cartName); setRenameModal(true); }}
-            accessibilityLabel="Rename cart"
-          />
-
-          <Badge tone={isPublished ? "success" : "info"}>
-            {isPublished ? "Live" : "Draft"}
-          </Badge>
-        </InlineStack>
-
-        {/* Right: actions */}
-        <InlineStack gap="200">
-          <Popover
-            active={previewPopoverOpen}
-            activator={
-              <Button
-                disclosure="down"
-                onClick={() => setPreviewPopoverOpen((prev) => !prev)}
-              >
-                {previewMode === "items" ? "Show items in cart" : "Show empty cart"}
-              </Button>
-            }
-            onClose={() => setPreviewPopoverOpen(false)}
-          >
-            <ActionList
-              items={[
-                {
-                  content: "Show items in cart",
-                  onAction: () => {
-                    setPreviewMode("items");
-                    setPreviewPopoverOpen(false);
+              }
+              onClose={() => setPreviewPopoverOpen(false)}
+            >
+              <ActionList
+                items={[
+                  {
+                    content: "Show items in cart",
+                    onAction: () => {
+                      setPreviewMode("items");
+                      setPreviewPopoverOpen(false);
+                    },
                   },
-                },
-                {
-                  content: "Show empty cart",
-                  onAction: () => {
-                    setPreviewMode("empty");
-                    setPreviewPopoverOpen(false);
+                  {
+                    content: "Show empty cart",
+                    onAction: () => {
+                      setPreviewMode("empty");
+                      setPreviewPopoverOpen(false);
+                    },
                   },
-                },
-              ]}
-            />
-          </Popover>
-          <Button onClick={() => window.open(`https://${shop?.myshopifyDomain}`, "_blank")}>
-            Preview in store
-          </Button>
+                ]}
+              />
+            </Popover>
+            <Button onClick={() => window.open(`https://${shop?.myshopifyDomain}`, "_blank")}>
+              Preview in store
+            </Button>
 
-          <Button
-            tone={isPublished ? "critical" : "success"}
-            loading={publishLoading}
-            onClick={handleTogglePublish}
-          >
-            {isPublished ? "Unpublish" : "Publish"}
-          </Button>
-        </InlineStack>
-      </div>
+            <Button
+              tone={isPublished ? "critical" : "success"}
+              loading={publishLoading}
+              onClick={handleTogglePublish}
+            >
+              {isPublished ? "Unpublish" : "Publish"}
+            </Button>
+          </InlineStack>
+        </div>
 
-      {/* ── Main layout ── */}
-      <div className="appLayout">
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          announcementSettings={announcementSettings}
-          rewardsSettings={rewardsSettings}
-          recommendationsSettings={recommendationsSettings}
-          subscriptionUpgradesSettings={subscriptionUpgradesSettings}
-          upsellsSettings={upsellsSettings}
-          additionalNotesSettings={additionalNotesSettings}
-          addonsSettings={addonsSettings}
-          discountCodesSettings={discountCodesSettings}
-          expressPaymentsSettings={expressPaymentsSettings}
-          trustBadgesSettings={trustBadgesSettings}
-          cartSettings={cartSettings}
-          handleChange={handleChange}
-        />
-
-        <MainContent
-          activeTab={activeTab}
-          designSettings={designSettings}
-          setDesignSettings={setDesignSettings}
-          headerSettings={headerSettings}
-          handleChange={handleChange}
-          shop={shop}
-          accessToken={accessToken}
-          apiUrl={apiUrl}
-          announcementSettings={announcementSettings}
-          rewardsSettings={rewardsSettings}
-          recommendationsSettings={recommendationsSettings}
-          subscriptionUpgradesSettings={subscriptionUpgradesSettings}
-          upsellsSettings={upsellsSettings}
-          additionalNotesSettings={additionalNotesSettings}
-          addonsSettings={addonsSettings}
-          discountCodesSettings={discountCodesSettings}
-          expressPaymentsSettings={expressPaymentsSettings}
-          trustBadgesSettings={trustBadgesSettings}
-          cartSettings={cartSettings}
-          triggeredRewardsSettings={triggeredRewardsSettings}
-          currency={currency}
-        />
-
-        <div className="cartPreviewWrapper">
-          <CartPreview
-            designSettings={designSettings}
-            headerSettings={headerSettings}
+        {/* ── Main layout ── */}
+        <div
+          className="appLayout"
+          style={{ paddingRight: designSettings?.desktopWidth === "wide" ? "500px" : "440px" }}
+        >
+          <Sidebar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
             announcementSettings={announcementSettings}
             rewardsSettings={rewardsSettings}
             recommendationsSettings={recommendationsSettings}
@@ -288,35 +266,102 @@ export default function CartLayout({
             expressPaymentsSettings={expressPaymentsSettings}
             trustBadgesSettings={trustBadgesSettings}
             cartSettings={cartSettings}
-            currency={currency}
+            handleChange={handleChange}
+          />
+
+          <MainContent
             activeTab={activeTab}
+            designSettings={designSettings}
+            setDesignSettings={setDesignSettings}
+            headerSettings={headerSettings}
+            handleChange={handleChange}
+            shop={shop}
+            accessToken={accessToken}
+            apiUrl={apiUrl}
+            announcementSettings={announcementSettings}
+            rewardsSettings={rewardsSettings}
+            recommendationsSettings={recommendationsSettings}
+            subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+            upsellsSettings={upsellsSettings}
+            additionalNotesSettings={additionalNotesSettings}
+            addonsSettings={addonsSettings}
+            discountCodesSettings={discountCodesSettings}
+            expressPaymentsSettings={expressPaymentsSettings}
+            trustBadgesSettings={trustBadgesSettings}
+            cartSettings={cartSettings}
+            triggeredRewardsSettings={triggeredRewardsSettings}
+            currency={currency}
           />
         </div>
-      </div>
 
-      {/* ── Rename modal ── */}
-      <Modal
-        open={renameModal}
-        onClose={() => setRenameModal(false)}
-        title="Rename cart"
-        primaryAction={{
-          content: "Save",
-          loading: renameLoading,
-          onAction: handleRenameSubmit,
-        }}
-        secondaryActions={[
-          { content: "Cancel", onAction: () => setRenameModal(false) },
-        ]}
+        {/* ── Unpublish confirmation modal ── */}
+        <Modal
+          open={unpublishModal}
+          onClose={() => setUnpublishModal(false)}
+          title={`Unpublish '${cartName}'?`}
+          primaryAction={{
+            content: "Unpublish",
+            tone: "critical",
+            loading: publishLoading,
+            onAction: handlePublish,
+          }}
+          secondaryActions={[
+            { content: "Cancel", onAction: () => setUnpublishModal(false) },
+          ]}
+        >
+          <Modal.Section>
+            Unpublishing will set this cart to draft. No cart will be live until you publish another.
+          </Modal.Section>
+        </Modal>
+
+        {/* ── Rename modal ── */}
+        <Modal
+          open={renameModal}
+          onClose={() => setRenameModal(false)}
+          title="Rename cart"
+          primaryAction={{
+            content: "Save",
+            loading: renameLoading,
+            onAction: handleRenameSubmit,
+          }}
+          secondaryActions={[
+            { content: "Cancel", onAction: () => setRenameModal(false) },
+          ]}
+        >
+          <Modal.Section>
+            <TextField
+              label="Cart name *"
+              value={newCartName}
+              onChange={setNewCartName}
+              autoComplete="off"
+            />
+          </Modal.Section>
+        </Modal>
+      </Page>
+
+      <div
+        className="cartPreviewWrapper"
+        style={{ width: designSettings?.desktopWidth === "wide" ? "500px" : "440px" }}
       >
-        <Modal.Section>
-          <TextField
-            label="Cart name *"
-            value={newCartName}
-            onChange={setNewCartName}
-            autoComplete="off"
-          />
-        </Modal.Section>
-      </Modal>
-    </Page>
+        <CartPreview
+          designSettings={designSettings}
+          headerSettings={headerSettings}
+          announcementSettings={announcementSettings}
+          rewardsSettings={rewardsSettings}
+          recommendationsSettings={recommendationsSettings}
+          subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+          upsellsSettings={upsellsSettings}
+          additionalNotesSettings={additionalNotesSettings}
+          addonsSettings={addonsSettings}
+          discountCodesSettings={discountCodesSettings}
+          expressPaymentsSettings={expressPaymentsSettings}
+          trustBadgesSettings={trustBadgesSettings}
+          cartSettings={cartSettings}
+          currency={currency}
+          activeTab={activeTab}
+          previewMode={previewMode}
+        />
+      </div>
+    </>
   );
 }

@@ -247,7 +247,7 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
               onChange={(val) => updateHeader("titleText", val)}
             />
 
-            <TextField
+            <ColorInput
               label="Text color override"
               value={headerSettings.textColor || "#000000"}
               onChange={(val) => updateHeader("textColor", val)}
