@@ -109,7 +109,7 @@ window.hubUtils = {
   `;
   },
 
-  getProductCardHTML(product) {
+  getProductCardHTML(product, settings = {}) {
     const variants = product.variants || [];
     const mainImage =
       product?.images?.[0]?.src || product?.featured_image || "";
@@ -118,14 +118,19 @@ window.hubUtils = {
     const variantOptions = variants
       .map(
         (v) => `
-      <option value="${v.id}" 
-        data-price="${Math.round(Number(v.price) * 100)}" 
+      <option value="${v.id}"
+        data-price="${Math.round(Number(v.price) * 100)}"
         data-image="${v.featured_image?.src || mainImage}">
         ${v.title}
       </option>
     `,
       )
       .join("");
+
+    // Only render rating slot if merchant enabled showReviews
+    const ratingHTML = settings.showReviews
+      ? `<div class="upcart-internal-component-upsell-tile__rating hub-rating-slot" data-pid="${product.id}"></div>`
+      : "";
 
     return `
     <div class="hub-rec-product upcart-internal-component-upsell-tile">
@@ -136,18 +141,20 @@ window.hubUtils = {
                alt="${product.title}" />
         </div>
         <div class="upcart-internal-component-upsell-tile__info">
-          <a href="/products/${product.handle}" 
+          <a href="/products/${product.handle}"
             class="upcart-internal-component-upsell-tile__title-link">
             <h4 class="upcart-internal-component-upsell-tile__title">
               ${product.title}
             </h4>
           </a>
+          ${ratingHTML}
           <div class="price">
             <span class="sale-price">
               ${hubUtils.formatMoney(Math.round(Number(firstVariant?.price || 0) * 100))}
             </span>
           </div>
         </div>
+     
         <div class="upcart-internal-component-upsell-tile__variant-row">
           <select class="hub-variant-select">
             ${variantOptions}
@@ -159,6 +166,38 @@ window.hubUtils = {
       </div>
     </div>
   `;
+  },
+
+  // Fetches product ratings from the Remix proxy (Admin API → reviews metafields)
+  // and fills every .hub-rating-slot[data-pid] inside `container`.
+  async applyRatings(container) {
+    const ratingsUrl = window.__HUB_RATINGS_URL__;
+    const shop = window.__SHOPIFY_SHOP__?.domain;
+    if (!ratingsUrl || !shop) return;
+
+    const slots = container.querySelectorAll(".hub-rating-slot[data-pid]");
+    if (!slots.length) return;
+
+    const ids = [...new Set([...slots].map((s) => s.dataset.pid))].join(",");
+
+    try {
+      const res = await fetch(
+        `${ratingsUrl}/api/product-ratings?shop=${shop}&ids=${ids}`,
+        { headers: { "ngrok-skip-browser-warning": "true" } }
+      );
+      const { ratings } = await res.json();
+
+      slots.forEach((slot) => {
+        const r = ratings[slot.dataset.pid];
+        if (!r?.rating) return;
+        slot.innerHTML = `
+          <span class="hub-stars" style="--rating: ${r.rating};" aria-label="Rating: ${r.rating} out of 5"></span>
+          ${r.count ? `<span class="hub-rating-count">(${r.count})</span>` : ""}
+        `;
+      });
+    } catch (err) {
+      console.warn("[hub] Could not fetch ratings:", err);
+    }
   },
 
   async maybeUpdateRewardProducts(cart, rewards) {

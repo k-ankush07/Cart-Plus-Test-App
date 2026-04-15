@@ -1,5 +1,5 @@
 import express from "express";
-import { cartModels, stickyCartModel } from "../model/schema.js";
+import { cartModels, stickyCartModel, shopConfigModel } from "../model/schema.js";
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -295,7 +295,7 @@ router.post("/save-sticky-cart", async (req, res) => {
     }
 
     const updatedStickyCart = await stickyCartModel.findOneAndUpdate(
-      { shop }, // 🔍 find by shop
+      { shop }, 
       {
         shop,
         cartId,
@@ -346,6 +346,96 @@ router.get("/get-sticky-cart/:shop", async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+});
+
+// Called by the Remix app after OAuth to persist the offline Admin token.
+router.post("/save-shop-token", async (req, res) => {
+  try {
+    const { shop, accessToken } = req.body;
+    if (!shop || !accessToken) {
+      return res.status(400).json({ success: false, message: "Missing shop or accessToken" });
+    }
+    await shopConfigModel.findOneAndUpdate(
+      { shop },
+      { accessToken, updatedAt: new Date() },
+      { upsert: true, new: true }
+    );
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("SAVE SHOP TOKEN ERROR:", error);
+    return res.status(500).json({ success: false });
+  }
+});
+
+// Returns product ratings by fetching reviews metafields via Shopify Admin API.
+router.get("/product-ratings", async (req, res) => {
+  try {
+    const { shop, ids } = req.query;
+    const idList = ids?.split(",").filter(Boolean) ?? [];
+
+    if (!shop || !idList.length) {
+      return res.json({ ratings: {} });
+    }
+
+    const config = await shopConfigModel.findOne({ shop });
+    if (!config?.accessToken) {
+      return res.json({ ratings: {} });
+    }
+
+    const gids = idList.map((id) => `gid://shopify/Product/${id}`);
+
+    const gql = `
+      query ProductRatings($ids: [ID!]!) {
+        nodes(ids: $ids) {
+          ... on Product {
+            legacyResourceId
+            rating: metafield(namespace: "reviews", key: "rating") { value }
+            ratingCount: metafield(namespace: "reviews", key: "rating_count") { value }
+          }
+        }
+      }
+    `;
+
+    const apiRes = await fetch(
+      `https://${shop}/admin/api/2025-01/graphql.json`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": config.accessToken,
+        },
+        body: JSON.stringify({ query: gql, variables: { ids: gids } }),
+      }
+    );
+
+    const apiData = await apiRes.json();
+    const ratings = {};
+
+    for (const node of apiData?.data?.nodes ?? []) {
+      if (!node?.legacyResourceId) continue;
+
+      let ratingValue = null;
+      if (node.rating?.value) {
+        try {
+          // Native Shopify reviews metafield: {"scale_max":"5.0","scale_min":"1.0","value":"4.5"}
+          const parsed = JSON.parse(node.rating.value);
+          ratingValue = parseFloat(parsed.value ?? parsed);
+        } catch {
+          ratingValue = parseFloat(node.rating.value);
+        }
+      }
+
+      ratings[node.legacyResourceId] = {
+        rating: ratingValue,
+        count: node.ratingCount?.value ? parseInt(node.ratingCount.value, 10) : null,
+      };
+    }
+
+    return res.json({ ratings });
+  } catch (error) {
+    console.error("PRODUCT RATINGS ERROR:", error);
+    return res.json({ ratings: {} });
   }
 });
 

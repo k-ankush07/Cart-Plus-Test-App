@@ -90,7 +90,16 @@ const stickyCartSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+// Stores the offline Admin API access token per shop so the backend
+// can call Shopify Admin API without requiring an embedded session.
+const shopConfigSchema = new mongoose.Schema({
+  shop: { type: String, required: true, unique: true },
+  accessToken: { type: String, required: true },
+  updatedAt: { type: Date, default: Date.now },
+});
+
 const cartModels = mongoose.model("cartItems", cartSchema);
 const stickyCartModel = mongoose.model("stickyCart", stickyCartSchema);
+const shopConfigModel = mongoose.model("shopConfig", shopConfigSchema);
 
-export { cartModels, stickyCartModel };
+export { cartModels, stickyCartModel, shopConfigModel };

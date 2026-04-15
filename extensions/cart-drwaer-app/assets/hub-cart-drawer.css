@@ -692,6 +692,35 @@ cart-notification {
   color: #333;
 }
 
+.upcart-internal-component-upsell-tile__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0 4px;
+}
+
+.hub-stars {
+  --percent: calc(var(--rating) / 5 * 100%);
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  font-family: Times, serif;
+}
+
+.hub-stars::before {
+  content: "★★★★★";
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, #f5a623 var(--percent), #ccc var(--percent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hub-rating-count {
+  font-size: 11px;
+  color: #888;
+}
+
 .upcart-internal-component-upsell-tile__variant-row {
   display: flex;
   align-items: center;

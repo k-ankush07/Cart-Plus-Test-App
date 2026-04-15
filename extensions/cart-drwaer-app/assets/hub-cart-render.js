@@ -164,7 +164,7 @@ window.hubCartRender = async function (drawer) {
 
     window.renderProducts = function (container, products, settings = {}) {
       const layout = settings.layout || "block";
-      const html = products.map((p) => hubUtils.getProductCardHTML(p)).join("");
+      const html = products.map((p) => hubUtils.getProductCardHTML(p, settings)).join("");
 
       if (layout === "carousel") {
         container.innerHTML = `
@@ -179,6 +179,9 @@ window.hubCartRender = async function (drawer) {
           <div class="upcart-internal-upsell__vertical-layout-wrapper">${html}</div>
         `;
       }
+
+      // Fetch ratings from Storefront API (via Remix proxy) and fill placeholders
+      hubUtils.applyRatings(container);
 
       container.querySelectorAll(".hub-rec-product").forEach((card) => {
         const select = card.querySelector(".hub-variant-select");
@@ -582,6 +585,7 @@ window.hubCartRender = async function (drawer) {
         if (upsellProducts.length > 0) {
           window.renderProducts(upsellContainer, upsellProducts, {
             layout: upsellSettings.direction,
+            showReviews: upsellSettings.showReviews,
           });
         }
       }
@@ -713,8 +717,6 @@ async function handleTriggeredRewards(cart) {
       giftVariantIds.includes(`gid://shopify/ProductVariant/${i.variant_id}`) ||
       giftProductIds.has(`gid://shopify/Product/${i.product_id}`)
     );
-
-    console.log("[triggered-reward] reward:", reward.id, "qualifies:", qualifies, "giftInCart:", !!giftInCart, "giftVariantIds:", giftVariantIds, "triggers:", JSON.stringify(reward.triggers), "cartTotal:", cartTotal, "cartQty:", cart.items.reduce((s,i)=>s+i.quantity,0));
 
     if (qualifies && !giftInCart && giftVariantIds.length > 0) {
       // Add first variant of the gift product

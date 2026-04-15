@@ -1,5 +1,8 @@
 const apiUrl =
-  "https://b8ae-2401-4900-1c2b-c97c-1df6-3be6-73c8-d146.ngrok-free.app";
+  "https://6835-2401-4900-1c71-e0ea-b1cb-62b8-f0e1-956c.ngrok-free.app";
+
+// Used by hubUtils.applyRatings() — same Express backend, no separate Remix URL needed
+window.__HUB_RATINGS_URL__ = apiUrl;
 
 function initCartDrawerAfterData() {
   const blockId = window.HUB_CART_BLOCK_ID;
@@ -358,6 +361,11 @@ window.startAnnTimer = function (blockId, timeStr) {
           headers: { "ngrok-skip-browser-warning": "true" },
         }).then((r) => r.json()),
       ]);
+
+      // Store Remix app URL for product ratings API calls
+      if (cartResult.remixUrl) {
+        window.__HUB_RATINGS_URL__ = cartResult.remixUrl;
+      }
 
       const freshData = { cartResult, stickyResult };
 
