@@ -102,6 +102,17 @@ async function _commitRemoval(key) {
   }
 
   if (Object.keys(_hubPendingRemovals).length === 0) {
+    // Remove any triggered gift items that no longer qualify,
+    // so they disappear in the same render as the removed triggering item.
+    try {
+      if (typeof handleTriggeredRewards === "function") {
+        const cartRes = await fetch("/cart.js");
+        const latestCart = await cartRes.json();
+        await handleTriggeredRewards(latestCart);
+      }
+    } catch (e) {
+      // silent — cart:updated will still re-render correctly
+    }
     document.dispatchEvent(new CustomEvent("cart:updated"));
   }
 }

@@ -4,7 +4,7 @@ export const shopLoader = async (request) => {
   try {
     const { admin, session } = await authenticate.admin(request);
     const accessToken = session?.accessToken;
-    
+
     const shopRes = await admin.graphql(`
       {
         shop {
@@ -20,6 +20,7 @@ export const shopLoader = async (request) => {
     `);
 
     const shopData = await shopRes.json();
+
     return {
       shop: shopData?.data?.shop || null,
       currency: shopData?.data?.shop?.currencyCode || "",

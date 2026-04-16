@@ -78,7 +78,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     }
 
     /* ── TRIGGERED REWARDS: auto-add / remove free gift ── */
-    const triggeredChanged = await handleTriggeredRewards(cart);
+    const triggeredChanged = await window.handleTriggeredRewards(cart);
     if (triggeredChanged) {
       const res3 = await fetch("/cart.js");
       cart = await res3.json();
@@ -514,6 +514,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
               </div>
               <div class="hub-item-info">
                 <a href="/products/${item.handle}" class="hub-item-title" style="color:${colorItems}">${item.product_title || item.title}</a>
+                ${sellingPlan ? `<p class="hub-item-subscription-label">Subscribe and save / ${sellingPlan.selling_plan.name}</p>` : ""}
                 ${
                   isReward
                     ? `
@@ -524,12 +525,21 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }
     `
                     : (() => {
-                        const hasCompare = compareAtPrice && compareAtPrice > item.price;
-                        const unitSave = hasCompare ? compareAtPrice - item.price : 0;
+                        // Use final per-unit price (accounts for discount codes + automatic discounts)
+                        const effectiveUnitPrice = item.quantity > 0
+                          ? Math.round(item.final_line_price / item.quantity)
+                          : item.price;
+                        const subCompare = sellingPlan && item.original_price > effectiveUnitPrice ? item.original_price : 0;
+                        const priceCompare = item.price > effectiveUnitPrice ? item.price : 0;
+                        const effectiveCompare = (compareAtPrice && compareAtPrice > effectiveUnitPrice)
+                          ? compareAtPrice
+                          : (priceCompare || subCompare);
+                        const hasCompare = effectiveCompare > 0;
+                        const unitSave = hasCompare ? effectiveCompare - effectiveUnitPrice : 0;
                         return `
       <div class="hub-item-unit-price-wrap">
-        ${hasCompare ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(compareAtPrice)}</span>` : ""}
-        <span class="hub-item-unit-price${hasCompare ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(item.price)}</span>
+        ${hasCompare ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
+        <span class="hub-item-unit-price${hasCompare ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
         ${hasCompare ? `<span class="hub-item-unit-save">Save ${hubUtils.formatMoney(unitSave)}</span>` : ""}
       </div>
       ${saveHtml}
@@ -820,7 +830,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
 // ── Triggered Rewards: auto-add / remove free gift products ──────────────────
 
-async function handleTriggeredRewards(cart) {
+window.handleTriggeredRewards = async function handleTriggeredRewards(cart) {
   if (window._hubRewardUpdating) return false;
 
   const triggeredSettings =
@@ -953,7 +963,7 @@ async function handleTriggeredRewards(cart) {
   }
 
   return changed;
-}
+};
 
 async function checkTriggers(
   triggers,

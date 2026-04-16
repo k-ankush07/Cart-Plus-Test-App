@@ -134,6 +134,12 @@ function initCartDrawerAfterData() {
           window.hubCartRender(drawer, { showSkeleton });
         }
 
+        // Load recommendations only when drawer opens, and only once
+        if (!window._hubRecLoaded && window.__HUB_ACTIVE_CART__) {
+          window._hubRecLoaded = true;
+          window.loadCartRecommendations?.(window.__HUB_ACTIVE_CART__.recommendationsSettings);
+        }
+
         updateCartCount();
       });
     }
@@ -317,7 +323,8 @@ window.startAnnTimer = function (blockId, timeStr) {
         window.__HUB_ACTIVE_CART__ = publishedCart;
         hasPublishedCart = true;
         initCartDrawerAfterData();
-        window.loadCartRecommendations?.(publishedCart.recommendationsSettings);
+        // Start background prefetch immediately so data is ready when drawer opens
+        window._hubRecPrefetch = window._hubFetchRecProducts?.(publishedCart.recommendationsSettings);
       } else {
         console.log("No published cart found");
       }
@@ -416,84 +423,24 @@ window.startAnnTimer = function (blockId, timeStr) {
   }
 })();
 
-window.loadCartRecommendations = async function (settings = {}) {
-  try {
-    const container = document.getElementById("hub-rec-products");
-    if (!container) return;
+// Fetches recommendation products in the background (no rendering).
+// Called on page load so data is ready before the drawer opens.
+window._hubFetchRecProducts = async function (settings = {}) {
+  const limit = settings.maxRecommendations || settings.productCount || 4;
+  const sourceType = settings.sourceType;
+  const selectedItems = settings?.selectedItems || [];
 
-    const limit = settings.maxRecommendations || settings.productCount || 4;
+  const cartRes = await fetch("/cart.js");
+  const cart = await cartRes.json();
+  const cartHandles = new Set(cart.items.map((item) => item.handle));
 
-    const sourceType = settings.sourceType;
+  let finalProducts = [];
 
-    const selectedItems = settings?.selectedItems || [];
+  if (sourceType === "products") {
+    const selectedProductIds =
+      settings?.selectedItems?.products?.map((gid) => gid.split("/").pop()) || [];
 
-    const cartRes = await fetch("/cart.js");
-    const cart = await cartRes.json();
-    const cartHandles = new Set(cart.items.map((item) => item.handle));
-
-    let finalProducts = [];
-
-    if (sourceType === "products") {
-      const selectedProductIds =
-        settings?.selectedItems?.products?.map((gid) => gid.split("/").pop()) ||
-        [];
-
-      if (selectedProductIds.length) {
-        let allProducts = [];
-        let page = 1;
-        let more = true;
-
-        while (more) {
-          const res = await fetch(`/products.json?limit=250&page=${page}`);
-          const data = await res.json();
-
-          if (data.products.length > 0) {
-            allProducts.push(...data.products);
-            page++;
-          } else {
-            more = false;
-          }
-        }
-
-        finalProducts = allProducts.filter((p) =>
-          selectedProductIds.includes(String(p.id)),
-        );
-      }
-    } else if (sourceType === "collections") {
-      const collectionIds = selectedItems.map((gid) => gid.split("/").pop());
-
-      const colRes = await fetch(`/collections.json`);
-      const colData = await colRes.json();
-
-      const matchedCollections = colData.collections.filter((c) =>
-        collectionIds.includes(String(c.id)),
-      );
-
-      let allProducts = [];
-
-      for (const col of matchedCollections) {
-        let page = 1;
-        let more = true;
-
-        while (more) {
-          const res = await fetch(
-            `/collections/${col.handle}/products.json?limit=250&page=${page}`,
-          );
-          const data = await res.json();
-
-          if (data.products.length > 0) {
-            allProducts.push(...data.products);
-            page++;
-          } else {
-            more = false;
-          }
-        }
-      }
-
-      finalProducts = allProducts;
-    }
-
-    if (!finalProducts.length) {
+    if (selectedProductIds.length) {
       let allProducts = [];
       let page = 1;
       let more = true;
@@ -501,7 +448,6 @@ window.loadCartRecommendations = async function (settings = {}) {
       while (more) {
         const res = await fetch(`/products.json?limit=250&page=${page}`);
         const data = await res.json();
-
         if (data.products.length > 0) {
           allProducts.push(...data.products);
           page++;
@@ -510,30 +456,104 @@ window.loadCartRecommendations = async function (settings = {}) {
         }
       }
 
-      finalProducts = allProducts;
+      finalProducts = allProducts.filter((p) =>
+        selectedProductIds.includes(String(p.id))
+      );
     }
-    finalProducts = finalProducts.filter((p) => !cartHandles.has(p.handle));
-    finalProducts = finalProducts.slice(0, limit);
+  } else if (sourceType === "collections") {
+    const collectionIds = selectedItems.map((gid) => gid.split("/").pop());
 
-    // Fetch ratings from Admin API via the Remix app
-    try {
-      const shop = window.__SHOPIFY_SHOP__?.permanent_domain;
-      const appUrl = window.__HUB_APP_URL__;
-      if (shop && appUrl && finalProducts.length) {
-        const handles = finalProducts.map((p) => p.handle).join(",");
-        const ratingsRes = await fetch(
-          `${appUrl}/api/hub-ratings?shop=${encodeURIComponent(shop)}&handles=${encodeURIComponent(handles)}`
+    const colRes = await fetch(`/collections.json`);
+    const colData = await colRes.json();
+
+    const matchedCollections = colData.collections.filter((c) =>
+      collectionIds.includes(String(c.id))
+    );
+
+    let allProducts = [];
+
+    for (const col of matchedCollections) {
+      let page = 1;
+      let more = true;
+
+      while (more) {
+        const res = await fetch(
+          `/collections/${col.handle}/products.json?limit=250&page=${page}`
         );
-        if (ratingsRes.ok) {
-          const ratings = await ratingsRes.json();
-          finalProducts = finalProducts.map((p) => ({
-            ...p,
-            _hubRating: ratings[p.handle]?.rating ?? null,
-            _hubReviewCount: ratings[p.handle]?.count ?? null,
-          }));
+        const data = await res.json();
+        if (data.products.length > 0) {
+          allProducts.push(...data.products);
+          page++;
+        } else {
+          more = false;
         }
       }
-    } catch (_) {}
+    }
+
+    finalProducts = allProducts;
+  }
+
+  if (!finalProducts.length) {
+    let allProducts = [];
+    let page = 1;
+    let more = true;
+
+    while (more) {
+      const res = await fetch(`/products.json?limit=250&page=${page}`);
+      const data = await res.json();
+      if (data.products.length > 0) {
+        allProducts.push(...data.products);
+        page++;
+      } else {
+        more = false;
+      }
+    }
+
+    finalProducts = allProducts;
+  }
+
+  finalProducts = finalProducts.filter((p) => !cartHandles.has(p.handle));
+  finalProducts = finalProducts.slice(0, limit);
+
+  // Fetch ratings
+  try {
+    const shop = window.__SHOPIFY_SHOP__?.permanent_domain;
+    const appUrl = window.__HUB_APP_URL__;
+    if (shop && appUrl && finalProducts.length) {
+      const handles = finalProducts.map((p) => p.handle).join(",");
+      const ratingsRes = await fetch(
+        `${appUrl}/api/hub-ratings?shop=${encodeURIComponent(shop)}&handles=${encodeURIComponent(handles)}`
+      );
+      if (ratingsRes.ok) {
+        const ratings = await ratingsRes.json();
+        finalProducts = finalProducts.map((p) => ({
+          ...p,
+          _hubRating: ratings[p.handle]?.rating ?? null,
+          _hubReviewCount: ratings[p.handle]?.count ?? null,
+        }));
+      }
+    }
+  } catch (_) {}
+
+  return finalProducts;
+};
+
+// Renders recommendations. Uses prefetched data if available (instant),
+// otherwise falls back to fetching fresh.
+window.loadCartRecommendations = async function (settings = {}) {
+  try {
+    const container = document.getElementById("hub-rec-products");
+    if (!container) return;
+
+    let finalProducts;
+
+    if (window._hubRecPrefetch) {
+      // Data was prefetched on page load — await it (likely already resolved)
+      finalProducts = await window._hubRecPrefetch;
+      window._hubRecPrefetch = null;
+    } else {
+      finalProducts = await window._hubFetchRecProducts(settings);
+    }
 
     window.renderProducts(container, finalProducts, settings);
   } catch (err) {
