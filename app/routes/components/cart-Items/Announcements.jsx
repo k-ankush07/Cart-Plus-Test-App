@@ -41,7 +41,8 @@ export default function Announcements({ announcementSettings }) {
 
     return (
         <div
-            className="upcart-announcement"
+            className={`upcart-announcement ${announcementSettings?.position === "after" ? "announcement-after" : ""
+                }`}
             style={{
                 padding: paddingMap[announcementSettings.height],
                 textAlign: "center",
@@ -52,7 +53,7 @@ export default function Announcements({ announcementSettings }) {
                 borderBottom: `1px solid ${announcementSettings.borderColor}`,
             }}
         >
-           
+
             <span
                 dangerouslySetInnerHTML={{
                     __html: finalHTML,

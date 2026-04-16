@@ -81,7 +81,7 @@ export default function Upsells({ upsellsSettings }) {
         const noCollectionsSelected =
             sourceType === "collections" && !selectedItems?.length;
 
-      if (noProductsSelected || noCollectionsSelected) {
+        if (noProductsSelected || noCollectionsSelected) {
             setProducts(DEFAULT_PRODUCTS);
             const initial = {};
             DEFAULT_PRODUCTS.forEach((p) => {
@@ -183,7 +183,13 @@ export default function Upsells({ upsellsSettings }) {
     if (!products.length) return null;
 
     return (
-        <div className="upcart-internal-upsell upcart-public-upsell upcart-upsells upcart-upsells-module">
+        <div
+            className={`upcart-internal-upsell 
+  upcart-public-upsell 
+  upcart-upsells 
+  upcart-upsells-module 
+  ${upsellsSettings?.position === "bottom" ? "hub-upsell-product" : ""}`}
+        >
             {title && (
                 <div className="upcart-internal-style__title-large upcart-upsells-title">
                     <p dangerouslySetInnerHTML={{ __html: title }} />

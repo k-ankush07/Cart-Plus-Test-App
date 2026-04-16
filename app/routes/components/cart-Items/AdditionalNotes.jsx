@@ -3,16 +3,21 @@ import { Icon } from "@shopify/polaris";
 import { ChevronUpIcon, ChevronDownIcon } from "@shopify/polaris-icons";
 
 export default function AdditionalNotes({ additionalNotesSettings }) {
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(false);
+
+    const isBelowItems = additionalNotesSettings?.placement === "below_items";
 
     return (
-        <div className="cart-additional-notes upcart-public-notes">
+        <div
+            className={`cart-additional-notes upcart-public-notes ${isBelowItems ? "notes-below-items" : ""
+                }`}
+        >
             <button
                 type="button"
                 className="cart-additional-notes__toggle"
                 onClick={() => setOpen((prev) => !prev)}
             >
-                <span className="upcart-public-notes__text-container" style={{display:'flex', gap:'4px'}}>
+                <span className="upcart-public-notes__text-container" style={{ display: 'flex', gap: '4px' }}>
                     <span dangerouslySetInnerHTML={{ __html: additionalNotesSettings?.title || "Add special instructions" }} />
                     <span className="upcart-public-component-collapse__expand-icon"><Icon source={open ? ChevronUpIcon : ChevronDownIcon} /></span>
                 </span>

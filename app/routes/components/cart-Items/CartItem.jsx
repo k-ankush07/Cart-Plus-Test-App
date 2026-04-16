@@ -5,7 +5,7 @@ export default function CartItem({ showStrikethrough, textColor, savingColor, Su
   const [qty, setQty] = useState(2);
 
   return (
-    <div className="upcart-products-section">
+    <div className="upcart-products-section cart-app__items">
       <div className="cart-app-item upcart-product-item upcart-public-component-product-tile">
         <div className="cart-app-item__image upcart-product-image-wrapper upcart-public-component-product-tile__image-wrapper">
           <img

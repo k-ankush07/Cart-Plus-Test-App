@@ -88,9 +88,23 @@ body,
 }
 
 .cart-app__body {
-    flex: 1;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     scrollbar-width: none;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.hub-upsell-product {
+    margin-top: auto;
+}
+
+.announcement-after {
+    margin-top: auto;
+}
+
+.notes-below-items {
+    margin-top: auto;
 }
 
 .cart-app__body::-webkit-scrollbar {

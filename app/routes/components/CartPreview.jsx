@@ -86,20 +86,18 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     {!rewardsSettings.enabled && (
                                         <TieredReward rewardsSettings={rewardsSettings} />)}
 
-                                    <div className="cart-app__items">
-                                        {!upsellsSettings.enabled && upsellsSettings?.position === "top" && <Upsells upsellsSettings={upsellsSettings} />}
-                                        <CartItem
-                                            showStrikethrough={designSettings.showStrikethrough}
-                                            textColor={designSettings.textColor}
-                                            savingColor={designSettings.savingsColor}
-                                            Subscription={Subscription}
-                                            subscriptionUpgradesSettings={subscriptionUpgradesSettings}
-                                            cartSettings={cartSettings}
-                                        />
-                                        {/* between_line_items */}
-                                        <CustomHtml cartSettings={cartSettings} position="between_line_items" />
-                                        {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} />}
-                                    </div>
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "top" && <Upsells upsellsSettings={upsellsSettings} />}
+                                    <CartItem
+                                        showStrikethrough={designSettings.showStrikethrough}
+                                        textColor={designSettings.textColor}
+                                        savingColor={designSettings.savingsColor}
+                                        Subscription={Subscription}
+                                        subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+                                        cartSettings={cartSettings}
+                                    />
+                                    {/* between_line_items */}
+                                    <CustomHtml cartSettings={cartSettings} position="between_line_items" />
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} />}
 
                                     {/* below_cart_items */}
                                     <CustomHtml cartSettings={cartSettings} position="below_cart_items" />
