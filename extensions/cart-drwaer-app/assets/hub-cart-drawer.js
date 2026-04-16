@@ -2,6 +2,7 @@ const apiUrl =
   "https://529b-2401-4900-1c71-e0ea-839-a9af-9d92-cafb.ngrok-free.app";
 
 // Used by hubUtils.applyRatings() — same Express backend, no separate Remix URL needed
+
 window.__HUB_RATINGS_URL__ = apiUrl;
 
 function initCartDrawerAfterData() {

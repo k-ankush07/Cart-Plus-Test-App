@@ -4,7 +4,6 @@ import { authenticate, sessionStorage } from "../shopify.server";
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
 
-  // Runs only during app install / OAuth — save offline token to Express backend
   try {
     const offlineSession = await sessionStorage.loadSession(`offline_${session.shop}`);
     const token = offlineSession?.accessToken;
@@ -18,7 +17,7 @@ export const loader = async ({ request }) => {
         body: JSON.stringify({ shop: session.shop, accessToken: token }),
       });
       const data = await res.json();
-      console.log("[hub] save-shop-token response:", data);
+      console.log(data.updated ? `[hub] Token saved for ${session.shop}` : `[hub] Token already up-to-date for ${session.shop}`);
     }
   } catch (err) {
     console.warn("[hub] Could not save shop token:", err.message);

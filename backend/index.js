@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import cartItem from "./routes/cartItem.js";
+import shopifyApi from "./routes/shopifyApi.js";
 import fileUpload from "./routes/fileUpload.js";
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.use(
 );
 
 app.use("/api", cartItem);
+app.use("/api", shopifyApi);
 app.use("/api", fileUpload);
 
 mongoose

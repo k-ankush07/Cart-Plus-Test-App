@@ -189,6 +189,7 @@ window.hubUtils = {
 
       slots.forEach((slot) => {
         const r = ratings[slot.dataset.pid];
+        console.log(`[hub] Rating for product ${slot.dataset.pid}:`, r);
         if (!r?.rating) return;
         slot.innerHTML = `
           <span class="hub-stars" style="--rating: ${r.rating};" aria-label="Rating: ${r.rating} out of 5"></span>
@@ -423,6 +424,35 @@ window.hubUtils = {
         <div class="hub-rewards-milestones">${dotsHtml}</div>
       </div>
     </div>`;
+  },
+
+  // Fetches active discount codes from the hub backend (Admin API → discountNodes)
+  async getDiscounts() {
+    const ratingsUrl = window.__HUB_RATINGS_URL__;
+    const shop = window.__SHOPIFY_SHOP__?.domain;
+    if (!ratingsUrl || !shop) return { allDiscountCodes: [], activeDiscountCodes: [] };
+
+    try {
+      const res = await fetch(`${ratingsUrl}/api/discounts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({ shop }),
+      });
+      const data = await res.json();
+      console.log("[hub] Discounts loaded:", data);
+      return {
+        allDiscountCodes: data.allDiscountCodes || [],
+        activeDiscountCodes: data.activeDiscountCodes || [],
+        total: data.total || 0,
+        activeCount: data.activeCount || 0,
+      };
+    } catch (err) {
+      console.warn("[hub] Could not fetch discounts:", err);
+      return { allDiscountCodes: [], activeDiscountCodes: [] };
+    }
   },
 
   // ── Skeleton helpers ──────────────────────────────────────────────────────────

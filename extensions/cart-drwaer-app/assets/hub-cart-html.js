@@ -330,7 +330,7 @@ window.injectCartHTML = function (blockId, root) {
         <!-- TOTAL SUMMARY -->
         <div class="hub-total-summary">
           <div class="hub-total-header"
-           onclick="(function(el){var b=document.getElementById('hub-total-breakdown-${blockId}');var open=b.classList.toggle('hub-breakdown-open');el.querySelector('.hub-total-arrow').style.transform=open?'rotate(180deg)':'rotate(0deg)';})(this)">
+           onclick="(function(el){var b=document.getElementById('hub-total-breakdown-${blockId}');var open=b.classList.toggle('hub-breakdown-open');el.querySelector('.hub-total-arrow').style.transform=open?'rotate(180deg)':'rotate(0deg)';el.parentElement.classList.toggle('hub-total-summary--open',open);document.getElementById('hub-cart-drawer-${blockId}').classList.toggle('hub-cart-total-open',open);})(this)">
             <div class="hub-total-header-left">
               <span class="hub-total-label">Estimated Total</span>
               <span class="hub-total-arrow">∨</span>

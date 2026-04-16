@@ -208,6 +208,11 @@ window.hubCartRender = async function (drawer, opts = {}) {
     /* ── DISCOUNT CODES ── */
     const discountCodesSettings =
       window.__HUB_ACTIVE_CART__?.discountCodesSettings;
+
+    const { allDiscountCodes, activeDiscountCodes } = await hubUtils.getDiscounts();
+    console.log("[hub] All discount codes:", allDiscountCodes);
+    console.log("[hub] Active discount codes:", activeDiscountCodes);
+
     const discountRow = document.getElementById(`hub-discount-row-${blockId}`);
     if (discountRow) {
       if (discountCodesSettings?.enabled === false) {
