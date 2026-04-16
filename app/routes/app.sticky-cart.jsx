@@ -18,7 +18,6 @@ import ColorInput from "./components/ui/ColorInput";
 import HtmlEditor from "./components/ui-cart-options/HtmlEditor";
 import { shopLoader } from "./components/shop.server";
 import { useLoaderData } from "react-router-dom";
-import { json } from "@remix-run/node";
 import { createStickyCart, getStickyCart } from "../services/apiRoutes";
 
 function scopeCss(css, scope) {
@@ -37,26 +36,19 @@ function scopeCss(css, scope) {
   return result;
 }
 
-export const loader = async ({ request, params }) => {
+export const loader = async ({ request }) => {
   const { shop, apiUrl, accessToken, currency } = await shopLoader(request);
-  const cartId = params.id;
 
-  let cart = null;
+  let stickyCart = null;
 
   try {
-    const data = await getCart(apiUrl, cartId);
-    cart = data.data;
+    const res = await getStickyCart(apiUrl, shop.myshopifyDomain);
+    stickyCart = res?.data || null;
   } catch (err) {
-    console.error("GET CART ERROR:", err);
+    console.error("GET STICKY CART ERROR:", err);
   }
 
-  return json({
-    shop,
-    apiUrl,
-    cart,
-    accessToken,
-    currency,
-  });
+  return Response.json({ shop, apiUrl, accessToken, currency, stickyCart });
 };
 
 const ICONS = [
@@ -146,17 +138,34 @@ const positionStyles = {
   "top-left": { top: 5, left: 5 },
 };
 
+function buildSettings(data) {
+  return {
+    enabled: data?.enabled ?? true,
+    selectedIcon: data?.selectedIcon ?? "bag",
+    bgColor: data?.bgColor ?? "#000000",
+    iconColor: data?.iconColor ?? "#ffffff",
+    qBgColor: data?.qBgColor ?? "#e42626",
+    qTextColor: data?.qTextColor ?? "#ffffff",
+    position: data?.position ?? "bottom-right",
+    device: data?.device ?? "all",
+    customCss: data?.customCss ?? "",
+  };
+}
+
 export default function StickyCart() {
-  const { shop, apiUrl, cart, accessToken, } = useLoaderData();
-  const [enabled, setEnabled] = useState(true);
+  const { shop, apiUrl, stickyCart } = useLoaderData();
+
+  const initial = buildSettings(stickyCart);
+
+  const [enabled, setEnabled] = useState(initial.enabled);
   const [saved, setSaved] = useState(false);
-  const [selectedIcon, setSelectedIcon] = useState("bag");
-  const [bgColor, setBgColor] = useState("#000000");
-  const [iconColor, setIconColor] = useState("#ffffff");
-  const [qBgColor, setQBgColor] = useState("#e42626");
-  const [qTextColor, setQTextColor] = useState("#ffffff");
-  const [position, setPosition] = useState("bottom-right");
-  const [device, setDevice] = useState("all");
+  const [selectedIcon, setSelectedIcon] = useState(initial.selectedIcon);
+  const [bgColor, setBgColor] = useState(initial.bgColor);
+  const [iconColor, setIconColor] = useState(initial.iconColor);
+  const [qBgColor, setQBgColor] = useState(initial.qBgColor);
+  const [qTextColor, setQTextColor] = useState(initial.qTextColor);
+  const [position, setPosition] = useState(initial.position);
+  const [device, setDevice] = useState(initial.device);
   const [cssListOpen, setCssListOpen] = useState(false);
   const skipDirtyCheck = useRef(false);
   const [loading, setLoading] = useState(false);
@@ -165,10 +174,10 @@ export default function StickyCart() {
 
   const [isDirty, setIsDirty] = useState(false);
 
-  const initialSettingsRef = useRef({});
+  const initialSettingsRef = useRef(initial);
 
   const [cartSettings, setCartSettings] = useState({
-    customCss: "",
+    customCss: initial.customCss,
   });
 
   const fabPos = positionStyles[position];
@@ -180,19 +189,23 @@ export default function StickyCart() {
     }));
   };
 
+  // Sync all state when loader data changes (e.g. navigating via s-link)
   useEffect(() => {
-    initialSettingsRef.current = {
-      enabled,
-      selectedIcon,
-      bgColor,
-      iconColor,
-      qBgColor,
-      qTextColor,
-      position,
-      device,
-      customCss: cartSettings.customCss,
-    };
-  }, []);
+    const s = buildSettings(stickyCart);
+    skipDirtyCheck.current = true;
+    setEnabled(s.enabled);
+    setSelectedIcon(s.selectedIcon);
+    setBgColor(s.bgColor);
+    setIconColor(s.iconColor);
+    setQBgColor(s.qBgColor);
+    setQTextColor(s.qTextColor);
+    setPosition(s.position);
+    setDevice(s.device);
+    setCartSettings({ customCss: s.customCss });
+    initialSettingsRef.current = s;
+    setIsDirty(false);
+    setTimeout(() => { skipDirtyCheck.current = false; }, 0);
+  }, [stickyCart]);
 
   useEffect(() => {
     if (skipDirtyCheck.current) return;
@@ -236,54 +249,12 @@ export default function StickyCart() {
     }
   }, [isDirty]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await getStickyCart(apiUrl, Storeshop);
-
-        if (res?.data) {
-          const data = res.data;
-
-          setEnabled(data.enabled ?? true);
-          setSelectedIcon(data.selectedIcon ?? "bag");
-          setBgColor(data.bgColor ?? "#000000");
-          setIconColor(data.iconColor ?? "#ffffff");
-          setQBgColor(data.qBgColor ?? "#e42626");
-          setQTextColor(data.qTextColor ?? "#ffffff");
-          setPosition(data.position ?? "bottom-right");
-          setDevice(data.device ?? "all");
-
-          setCartSettings({
-            customCss: data.customCss ?? "",
-          });
-          const formattedInitial = {
-            enabled: data.enabled ?? true,
-            selectedIcon: data.selectedIcon ?? "bag",
-            bgColor: data.bgColor ?? "#000000",
-            iconColor: data.iconColor ?? "#ffffff",
-            qBgColor: data.qBgColor ?? "#e42626",
-            qTextColor: data.qTextColor ?? "#ffffff",
-            position: data.position ?? "bottom-right",
-            device: data.device ?? "all",
-            customCss: data.customCss ?? "",
-          };
-
-          initialSettingsRef.current = formattedInitial;
-        }
-      } catch (err) {
-        console.error("GET STICKY CART ERROR:", err);
-      }
-    };
-
-    fetchData();
-  }, [apiUrl, Storeshop]);
 
   const handleSave = async () => {
     try {
       setLoading(true);
       const payload = {
         shop: Storeshop,
-        cartId: cart?.id,
         enabled,
         selectedIcon,
         bgColor,

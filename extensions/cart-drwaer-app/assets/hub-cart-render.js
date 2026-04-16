@@ -124,12 +124,74 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }
     }
 
-    // Update footer total
-    const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
-    if (totalEl) {
-      const currencyCode = window.__SHOPIFY_CURRENCY__?.code || "";
-      totalEl.textContent = `${hubUtils.formatMoney(cart.total_price)} ${currencyCode}`;
-    }
+    (function () {
+      const fmt = hubUtils.formatMoney;
+
+      const originalTotal = cart.original_total_price || 0;   // Total MRP
+      const subtotal      = cart.items_subtotal_price || 0;    // after line discounts
+      const finalTotal    = cart.total_price || 0;             // Grand Total
+      const lineSaving    = originalTotal - subtotal;          // Discount On MRP
+      const couponSaving  = subtotal - finalTotal;             // Coupon / cart-level discount
+      const totalSaved    = originalTotal - finalTotal;        // You Saved
+
+      // Final price
+      const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
+      if (totalEl) totalEl.textContent = fmt(finalTotal);
+
+      // Strikethrough original (only show if there's a saving)
+      const origEl = document.getElementById(`hub-total-original-${blockId}`);
+      if (origEl) {
+        if (totalSaved > 0) {
+          origEl.textContent = fmt(originalTotal);
+          origEl.style.display = "";
+        } else {
+          origEl.style.display = "none";
+        }
+      }
+
+      // "You Saved" line
+      const savedEl = document.getElementById(`hub-total-saved-${blockId}`);
+      if (savedEl) {
+        if (totalSaved > 0) {
+          savedEl.textContent = `You Saved ${fmt(totalSaved)}!`;
+          savedEl.style.display = "";
+        } else {
+          savedEl.style.display = "none";
+        }
+      }
+
+      // Total MRP
+      const mrpEl = document.getElementById(`hub-mrp-${blockId}`);
+      if (mrpEl) mrpEl.textContent = fmt(originalTotal);
+
+      // Discount On MRP
+      const discMrpRow = document.getElementById(`hub-discount-mrp-row-${blockId}`);
+      const discMrpEl  = document.getElementById(`hub-discount-mrp-${blockId}`);
+      if (discMrpRow && discMrpEl) {
+        if (lineSaving > 0) {
+          discMrpEl.textContent = `-${fmt(lineSaving)}`;
+          discMrpRow.style.display = "";
+        } else {
+          discMrpRow.style.display = "none";
+        }
+      }
+
+      // Coupon Discount
+      const couponRow = document.getElementById(`hub-coupon-row-${blockId}`);
+      const couponEl  = document.getElementById(`hub-coupon-${blockId}`);
+      if (couponRow && couponEl) {
+        if (couponSaving > 0) {
+          couponEl.textContent = `-${fmt(couponSaving)}`;
+          couponRow.style.display = "";
+        } else {
+          couponRow.style.display = "none";
+        }
+      }
+
+      // Grand Total
+      const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
+      if (grandEl) grandEl.textContent = fmt(finalTotal);
+    })();
 
     const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
     const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
@@ -355,8 +417,10 @@ window.hubCartRender = async function (drawer, opts = {}) {
           : `<span class="hub-price">${hubUtils.formatMoney(item.final_line_price)}</span>`;
 
         const variantHtml =
-          item.variant_title && item.variant_title !== "Default Title"
-            ? `<p class="hub-item-variant">${item.variant_title}</p>`
+          item.options_with_values && item.options_with_values.length > 0 && !item.product_has_only_default_variant
+            ? item.options_with_values
+                .map(opt => `<p class="hub-item-variant"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`)
+                .join("")
             : "";
 
         const propertiesHtml =
@@ -683,28 +747,61 @@ window.hubCartRender = async function (drawer, opts = {}) {
       );
     }
 
-    const hasAutoDiscount = cart.items.some(
-      (i) => i.line_level_discount_allocations?.length > 0,
+    // Build a set of manually entered code titles (lowercase) for quick lookup
+    const manualCodes = new Set(
+      (cart.discount_codes || []).map((d) => d.code.toLowerCase())
     );
-    const code = cart.discount_codes?.[0]?.code;
-    const hasRealDiscount = cart.total_discount > 0;
-    const hasManualDiscount = code && hasRealDiscount;
-    const appliedTitle =
-      cart.items[0]?.line_level_discount_allocations?.[0]?.discount_application
-        ?.title;
 
-    const discountStatus = document.getElementById(
-      `hub-discount-status-${blockId}`,
-    );
+    // Collect ALL unique discount applications from both sources:
+    // 1. cart_level_discount_applications (automatic / cart-wide)
+    // 2. line_level_discount_allocations on each item (line-level codes like "sahil")
+    const seenTitles = new Set();
+    const allDiscounts = [];
+
+    (cart.cart_level_discount_applications || []).forEach((app) => {
+      const key = app.title.toLowerCase();
+      if (!seenTitles.has(key)) {
+        seenTitles.add(key);
+        allDiscounts.push(app);
+      }
+    });
+
+    (cart.items || []).forEach((item) => {
+      (item.line_level_discount_allocations || []).forEach((alloc) => {
+        const app = alloc.discount_application;
+        if (!app) return;
+        const key = app.title.toLowerCase();
+        if (!seenTitles.has(key)) {
+          seenTitles.add(key);
+          allDiscounts.push(app);
+        }
+      });
+    });
+
+    // Render each discount tag with correct button logic
+    const discountStatus = document.getElementById(`hub-discount-status-${blockId}`);
     if (discountStatus) {
-      discountStatus.innerHTML = hasManualDiscount
-        ? `<div class="hub-discount-applied">
-             <span>${appliedTitle ? `Applied: ${appliedTitle}` : "Discount applied"}</span>
-             <button onclick="removeDiscountCode()" class="hub-discount-remove">Remove</button>
-           </div>`
-        : hasAutoDiscount
-          ? `<div class="hub-discount-auto">Automatic discount applied</div>`
-          : "";
+      if (allDiscounts.length === 0) {
+        discountStatus.innerHTML = "";
+      } else {
+        discountStatus.innerHTML = allDiscounts.map((app) => {
+          const isManual = manualCodes.has(app.title.toLowerCase());
+          const removeBtn = isManual
+            ? `<button onclick="removeDiscountCode('${app.title}')" class="hub-discount-remove">Remove</button>`
+            : "";
+          const tagClass = isManual ? "hub-discount-applied" : "hub-discount-auto";
+          return `
+            <div class="${tagClass}">
+              <div class="hub-discount-tag">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+                </svg>
+                <span>${app.title}</span>
+              </div>
+              ${removeBtn}
+            </div>`;
+        }).join("");
+      }
     }
   } catch (err) {
     console.error("Cart render error:", err);

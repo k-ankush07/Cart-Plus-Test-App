@@ -327,19 +327,47 @@ window.injectCartHTML = function (blockId, root) {
         </div>
         <p id="discount-message" class="hub-discount-message"></p>
 
-        <!-- TOTAL -->
-        <div class="hub-cart-total-row">
-          <span class="hub-cart-total-label">Estimated total</span>
-          <span class="hub-cart-total-price" id="hub-cart-total-${blockId}"></span>
+        <!-- TOTAL SUMMARY -->
+        <div class="hub-total-summary">
+          <div class="hub-total-header"
+           onclick="(function(el){var b=document.getElementById('hub-total-breakdown-${blockId}');var open=b.classList.toggle('hub-breakdown-open');el.querySelector('.hub-total-arrow').style.transform=open?'rotate(180deg)':'rotate(0deg)';})(this)">
+            <div class="hub-total-header-left">
+              <span class="hub-total-label">Estimated Total</span>
+              <span class="hub-total-arrow">∨</span>
+            </div>
+            <div class="hub-total-header-right">
+              <span class="hub-total-original" id="hub-total-original-${blockId}"></span>
+              <span class="hub-total-final" id="hub-cart-total-${blockId}"></span>
+            </div>
+          </div>
+          <p class="hub-total-saved" id="hub-total-saved-${blockId}"></p>
+
+          <div class="hub-total-breakdown" id="hub-total-breakdown-${blockId}">
+            <div class="hub-breakdown-row">
+              <span>Total MRP</span>
+              <span id="hub-mrp-${blockId}"></span>
+            </div>
+            <div class="hub-breakdown-row hub-breakdown-discount" id="hub-discount-mrp-row-${blockId}" style="display:none;">
+              <span>Discount On MRP</span>
+              <span id="hub-discount-mrp-${blockId}"></span>
+            </div>
+            <div class="hub-breakdown-row hub-breakdown-discount" id="hub-coupon-row-${blockId}" style="display:none;">
+              <span>Coupon Discount</span>
+              <span id="hub-coupon-${blockId}"></span>
+            </div>
+            <div class="hub-breakdown-row hub-breakdown-grand">
+              <span>Grand Total</span>
+              <span id="hub-grand-total-${blockId}"></span>
+            </div>
+          </div>
         </div>
-        <p class="hub-cart-tax-note">Taxes, discounts and shipping calculated at checkout.</p>
 
         <div id="hub-express-payments-${blockId}" class="hub-express-payments"></div>
-       
+
         <!-- CHECKOUT -->
         <div>${renderCustomHTML(customHtmlBlocks.above_checkout)}</div>
         <a href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" class="hub-cart-checkout-btn" style="border-radius:${designSettings.buttonRadius}px;">
-          Check out
+          Proceed to checkout
         </a>
         <div>${renderCustomHTML(customHtmlBlocks.below_checkout)}</div>
         ${designSettings.continueshopping ? `<a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping"

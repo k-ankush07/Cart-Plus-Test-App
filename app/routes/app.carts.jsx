@@ -20,7 +20,6 @@ import {
 } from "@shopify/polaris-icons";
 
 import { useLoaderData, useNavigate } from "react-router-dom";
-import { json } from "@remix-run/node";
 import { useState, useEffect } from "react";
 
 import { shopLoader } from "./components/shop.server";
@@ -33,12 +32,21 @@ import {
 } from "../services/apiRoutes";
 
 export const loader = async ({ request }) => {
-    const data = await shopLoader(request);
-    return json(data);
+    const { shop, apiUrl, accessToken, currency } = await shopLoader(request);
+
+    let carts = [];
+    try {
+        const data = await getCarts(apiUrl, shop.myshopifyDomain);
+        carts = data.data || [];
+    } catch (err) {
+        console.error("GET CARTS ERROR:", err);
+    }
+
+    return Response.json({ shop, apiUrl, accessToken, currency, carts });
 };
 
 export default function AppCarts() {
-    const { shop, apiUrl } = useLoaderData();
+    const { shop, apiUrl, carts: initialCarts } = useLoaderData();
     const navigate = useNavigate();
     const [deleteModal, setDeleteModal] = useState(false);
     const [selectedCart, setSelectedCart] = useState(null);
@@ -46,16 +54,12 @@ export default function AppCarts() {
     const [cartToPublish, setCartToPublish] = useState(null);
     const [publishHasLive, setPublishHasLive] = useState(false);
 
-    const [carts, setCarts] = useState([]);
+    const [carts, setCarts] = useState(initialCarts);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchCarts = async () => {
-            const data = await getCarts(apiUrl, shop.myshopifyDomain);
-            setCarts(data.data || []);
-        };
-        fetchCarts();
-    }, [shop.myshopifyDomain, apiUrl]);
+        setCarts(initialCarts);
+    }, [initialCarts]);
 
     const handleCreateCart = async () => {
         setLoading(true);

@@ -1,7 +1,6 @@
 import { AppProvider, Page } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css";
 import "../index.css";
-import { json } from "@remix-run/node";
 import Sidebar from "./components/Sidebar";
 import CartPreview from "./components/CartPreview";
 import MainContent from "./components/MainContent";
@@ -28,22 +27,21 @@ import {
 } from "../routes/components/constants/cartDefaults";
 
 export const loader = async ({ request, params }) => {
-  const { shop, apiUrl, accessToken, currency } = await shopLoader(request);
   const cartId = params.cartId;
+  const apiUrl = process.env.PUBLIC_REACT_APP_API_URL;
 
-  let cart = null;
+  const [{ shop, accessToken, currency }, cartResult] = await Promise.all([
+    shopLoader(request),
+    getCart(apiUrl, cartId).catch((err) => {
+      console.error("GET CART ERROR:", err);
+      return { data: null };
+    }),
+  ]);
 
-  try {
-    const data = await getCart(apiUrl, cartId);
-    cart = data.data;
-  } catch (err) {
-    console.error("GET CART ERROR:", err);
-  }
-
-  return json({
+  return Response.json({
     shop,
     apiUrl,
-    cart,
+    cart: cartResult?.data || null,
     accessToken,
     currency,
   });
