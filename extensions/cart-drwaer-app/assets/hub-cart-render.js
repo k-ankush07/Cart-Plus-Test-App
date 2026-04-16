@@ -34,8 +34,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
   if (opts.showSkeleton) {
     hubUtils.showCartSkeleton(blockId);
-  } else {
-    drawer?.querySelector(".hub-cart-footer")?.classList.add("hub-empty-footer");
+  }
+
+  // Pre-hide footer only if we last saw an empty cart (avoids blink when items exist,
+  // avoids flash when cart is empty on first open or after last item removed).
+  const _footer = drawer?.querySelector(".hub-cart-footer");
+  if (_footer && !window._hubLastCartHadItems) {
+    _footer.classList.add("hub-empty-footer");
   }
 
   try {
@@ -56,8 +61,10 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (footer) {
       if (cart.items.length === 0) {
         footer.classList.add("hub-empty-footer");
+        window._hubLastCartHadItems = false;
       } else {
         footer.classList.remove("hub-empty-footer");
+        window._hubLastCartHadItems = true;
       }
     }
 

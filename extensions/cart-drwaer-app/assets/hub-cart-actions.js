@@ -63,15 +63,43 @@ async function _commitRemoval(key) {
   const p = _hubPendingRemovals[key];
   if (!p) return;
 
-  p.toastEl?.classList.add("hub-toast-hiding");
-  setTimeout(() => p.toastEl?.remove(), 220);
   delete _hubPendingRemovals[key];
 
+  // Step 1: remove from cart
   await fetch("/cart/change.js", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: key, quantity: 0 }),
   });
+
+  // Step 2: close the toast
+  if (p.toastEl) {
+    p.toastEl.classList.add("hub-toast-hiding");
+    await new Promise(r => setTimeout(r, 220));
+    p.toastEl.remove();
+  }
+
+  // Step 3: slide item row out to the left
+  const el = p.itemEl;
+  if (el) {
+    el.style.overflow = "hidden";
+    el.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+    el.style.transform = "translateX(-100%)";
+    el.style.opacity = "0";
+    await new Promise(r => setTimeout(r, 300));
+
+    // Collapse height so the list closes up
+    el.style.transition = "height 0.2s ease, margin 0.2s ease, padding 0.2s ease";
+    el.style.height = el.offsetHeight + "px";
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.style.height = "0";
+      el.style.marginTop = "0";
+      el.style.marginBottom = "0";
+      el.style.paddingTop = "0";
+      el.style.paddingBottom = "0";
+    }));
+    await new Promise(r => setTimeout(r, 220));
+  }
 
   if (Object.keys(_hubPendingRemovals).length === 0) {
     document.dispatchEvent(new CustomEvent("cart:updated"));
