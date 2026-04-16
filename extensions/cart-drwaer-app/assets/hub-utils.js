@@ -183,13 +183,12 @@ window.hubUtils = {
     try {
       const res = await fetch(
         `${ratingsUrl}/api/product-ratings?shop=${shop}&ids=${ids}`,
-        { headers: { "ngrok-skip-browser-warning": "true" } }
+        { headers: { "ngrok-skip-browser-warning": "true" } },
       );
       const { ratings } = await res.json();
 
       slots.forEach((slot) => {
         const r = ratings[slot.dataset.pid];
-        console.log(`[hub] Rating for product ${slot.dataset.pid}:`, r);
         if (!r?.rating) return;
         slot.innerHTML = `
           <span class="hub-stars" style="--rating: ${r.rating};" aria-label="Rating: ${r.rating} out of 5"></span>
@@ -430,7 +429,8 @@ window.hubUtils = {
   async getDiscounts() {
     const ratingsUrl = window.__HUB_RATINGS_URL__;
     const shop = window.__SHOPIFY_SHOP__?.domain;
-    if (!ratingsUrl || !shop) return { allDiscountCodes: [], activeDiscountCodes: [] };
+    if (!ratingsUrl || !shop)
+      return { allDiscountCodes: [], activeDiscountCodes: [] };
 
     try {
       const res = await fetch(`${ratingsUrl}/api/discounts`, {

@@ -250,24 +250,58 @@ router.post("/discounts", async (req, res) => {
       const discount = item.node.discount;
       if (!discount) return;
 
+      // Extract discount value (percentage or fixed amount)
+      const valueNode = discount.customerGets?.value;
+      const discountValue = valueNode?.percentage != null
+        ? { type: "percentage", value: valueNode.percentage * 100 }
+        : valueNode?.amount
+          ? { type: "fixed_amount", value: parseFloat(valueNode.amount.amount), currencyCode: valueNode.amount.currencyCode }
+          : null;
+
+      // Extract applies-to items (products or collections)
+      const itemsNode = discount.customerGets?.items;
+      const appliesToProducts = itemsNode?.products?.edges?.map((e) => e.node.id) || [];
+      const appliesToCollections = itemsNode?.collections?.edges?.map((e) => e.node.id) || [];
+
+      // Extract minimum requirement
+      const minReq = discount.minimumRequirement;
+      const minimumRequirement = minReq?.greaterThanOrEqualToSubtotal
+        ? { type: "subtotal", value: parseFloat(minReq.greaterThanOrEqualToSubtotal.amount), currencyCode: minReq.greaterThanOrEqualToSubtotal.currencyCode }
+        : minReq?.greaterThanOrEqualToQuantity
+          ? { type: "quantity", value: minReq.greaterThanOrEqualToQuantity }
+          : null;
+
+      const baseData = {
+        id: item.node.id,
+        title: discount.title,
+        status: discount.status,
+        startsAt: discount.startsAt,
+        endsAt: discount.endsAt,
+        type: discount.__typename,
+        discountValue,
+        minimumRequirement,
+        appliesToProducts,
+        appliesToCollections,
+        usageLimit: discount.usageLimit ?? null,
+        appliesOncePerCustomer: discount.appliesOncePerCustomer ?? false,
+        combinesWith: discount.combinesWith ?? null,
+        customerSelection: discount.customerSelection?.__typename ?? null,
+      };
+
       const codes = discount.codes?.edges?.map((e) => e.node.code) || [];
 
-      codes.forEach((code) => {
-        const data = {
-          code,
-          title: discount.title,
-          status: discount.status,
-          startsAt: discount.startsAt,
-          endsAt: discount.endsAt,
-          type: discount.__typename,
-        };
-
+      if (codes.length > 0) {
+        codes.forEach((code) => {
+          const data = { ...baseData, code };
+          allDiscountCodes.push(data);
+          if (discount.status === "ACTIVE") activeDiscountCodes.push(data);
+        });
+      } else {
+        // Automatic discounts have no codes
+        const data = { ...baseData, code: null };
         allDiscountCodes.push(data);
-
-        if (discount.status === "ACTIVE") {
-          activeDiscountCodes.push(data);
-        }
-      });
+        if (discount.status === "ACTIVE") activeDiscountCodes.push(data);
+      }
     });
 
     res.json({
