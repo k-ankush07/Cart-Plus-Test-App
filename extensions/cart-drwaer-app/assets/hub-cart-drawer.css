@@ -139,9 +139,33 @@
   text-decoration: underline;
 }
 
-.hub-item-unit-price {
+.hub-item-unit-price-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
   margin: 0 0 4px;
+}
+
+.hub-item-unit-price {
+  margin: 0;
   font-size: 13px;
+}
+
+.hub-item-unit-price--sale {
+  font-weight: 600;
+}
+
+.hub-item-compare-price {
+  font-size: 12px;
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.hub-item-unit-save {
+  font-size: 11px;
+  color: #c0392b;
+  font-weight: 600;
 }
 
 .hub-item-variant {

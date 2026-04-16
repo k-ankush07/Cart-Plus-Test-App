@@ -304,15 +304,41 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const footerRec = document.getElementById(`hub-footer-rec-${blockId}`);
     if (footerRec) footerRec.innerHTML = "";
 
+    // Cache for product variant compare_at_price lookups
+    window._hubCompareCache = window._hubCompareCache || {};
+
+    // Sort: triggered-reward (free gift) items always appear at the bottom
+    const sortedItems = [...cart.items].sort((a, b) => {
+      const aIsGift = !!a.properties?._triggered_reward;
+      const bIsGift = !!b.properties?._triggered_reward;
+      return aIsGift - bIsGift;
+    });
+
     const itemsHTML = await Promise.all(
-      cart.items.map(async (item) => {
+      sortedItems.map(async (item) => {
         if (item.properties?._hub_addon) return "";
 
         const showSavingsBelowPrices =
           cartSettings.showSavingsBelowPrices || false;
 
-        const colorItems =
-          designSettings.textColor || '#000';
+        const colorItems = designSettings.textColor || "#000";
+
+        // Fetch compare_at_price from product API (cart.js doesn't include it)
+        let compareAtPrice = 0;
+        try {
+          const cacheKey = `${item.handle}_${item.variant_id}`;
+          if (window._hubCompareCache[cacheKey] !== undefined) {
+            compareAtPrice = window._hubCompareCache[cacheKey];
+          } else {
+            const prodRes = await fetch(`/products/${item.handle}.js`);
+            const prodData = await prodRes.json();
+            const variant = prodData.variants.find(v => v.id === item.variant_id);
+            compareAtPrice = variant?.compare_at_price || 0;
+            window._hubCompareCache[cacheKey] = compareAtPrice;
+          }
+        } catch (e) {
+          compareAtPrice = 0;
+        }
 
         const hasDiscount = item.original_line_price !== item.final_line_price;
 
@@ -353,7 +379,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
                 .join("")
             : "";
 
-        const isReward = !!item.properties?._hub_reward;
+        const isReward = !!item.properties?._hub_reward || !!item.properties?._triggered_reward;
+        const isTriggeredReward = !!item.properties?._triggered_reward;
         const subscriptionSettings =
           window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;
         const sellingPlan = item.selling_plan_allocation;
@@ -422,12 +449,23 @@ window.hubCartRender = async function (drawer, opts = {}) {
                   isReward
                     ? `
       <p class="hub-item-reward-badge">Free gift</p>
-      <p class="hub-item-unit-price">${hubUtils.formatMoney(item.price)}</p>
+      ${isTriggeredReward && item.price > 0
+        ? `<p class="hub-item-unit-price"><s>${hubUtils.formatMoney(item.price)}</s></p>`
+        : `<p class="hub-item-unit-price">${hubUtils.formatMoney(item.price)}</p>`
+      }
     `
-                    : `
-      <p class="hub-item-unit-price">${hubUtils.formatMoney(item.price)}</p>
+                    : (() => {
+                        const hasCompare = compareAtPrice && compareAtPrice > item.price;
+                        const unitSave = hasCompare ? compareAtPrice - item.price : 0;
+                        return `
+      <div class="hub-item-unit-price-wrap">
+        ${hasCompare ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(compareAtPrice)}</span>` : ""}
+        <span class="hub-item-unit-price${hasCompare ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(item.price)}</span>
+        ${hasCompare ? `<span class="hub-item-unit-save">Save ${hubUtils.formatMoney(unitSave)}</span>` : ""}
+      </div>
       ${saveHtml}
-    `
+    `;
+                      })()
                 }
                 ${variantHtml}
                 ${propertiesHtml}
@@ -720,16 +758,20 @@ async function handleTriggeredRewards(cart) {
 
   if (!enabledRewards.length) return changed;
 
+  // Exclude triggered-reward gift items from the trigger check — otherwise
+  // the gift product itself can keep qualifying the trigger it was added by.
+  const nonGiftItems = cart.items.filter((i) => !i.properties?._triggered_reward);
+
   const cartTotal = cart.total_price / 100;
   const cartProductIds = new Set(
-    cart.items.map((i) => `gid://shopify/Product/${i.product_id}`),
+    nonGiftItems.map((i) => `gid://shopify/Product/${i.product_id}`),
   );
   const cartVariantIds = new Set(
-    cart.items.map((i) => `gid://shopify/ProductVariant/${i.variant_id}`),
+    nonGiftItems.map((i) => `gid://shopify/ProductVariant/${i.variant_id}`),
   );
 
   for (const reward of enabledRewards) {
-    const qualifies = checkTriggers(reward.triggers, {
+    const qualifies = await checkTriggers(reward.triggers, {
       cartTotal,
       cartProductIds,
       cartVariantIds,
@@ -739,11 +781,14 @@ async function handleTriggeredRewards(cart) {
     const giftVariantIds = giftItems.variants || [];
     const giftProductIds = new Set(giftItems.products || []);
 
+    // Only match items that were actually added as a triggered reward —
+    // a regular purchase of the same product must not block the free gift.
     const giftInCart = cart.items.find(
       (i) =>
-        giftVariantIds.includes(
+        String(i.properties?._triggered_reward) === String(reward.id) &&
+        (giftVariantIds.includes(
           `gid://shopify/ProductVariant/${i.variant_id}`,
-        ) || giftProductIds.has(`gid://shopify/Product/${i.product_id}`),
+        ) || giftProductIds.has(`gid://shopify/Product/${i.product_id}`)),
     );
 
     if (qualifies && !giftInCart && giftVariantIds.length > 0) {
@@ -808,17 +853,19 @@ async function handleTriggeredRewards(cart) {
   return changed;
 }
 
-function checkTriggers(
+async function checkTriggers(
   triggers,
   { cartTotal, cartProductIds, cartVariantIds, cart },
 ) {
   if (!triggers || triggers.length === 0) return true;
-  return triggers.every((t) =>
-    checkTrigger(t, { cartTotal, cartProductIds, cartVariantIds, cart }),
-  );
+  for (const t of triggers) {
+    const result = await checkTrigger(t, { cartTotal, cartProductIds, cartVariantIds, cart });
+    if (!result) return false;
+  }
+  return true;
 }
 
-function checkTrigger(
+async function checkTrigger(
   trigger,
   { cartTotal, cartProductIds, cartVariantIds, cart },
 ) {
@@ -840,8 +887,60 @@ function checkTrigger(
       );
     }
 
-    case "specific_collections":
-      return true;
+    case "specific_collections": {
+      // trigger.items is a flat array of collection GIDs e.g. ["gid://shopify/Collection/123"]
+      const collectionGids = Array.isArray(trigger.items) ? trigger.items : [];
+      if (!collectionGids.length) return false;
+
+      // Shopify storefront requires handle (not numeric ID) for /collections/{handle}/products.json
+      // Build a one-time ID→handle map from /collections.json
+      if (!window._hubCollHandleMap) {
+        try {
+          const res = await fetch("/collections.json?limit=250");
+          if (res.ok) {
+            const data = await res.json();
+            window._hubCollHandleMap = {};
+            for (const col of data.collections) {
+              window._hubCollHandleMap[String(col.id)] = col.handle;
+            }
+          } else {
+            window._hubCollHandleMap = {};
+          }
+        } catch (e) {
+          console.error("[triggered-reward] Failed to fetch collections list:", e);
+          window._hubCollHandleMap = {};
+        }
+      }
+
+      window._hubCollCache = window._hubCollCache || {};
+
+      for (const collGid of collectionGids) {
+        const collId = collGid.replace("gid://shopify/Collection/", "");
+        const handle = window._hubCollHandleMap[collId];
+        if (!handle) {
+          console.warn("[triggered-reward] No handle found for collection ID:", collId);
+          continue;
+        }
+        try {
+          let collProductIds = window._hubCollCache[collId];
+          if (!collProductIds) {
+            const res = await fetch(`/collections/${handle}/products.json?limit=250`);
+            if (!res.ok) continue;
+            const data = await res.json();
+            collProductIds = new Set(
+              data.products.map((p) => `gid://shopify/Product/${p.id}`),
+            );
+            window._hubCollCache[collId] = collProductIds;
+          }
+          for (const pid of cartProductIds) {
+            if (collProductIds.has(pid)) return true;
+          }
+        } catch (e) {
+          console.error("[triggered-reward] Collection check failed:", handle, e);
+        }
+      }
+      return false;
+    }
 
     case "customer_logged_in":
       return false;

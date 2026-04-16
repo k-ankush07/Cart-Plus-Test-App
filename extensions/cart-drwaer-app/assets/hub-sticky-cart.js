@@ -143,7 +143,7 @@ function scopeCss(css, scope) {
       left: "60px",
       minWidth: "25px",
       height: "25px",
-      borderRadius: "50%",
+      borderRadius: "100%",
       background: data.qBgColor || "#e03e2d",
       color: data.qTextColor || "#fff",
       fontSize: "14px",
