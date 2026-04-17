@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 import {
     Text,
     Thumbnail,
@@ -20,6 +21,7 @@ import {
 } from "@shopify/polaris-icons";
 
 export default function Products({ currency, onSelect, selectedItems = [], }) {
+    const authenticatedFetch = useAuthenticatedFetch();
 
     const [products, setProducts] = useState([]);
     const [cursor, setCursor] = useState([]);
@@ -30,19 +32,32 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
     const [search, setSearch] = useState("");
     const [selected, setSelected] = useState(selectedItems);
     const [showSelected, setShowSelected] = useState(false);
+    const searchDebounceRef = useRef(null);
+    const currentSearchRef = useRef("");
 
     useEffect(() => {
         setSelected(selectedItems);
     }, [selectedItems]);
 
     useEffect(() => {
-        loadMore(null);
+        loadMore(null, "");
     }, []);
 
-    const loadMore = async (cursorValue) => {
+    useEffect(() => {
+        clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = setTimeout(() => {
+            currentSearchRef.current = search;
+            setCursorStack([]);
+            loadMore(null, search);
+        }, 400);
+        return () => clearTimeout(searchDebounceRef.current);
+    }, [search]);
+
+    const loadMore = async (cursorValue, searchQuery) => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/products?cursor=${cursorValue || ""}`);
+            const q = searchQuery !== undefined ? searchQuery : currentSearchRef.current;
+            const res = await authenticatedFetch(`/api/products?cursor=${cursorValue || ""}&query=${encodeURIComponent(q)}`);
             const data = await res.json();
 
             const edges = data?.data?.products?.edges || [];
@@ -84,7 +99,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
         if (!hasNextPage) return;
 
         setCursorStack((prev) => [...prev, cursor]);
-        await loadMore(cursor);
+        await loadMore(cursor, currentSearchRef.current);
     };
 
     const handlePrev = async () => {
@@ -95,7 +110,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
 
         setCursorStack(newStack);
 
-        await loadMore(prevCursor || null);
+        await loadMore(prevCursor || null, currentSearchRef.current);
     };
 
     const toggleSelect = (variant, product) => {
@@ -120,10 +135,6 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
     };
 
     const isSelected = (id) => selected.some((v) => v.id === id);
-
-    const filtered = products?.filter((p) =>
-        p.title.toLowerCase().includes(search.toLowerCase())
-    );
 
     const isProductSelected = (product) => {
         return selected.some((v) =>
@@ -163,7 +174,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
         }));
     };
 
-    const visibleProducts = filtered.filter((product) => {
+    const visibleProducts = products.filter((product) => {
         if (!showSelected) return true;
         return product.variants.some((v) =>
             selected.some((s) => s.id === v.id)

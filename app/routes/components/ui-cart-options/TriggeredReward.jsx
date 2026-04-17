@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 import {
   Card, Text, BlockStack, InlineStack, Button, TextField,
   Badge, Modal, Checkbox, ButtonGroup, Icon,
@@ -140,6 +141,7 @@ const modalRow = { padding: "12px 16px", cursor: "pointer", borderBottom: "1px s
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function TriggeredReward({ triggeredRewardsSettings, handleChange, currency }) {
+  const authenticatedFetch = useAuthenticatedFetch();
   const update = (key, value) =>
     handleChange("triggeredRewards", (prev) => ({ ...prev, [key]: value }));
 
@@ -337,7 +339,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
     const existingDiscountId = triggeredRewardsSettings?.shopifyDiscountId || null;
     const discountCombinations = triggeredRewardsSettings?.discountCombinations || {};
     try {
-      await fetch("/api/create-discount", {
+      await authenticatedFetch("/api/create-discount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rewards: newRewards, discountCombinations, existingDiscountId }),

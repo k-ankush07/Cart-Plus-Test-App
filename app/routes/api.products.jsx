@@ -6,10 +6,11 @@ export const loader = async ({ request }) => {
 
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
+  const search = url.searchParams.get("query");
 
   const query = `
 {
-  products(first: 10 ${cursor ? `, after: "${cursor}"` : ""}) {
+  products(first: 10 ${cursor ? `, after: "${cursor}"` : ""}${search ? `, query: "title:*${search}*"` : ""}) {
     edges {
       cursor
       node {

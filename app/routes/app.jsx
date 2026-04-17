@@ -17,8 +17,6 @@ export const loader = async ({ request }) => {
     const offlineSession = await sessionStorage.loadSession(`offline_${session.shop}`);
     const token = offlineSession?.accessToken;
 
-    console.log(token)
-
     if (token && _lastSentToken.get(session.shop) !== token) {
       const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
       const res = await fetch(`${apiUrl}/api/save-shop-token`, {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 import {
     Badge,
     Banner,
@@ -18,6 +19,7 @@ import { DeliveryIcon, ProductIcon } from "@shopify/polaris-icons";
 import Products from "../ui/Products";
 
 export default function AddOnsSettings({ addonsSettings, handleChange, currency, }) {
+    const authenticatedFetch = useAuthenticatedFetch();
 
     const [productModalOpen, setProductModalOpen] = useState(false);
     const [modalKey, setModalKey] = useState(0);
@@ -90,7 +92,7 @@ export default function AddOnsSettings({ addonsSettings, handleChange, currency,
 
     const createOrUpdateShippingProduct = async () => {
         try {
-            const res = await fetch(`/api/create-or-update-shipping`, {
+            const res = await authenticatedFetch(`/api/create-or-update-shipping`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

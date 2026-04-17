@@ -17,9 +17,11 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon
 } from "@shopify/polaris-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 
 export default function ProductItemCollections({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null }) {
+    const authenticatedFetch = useAuthenticatedFetch();
     const [cursorStack, setCursorStack] = useState([]);
     const [openProducts, setOpenProducts] = useState({});
     const [selectedVariants, setSelectedVariants] = useState([]);
@@ -31,6 +33,8 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
     const [activeTab, setActiveTab] = useState("products");
     const [hasNextPage, setHasNextPage] = useState(false);
     const [collectionsLoading, setCollectionsLoading] = useState(false);
+    const searchDebounceRef = useRef(null);
+    const currentSearchRef = useRef("");
 
     useEffect(() => {
         if (!initialSelected) return;
@@ -142,7 +146,7 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
 
         setCursorStack((prev) => [...prev, cursor]);
 
-        await loadMore(cursor);
+        await loadMore(cursor, currentSearchRef.current);
     };
 
     const handlePrev = async () => {
@@ -153,18 +157,29 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
 
         setCursorStack(newStack);
 
-        await loadMore(prevCursor || null);
+        await loadMore(prevCursor || null, currentSearchRef.current);
     };
 
     useEffect(() => {
-        loadMore(null);
+        loadMore(null, "");
     }, []);
 
-    const loadMore = async (cursorValue) => {
+    useEffect(() => {
+        clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = setTimeout(() => {
+            currentSearchRef.current = search;
+            setCursorStack([]);
+            loadMore(null, search);
+        }, 400);
+        return () => clearTimeout(searchDebounceRef.current);
+    }, [search]);
+
+    const loadMore = async (cursorValue, searchQuery) => {
         setLoading(true);
 
         try {
-            const res = await fetch(`/api/products?cursor=${cursorValue || ""}`);
+            const q = searchQuery !== undefined ? searchQuery : currentSearchRef.current;
+            const res = await authenticatedFetch(`/api/products?cursor=${cursorValue || ""}&query=${encodeURIComponent(q)}`);
             const data = await res.json();
 
             const edges = data?.data?.products?.edges || [];
@@ -197,19 +212,11 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
         setLoading(false);
     };
 
-    const filteredProducts = localProducts.filter((product) => {
-        const matchesSearch = product.title
-            .toLowerCase()
-            .includes(search.toLowerCase());
-
-        const matchesSelected = showSelected
-            ? product.variants.some((v) =>
-                selectedVariants.includes(v.id)
-            )
-            : true;
-
-        return matchesSearch && matchesSelected;
-    });
+    const filteredProducts = localProducts.filter((product) =>
+        showSelected
+            ? product.variants.some((v) => selectedVariants.includes(v.id))
+            : true
+    );
 
     const [collections, setCollections] = useState([]);
     const [selectedCollections, setSelectedCollections] = useState([]);
@@ -218,7 +225,7 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
         setCollectionsLoading(true);
 
         try {
-            const res = await fetch(`/api/collections`, {
+            const res = await authenticatedFetch(`/api/collections`, {
                 credentials: "include",
             });
 
