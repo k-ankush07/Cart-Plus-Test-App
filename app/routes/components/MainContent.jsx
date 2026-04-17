@@ -13,6 +13,7 @@ import DiscountCodes from "./ui-cart-options/DiscountCodes";
 import Expresspayments from "./ui-cart-options/Express-payments";
 import Trustbadges from "./ui-cart-options/Trustbadges";
 import CartSettings from "./ui-cart-options/CartSettings";
+import "../../index.css";
 
 export default function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
     announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings, upsellsSettings,

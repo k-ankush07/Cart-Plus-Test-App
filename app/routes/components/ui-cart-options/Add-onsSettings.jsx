@@ -85,7 +85,7 @@ export default function AddOnsSettings({ addonsSettings, handleChange, currency,
         addonsSettings.title,
         addonsSettings.description,
         addonsSettings.price,
-        addonsSettings.customShippingProduct 
+        addonsSettings.customShippingProduct
     ]);
 
     const createOrUpdateShippingProduct = async () => {
@@ -122,8 +122,14 @@ export default function AddOnsSettings({ addonsSettings, handleChange, currency,
         <BlockStack gap="400">
             {/* HEADER CARD */}
             <Card>
-                <InlineStack align="space-between">
-                    <Text variant="headingMd">Add-ons</Text>
+                <InlineStack gap="300" align="space-between" blockAlign="center">
+                    <InlineStack gap="200" align="center">
+                        <Text variant="headingMd">Add-ons</Text>
+
+                        <Badge tone={addonsSettings.enabled ? "critical" : "success"}>
+                            {addonsSettings.enabled ? "Disabled" : "Active"}
+                        </Badge>
+                    </InlineStack>
                     <Button
                         variant={addonsSettings.enabled ? "primary" : "secondary"}
                         onClick={() => update("enabled", !addonsSettings.enabled)}

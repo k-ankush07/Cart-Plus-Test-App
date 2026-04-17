@@ -5,6 +5,7 @@ import {
     InlineStack,
     BlockStack,
     Checkbox,
+    Badge
 } from "@shopify/polaris";
 import ColorInput from "../ui/ColorInput";
 import RichTextEditor from "../ui/RichTextEditor";
@@ -22,10 +23,14 @@ export default function TieredRewards({ handleChange, rewardsSettings, currency 
     return (
         <Card>
             <BlockStack gap="300">
+                <InlineStack gap="300" align="space-between" blockAlign="center">
+                    <InlineStack gap="200" align="center">
+                        <Text variant="headingMd">Tiered rewards</Text>
 
-                <InlineStack align="space-between">
-                    <Text variant="headingMd">Tiered rewards</Text>
-
+                        <Badge tone={rewardsSettings.enabled ? "critical" : "success"}>
+                            {rewardsSettings.enabled ? "Disabled" : "Active"}
+                        </Badge>
+                    </InlineStack>
                     <Button
                         variant={rewardsSettings.enabled ? "primary" : "secondary"}
                         onClick={() => update("enabled", !rewardsSettings.enabled)}

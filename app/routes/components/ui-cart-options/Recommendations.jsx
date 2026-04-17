@@ -8,7 +8,7 @@ import {
     TextField,
     Select,
     Modal,
-
+    Badge
 } from "@shopify/polaris";
 
 import ProductItemCollections from "../ui/ProductItem-Collections";
@@ -40,11 +40,15 @@ export default function Recommendations({ recommendationsSettings, handleChange,
     return (
         <Card>
             <BlockStack gap="400">
-
                 {/* Header */}
-                <InlineStack align="space-between">
-                    <Text variant="headingMd">Recommendations</Text>
+                <InlineStack gap="300" align="space-between" blockAlign="center">
+                    <InlineStack gap="200" align="center">
+                        <Text variant="headingMd">Recommendations</Text>
 
+                        <Badge tone={recommendationsSettings.enabled ? "critical" : "success"}>
+                            {recommendationsSettings.enabled ? "Disabled" : "Active"}
+                        </Badge>
+                    </InlineStack>
                     <Button
                         variant={recommendationsSettings.enabled ? "primary" : "secondary"}
                         onClick={() => update("enabled", !recommendationsSettings.enabled)}

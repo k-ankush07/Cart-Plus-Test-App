@@ -24,8 +24,14 @@ export default function AdditionalNotes({ additionalNotesSettings, handleChange 
         <BlockStack gap="400">
             <Card>
                 <BlockStack gap="300">
-                    <InlineStack align="space-between">
-                        <Text variant="headingMd">Additional notes</Text>
+                    <InlineStack gap="300" align="space-between" blockAlign="center">
+                        <InlineStack gap="200" align="center">
+                            <Text variant="headingMd">Additional notes</Text>
+
+                            <Badge tone={additionalNotesSettings.enabled ? "critical" : "success"}>
+                                {additionalNotesSettings.enabled ? "Disabled" : "Active"}
+                            </Badge>
+                        </InlineStack>
                         <Button
                             variant={additionalNotesSettings.enabled ? "primary" : "secondary"}
                             onClick={() => update("enabled", !additionalNotesSettings.enabled)}

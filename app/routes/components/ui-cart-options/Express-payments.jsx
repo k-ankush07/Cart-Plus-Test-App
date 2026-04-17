@@ -14,6 +14,7 @@ import {
     Select,
     Text,
     TextField,
+    Badge
 } from "@shopify/polaris";
 import { ClipboardIcon } from "@shopify/polaris-icons";
 
@@ -44,8 +45,14 @@ export default function Expresspayments({ expressPaymentsSettings, handleChange 
         <BlockStack gap="400">
             {/* HEADER */}
             <Card>
-                <InlineStack align="space-between">
-                    <Text variant="headingMd">Express payments</Text>
+                <InlineStack gap="300" align="space-between" blockAlign="center">
+                    <InlineStack gap="200" align="center">
+                        <Text variant="headingMd">Express payments</Text>
+
+                        <Badge tone={expressPaymentsSettings.enabled ? "critical" : "success"}>
+                            {expressPaymentsSettings.enabled ? "Disabled" : "Active"}
+                        </Badge>
+                    </InlineStack>
                     <Button
                         variant={expressPaymentsSettings.enabled ? "primary" : "secondary"}
                         onClick={() => update("enabled", !expressPaymentsSettings.enabled)}

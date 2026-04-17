@@ -27,8 +27,14 @@ export default function DiscountCodes({ discountCodesSettings, handleChange }) {
         <BlockStack gap="400">
             <Card>
                 <BlockStack gap="300">
-                    <InlineStack align="space-between">
-                        <Text variant="headingMd">Discount codes</Text>
+                    <InlineStack gap="300" align="space-between" blockAlign="center">
+                        <InlineStack gap="200" align="center">
+                            <Text variant="headingMd">Discount codes</Text>
+
+                            <Badge tone={discountCodesSettings.enabled ? "critical" : "success"}>
+                                {discountCodesSettings.enabled ? "Disabled" : "Active"}
+                            </Badge>
+                        </InlineStack>
                         <Button
                             variant={discountCodesSettings.enabled ? "primary" : "secondary"}
                             onClick={() => update("enabled", !discountCodesSettings.enabled)}

@@ -22,9 +22,13 @@ export default function SubscriptionUpgrades({ subscriptionUpgradesSettings, han
     return (
         <Card>
             <BlockStack gap="400">
-                <InlineStack align="space-between">
-                    <Text variant="headingMd">Recommendations</Text>
-
+                <InlineStack gap="300" align="space-between" blockAlign="center">
+                    <InlineStack gap="200" align="center">
+                        <Text variant="headingMd">Subscription upgrades</Text>
+                        <Badge tone={subscriptionUpgradesSettings.enabled ? "critical" : "success"}>
+                            {subscriptionUpgradesSettings.enabled ? "Disabled" : "Active"}
+                        </Badge>
+                    </InlineStack>
                     <Button
                         variant={subscriptionUpgradesSettings.enabled ? "primary" : "secondary"}
                         onClick={() => update("enabled", !subscriptionUpgradesSettings.enabled)}

@@ -7,7 +7,8 @@ import {
   InlineStack,
   InlineGrid,
   BlockStack,
-  RangeSlider
+  RangeSlider,
+  Badge
 } from "@shopify/polaris";
 import RichTextEditor from "../ui/RichTextEditor";
 import ColorInput from "../ui/ColorInput";
@@ -26,8 +27,15 @@ export default function AnnouncementsSettings({
   return (
     <Card>
       <BlockStack gap="300" align="space-between">
-        <InlineStack gap="300" align="space-between">
-          <Text variant="headingMd">Announcements</Text>
+        <InlineStack gap="300" align="space-between" blockAlign="center">
+          <InlineStack gap="200" align="center">
+            <Text variant="headingMd">Announcements</Text>
+
+            <Badge tone={announcementSettings.enabled ? "critical" : "success"}>
+              {announcementSettings.enabled ? "Disabled" : "Active"}
+            </Badge>
+          </InlineStack>
+
           <Button
             variant={announcementSettings.enabled ? "primary" : "secondary"}
             onClick={() => update("enabled", !announcementSettings.enabled)}

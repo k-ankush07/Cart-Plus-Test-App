@@ -5,6 +5,11 @@ import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css";
 import { authenticate, sessionStorage } from "../shopify.server";
 
+// Module-level cache: tracks the last access token sent per shop.
+// Persists for the lifetime of the server process — API is only
+// called when the token is new or has changed.
+const _lastSentToken = new Map();
+
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
 
@@ -12,7 +17,9 @@ export const loader = async ({ request }) => {
     const offlineSession = await sessionStorage.loadSession(`offline_${session.shop}`);
     const token = offlineSession?.accessToken;
 
-    if (token) {
+    console.log(token)
+
+    if (token && _lastSentToken.get(session.shop) !== token) {
       const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
       const res = await fetch(`${apiUrl}/api/save-shop-token`, {
         method: "POST",
@@ -21,6 +28,7 @@ export const loader = async ({ request }) => {
       });
       const data = await res.json();
       console.log(data.updated ? `[hub] Token saved for ${session.shop}` : `[hub] Token already up-to-date for ${session.shop}`);
+      _lastSentToken.set(session.shop, token);
     }
   } catch (err) {
     console.warn("[hub] Could not save shop token:", err.message);

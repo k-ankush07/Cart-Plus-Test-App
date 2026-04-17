@@ -55,7 +55,14 @@ export default function Trustbadges({ trustBadgesSettings, handleChange, accessT
         <BlockStack gap="400">
             <Card>
                 <BlockStack gap="300">
-                    <InlineStack align="space-between">
+                    <InlineStack gap="300" align="space-between" blockAlign="center">
+                        <InlineStack gap="200" align="center">
+                            <Text variant="headingMd">Trust badges</Text>
+
+                            <Badge tone={trustBadgesSettings.enabled ? "critical" : "success"}>
+                                {trustBadgesSettings.enabled ? "Disabled" : "Active"}
+                            </Badge>
+                        </InlineStack>
                         <Text variant="headingMd">Trust badges</Text>
                         <Button
                             variant={trustBadgesSettings.enabled ? "primary" : "secondary"}

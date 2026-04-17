@@ -11,6 +11,7 @@ import {
     Text,
     TextField,
     Modal,
+    Badge
 } from "@shopify/polaris";
 import RichTextEditor from "../ui/RichTextEditor";
 import ProductItemCollections from "../ui/ProductItem-Collections";
@@ -35,8 +36,13 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
             {/* SELECT PRODUCT */}
             <Card>
                 <BlockStack gap="300">
-                    <InlineStack align="space-between">
-                        <Text variant="headingMd">Upsells</Text>
+                    <InlineStack gap="300" align="space-between" blockAlign="center">
+                        <InlineStack gap="200" align="center">
+                            <Text variant="headingMd">Upsells</Text>
+                            <Badge tone={upsellsSettings.enabled ? "critical" : "success"}>
+                                {upsellsSettings.enabled ? "Disabled" : "Active"}
+                            </Badge>
+                        </InlineStack>
                         <Button
                             variant={upsellsSettings.enabled ? "primary" : "secondary"}
                             onClick={() => update("enabled", !upsellsSettings.enabled)}
