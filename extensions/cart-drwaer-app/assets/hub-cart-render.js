@@ -191,6 +191,14 @@ window.hubCartRender = async function (drawer, opts = {}) {
       // Grand Total
       const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
       if (grandEl) grandEl.textContent = fmt(finalTotal);
+
+      // Checkout button text (update {{total_price}} placeholder)
+      const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
+      if (checkoutBtn) {
+        const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+        const rawText = cartSettings.checkoutButtonText || "Proceed to checkout";
+        checkoutBtn.textContent = rawText.replace("{{total_price}}", fmt(finalTotal));
+      }
     })();
 
     const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};

@@ -34,6 +34,14 @@ function getBorderWidth(border) {
   return map[border] || "0px";
 }
 
+window.hubToggleTotalBreakdown = function (el, blockId) {
+  var b = document.getElementById("hub-total-breakdown-" + blockId);
+  var open = b.classList.toggle("hub-breakdown-open");
+  el.querySelector(".hub-total-arrow").style.transform = open ? "rotate(180deg)" : "rotate(0deg)";
+  el.parentElement.classList.toggle("hub-total-summary--open", open);
+  document.getElementById("hub-cart-drawer-" + blockId).classList.toggle("hub-cart-total-open", open);
+};
+
 window.injectCartHTML = function (blockId, root) {
   if (!blockId) return;
 
@@ -169,6 +177,8 @@ window.injectCartHTML = function (blockId, root) {
   const disableFixedFooter = cartSettings.disableFixedFooter || false;
   const goToCartPageOnCheckout = cartSettings.goToCartPageOnCheckout || false;
   const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
+  const checkoutButtonText = cartSettings.checkoutButtonText || "Proceed to checkout";
+  const continueShoppingText = cartSettings.continueShoppingText || "Or continue shopping";
 
   // Inject button color + hover style for this drawer
   const btnStyleId = `hub-btn-style-${blockId}`;
@@ -330,7 +340,7 @@ window.injectCartHTML = function (blockId, root) {
         <!-- TOTAL SUMMARY -->
         <div class="hub-total-summary">
           <div class="hub-total-header"
-           onclick="(function(el){var b=document.getElementById('hub-total-breakdown-${blockId}');var open=b.classList.toggle('hub-breakdown-open');el.querySelector('.hub-total-arrow').style.transform=open?'rotate(180deg)':'rotate(0deg)';el.parentElement.classList.toggle('hub-total-summary--open',open);document.getElementById('hub-cart-drawer-${blockId}').classList.toggle('hub-cart-total-open',open);})(this)">
+           onclick="hubToggleTotalBreakdown(this, '${blockId}')">
             <div class="hub-total-header-left">
               <span class="hub-total-label">Estimated Total</span>
               <span class="hub-total-arrow">∨</span>
@@ -366,13 +376,13 @@ window.injectCartHTML = function (blockId, root) {
 
         <!-- CHECKOUT -->
         <div>${renderCustomHTML(customHtmlBlocks.above_checkout)}</div>
-        <a href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" class="hub-cart-checkout-btn" style="border-radius:${designSettings.buttonRadius}px;">
-          Proceed to checkout
+        <a id="hub-checkout-btn-${blockId}" href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" class="hub-cart-checkout-btn" style="border-radius:${designSettings.buttonRadius}px;">
+          ${checkoutButtonText}
         </a>
         <div>${renderCustomHTML(customHtmlBlocks.below_checkout)}</div>
         ${designSettings.continueshopping ? `<a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping"
            onclick="(function(e){e.preventDefault();document.getElementById('hub-close-${blockId}').click();})(event)">
-          Or continue shopping
+          ${continueShoppingText}
         </a>` : ""}
       </div>
 

@@ -9,7 +9,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
     cartSettings }) {
 
     const totalPrice = 84.40;
-    
+
     const checkoutText = cartSettings.checkoutButtonText?.replace(
         "{{total_price}}",
         `$${totalPrice}`
@@ -26,9 +26,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
             {!additionalNotesSettings?.enabled && additionalNotesSettings.placement === "top_of_footer" && (
                 <AdditionalNotes additionalNotesSettings={additionalNotesSettings} />
             )}
-            {trustBadgesSettings?.position === "bottom" && (
-                <TrustBadges trustBadgesSettings={trustBadgesSettings} />
-            )}
+
             <div style={{ padding: '16px' }}>
                 <AddOns addonsSettings={addonsSettings} currency={currency} />
                 <DiscountCode discountCodesSettings={discountCodesSettings} />
@@ -51,23 +49,26 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 <CustomHtml cartSettings={cartSettings} position="above_checkout" />
 
                 <div className="upcart-checkout-button-container">
-                <button
-                    className="cart-app__checkout upcart-checkout-button"
-                    style={{
-                        borderRadius: `${designSettings.buttonRadius}px`,
-                        backgroundColor: designSettings.buttonColor,
-                        "--btn-hover-text": designSettings.buttonHoverColor,
-                        "--btn-text": designSettings.buttonTextColor,
-                    }}
-                >
-                    {checkoutText}
-                </button>
+                    <button
+                        className="cart-app__checkout upcart-checkout-button"
+                        style={{
+                            borderRadius: `${designSettings.buttonRadius}px`,
+                            backgroundColor: designSettings.buttonColor,
+                            "--btn-hover-text": designSettings.buttonHoverColor,
+                            "--btn-text": designSettings.buttonTextColor,
+                        }}
+                    >
+                        {checkoutText}
+                    </button>
                 </div>
 
                 {/* below_checkout */}
                 <CustomHtml cartSettings={cartSettings} position="below_checkout" />
 
                 {designSettings.continueshopping && (<div className="styles_Footer__continueShopping__ upcart-continue-shopping"><p>{cartSettings.continueShoppingText}</p></div>)}
+                {trustBadgesSettings?.position === "bottom" && (
+                    <TrustBadges trustBadgesSettings={trustBadgesSettings} />
+                )}
             </div>
         </div>
     )
