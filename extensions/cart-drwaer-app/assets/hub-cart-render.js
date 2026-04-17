@@ -514,81 +514,41 @@ window.hubCartRender = async function (drawer, opts = {}) {
           `;
         }
 
-        return `
-          <div class="hub-cart-for-item" data-item-key="${item.key}" style="position:relative">
-            <div class="hub-cart-item" style="color:${colorItems}">
-              <div class="hub-item-img-wrap">
-                <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
-              </div>
-              <div class="hub-item-info">
-                <a href="/products/${item.handle}" class="hub-item-title" style="color:${colorItems}">${item.product_title || item.title}</a>
-                ${sellingPlan ? `<p class="hub-item-subscription-label">Subscribe and save / ${sellingPlan.selling_plan.name}</p>` : ""}
-                ${
-                  isReward
-                    ? `
-      <p class="hub-item-reward-badge">Free gift</p>
-      ${isTriggeredReward && item.price > 0
-        ? `<p class="hub-item-unit-price"><s>${hubUtils.formatMoney(item.price)}</s></p>`
-        : `<p class="hub-item-unit-price">${hubUtils.formatMoney(item.price)}</p>`
-      }
-    `
-                    : (() => {
-                        // Use final per-unit price (accounts for discount codes + automatic discounts)
-                        const effectiveUnitPrice = item.quantity > 0
-                          ? Math.round(item.final_line_price / item.quantity)
-                          : item.price;
-                        const subCompare = sellingPlan && item.original_price > effectiveUnitPrice ? item.original_price : 0;
-                        const priceCompare = item.price > effectiveUnitPrice ? item.price : 0;
-                        const effectiveCompare = (compareAtPrice && compareAtPrice > effectiveUnitPrice)
-                          ? compareAtPrice
-                          : (priceCompare || subCompare);
-                        const hasCompare = effectiveCompare > 0;
-                        const unitSave = hasCompare ? effectiveCompare - effectiveUnitPrice : 0;
-                        return `
-      <div class="hub-item-unit-price-wrap">
-        ${hasCompare ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
-        <span class="hub-item-unit-price${hasCompare ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
-        ${hasCompare ? `<span class="hub-item-unit-save">Save ${hubUtils.formatMoney(unitSave)}</span>` : ""}
-      </div>
-      ${saveHtml}
-    `;
-                      })()
-                }
-                ${variantHtml}
-                ${propertiesHtml}
-                ${discountHtml}
-                ${
-                  isReward
-                    ? ""
-                    : `
-                  <div class="hub-item-actions">
-                    <div class="hub-qty-control">
-                      <button class="hub-qty-btn" onclick="updateQty('${item.key}', ${item.quantity - 1})">−</button>
-                      <input
-                        type="text"
-                        value="${item.quantity}"
-                        class="hub-qty-input"
-                        oninput="handleQtyInput('${item.key}', this.value)"
-                      />
-                      <button class="hub-qty-btn" onclick="updateQty('${item.key}', ${item.quantity + 1})">+</button>
-                    </div>
-                    <button class="hub-delete-btn" onclick="removeItem('${item.key}', '${item.product_title?.replace(/'/g, "\\'")}')" aria-label="Remove item">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                      </svg>
-                    </button>
-                  </div>`
-                }
-              </div>
-              <div class="hub-item-total">
-                ${isReward ? `<span class="hub-price hub-price-free">FREE</span>` : priceHtml}
-              </div>
-            </div>
-            <div class="hub-selling-plan-container">${sellingPlanHtml}</div>
-            <div>${hubUtils.renderCustomHTML(customHtmlBlocks.between_line_items)}</div>
-          </div>
-          <div>${hubUtils.renderCustomHTML(customHtmlBlocks.below_cart_items)}</div>
-          `;
+        // Compute per-unit price and compare values for all layouts
+        const effectiveUnitPrice = item.quantity > 0
+          ? Math.round(item.final_line_price / item.quantity)
+          : item.price;
+        const subCompare = sellingPlan && item.original_price > effectiveUnitPrice ? item.original_price : 0;
+        const priceCompare = item.price > effectiveUnitPrice ? item.price : 0;
+        const effectiveCompare = (compareAtPrice && compareAtPrice > effectiveUnitPrice)
+          ? compareAtPrice
+          : (priceCompare || subCompare);
+        const hasCompare = effectiveCompare > 0;
+        const unitSave = hasCompare ? effectiveCompare - effectiveUnitPrice : 0;
+
+        const layoutCtx = {
+          item,
+          colorItems,
+          isReward,
+          isTriggeredReward,
+          effectiveUnitPrice,
+          effectiveCompare,
+          hasCompare,
+          unitSave,
+          saveHtml,
+          priceHtml,
+          variantHtml,
+          propertiesHtml,
+          discountHtml,
+          sellingPlan,
+          sellingPlanHtml,
+          customHtmlBlocks,
+          showSavingsBelowPrices,
+        };
+
+        const layoutName = cartSettings.cartItemLayout || "classic";
+        const layoutFn = window.hubItemLayouts?.[layoutName] || window.hubItemLayouts?.classic;
+        return layoutFn(layoutCtx);
       }),
     );
 
