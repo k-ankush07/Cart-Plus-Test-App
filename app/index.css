@@ -228,26 +228,39 @@ body,
     gap: 10px;
 }
 
-/* QTY */
 .cart-app-item__qty {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    border: 1px solid #ddd;
+    border: 1px solid var(--p-color-border);
     border-radius: 6px;
     overflow: hidden;
+    background: transparent;
+    /* inline me bg nahi hai */
 }
 
+/* Buttons */
 .cart-app-item__qty-btn {
     background: none;
     border: none;
-    padding: 6px 10px;
+    padding: 4px 10px;
+    /* same as inline */
+    font-size: 15px;
     cursor: pointer;
-    font-size: 14px;
+    color: var(--p-color-text);
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+/* Value */
 .cart-app-item__qty-value {
-    padding: 0 10px;
-    font-size: 14px;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    border-left: 1px solid var(--p-color-border);
+    border-right: 1px solid var(--p-color-border);
+    text-align: center;
 }
 
 /* BADGE */
@@ -428,11 +441,10 @@ body,
 
 .subscription-upgrade-btn {
     display: block;
-    width: 100%;
-    padding: 12px 16px;
+    padding: 7px;
     background-color: #000000;
     color: #ffffff;
-    font-size: 14px;
+    font-size: 10px;
     font-weight: 600;
     text-align: center;
     border: none;
@@ -912,4 +924,28 @@ a.upcart-product-title-link {
 
 .black-btn span {
     color: #fff !important;
+}
+
+.upcart-public-component-product-tile__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.cart-app-item__remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    color: #637381;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+    justify-content: right;
+}
+
+.cart-app-item__remove:hover {
+    color: #de3618;
 }

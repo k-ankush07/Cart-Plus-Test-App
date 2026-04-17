@@ -209,6 +209,8 @@ export const defaultCartSettings = {
   },
   // Custom CSS
   customCss: "",
+  // Cart item layout
+  cartItemLayout: "classic",
 };
 
 export const defaultTriggeredRewardsSettings = {

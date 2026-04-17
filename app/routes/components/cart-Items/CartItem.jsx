@@ -1,75 +1,245 @@
 import { useState } from "react";
 
+const PRODUCT_IMAGE = "https://cdn.shopify.com/s/files/1/0642/9435/5203/products/campstool-1.jpg";
+
+const TrashIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6" /><path d="M14 11v6" />
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+  </svg>
+);
+
+function QtyStepper({ qty, onDecrement, onIncrement }) {
+  return (
+    <div className="cart-app-item__qty upcart-public-component-product-tile__quantity-selector">
+      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus upcart-public-component-product-tile__quantity-minus">−</button>
+      <span className="cart-app-item__qty-value upcart-product-quantity-input">{qty}</span>
+      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus upcart-public-component-product-tile__quantity-plus">+</button>
+    </div>
+  );
+}
+
+function ClassicLayout({ qty, setQty, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
+  return (
+    <div className="cart-app-item upcart-product-item upcart-public-component-product-tile">
+      <div className="cart-app-item__image upcart-product-image-wrapper upcart-public-component-product-tile__image-wrapper">
+        <img className="upcart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" />
+      </div>
+
+      <div style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", minWidth: 0 }}>
+
+        {/* Left */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: 0 }}>
+          <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
+            The Power Backpack Duffel
+          </div>
+          <div style={{ fontSize: "12px", color: "#777" }}>Premium Global Brands</div>
+          <div className="cart-app-item__variant" style={{ color: textColor, fontSize: "12px" }}>
+            Size: <strong>STANDARD</strong>
+          </div>
+          <div className="cart-app-item__variant" style={{ color: textColor, fontSize: "12px" }}>
+            Color: <strong>BLACK</strong>
+          </div>
+          {/* Discount badge */}
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: "4px",
+            background: "#e6f4ea", color: "#1e7e34",
+            fontSize: "11px", fontWeight: 600,
+            padding: "3px 8px", borderRadius: "20px", width: "fit-content",
+          }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+              <line x1="7" y1="7" x2="7.01" y2="7" />
+            </svg>
+            Travel25
+          </span>
+          {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
+        </div>
+
+        {/* Right */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ color: textColor, fontWeight: 700, fontSize: "14px" }}>$200.00</span>
+            {showStrikethrough && (
+              <span style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$400.00</span>
+            )}
+          </div>
+          {cartSettings.showSavingsBelowPrices && (
+            <div style={{
+              background: "#e6f4ea", color: savingColor,
+              fontSize: "11px", fontWeight: 700,
+              padding: "2px 7px", borderRadius: "3px",
+            }}>
+              SAVE 50%
+            </div>
+          )}
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
+            <button className="cart-app-item__remove" onClick={() => { }} aria-label="Remove item">
+              <TrashIcon />
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+function SubscriptionLayout({ qty, setQty, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
+  return (
+    <div className="cart-app-item upcart-product-item upcart-public-component-product-tile upcart-layout-subscription">
+      <div className="cart-app-item__image upcart-product-image-wrapper" style={{ width: "72px", height: "72px", flexShrink: 0 }}>
+        <img className="upcart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" />
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px", minWidth: 0 }}>
+
+        {/* Title + trash + MEGA20 */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
+              Pain oil
+            </div>
+            <div style={{ fontSize: "12px", color: "#777" }}>Premium Global Brands</div>
+
+            {/* Variants */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#777" }}>
+              <span>Qty: <strong style={{ color: textColor }}>100ml</strong></span>
+              <span style={{ color: "#ccc" }}>|</span>
+              <span>Bottles: <strong style={{ color: textColor }}>1</strong></span>
+            </div>
+
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
+            <button className="cart-app-item__remove" onClick={() => { }} aria-label="Remove item">
+              <TrashIcon />
+            </button>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "12px", fontWeight: 600 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                <line x1="7" y1="7" x2="7.01" y2="7" />
+              </svg>
+              MEGA20
+            </span>
+          </div>
+        </div>
+
+        {/* Price row */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+          <span style={{ color: textColor, fontWeight: 700, fontSize: "14px" }}>$27.00</span>
+          {showStrikethrough && (
+            <span style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$40.00</span>
+          )}
+          {cartSettings.showSavingsBelowPrices && (
+            <span style={{ background: "#e6f4ea", color: savingColor, fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "3px" }}>
+              SAVE 10%
+            </span>
+          )}
+        </div>
+
+        {/* Qty + Subscribe button */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
+          <div>
+            <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
+          </div>
+          {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ModernLayout({ qty, setQty, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription }) {
+  return (
+    <div className="cart-app-item upcart-product-item upcart-public-component-product-tile upcart-layout-modern">
+
+      {/* Image with SAVE badge above */}
+      <div style={{ position: "relative", flexShrink: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
+        <span style={{
+          background: "#e6f4ea", color: savingColor,
+          fontSize: "10px", fontWeight: 700,
+          padding: "2px 6px", borderRadius: "3px", width: "fit-content",
+        }}>SAVE 50%</span>
+        <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }}>
+          <img className="upcart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        </div>
+      </div>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", minWidth: 0 }}>
+
+        {/* Title + trash + price */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
+              The Denmark Teal -<br />Unbreakable Luggage
+            </div>
+            {/* Variant selectors */}
+            <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
+              <button style={{
+                display: "inline-flex", alignItems: "center", gap: "4px",
+                background: "none", border: "1px solid #ccc",
+                borderRadius: "4px", fontSize: "12px", fontWeight: 500,
+                padding: "3px 8px", cursor: "pointer", color: textColor || "inherit",
+              }}>
+                L <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+              </button>
+              <button style={{
+                display: "inline-flex", alignItems: "center", gap: "4px",
+                background: "none", border: "1px solid #ccc",
+                borderRadius: "4px", fontSize: "12px", fontWeight: 500,
+                padding: "3px 8px", cursor: "pointer", color: textColor || "inherit",
+              }}>
+                TEAL <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+              </button>
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
+            <button className="cart-app-item__remove" onClick={() => { }} aria-label="Remove item">
+              <TrashIcon />
+            </button>
+            {showStrikethrough && (
+              <span style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$400.00</span>
+            )}
+            <span style={{ color: textColor, fontWeight: 700, fontSize: "15px" }}>$200.00</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "12px", fontWeight: 600 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                <line x1="7" y1="7" x2="7.01" y2="7" />
+              </svg>
+              MEGA20
+            </span>
+          </div>
+        </div>
+
+        {/* Subscribe button + qty */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
+          {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
+          <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 export default function CartItem({ showStrikethrough, textColor, savingColor, Subscription,
   subscriptionUpgradesSettings, cartSettings }) {
-  const [qty, setQty] = useState(2);
+  const [qty, setQty] = useState(1);
+  const layout = cartSettings.cartItemLayout || "classic";
+
+  const sharedProps = { qty, setQty, showStrikethrough, textColor, savingColor, cartSettings, subscriptionUpgradesSettings, Subscription };
 
   return (
     <div className="upcart-products-section cart-app__items">
-      <div className="cart-app-item upcart-product-item upcart-public-component-product-tile">
-        <div className="cart-app-item__image upcart-product-image-wrapper upcart-public-component-product-tile__image-wrapper">
-          <img
-            className="upcart-public-component-product-tile__image"
-            src="https://cdn.shopify.com/s/files/1/0642/9435/5203/products/campstool-1.jpg"
-            alt="product"
-          />
-        </div>
-
-        <div className="cart-app-item__content upcart-public-component-product-tile__info">
-          <div className="upcart-public-component-product-tile__header">
-            <a href="#no" className="upcart-product-title-link upcart-public-component-product-tile__title-link">
-              <div className="cart-app-item__title upcart-product-title upcart-public-component-product-tile__product-title" style={{ color: textColor }}>
-                Placeholder product
-              </div>
-            </a>
-          </div>
-
-          <div className="cart-app-item__variant upcart-item-option upcart-public-component-product-tile__variant" style={{ color: textColor }}>
-            <span className="upcart-item-option-category">Size</span>
-            <span className="upcart-item-option-value">: Medium</span>
-          </div>
-
-          <div className="upcart-item-properties upcart-public-component-product-tile__properties">
-            <span className="upcart-item-property" style={{ color: textColor }}></span>
-          </div>
-
-          <div className="cart-app-item__price-row upcart-item-prices-row upcart-public-component-product-tile__product-pricing">
-            {showStrikethrough && (
-              <span className="cart-app-item__price-old upcart-item-compare-price upcart-public-component-product-tile__price-compare-at" style={{ color: textColor }}>$120.00</span>
-            )}
-            <span className="cart-app-item__price-new upcart-item-price upcart-public-component-product-tile__price" style={{ color: textColor }}>
-              $84.00
-            </span>
-            {cartSettings.showSavingsBelowPrices && (
-              <span className="cart-app-item__save upcart-product-savings upcart-public-component-product-tile__savings" style={{ color: savingColor }}>
-                ({cartSettings.savingsText} $36.00)
-              </span>
-            )}
-          </div>
-
-          <div className="cart-app-item__actions upcart-public-component-product-tile__controls">
-            <div className="cart-app-item__qty upcart-public-component-product-tile__quantity-selector">
-              <button
-                onClick={() => qty > 1 && setQty(qty - 1)}
-                className="cart-app-item__qty-btn upcart-product-quantity-minus upcart-public-component-product-tile__quantity-minus"
-              >
-                −
-              </button>
-
-              <span className="cart-app-item__qty-value upcart-product-quantity-input">{qty}</span>
-
-              <button
-                onClick={() => setQty(qty + 1)}
-                className="cart-app-item__qty-btn upcart-product-quantity-plus upcart-public-component-product-tile__quantity-plus"
-              >
-                +
-              </button>
-            </div>
-            <span className="cart-app-item__badge">Auto 5</span>
-          </div>
-        </div>
-      </div>
-      {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
+      {layout === "subscription" ? (
+        <SubscriptionLayout {...sharedProps} />
+      ) : layout === "modern" ? (
+        <ModernLayout {...sharedProps} />
+      ) : (
+        <ClassicLayout {...sharedProps} />
+      )}
     </div>
   );
 }
