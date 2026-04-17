@@ -131,7 +131,7 @@ window.injectCartHTML = function (blockId, root) {
         <div style="${wrapperStyle}">
           <span
             class="cart-app__title upcart-header-text"
-            style="color:${headerSettings.textColor || designSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${headerSettings.fontSize}px;display:block;margin:0;"
+            style="color:${headerSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${headerSettings.fontSize}px;display:block;margin:0;"
           >${titleDisplayText}</span>
         </div>`;
     }
@@ -142,7 +142,7 @@ window.injectCartHTML = function (blockId, root) {
       <div style="${wrapperStyle}">
         <${HeadingTag}
           class="cart-app__title upcart-header-text"
-          style="margin:0;color:${headerSettings.textColor || designSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${getHeadingSize(headerSettings.heading)};"
+          style="margin:0;color:${designSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${getHeadingSize(headerSettings.heading)};"
         >${titleDisplayText}</${HeadingTag}>
       </div>`;
   }

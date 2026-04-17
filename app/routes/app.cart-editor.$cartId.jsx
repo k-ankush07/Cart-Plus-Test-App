@@ -337,6 +337,7 @@ export default function CartEditor() {
         Sidebar={Sidebar}
         MainContent={MainContent}
         CartPreview={CartPreview}
+        isDirty={isDirty}
       />
     </AppProvider>
   );

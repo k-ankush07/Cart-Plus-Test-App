@@ -33,6 +33,7 @@ export default function CartLayout({
   trustBadgesSettings,
   cartSettings,
   triggeredRewardsSettings,
+  isDirty
 }) {
   const navigate = useNavigate();
 
@@ -162,6 +163,7 @@ export default function CartLayout({
                 <>
                   <Button
                     disclosure="down"
+                     disabled={isDirty} 
                     onClick={() => setSwitcherOpen((o) => !o)}
                   >
                     <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
