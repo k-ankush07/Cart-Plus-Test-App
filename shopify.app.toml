@@ -2,7 +2,7 @@
 
 client_id = "0741db22a559208f286f8afcfb6dcc65"
 name = "Cart Drawer"
-application_url = "https://example.com"
+application_url = "https://room-arts-pine-gonna.trycloudflare.com"
 embedded = true
 
 [build]
@@ -21,7 +21,7 @@ api_version = "2026-01"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_products,write_products,read_customers,read_themes,write_themes,write_app_proxy,write_files,read_orders,read_publications,write_publications,write_discounts,read_discounts"
+scopes = "read_customers,read_discounts,read_orders,read_products,read_publications,read_themes,write_app_proxy,write_discounts,write_files,write_products,write_publications,write_themes"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://room-arts-pine-gonna.trycloudflare.com/api/auth" ]

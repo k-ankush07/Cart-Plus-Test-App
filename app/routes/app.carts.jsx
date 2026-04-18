@@ -30,6 +30,7 @@ import {
     togglePublishCart,
     duplicateCart,
 } from "../services/apiRoutes";
+import "../index.css";
 
 export const loader = async ({ request }) => {
     const { shop, apiUrl, accessToken, currency } = await shopLoader(request);

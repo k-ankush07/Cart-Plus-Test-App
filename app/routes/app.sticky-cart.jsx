@@ -13,6 +13,7 @@ import {
   Banner, Collapsible,
   AppProvider,
 } from "@shopify/polaris";
+import "../index.css";
 
 import ColorInput from "./components/ui/ColorInput";
 import HtmlEditor from "./components/ui-cart-options/HtmlEditor";
