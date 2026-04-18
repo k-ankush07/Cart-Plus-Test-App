@@ -1,5 +1,5 @@
 import express from "express";
-import { cartModels, stickyCartModel, shopConfigModel } from "../model/schema.js";
+import { cartModels, stickyCartModel, shopConfigModel, shopPlanModel } from "../model/schema.js";
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -373,6 +373,54 @@ router.post("/save-shop-token", async (req, res) => {
   } catch (error) {
     console.error("SAVE SHOP TOKEN ERROR:", error);
     return res.status(500).json({ success: false });
+  }
+});
+
+// ─── Shop Plan Routes ─────────────────────────────────────────────────────────
+
+router.get("/shop-plan", async (req, res) => {
+  try {
+    const { shop } = req.query;
+    if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
+
+    const plan = await shopPlanModel.findOne({ shop });
+    return res.status(200).json({ success: true, data: plan || null });
+  } catch (error) {
+    console.error("GET SHOP PLAN ERROR:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.post("/shop-plan", async (req, res) => {
+  try {
+    const { shop, plan, price, subscriptionId, status } = req.body;
+    if (!shop || !plan || price === undefined) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const updated = await shopPlanModel.findOneAndUpdate(
+      { shop },
+      { shop, plan, price, subscriptionId, status: status || "active", updatedAt: new Date() },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).json({ success: true, data: updated });
+  } catch (error) {
+    console.error("UPSERT SHOP PLAN ERROR:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.delete("/shop-plan", async (req, res) => {
+  try {
+    const { shop } = req.body;
+    if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
+
+    await shopPlanModel.deleteMany({ shop });
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("DELETE SHOP PLAN ERROR:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 

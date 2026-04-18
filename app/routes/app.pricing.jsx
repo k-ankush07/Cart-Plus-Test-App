@@ -11,17 +11,21 @@ import {
     Box,
     Icon,
     Banner,
-    Spinner,
 } from "@shopify/polaris";
 
 import { CheckIcon } from "@shopify/polaris-icons";
 import { useLoaderData, useFetcher } from "react-router-dom";
 import { authenticate } from "../shopify.server";
-import { redirect } from "react-router";
-import axios from "axios";
 import "../index.css";
 
-const API_VERSION = "2026-01";
+const apiUrl = process.env.PUBLIC_REACT_APP_API_URL;
+
+const savePlan = (shop, plan, price, subscriptionId, status) =>
+    fetch(`${apiUrl}/api/shop-plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop, plan, price, subscriptionId, status }),
+    });
 
 const PLANS = [
     {
@@ -83,130 +87,191 @@ const PLANS = [
 // ─── Loader ──────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
-    const { session } = await authenticate.admin(request);
-    const apiUrl = process.env.PUBLIC_REACT_APP_API_URL;
-    const secretKey = process.env.SHOPIFY_API_SECRET_KEY;
-    const { shop, accessToken } = session;
+    const { admin, session } = await authenticate.admin(request);
+    const shop = session.shop;
 
-    if (!shop || !accessToken) {
-        return Response.json({ charges: [], activePlan: "free", shop, apiUrl, accessToken });
-    }
-
-    try {
-        const response = await axios.get(
-            `https://${shop}/admin/api/${API_VERSION}/recurring_application_charges.json`,
-            {
-                headers: {
-                    "X-Shopify-Access-Token": accessToken,
-                    "Content-Type": "application/json",
-                },
+    const res = await admin.graphql(`
+        query {
+            currentAppInstallation {
+                activeSubscriptions {
+                    id
+                    name
+                    status
+                    lineItems {
+                        plan {
+                            pricingDetails {
+                                ... on AppRecurringPricing {
+                                    price { amount }
+                                }
+                            }
+                        }
+                    }
+                }
             }
+        }
+    `);
+
+    const data = await res.json();
+    const subscriptions = data?.data?.currentAppInstallation?.activeSubscriptions || [];
+    const active = subscriptions.find((s) => s.status === "ACTIVE");
+
+    let activePlan = "free";
+    let activePrice = 0;
+    let activeSubscriptionId = null;
+
+    if (active) {
+        const amount = parseFloat(
+            active.lineItems?.[0]?.plan?.pricingDetails?.price?.amount || 0
         );
-
-        const charges = response.data.recurring_application_charges || [];
-        const activeCharge = charges.find((c) => c.status === "active");
-        const activePlan = activeCharge
-            ? activeCharge.price === "9.00" || activeCharge.price === 9
-                ? "starter"
-                : "growth"
-            : "free";
-
-        return Response.json({ charges, activePlan, shop, apiUrl, accessToken });
-    } catch (error) {
-        console.error("Error fetching charges:", error.response?.data || error.message);
-        return Response.json({ charges: [], activePlan: "free", shop, apiUrl, accessToken, error: true });
+        activePlan = amount <= 9 ? "starter" : "growth";
+        activePrice = amount;
+        activeSubscriptionId = active.id;
     }
+
+    // Sync MongoDB with live Shopify state
+    await savePlan(shop, activePlan, activePrice, activeSubscriptionId, "active");
+
+    const dbRes = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shop)}`);
+    const dbData = await dbRes.json();
+
+    return Response.json({ activePlan, dbRecord: dbData.data });
 };
 
 // ─── Action ──────────────────────────────────────────────────────────────────
 
 export const action = async ({ request }) => {
-      const { session } = await authenticate.admin(request);
-    const apiUrl = process.env.PUBLIC_REACT_APP_API_URL;
-    const secretKey = process.env.SHOPIFY_API_SECRET_KEY;
-    const { shop, accessToken } = session;
-
+    const { admin, session } = await authenticate.admin(request);
     const formData = await request.formData();
-    const selectedPlan = formData.get("plan");
+    const actionType = formData.get("_action");
 
+    // ── Cancel current plan ──────────────────────────────────────────
+    if (actionType === "cancel") {
+        const existingRes = await admin.graphql(`
+            query {
+                currentAppInstallation {
+                    activeSubscriptions { id status }
+                }
+            }
+        `);
+        const existingData = await existingRes.json();
+        const toCancel =
+            existingData?.data?.currentAppInstallation?.activeSubscriptions?.filter(
+                (s) => s.status === "ACTIVE"
+            ) || [];
+
+        for (const sub of toCancel) {
+            await admin.graphql(
+                `mutation AppSubscriptionCancel($id: ID!) {
+                    appSubscriptionCancel(id: $id) {
+                        userErrors { field message }
+                        appSubscription { id status }
+                    }
+                }`,
+                { variables: { id: sub.id } }
+            );
+        }
+
+        await savePlan(session.shop, "free", 0, null, "active");
+        return Response.json({ cancelled: true });
+    }
+
+    // ── Upgrade / switch plan ────────────────────────────────────────
+    const selectedPlan = formData.get("plan");
     const priceMap = { starter: "9.00", growth: "29.00" };
     const price = priceMap[selectedPlan];
     if (!price) return Response.json({ error: "Invalid plan" }, { status: 400 });
 
-    const appUrl = process.env.SHOPIFY_APP_URL || "";
-    const returnUrl = `${appUrl}/app/pricing`;
+    const returnUrl = `https://${session.shop}/admin/apps/cart-drawer-52/app/pricing`;
 
-    const chargeData = {
-        recurring_application_charge: {
-            name: `Cart Drawer - ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan`,
-            price,
-            return_url: returnUrl,
-            interval: "every_30_days",
-            trial_days: 7,
-            test: true,
-        },
-    };
-
-    try {
-        // Cancel any existing active charges before creating a new one
-        const existingRes = await axios.get(
-            `https://${shop}/admin/api/${API_VERSION}/recurring_application_charges.json`,
-            {
-                headers: {
-                    "X-Shopify-Access-Token": accessToken,
-                    "Content-Type": "application/json",
-                },
+    // Cancel any existing active subscriptions first
+    const existingRes = await admin.graphql(`
+        query {
+            currentAppInstallation {
+                activeSubscriptions { id status }
             }
-        );
+        }
+    `);
+    const existingData = await existingRes.json();
+    const activeSubscriptions =
+        existingData?.data?.currentAppInstallation?.activeSubscriptions?.filter(
+            (s) => s.status === "ACTIVE"
+        ) || [];
 
-        const activeCharges = (existingRes.data.recurring_application_charges || []).filter(
-            (c) => c.status === "active"
-        );
-
-        for (const charge of activeCharges) {
-            await axios.delete(
-                `https://${shop}/admin/api/${API_VERSION}/recurring_application_charges/${charge.id}.json`,
-                {
-                    headers: {
-                        "X-Shopify-Access-Token": accessToken,
-                        "Content-Type": "application/json",
-                    },
+    for (const sub of activeSubscriptions) {
+        await admin.graphql(
+            `mutation AppSubscriptionCancel($id: ID!) {
+                appSubscriptionCancel(id: $id) {
+                    userErrors { field message }
+                    appSubscription { id status }
                 }
-            );
-        }
-
-        const response = await axios.post(
-            `https://${shop}/admin/api/${API_VERSION}/recurring_application_charges.json`,
-            chargeData,
-            {
-                headers: {
-                    "X-Shopify-Access-Token": accessToken,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        const confirmationUrl =
-            response.data.recurring_application_charge?.confirmation_url;
-
-        if (confirmationUrl) {
-            return redirect(confirmationUrl);
-        }
-
-        return Response.json({ error: "No confirmation URL returned" }, { status: 500 });
-    } catch (error) {
-        console.error("Error creating charge:", error.response?.data || error.message);
-        return Response.json(
-            { error: error.response?.data || error.message },
-            { status: 500 }
+            }`,
+            { variables: { id: sub.id } }
         );
     }
+
+    const createRes = await admin.graphql(
+        `mutation AppSubscriptionCreate(
+            $name: String!
+            $returnUrl: URL!
+            $lineItems: [AppSubscriptionLineItemInput!]!
+            $trialDays: Int
+            $test: Boolean
+        ) {
+            appSubscriptionCreate(
+                name: $name
+                returnUrl: $returnUrl
+                lineItems: $lineItems
+                trialDays: $trialDays
+                test: $test
+            ) {
+                userErrors { field message }
+                confirmationUrl
+                appSubscription { id status }
+            }
+        }`,
+        {
+            variables: {
+                name: `Cart Drawer - ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan`,
+                returnUrl,
+                trialDays: 7,
+                test: true,
+                lineItems: [
+                    {
+                        plan: {
+                            appRecurringPricingDetails: {
+                                price: { amount: price, currencyCode: "USD" },
+                                interval: "EVERY_30_DAYS",
+                            },
+                        },
+                    },
+                ],
+            },
+        }
+    );
+
+    const createData = await createRes.json();
+    const result = createData?.data?.appSubscriptionCreate;
+
+    if (result?.userErrors?.length > 0) {
+        console.error("Subscription errors:", result.userErrors);
+        return Response.json({ error: result.userErrors }, { status: 500 });
+    }
+
+    const confirmationUrl = result?.confirmationUrl;
+    const subscriptionId = result?.appSubscription?.id;
+
+    if (confirmationUrl) {
+        await savePlan(session.shop, selectedPlan, parseFloat(price), subscriptionId, "pending");
+        return Response.json({ confirmationUrl });
+    }
+
+    return Response.json({ error: "No confirmation URL returned" }, { status: 500 });
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Pricing() {
-    const { activePlan, error } = useLoaderData();
+    const { activePlan } = useLoaderData();
 
     return (
         <Page
@@ -214,16 +279,6 @@ export default function Pricing() {
             subtitle="Choose the plan that works best for your store"
         >
             <Layout>
-                {error && (
-                    <Layout.Section>
-                        <Banner tone="warning">
-                            <Text as="p" variant="bodyMd">
-                                Could not fetch your current billing status. Please refresh the page.
-                            </Text>
-                        </Banner>
-                    </Layout.Section>
-                )}
-
                 {activePlan !== "free" && (
                     <Layout.Section>
                         <Banner tone="success">
@@ -282,12 +337,11 @@ function PricingCard({ plan, activePlan }) {
     const isActive = activePlan === plan.id;
     const isHighlighted = plan.badge === "Popular";
     const isLoading = fetcher.state !== "idle";
+    const onPaidPlan = activePlan !== "free";
 
-    const ctaLabel = isActive
-        ? "Current plan"
-        : plan.id === "free"
-        ? "Downgrade to Free"
-        : plan.cta;
+    if (fetcher.data?.confirmationUrl) {
+        window.top.location.href = fetcher.data.confirmationUrl;
+    }
 
     return (
         <div
@@ -346,21 +400,37 @@ function PricingCard({ plan, activePlan }) {
             </BlockStack>
 
             <div style={{ marginTop: "auto" }}>
-                {plan.id === "free" || isActive ? (
-                    <Button fullWidth disabled>
-                        {ctaLabel}
-                    </Button>
-                ) : (
+                {/* Free plan card */}
+                {plan.id === "free" && (
+                    onPaidPlan ? (
+                        <fetcher.Form method="post">
+                            <input type="hidden" name="_action" value="cancel" />
+                            <Button fullWidth variant="secondary" submit loading={isLoading} tone="critical">
+                                Choose plan
+                            </Button>
+                        </fetcher.Form>
+                    ) : (
+                        <Button fullWidth disabled>Current plan</Button>
+                    )
+                )}
+
+                {/* Paid plan card — currently active */}
+                {plan.id !== "free" && isActive && (
+                    <Button fullWidth disabled>Current plan</Button>
+                )}
+
+                {/* Paid plan card — not active */}
+                {plan.id !== "free" && !isActive && (
                     <fetcher.Form method="post">
+                        <input type="hidden" name="_action" value="upgrade" />
                         <input type="hidden" name="plan" value={plan.id} />
                         <Button
                             fullWidth
                             variant={isHighlighted ? "primary" : "secondary"}
                             submit
                             loading={isLoading}
-                            tone={plan.tone === "success" ? "success" : undefined}
                         >
-                            {ctaLabel}
+                            {plan.cta}
                         </Button>
                     </fetcher.Form>
                 )}
@@ -376,7 +446,7 @@ const FAQ = [
     },
     {
         q: "Is there a free trial?",
-        a: "All paid plans come with a 14-day free trial. No credit card required to start.",
+        a: "All paid plans come with a 7-day free trial. No credit card required to start.",
     },
     {
         q: "What happens to my carts if I downgrade?",

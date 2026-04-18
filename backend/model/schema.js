@@ -98,8 +98,19 @@ const shopConfigSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+const shopPlanSchema = new mongoose.Schema({
+  shop: { type: String, required: true, unique: true },
+  plan: { type: String, required: true },
+  price: { type: Number, required: true },
+  subscriptionId: { type: String, default: null },
+  status: { type: String, enum: ["active", "pending", "cancelled"], default: "active" },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
 const cartModels = mongoose.model("cartItems", cartSchema);
 const stickyCartModel = mongoose.model("stickyCart", stickyCartSchema);
 const shopConfigModel = mongoose.model("shopConfig", shopConfigSchema);
+const shopPlanModel = mongoose.model("shopPlan", shopPlanSchema);
 
-export { cartModels, stickyCartModel, shopConfigModel };
+export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel };
