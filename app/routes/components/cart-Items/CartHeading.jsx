@@ -5,11 +5,12 @@ import {
     getBorderWidth,
 } from "../utils/helpers";
 
-export default function CartHeading({ headerSettings, designSettings }) {
+export default function CartHeading({ headerSettings, designSettings, onClose }) {
 
     const CloseButton = ({ headerSettings }) => {
         return (
             <button
+                onClick={onClose}
                 className="cart-app__close custom-close-btn upcart-header-close-button"
                 style={{
                     flexShrink: 0,

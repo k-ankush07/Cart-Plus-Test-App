@@ -1,5 +1,5 @@
-import { Page, Button, Modal, TextField, InlineStack, Badge, Popover, ActionList } from "@shopify/polaris";
-import { EditIcon, ArrowLeftIcon } from "@shopify/polaris-icons";
+import { Page, Button, Modal, TextField, InlineStack, Badge, Popover, ActionList, Icon } from "@shopify/polaris";
+import { EditIcon, ArrowLeftIcon, } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../index.css";
@@ -58,6 +58,7 @@ export default function CartLayout({
 
   const [publishLoading, setPublishLoading] = useState(false);
   const [unpublishModal, setUnpublishModal] = useState(false);
+  const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
   // Fetch all carts when popover opens
   useEffect(() => {
@@ -147,7 +148,7 @@ export default function CartLayout({
     <>
       <Page fullWidth>
         {/* ── Top bar ── */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", paddingRight: designSettings?.desktopWidth === "wide" ? "500px" : "440px", transition: "padding-right 0.35s cubic-bezier(0.4, 0, 0.2, 1)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", paddingRight: isPreviewVisible ? (designSettings?.desktopWidth === "wide" ? "500px" : "440px") : "0px", transition: "padding-right 0.35s cubic-bezier(0.4, 0, 0.2, 1)" }}>
 
           {/* Left: cart switcher + badge */}
           <InlineStack gap="200" blockAlign="center">
@@ -163,7 +164,7 @@ export default function CartLayout({
                 <>
                   <Button
                     disclosure="down"
-                     disabled={isDirty} 
+                    disabled={isDirty}
                     onClick={() => setSwitcherOpen((o) => !o)}
                   >
                     <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -252,7 +253,7 @@ export default function CartLayout({
         {/* ── Main layout ── */}
         <div
           className="appLayout"
-          style={{ paddingRight: designSettings?.desktopWidth === "wide" ? "500px" : "440px" }}
+          style={{ paddingRight: isPreviewVisible ? (designSettings?.desktopWidth === "wide" ? "500px" : "440px") : "0px", transition: "padding-right 0.35s cubic-bezier(0.4, 0, 0.2, 1)" }}
         >
           <Sidebar
             activeTab={activeTab}
@@ -341,9 +342,20 @@ export default function CartLayout({
         </Modal>
       </Page>
 
+      {/* Toggle arrow — fixed outside wrapper so overflow:hidden never clips it */}
+      <button
+        className="show-icon-toggleCartVisibility"
+        onClick={() => setIsPreviewVisible((v) => !v)}
+        title={isPreviewVisible ? "Hide preview" : "Show preview"}
+      >
+        <Icon source={ArrowLeftIcon} />
+      </button>
+
       <div
         className="cartPreviewWrapper"
-        style={{ width: designSettings?.desktopWidth === "wide" ? "500px" : "440px" }}
+        style={{
+          width: isPreviewVisible ? (designSettings?.desktopWidth === "wide" ? "500px" : "440px") : "0px",
+        }}
       >
         <CartPreview
           designSettings={designSettings}
@@ -362,6 +374,7 @@ export default function CartLayout({
           currency={currency}
           activeTab={activeTab}
           previewMode={previewMode}
+          onClosePreview={() => setIsPreviewVisible(false)}
         />
       </div>
     </>

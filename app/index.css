@@ -977,3 +977,40 @@ a.upcart-product-title-link {
     background: #000;
     transition: width 0.3s ease;
 }
+
+button.show-icon-toggleCartVisibility {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    right: -66px;
+    width: 100px;
+    height: 100px;
+    background: #fff;
+    border: 2px solid #e1e3e5;
+    border-right: none;
+    border-radius: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 1;
+    transition: all 0.3s ease;
+    box-shadow: -4px 0 8px -3px rgba(0, 0, 0, .2);
+}
+
+/* Hover effect */
+button.show-icon-toggleCartVisibility:hover {
+    background: #f6f6f7;
+    transform: translateY(-50%) translateX(-2px);
+}
+
+/* Icon size control */
+button.show-icon-toggleCartVisibility svg {
+    width: 16px;
+    height: 16px;
+}
+
+button.show-icon-toggleCartVisibility span.Polaris-Icon {
+    margin-left: 10px;
+}

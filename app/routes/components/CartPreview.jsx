@@ -29,7 +29,7 @@ function scopeCss(css, scope) {
 
 export default function CartPreview({ currency, designSettings, headerSettings, announcementSettings, rewardsSettings,
     recommendationsSettings, activeTab, subscriptionUpgradesSettings, upsellsSettings, additionalNotesSettings,
-    addonsSettings, discountCodesSettings, trustBadgesSettings, cartSettings, previewMode }) {
+    addonsSettings, discountCodesSettings, trustBadgesSettings, cartSettings, previewMode, onClosePreview }) {
 
     const emptyCart = previewMode === "empty";
 
@@ -50,7 +50,8 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 <div className="cart-app__heading">
                     <CartHeading
                         headerSettings={headerSettings}
-                        designSettings={designSettings} />
+                        designSettings={designSettings}
+                        onClose={onClosePreview} />
                     {headerSettings.border === "thin" && <div className="cart-app__divider"></div>}
                 </div>
 
