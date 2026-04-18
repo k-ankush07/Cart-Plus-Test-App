@@ -118,9 +118,10 @@ export default function TieredRewards({ rewardsSettings }) {
         />
 
         <div className="progress-wrapper">
+          <div className="progress-track">
           <div
             className="progress-bar upcart-rewards-bar-background"
-            style={{ backgroundColor: rewardsSettings.backgroundColor }}
+            style={{ backgroundColor: rewardsSettings.backgroundColor, height: `${rewardsSettings.barLength}px` }}
           >
             <div
               className="progress-fill upcart-rewards-bar-foreground"
@@ -153,6 +154,8 @@ export default function TieredRewards({ rewardsSettings }) {
                       color: reached
                         ? rewardsSettings.completeIconColor
                         : rewardsSettings.incompleteIconColor,
+                      "--bar-gap": `${rewardsSettings.barGap || 0}px`,
+                      "--bar-height": `${rewardsSettings.barLength || 6}px`,
                     }}
                   >
                     <span className="upcart-rewards-tier-icon">
@@ -166,6 +169,7 @@ export default function TieredRewards({ rewardsSettings }) {
                 </div>
               );
             })}
+          </div>
           </div>
         </div>
       </div>

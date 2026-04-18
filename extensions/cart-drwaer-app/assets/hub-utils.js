@@ -355,6 +355,9 @@ window.hubUtils = {
     const trackColor = rewards.backgroundColor || "#c1c1c1";
     const fillColor = rewards.textColor || "#000000";
     const textColor = rewards.textColor || "#000000";
+    const barLength = rewards.barLength || 4;
+    const barGap = rewards.barGap || 0;
+    const dotSize = 28 + barLength;
 
     const getStepPosition = (index) => (100 / len) * (index + 1);
 
@@ -404,7 +407,7 @@ window.hubUtils = {
           : rewards.incompleteIconColor || "#000000";
         const dotBg = done ? fillColor : trackColor;
         return `<div class="hub-rewards-milestone" style="left:${pct}%">
-        <div class="hub-rewards-dot" style="background:${dotBg};border-color:${dotBg}">
+        <div class="hub-rewards-dot" style="background:${dotBg};border-color:${dotBg};width:${dotSize}px;height:${dotSize}px;--bar-gap:${barGap}px;--bar-height:${barLength}px">
           ${tier.showIcon ? hubUtils.getTierIcon(tier.type, iconColor) : ""}
         </div>
         <span class="hub-rewards-dot-label" style="color:${textColor}">${tier.description || ""}</span>
@@ -417,7 +420,7 @@ window.hubUtils = {
     <div class="hub-rewards-wrap">
       ${titleHtml}
       <div class="hub-rewards-track-wrap">
-        <div class="hub-rewards-track" style="background:${trackColor}">
+        <div class="hub-rewards-track" style="background:${trackColor};height:${barLength}px">
           <div class="hub-rewards-fill" style="width:${fillPct}%;background:${fillColor}"></div>
         </div>
         <div class="hub-rewards-milestones">${dotsHtml}</div>

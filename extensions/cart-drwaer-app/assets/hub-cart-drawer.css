@@ -865,7 +865,7 @@
 
 .hub-rewards-track {
   height: 4px;
-  border-radius: 2px;
+  border-radius: 10px;
   position: relative;
   z-index: 0;
   overflow: visible;
@@ -877,6 +877,7 @@
   position: relative;
   z-index: 1;
   transition: width 0.4s ease;
+  border-radius: 10px;
 }
 
 .hub-rewards-milestones {
@@ -911,6 +912,37 @@
   z-index: 2;
   transition: background 0.3s, border-color 0.3s;
   box-sizing: border-box;
+}
+
+.hub-rewards-dot::before,
+.hub-rewards-dot::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--bar-gap, 0px);
+  height: var(--bar-height, 4px);
+  background: #fff;
+  z-index: 3;
+}
+
+.hub-rewards-dot::before { right: 105%; }
+.hub-rewards-dot::after  { left: 105%; }
+
+.hub-rewards-milestone:last-child .hub-rewards-dot::after {
+  display: none;
+}
+
+.hub-rewards-milestone:first-child {
+  transform: translateX(-70%);
+} 
+
+.hub-rewards-milestone:nth-child(2) {
+  transform: translateX(-70%);
+}
+
+.hub-rewards-milestone:last-child {
+  transform: translateX(-66%);
 }
 
 .hub-rewards-dot-label {

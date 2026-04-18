@@ -5,7 +5,8 @@ import {
     InlineStack,
     BlockStack,
     Checkbox,
-    Badge
+    Badge,
+    RangeSlider
 } from "@shopify/polaris";
 import ColorInput from "../ui/ColorInput";
 import RichTextEditor from "../ui/RichTextEditor";
@@ -76,6 +77,32 @@ export default function TieredRewards({ handleChange, rewardsSettings, currency 
                         onChange={(val) => update("successText", val)}
                     />
                 </div>
+
+                <InlineStack align="space-between">
+                    <Text>Bar Length</Text>
+                    <Text>{rewardsSettings.barLength || 2}px</Text>
+                </InlineStack>
+                <RangeSlider
+                    value={rewardsSettings.barLength || 2}
+                    onChange={(val) => update("barLength", val)}
+                    min={0}
+                    max={16}
+                    step={2}
+                />
+
+                <InlineStack align="space-between">
+                    <Text>Bar Gap</Text>
+                    <Text>{rewardsSettings.barGap || 0}px</Text>
+                </InlineStack>
+
+                <RangeSlider
+                    value={rewardsSettings.barGap || 0}
+                    onChange={(val) => update("barGap", val)}
+                    min={0}
+                    max={20}
+                    step={1}
+                />
+
                 <RewardsCalculation rewardsSettings={rewardsSettings}
                     handleChange={handleChange}
                     currency={currency}

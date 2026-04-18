@@ -62,7 +62,8 @@ export const defaultRewardsSettings = {
   completeIconColor: "#ffffff",
   incompleteIconColor: "#4D4949",
   successText: "Free shipping unlocked!",
-
+  barLength:2,
+  barGap:0, 
   calculationType: "total",
   usePreDiscount: true,
 
