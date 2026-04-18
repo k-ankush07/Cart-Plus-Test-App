@@ -323,65 +323,58 @@ body,
 }
 
 .progress-wrapper {
-    padding: 0 15px 30px 0;
+    padding: 0 0 30px 0;
 }
 
 .progress-track {
-    position: relative;
     margin-top: 30px;
 }
 
-.progress-bar {
-    height: 6px;
-    background: #e5e5e5;
-    border-radius: 10px;
-    position: relative;
+/* Segmented flex bar */
+.segments-flex {
+    display: flex;
+    align-items: center;
 }
 
-.progress-fill {
-    height: 100%;
-    background: #000;
+.tier-cell {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.cell-bar {
+    flex: 1;
     border-radius: 10px;
+    overflow: hidden;
+}
+
+.cell-fill {
+    height: 100%;
+    border-radius: 0;
     transition: width 0.4s ease;
 }
 
-.segments {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: 0;
+.tier-circle-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
 }
 
 /* ICON */
 .icon-circle {
-    width: calc(30px + var(--bar-height, 6px));
-    height: calc(30px + var(--bar-height, 6px));
+    width: 36px;
+    height: 36px;
     background: #d9d9d9;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: translateY(-50%);
-    margin: 0 auto;
     z-index: 2;
     position: relative;
+    flex-shrink: 0;
 }
-
-.icon-circle::before,
-.icon-circle::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: var(--bar-gap, 0px);
-    height: var(--bar-height, 6px);
-    background: #fff;
-    z-index: 3;
-}
-
-.icon-circle::before { right: 100%; }
-.icon-circle::after  { left: 100%; }
 
 .icon-circle.active {
     background: #000;
@@ -389,25 +382,20 @@ body,
 }
 
 .step-text {
-    font-size: 11px;
-    margin-top: 0;
+    font-size: 10px;
+    margin-top: 4px;
     color: #555;
     text-align: center;
     line-height: 1.2;
-    white-space: normal;
+    white-space: nowrap;
     position: absolute;
-    top: 22px;
+    top: 100%;
 }
 
-.segment {
-    position: absolute;
-    width: 80px;
-    text-align: center;
-    top: 0;
-}
-
-.segment:first-child {
-    transform: translateX(-70%);
+.tier-cell:last-child .step-text {
+    right: 0;
+    left: auto;
+    transform: translateX(10px);
 }
 
 .segment:nth-child(2) {

@@ -119,57 +119,58 @@ export default function TieredRewards({ rewardsSettings }) {
 
         <div className="progress-wrapper">
           <div className="progress-track">
-          <div
-            className="progress-bar upcart-rewards-bar-background"
-            style={{ backgroundColor: rewardsSettings.backgroundColor, height: `${rewardsSettings.barLength}px` }}
-          >
-            <div
-              className="progress-fill upcart-rewards-bar-foreground"
-              style={{
-                width: `${fillPercent}%`,
-                backgroundColor: rewardsSettings.textColor,
-              }}
-            />
-          </div>
+            <div className="segments-flex">
+              {sortedTiers.map((tier, index) => {
+                const segStart = index === 0 ? 0 : getStepPosition(index - 1);
+                const segEnd = getStepPosition(index);
+                let segFill = 0;
+                if (fillPercent >= segEnd) segFill = 100;
+                else if (fillPercent > segStart)
+                  segFill = ((fillPercent - segStart) / (segEnd - segStart)) * 100;
 
-          <div className="segments">
-            {sortedTiers.map((tier, index) => {
-              const reached =
-                totalValue >= getTierValue(tier);
+                const reached = totalValue >= getTierValue(tier);
 
-              return (
-                <div
-                  key={tier.id}
-                  className="segment upcart-rewards-tier"
-                  style={{
-                    left: `${getStepPosition(index)}%`,
-                  }}
-                >
-                  <div
-                    className={`icon-circle upcart-rewards-tier-circle ${reached ? "active" : ""}`}
-                    style={{
-                      backgroundColor: reached
-                        ? rewardsSettings.textColor
-                        : rewardsSettings.backgroundColor,
-                      color: reached
-                        ? rewardsSettings.completeIconColor
-                        : rewardsSettings.incompleteIconColor,
-                      "--bar-gap": `${rewardsSettings.barGap || 0}px`,
-                      "--bar-height": `${rewardsSettings.barLength || 6}px`,
-                    }}
-                  >
-                    <span className="upcart-rewards-tier-icon">
-                      <Icon source={getIcon(tier.type)} />
-                    </span>
+                return (
+                  <div key={tier.id} className="tier-cell upcart-rewards-tier">
+                    <div
+                      className="cell-bar upcart-rewards-bar-background"
+                      style={{
+                        backgroundColor: rewardsSettings.backgroundColor,
+                        height: `${rewardsSettings.barLength}px`,
+                      }}
+                    >
+                      <div
+                        className="cell-fill upcart-rewards-bar-foreground"
+                        style={{
+                          width: `${segFill}%`,
+                          backgroundColor: rewardsSettings.textColor,
+                        }}
+                      />
+                    </div>
+                    <div className="tier-circle-wrap" style={{ padding: `0 ${rewardsSettings.barGap || 0}px` }}>
+                      <div
+                        className={`icon-circle upcart-rewards-tier-circle ${reached ? "active" : ""}`}
+                        style={{
+                          backgroundColor: reached
+                            ? rewardsSettings.textColor
+                            : rewardsSettings.backgroundColor,
+                          color: reached
+                            ? rewardsSettings.completeIconColor
+                            : rewardsSettings.incompleteIconColor,
+                        }}
+                      >
+                        <span className="upcart-rewards-tier-icon">
+                          <Icon source={getIcon(tier.type)} />
+                        </span>
+                      </div>
+                      <p className="step-text upcart-rewards-tier-description">
+                        {tier.description}
+                      </p>
+                    </div>
                   </div>
-
-                  <p className="step-text upcart-rewards-tier-description">
-                    {tier.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

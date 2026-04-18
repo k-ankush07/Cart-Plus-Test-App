@@ -1,5 +1,5 @@
 const apiUrl =
-  "https://608f-2401-4900-1c71-e0ea-e15d-4c1e-bc7f-8359.ngrok-free.app";
+  "https://293d-2401-4900-1c71-e0ea-b54d-39f8-d3b7-c97a.ngrok-free.app";
 
 // Used by hubUtils.applyRatings() — same Express backend, no separate Remix URL needed
 

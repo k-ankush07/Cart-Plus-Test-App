@@ -398,20 +398,34 @@ window.hubUtils = {
       titleHtml = `<p class="hub-rewards-title" style="color:${textColor}">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
     }
 
-    const dotsHtml = sorted
+    const fillPctNum = parseFloat(fillPct);
+
+    const tiersHtml = sorted
       .map((tier, index) => {
-        const pct = getStepPosition(index).toFixed(2);
+        const segStart = index === 0 ? 0 : getStepPosition(index - 1);
+        const segEnd = getStepPosition(index);
+        let segFill = 0;
+        if (fillPctNum >= segEnd) segFill = 100;
+        else if (fillPctNum > segStart)
+          segFill = ((fillPctNum - segStart) / (segEnd - segStart)) * 100;
+
         const done = cartTotal >= getTierValue(tier);
         const iconColor = done
           ? rewards.completeIconColor || "#ffffff"
           : rewards.incompleteIconColor || "#000000";
         const dotBg = done ? fillColor : trackColor;
-        return `<div class="hub-rewards-milestone" style="left:${pct}%">
-        <div class="hub-rewards-dot" style="background:${dotBg};border-color:${dotBg};width:${dotSize}px;height:${dotSize}px;--bar-gap:${barGap}px;--bar-height:${barLength}px">
-          ${tier.showIcon ? hubUtils.getTierIcon(tier.type, iconColor) : ""}
-        </div>
-        <span class="hub-rewards-dot-label" style="color:${textColor}">${tier.description || ""}</span>
-      </div>`;
+
+        return `<div class="hub-tier-cell">
+          <div class="hub-cell-bar" style="background:${trackColor};height:${barLength}px">
+            <div class="hub-cell-fill" style="width:${segFill.toFixed(2)}%;background:${fillColor}"></div>
+          </div>
+          <div class="hub-circle-wrap" style="padding:0 ${barGap}px">
+            <div class="hub-rewards-dot" style="background:${dotBg};width:${dotSize}px;height:${dotSize}px">
+              ${tier.showIcon ? hubUtils.getTierIcon(tier.type, iconColor) : ""}
+            </div>
+            <span class="hub-rewards-dot-label" style="color:${textColor}">${tier.description || ""}</span>
+          </div>
+        </div>`;
       })
       .join("");
 
@@ -419,11 +433,8 @@ window.hubUtils = {
     el.innerHTML = `
     <div class="hub-rewards-wrap">
       ${titleHtml}
-      <div class="hub-rewards-track-wrap">
-        <div class="hub-rewards-track" style="background:${trackColor};height:${barLength}px">
-          <div class="hub-rewards-fill" style="width:${fillPct}%;background:${fillColor}"></div>
-        </div>
-        <div class="hub-rewards-milestones">${dotsHtml}</div>
+      <div class="hub-rewards-segments">
+        ${tiersHtml}
       </div>
     </div>`;
   },
