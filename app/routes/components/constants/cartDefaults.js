@@ -13,7 +13,7 @@ export const defaultSettings = {
   buttonColor: "#000000",
   buttonTextColor: "#FFFFFF",
   buttonHoverColor: "#e9e9e9",
-  continueshopping:false
+  continueshopping: false,
 };
 
 export const defaultHeaderSettings = {
@@ -62,8 +62,8 @@ export const defaultRewardsSettings = {
   completeIconColor: "#ffffff",
   incompleteIconColor: "#4D4949",
   successText: "Free shipping unlocked!",
-  barLength:2,
-  barGap:0, 
+  barLength: 2,
+  barGap: 0,
   calculationType: "total",
   usePreDiscount: true,
 
@@ -93,6 +93,7 @@ export const defaultRecommendationsSettings = {
   maxRecommendations: 10,
   layout: "block",
   showReviews: false,
+  carouselIndicator: "progressBar",
 };
 
 export const defaultUpsellsSettings = {
@@ -109,6 +110,7 @@ export const defaultUpsellsSettings = {
   buttonText: "Add",
   position: "bottom",
   direction: "block",
+  carouselIndicator: "progressBar",
 };
 
 export const defaultAdditionalNotesSettings = {
@@ -123,7 +125,8 @@ export const defaultAddonsSettings = {
   enabled: true,
   type: "shipping_protection",
   title: "Shipping Protection",
-  description: "Protect your order from damage, loss, or theft during shipping.",
+  description:
+    "Protect your order from damage, loss, or theft during shipping.",
   price: "2.50",
   sourceType: "products",
   dynamicPricing: false,
@@ -233,4 +236,3 @@ export const defaultSubscriptionUpgradesSettings = {
   planHeadingText: "Subscription plans",
   preventDowngrades: false,
 };
-

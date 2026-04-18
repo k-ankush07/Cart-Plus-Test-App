@@ -137,6 +137,19 @@ export default function Recommendations({ recommendationsSettings, handleChange,
                     onChange={(val) => update("layout", val)}
                 />
 
+                {recommendationsSettings.layout === "carousel" && (
+                    <Select
+                        label="Carousel indicator"
+                        options={[
+                            { label: "Progress bar", value: "progressBar" },
+                            { label: "Buttons", value: "buttons" },
+                            { label: "None", value: "none" },
+                        ]}
+                        value={recommendationsSettings.carouselIndicator || "progressBar"}
+                        onChange={(val) => update("carouselIndicator", val)}
+                    />
+                )}
+
                 <Checkbox
                     label="Show product reviews on recommendations"
                     helpText="Product reviews will also be shown on upsells"

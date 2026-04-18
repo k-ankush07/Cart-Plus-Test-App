@@ -262,16 +262,17 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
       if (layout === "carousel") {
         await loadSwiper();
+        const indicator = settings.carouselIndicator || "progressBar";
         container.innerHTML = `
           <div class="hub-swiper-wrapper">
+            ${indicator === "buttons" ? `<div class="hub-swiper-prev">‹</div>` : ""}
             <div class="hub-swiper swiper">
               <div class="swiper-wrapper">
                 ${products.map((p) => `<div class="swiper-slide">${hubUtils.getProductCardHTML(p, settings)}</div>`).join("")}
               </div>
-              <div class="swiper-button-prev"></div>
-              <div class="swiper-button-next"></div>
             </div>
-            <div class="hub-progress-bar"><div class="hub-progress-bar-fill"></div></div>
+            ${indicator === "buttons" ? `<div class="hub-swiper-next">›</div>` : ""}
+            ${indicator === "progressBar" ? `<div class="hub-progress-bar"><div class="hub-progress-bar-fill"></div></div>` : ""}
           </div>
         `;
       } else {
@@ -312,24 +313,35 @@ window.hubCartRender = async function (drawer, opts = {}) {
       });
 
       if (layout === "carousel") {
+        const indicator = settings.carouselIndicator || "progressBar";
         const swiperEl = container.querySelector(".hub-swiper");
         const fillEl = container.querySelector(".hub-progress-bar-fill");
+        const prevEl = container.querySelector(".hub-swiper-prev");
+        const nextEl = container.querySelector(".hub-swiper-next");
+
         function updateProgress(swiper) {
-          const pct = ((swiper.activeIndex + 1) / swiper.slides.length) * 100;
-          fillEl.style.width = Math.min(100, pct) + "%";
+          if (!fillEl) return;
+          const total = swiper.slides.length;
+          if (!total) return;
+          const perView = swiper.params.slidesPerView || 1;
+          const visibleRatio = perView / total;
+          const fill = (visibleRatio + swiper.progress * (1 - visibleRatio)) * 100;
+          fillEl.style.width = Math.min(100, fill) + "%";
         }
-        new Swiper(swiperEl, {
-          slidesPerView: 1.5,
+
+        const swiper = new Swiper(swiperEl, {
+          slidesPerView: products.length === 1 ? 1 : 1.5,
           spaceBetween: 12,
-          navigation: {
-            prevEl: swiperEl.querySelector(".swiper-button-prev"),
-            nextEl: swiperEl.querySelector(".swiper-button-next"),
-          },
           on: {
             init: updateProgress,
             slideChange: updateProgress,
           },
         });
+
+        if (indicator === "buttons" && prevEl && nextEl) {
+          prevEl.addEventListener("click", () => swiper.slidePrev());
+          nextEl.addEventListener("click", () => swiper.slideNext());
+        }
       }
     };
 
@@ -697,6 +709,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           window.renderProducts(upsellContainer, upsellProducts, {
             layout: upsellSettings.direction,
             showReviews: upsellSettings.showReviews,
+            carouselIndicator: upsellSettings.carouselIndicator,
           });
         }
       }

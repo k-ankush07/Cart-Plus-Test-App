@@ -189,6 +189,19 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                         value={upsellsSettings.direction}
                         onChange={(val) => update("direction", val)}
                     />
+
+                    {upsellsSettings.direction === "carousel" && (
+                        <Select
+                            label="Carousel indicator"
+                            options={[
+                                { label: "Progress bar", value: "progressBar" },
+                                { label: "Buttons", value: "buttons" },
+                                { label: "None", value: "none" },
+                            ]}
+                            value={upsellsSettings.carouselIndicator || "progressBar"}
+                            onChange={(val) => update("carouselIndicator", val)}
+                        />
+                    )}
                 </BlockStack>
                 <Modal
                     open={open}

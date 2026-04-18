@@ -50,6 +50,15 @@ export default function Upsells({ upsellsSettings }) {
     const [selectedVariants, setSelectedVariants] = useState({});
     const prevRef = useRef(null);
     const nextRef = useRef(null);
+    const swiperRef = useRef(null);
+    const fillRef = useRef(null);
+
+    useEffect(() => {
+        if (swiperRef.current) {
+            setTimeout(() => updateProgress(swiperRef.current), 0);
+        }
+    }, [products]);
+
     const {
         useAiRecommended,
         selectedItems = [],
@@ -60,6 +69,7 @@ export default function Upsells({ upsellsSettings }) {
         showReviews = false,
         maxUpsellsInCart,
         limitUpsellsInCart,
+        carouselIndicator = "progressBar",
     } = upsellsSettings || {};
 
     useEffect(() => {
@@ -180,6 +190,36 @@ export default function Upsells({ upsellsSettings }) {
         );
     };
 
+    const updateProgress = (swiper) => {
+        const total = swiper.slides.length;
+        if (!total || !fillRef.current) return;
+        const perView = swiper.params.slidesPerView || 1;
+        const visibleRatio = perView / total;
+        const fill = (visibleRatio + swiper.progress * (1 - visibleRatio)) * 100;
+        fillRef.current.style.width = Math.min(100, fill) + "%";
+    };
+
+    useEffect(() => {
+        if (!swiperRef.current) return;
+
+        const swiper = swiperRef.current;
+
+        setTimeout(() => {
+            if (carouselIndicator === "buttons") {
+                swiper.params.navigation.prevEl = prevRef.current;
+                swiper.params.navigation.nextEl = nextRef.current;
+
+                swiper.navigation.destroy();
+                swiper.navigation.init();
+                swiper.navigation.update();
+            }
+
+            if (carouselIndicator === "progressBar") {
+                updateProgress(swiper);
+            }
+        });
+    }, [carouselIndicator]);
+
     if (!products.length) return null;
 
     return (
@@ -198,18 +238,22 @@ export default function Upsells({ upsellsSettings }) {
 
             {direction === "carousel" ? (
                 <div className="upcart-slider-wrapper">
-                    <div ref={prevRef} className="custom-prev">‹</div>
+                    {carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev">‹</div>)}
+
                     <Swiper
                         modules={[Navigation]}
                         onInit={(swiper) => {
+                            swiperRef.current = swiper;
                             swiper.params.navigation.prevEl = prevRef.current;
                             swiper.params.navigation.nextEl = nextRef.current;
                             swiper.navigation.init();
                             swiper.navigation.update();
                         }}
+                        onSlideChange={(swiper) => {
+                            updateProgress(swiper);
+                        }}
                         spaceBetween={12}
-                        slidesPerView={1.2}
-                        breakpoints={{ 768: { slidesPerView: 1 } }}
+                        slidesPerView={products.length <= 1 ? 1 : 1.5}
                     >
                         {products.map((product) => (
                             <SwiperSlide key={product.id}>
@@ -217,7 +261,10 @@ export default function Upsells({ upsellsSettings }) {
                             </SwiperSlide>
                         ))}
                     </Swiper>
-                    <div ref={nextRef} className="custom-next">›</div>
+                    {carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next">›</div>)}
+                    {carouselIndicator === "progressBar" && (<div className="upsell-progress-bar">
+                        <div ref={fillRef} className="upsell-progress-fill"></div>
+                    </div>)}
                 </div>
             ) : (
                 <div className="upcart-internal-upsell__vertical-layout-wrapper">

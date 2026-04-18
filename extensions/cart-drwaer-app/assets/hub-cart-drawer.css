@@ -1237,8 +1237,12 @@
   overflow: hidden;
 }
 
-.hub-swiper .swiper-button-prev,
-.hub-swiper .swiper-button-next {
+.hub-swiper-wrapper{
+  position: relative;
+}
+
+.hub-swiper-prev,
+.hub-swiper-next {
   --swiper-navigation-size: 16px;
   --swiper-navigation-color: #fff;
   display: flex !important;
@@ -1254,7 +1258,11 @@
   border-radius: 50%;
   cursor: pointer;
   margin-top: 0;
+  color: white;
 }
+
+.hub-swiper-prev { left: 0; }
+.hub-swiper-next { right: 0; }
 
 .hub-swiper .swiper-button-prev {
   left: 6px;

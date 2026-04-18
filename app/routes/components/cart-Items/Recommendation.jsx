@@ -32,6 +32,14 @@ export default function Recommendation({ recommendationsSettings, currency, cart
     const { selectedItems = [], sourceType, maxRecommendations } = recommendationsSettings;
     const prevRef = useRef(null);
     const nextRef = useRef(null);
+    const fillRef = useRef(null);
+    const swiperRef = useRef(null);
+
+    useEffect(() => {
+        if (swiperRef.current) {
+            setTimeout(() => updateProgress(swiperRef.current), 0);
+        }
+    }, [products]);
 
     useEffect(() => {
         const noProductsSelected =
@@ -183,6 +191,38 @@ export default function Recommendation({ recommendationsSettings, currency, cart
             );
         });
 
+    const updateProgress = (swiper) => {
+        const total = swiper.slides.length;
+        if (!total || !fillRef.current) return;
+        const perView = swiper.params.slidesPerView || 1;
+        const visibleRatio = perView / total;
+        const fill = (visibleRatio + swiper.progress * (1 - visibleRatio)) * 100;
+        fillRef.current.style.width = Math.min(100, fill) + "%";
+    };
+
+    const indicator = recommendationsSettings.carouselIndicator || "progressBar";
+
+    useEffect(() => {
+        if (!swiperRef.current) return;
+
+        const swiper = swiperRef.current;
+
+        setTimeout(() => {
+            if (recommendationsSettings.carouselIndicator === "buttons") {
+                swiper.params.navigation.prevEl = prevRef.current;
+                swiper.params.navigation.nextEl = nextRef.current;
+
+                swiper.navigation.destroy();
+                swiper.navigation.init();
+                swiper.navigation.update();
+            }
+
+            if (recommendationsSettings.carouselIndicator === "progressBar") {
+                updateProgress(swiper);
+            }
+        });
+    }, [recommendationsSettings.carouselIndicator]);
+
     return (
         <div className="cart_CartPreview__empty__body upcart-recommendation-module">
 
@@ -216,37 +256,31 @@ export default function Recommendation({ recommendationsSettings, currency, cart
 
                 {recommendationsSettings.layout === "carousel" ? (
                     <div className="upcart-slider-wrapper">
-                        <div ref={prevRef} className="custom-prev">‹</div>
+                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev">‹</div>)}
                         <Swiper
                             modules={[Navigation]}
                             onInit={(swiper) => {
+                                swiperRef.current = swiper;
                                 swiper.params.navigation.prevEl = prevRef.current;
                                 swiper.params.navigation.nextEl = nextRef.current;
                                 swiper.navigation.init();
                                 swiper.navigation.update();
                             }}
-                            spaceBetween={12}
-                            slidesPerView={1.2}
-                            breakpoints={{
-                                768: { slidesPerView: 1 },
+                            onSlideChange={(swiper) => {
+                                updateProgress(swiper);
                             }}
+                            spaceBetween={12}
+                            slidesPerView={products.length <= 1 ? 1 : 1.5}
                         >
-                            <Swiper
-                                modules={[Navigation]}
-                                navigation={{
-                                    nextEl: ".custom-next",
-                                    prevEl: ".custom-prev",
-                                }}
-                                spaceBetween={12}
-                                slidesPerView={1.2}
-                                breakpoints={{
-                                    768: { slidesPerView: 1 },
-                                }}
-                            >
-                                {renderProducts()}
-                            </Swiper>
+                            {renderProducts()}
                         </Swiper>
-                        <div ref={nextRef} className="custom-next">›</div>
+
+                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next">›</div>)}
+                        {indicator === "progressBar" && (
+                            <div className="upsell-progress-bar">
+                                <div ref={fillRef} className="upsell-progress-fill"></div>
+                            </div>
+                        )}
                     </div>
 
                 ) : (
