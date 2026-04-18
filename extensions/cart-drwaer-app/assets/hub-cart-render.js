@@ -240,18 +240,38 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }
     }
 
-    window.renderProducts = function (container, products, settings = {}) {
+    function loadSwiper() {
+      return new Promise((resolve) => {
+        if (window.Swiper) return resolve();
+        const css = document.createElement("link");
+        css.rel = "stylesheet";
+        css.href = "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css";
+        document.head.appendChild(css);
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js";
+        script.onload = resolve;
+        document.head.appendChild(script);
+      });
+    }
+
+    window.renderProducts = async function (container, products, settings = {}) {
       const layout = settings.layout || "block";
       const html = products
         .map((p) => hubUtils.getProductCardHTML(p, settings))
         .join("");
 
       if (layout === "carousel") {
+        await loadSwiper();
         container.innerHTML = `
-          <div class="hub-slider">
-            <button class="hub-prev">‹</button>
-            <div class="hub-slider-track">${html}</div>
-            <button class="hub-next">›</button>
+          <div class="hub-swiper-wrapper">
+            <div class="hub-swiper swiper">
+              <div class="swiper-wrapper">
+                ${products.map((p) => `<div class="swiper-slide">${hubUtils.getProductCardHTML(p, settings)}</div>`).join("")}
+              </div>
+              <div class="swiper-button-prev"></div>
+              <div class="swiper-button-next"></div>
+            </div>
+            <div class="hub-progress-bar"><div class="hub-progress-bar-fill"></div></div>
           </div>
         `;
       } else {
@@ -292,25 +312,23 @@ window.hubCartRender = async function (drawer, opts = {}) {
       });
 
       if (layout === "carousel") {
-        const track = container.querySelector(".hub-slider-track");
-        const prev = container.querySelector(".hub-prev");
-        const next = container.querySelector(".hub-next");
-        let index = 0;
-        const items = track.children;
-        function updateSlider() {
-          track.style.transform = `translateX(-${index * 100}%)`;
+        const swiperEl = container.querySelector(".hub-swiper");
+        const fillEl = container.querySelector(".hub-progress-bar-fill");
+        function updateProgress(swiper) {
+          const pct = ((swiper.activeIndex + 1) / swiper.slides.length) * 100;
+          fillEl.style.width = Math.min(100, pct) + "%";
         }
-        next.addEventListener("click", () => {
-          if (index < items.length - 1) {
-            index++;
-            updateSlider();
-          }
-        });
-        prev.addEventListener("click", () => {
-          if (index > 0) {
-            index--;
-            updateSlider();
-          }
+        new Swiper(swiperEl, {
+          slidesPerView: 1.5,
+          spaceBetween: 12,
+          navigation: {
+            prevEl: swiperEl.querySelector(".swiper-button-prev"),
+            nextEl: swiperEl.querySelector(".swiper-button-next"),
+          },
+          on: {
+            init: updateProgress,
+            slideChange: updateProgress,
+          },
         });
       }
     };

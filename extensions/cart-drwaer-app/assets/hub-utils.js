@@ -132,6 +132,15 @@ window.hubUtils = {
       ? `<div class="upcart-internal-component-upsell-tile__rating hub-rating-slot" data-pid="${product.id}"></div>`
       : "";
 
+    const salePrice = Number(firstVariant?.price || 0);
+    const comparePrice = Number(firstVariant?.compare_at_price || 0);
+    const hasDiscount = comparePrice > salePrice;
+    const savePct = hasDiscount ? Math.round((1 - salePrice / comparePrice) * 100) : 0;
+    const comparePriceHTML = hasDiscount
+      ? `<span class="hub-compare-price">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
+         <span class="hub-save-badge">SAVE ${savePct}%</span>`
+      : "";
+
     return `
     <div class="hub-rec-product upcart-internal-component-upsell-tile">
       <div class="upcart-internal-component-upsell-tile__info_count">
@@ -150,8 +159,9 @@ window.hubUtils = {
           ${ratingHTML}
           <div class="price">
             <span class="sale-price">
-              ${hubUtils.formatMoney(Math.round(Number(firstVariant?.price || 0) * 100))}
+              ${hubUtils.formatMoney(Math.round(salePrice * 100))}
             </span>
+            ${comparePriceHTML}
           </div>
         </div>
      
