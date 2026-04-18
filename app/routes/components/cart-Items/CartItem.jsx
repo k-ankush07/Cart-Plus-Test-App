@@ -23,67 +23,74 @@ function QtyStepper({ qty, onDecrement, onIncrement }) {
 
 function ClassicLayout({ qty, setQty, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
   return (
-    <div className="cart-app-item upcart-product-item upcart-public-component-product-tile">
-      <div className="cart-app-item__image upcart-product-image-wrapper upcart-public-component-product-tile__image-wrapper">
-        <img className="upcart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" />
-      </div>
-
-      <div style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", minWidth: 0 }}>
-
-        {/* Left */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: 0 }}>
-          <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
-            The Power Backpack Duffel
-          </div>
-          <div style={{ fontSize: "12px", color: "#777" }}>Premium Global Brands</div>
-          <div className="cart-app-item__variant" style={{ color: textColor, fontSize: "12px" }}>
-            Size: <strong>STANDARD</strong>
-          </div>
-          <div className="cart-app-item__variant" style={{ color: textColor, fontSize: "12px" }}>
-            Color: <strong>BLACK</strong>
-          </div>
-          {/* Discount badge */}
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: "4px",
-            background: "#e6f4ea", color: "#1e7e34",
-            fontSize: "11px", fontWeight: 600,
-            padding: "3px 8px", borderRadius: "20px", width: "fit-content",
-          }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-              <line x1="7" y1="7" x2="7.01" y2="7" />
-            </svg>
-            Travel25
-          </span>
-          {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
+    <div className="cart-app-item upcart-product-item upcart-public-component-product-tile" style={{ flexDirection: "column" }}>
+      <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+        <div className="cart-app-item__image upcart-product-image-wrapper upcart-public-component-product-tile__image-wrapper">
+          <img className="upcart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" />
         </div>
 
-        {/* Right */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ color: textColor, fontWeight: 700, fontSize: "14px" }}>$200.00</span>
-            {showStrikethrough && (
-              <span style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$400.00</span>
-            )}
-          </div>
-          {cartSettings.showSavingsBelowPrices && (
-            <div style={{
-              background: "#e6f4ea", color: savingColor,
-              fontSize: "11px", fontWeight: 700,
-              padding: "2px 7px", borderRadius: "3px",
-            }}>
-              SAVE 50%
+        <div style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", minWidth: 0 }}>
+
+          {/* Left */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: 0 }}>
+            <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, wordBreak: "break-word", overflowWrap: "break-word" }}>
+              The Power Backpack Duffel
             </div>
-          )}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
-            <button className="cart-app-item__remove" onClick={() => { }} aria-label="Remove item">
-              <TrashIcon />
-            </button>
+            <div style={{ fontSize: "12px", color: "#777" }}>Premium Global Brands</div>
+            <div className="cart-app-item__variant" style={{ color: textColor, fontSize: "12px" }}>
+              Size: <strong>STANDARD</strong>
+            </div>
+            <div className="cart-app-item__variant" style={{ color: textColor, fontSize: "12px" }}>
+              Color: <strong>BLACK</strong>
+            </div>
+            {/* Discount badge */}
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: "4px",
+              background: "#e6f4ea", color: "#1e7e34",
+              fontSize: "11px", fontWeight: 600,
+              padding: "3px 8px", borderRadius: "20px", width: "fit-content",
+            }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                <line x1="7" y1="7" x2="7.01" y2="7" />
+              </svg>
+              Travel25
+            </span>
           </div>
-        </div>
 
+          {/* Right */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ color: textColor, fontWeight: 700, fontSize: "14px" }}>$200.00</span>
+              {showStrikethrough && (
+                <span style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$400.00</span>
+              )}
+            </div>
+            {cartSettings.showSavingsBelowPrices && (
+              <div style={{
+                background: "#e6f4ea", color: savingColor,
+                fontSize: "11px", fontWeight: 700,
+                padding: "2px 7px", borderRadius: "3px",
+              }}>
+                SAVE 50%
+              </div>
+            )}
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
+              <button className="cart-app-item__remove" onClick={() => { }} aria-label="Remove item">
+                <TrashIcon />
+              </button>
+            </div>
+          </div>
+
+        </div>
       </div>
+
+      {!subscriptionUpgradesSettings.enabled && (
+        <div style={{ width: "100%", display:'flex', justifyContent:'center' }}>
+          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />
+        </div>
+      )}
     </div>
   );
 }
@@ -139,13 +146,13 @@ function SubscriptionLayout({ qty, setQty, showStrikethrough, textColor, cartSet
           )}
         </div>
 
-        {/* Qty + Subscribe button */}
+        {/* Qty +  button */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
           <div>
             <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
           </div>
-          {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
         </div>
+        {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
       </div>
     </div>
   );
@@ -213,12 +220,11 @@ function ModernLayout({ qty, setQty, showStrikethrough, textColor, savingColor, 
           </div>
         </div>
 
-        {/* Subscribe button + qty */}
+        {/* button + qty */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
-          {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
           <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
         </div>
-
+        {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
       </div>
     </div>
   );

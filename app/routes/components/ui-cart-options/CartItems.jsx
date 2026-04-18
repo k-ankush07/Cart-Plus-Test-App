@@ -89,8 +89,8 @@ export default function CartItems({ handleChange, cartSettings }) {
                                     <div style={{ marginTop: "6px" }}>
                                         <button style={{
                                             background: "#1a1a1a", color: "#fff", border: "none",
-                                            borderRadius: "5px", fontSize: "12px", fontWeight: 500,
-                                            padding: "6px 12px", cursor: "pointer", whiteSpace: "nowrap",
+                                            borderRadius: "5px", fontSize: "15px", fontWeight: 500,
+                                            padding: "10px 20px", cursor: "pointer", whiteSpace: "nowrap",
                                         }}>
                                             Upgrade to Subscribe &amp; Save 20%
                                         </button>
@@ -209,9 +209,9 @@ export default function CartItems({ handleChange, cartSettings }) {
                                             color: "#fff",
                                             border: "none",
                                             borderRadius: "5px",
-                                            fontSize: "12px",
+                                            fontSize: "15px",
                                             fontWeight: 500,
-                                            padding: "6px 12px",
+                                            padding: "10px 20px",
                                             cursor: "pointer",
                                             width: "fit-content",
                                         }}
@@ -321,8 +321,8 @@ export default function CartItems({ handleChange, cartSettings }) {
                                     <div>
                                         <button style={{
                                             background: "#1a1a1a", color: "#fff", border: "none",
-                                            borderRadius: "5px", fontSize: "12px", fontWeight: 500,
-                                            padding: "6px 12px", cursor: "pointer", whiteSpace: "nowrap",
+                                            borderRadius: "5px", fontSize: "15px", fontWeight: 500,
+                                            padding: "10px 20px", cursor: "pointer", whiteSpace: "nowrap",
                                         }}>
                                             Upgrade to Subscribe &amp; Save 20%
                                         </button>

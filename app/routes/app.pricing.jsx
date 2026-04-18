@@ -128,7 +128,6 @@ export const loader = async ({ request }) => {
         activeSubscriptionId = active.id;
     }
 
-    // Sync MongoDB with live Shopify state
     await savePlan(shop, activePlan, activePrice, activeSubscriptionId, "active");
 
     const dbRes = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shop)}`);

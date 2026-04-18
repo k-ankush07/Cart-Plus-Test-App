@@ -1,5 +1,10 @@
 import express from "express";
-import { cartModels, stickyCartModel, shopConfigModel, shopPlanModel } from "../model/schema.js";
+import {
+  cartModels,
+  stickyCartModel,
+  shopConfigModel,
+  shopPlanModel,
+} from "../model/schema.js";
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -140,11 +145,10 @@ router.put("/update-cart/:cartId", async (req, res) => {
       updateData.discountCodesSettings = req.body.discountCodesSettings;
     if (req.body.expressPaymentsSettings)
       updateData.expressPaymentsSettings = req.body.expressPaymentsSettings;
-  if (req.body.trustBadgesSettings)
+    if (req.body.trustBadgesSettings)
       updateData.trustBadgesSettings = req.body.trustBadgesSettings;
-   if (req.body.cartSettings)
-      updateData.cartSettings = req.body.cartSettings;
-  if (req.body.triggeredRewardsSettings)
+    if (req.body.cartSettings) updateData.cartSettings = req.body.cartSettings;
+    if (req.body.triggeredRewardsSettings)
       updateData.triggeredRewardsSettings = req.body.triggeredRewardsSettings;
 
     const updatedCart = await cartModels.findOneAndUpdate(
@@ -210,7 +214,7 @@ router.post("/toggle-publish", async (req, res) => {
     if (currentCart.status === "published") {
       await cartModels.updateOne(
         { cartId },
-        { $set: { status: "unpublished" } }
+        { $set: { status: "unpublished" } },
       );
 
       return res.json({
@@ -221,19 +225,15 @@ router.post("/toggle-publish", async (req, res) => {
 
     await cartModels.updateMany(
       { shop: currentCart.shop, status: "published" },
-      { $set: { status: "unpublished" } }
+      { $set: { status: "unpublished" } },
     );
 
-    await cartModels.updateOne(
-      { cartId },
-      { $set: { status: "published" } }
-    );
+    await cartModels.updateOne({ cartId }, { $set: { status: "published" } });
 
     return res.json({
       success: true,
       message: "Cart published",
     });
-
   } catch (error) {
     console.error("TOGGLE PUBLISH ERROR:", error);
     res.status(500).json({
@@ -255,8 +255,8 @@ router.post("/duplicate-cart", async (req, res) => {
 
     const newCart = {
       ...existingCart._doc,
-      _id: undefined, 
-      cartId: generateNewCartId(), 
+      _id: undefined,
+      cartId: generateNewCartId(),
       cartName: `Copy of ${existingCart.cartName || "Untitled cart"}`,
       status: "unpublished",
       createdAt: new Date(),
@@ -295,7 +295,7 @@ router.post("/save-sticky-cart", async (req, res) => {
     }
 
     const updatedStickyCart = await stickyCartModel.findOneAndUpdate(
-      { shop }, 
+      { shop },
       {
         shop,
         cartId,
@@ -311,8 +311,8 @@ router.post("/save-sticky-cart", async (req, res) => {
       },
       {
         new: true,
-        upsert: true, 
-      }
+        upsert: true,
+      },
     );
 
     res.json({
@@ -355,7 +355,9 @@ router.post("/save-shop-token", async (req, res) => {
   try {
     const { shop, accessToken } = req.body;
     if (!shop || !accessToken) {
-      return res.status(400).json({ success: false, message: "Missing shop or accessToken" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing shop or accessToken" });
     }
 
     const existing = await shopConfigModel.findOne({ shop });
@@ -367,7 +369,7 @@ router.post("/save-shop-token", async (req, res) => {
     await shopConfigModel.findOneAndUpdate(
       { shop },
       { accessToken, updatedAt: new Date() },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
     return res.json({ success: true, updated: true });
   } catch (error) {
@@ -381,7 +383,8 @@ router.post("/save-shop-token", async (req, res) => {
 router.get("/shop-plan", async (req, res) => {
   try {
     const { shop } = req.query;
-    if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
+    if (!shop)
+      return res.status(400).json({ success: false, message: "Missing shop" });
 
     const plan = await shopPlanModel.findOne({ shop });
     return res.status(200).json({ success: true, data: plan || null });
@@ -395,13 +398,22 @@ router.post("/shop-plan", async (req, res) => {
   try {
     const { shop, plan, price, subscriptionId, status } = req.body;
     if (!shop || !plan || price === undefined) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
     const updated = await shopPlanModel.findOneAndUpdate(
       { shop },
-      { shop, plan, price, subscriptionId, status: status || "active", updatedAt: new Date() },
-      { upsert: true, new: true }
+      {
+        shop,
+        plan,
+        price,
+        subscriptionId,
+        status: status || "active",
+        updatedAt: new Date(),
+      },
+      { upsert: true, new: true },
     );
 
     return res.status(200).json({ success: true, data: updated });
@@ -414,7 +426,8 @@ router.post("/shop-plan", async (req, res) => {
 router.delete("/shop-plan", async (req, res) => {
   try {
     const { shop } = req.body;
-    if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
+    if (!shop)
+      return res.status(400).json({ success: false, message: "Missing shop" });
 
     await shopPlanModel.deleteMany({ shop });
     return res.status(200).json({ success: true });
