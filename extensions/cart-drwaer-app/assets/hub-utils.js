@@ -442,7 +442,6 @@ window.hubUtils = {
         body: JSON.stringify({ shop }),
       });
       const data = await res.json();
-      console.log("[hub] Discounts loaded:", data);
       return {
         allDiscountCodes: data.allDiscountCodes || [],
         activeDiscountCodes: data.activeDiscountCodes || [],

@@ -334,6 +334,7 @@ window.injectCartHTML = function (blockId, root) {
         <div class="hub-discount-input-row" id="hub-discount-row-${blockId}">
           <input type="text" id="discount-code-input" placeholder="Discount code" class="hub-discount-input" />
           <button onclick="applyDiscountCode()" class="hub-discount-apply-btn">Apply</button>
+          <button onclick="hubOpenOffersPanel('${blockId}')" class="hub-view-offers-btn">View Offers</button>
         </div>
         <p id="discount-message" class="hub-discount-message"></p>
 
@@ -387,6 +388,31 @@ window.injectCartHTML = function (blockId, root) {
       </div>
 
       <div>${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>
+
+      <!-- OFFERS PANEL OVERLAY -->
+      <div id="hub-offers-backdrop-${blockId}" class="hub-offers-backdrop" onclick="hubCloseOffersPanel('${blockId}')"></div>
+      <button id="hub-offers-close-${blockId}" class="hub-offers-close" onclick="hubCloseOffersPanel('${blockId}')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div id="hub-offers-panel-${blockId}" class="hub-offers-panel">
+        <div class="hub-offers-header">
+          <div class="hub-offers-title-group">
+           <button class="hub-offers-back" onclick="hubCloseOffersPanel('${blockId}')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+            <span class="hub-offers-title">Apply Coupon</span>
+            <span class="hub-offers-cart-total" id="hub-offers-cart-total-${blockId}"></span>
+          </div>
+        </div>
+        <div class="hub-offers-input-row">
+          <div class="hub-offers-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="hub-offers-input-${blockId}" placeholder="Enter Coupon Code" class="hub-offers-code-input" />
+          </div>
+          <button onclick="hubApplyOfferCode('${blockId}')" class="hub-offers-apply-btn">APPLY</button>
+        </div>
+        <div id="hub-offers-list-${blockId}" class="hub-offers-list"></div>
+      </div>
     </div>
     `,
   );

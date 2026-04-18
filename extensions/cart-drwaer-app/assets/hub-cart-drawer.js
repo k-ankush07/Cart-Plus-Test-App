@@ -152,7 +152,7 @@ function initCartDrawerAfterData() {
 
       drawer.classList.remove(`hub-visible-${blockId}`);
       bg.classList.remove(`hub-visible-${blockId}`);
-
+      hubCloseOffersPanel(blockId);
       document.body.classList.remove("no-scroll", "overflow-hidden");
       document.documentElement.classList.remove("overflow-hidden");
       document.body.style.overflow = "";
@@ -172,7 +172,7 @@ function initCartDrawerAfterData() {
           if (cartLink) {
             if (!window.__HUB_ACTIVE_CART__) return; // no published cart — let native cart handle it
             e.preventDefault();
-            openDrawer();
+            openDrawer(true);
             return;
           }
 
@@ -747,5 +747,340 @@ window.getUpsellProducts = async function (settings, productId) {
     return products;
   } catch (err) {
     return [];
+  }
+};
+
+
+// ── Triggered Rewards: auto-add / remove free gift products ──────────────────
+
+window.handleTriggeredRewards = async function handleTriggeredRewards(cart) {
+  if (window._hubRewardUpdating) return false;
+
+  const triggeredSettings =
+    window.__HUB_ACTIVE_CART__?.triggeredRewardsSettings;
+  const rewards = triggeredSettings?.rewards || [];
+  const enabledRewards = rewards.filter(
+    (r) => r.enabled && r.reward?.type === "free_gift",
+  );
+
+  // Collect all active reward IDs so we can detect orphans
+  const activeRewardIds = new Set(enabledRewards.map((r) => String(r.id)));
+
+  // ── Remove orphaned gift items (reward was deleted or disabled) ──
+  let changed = false;
+  for (const item of cart.items) {
+    const rewardId = item.properties?._triggered_reward;
+    if (rewardId && !activeRewardIds.has(String(rewardId))) {
+      try {
+        window._hubRewardUpdating = true;
+        await fetch("/cart/change.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: item.key, quantity: 0 }),
+        });
+        changed = true;
+        console.log(
+          "[triggered-reward] Removed orphaned gift item:",
+          item.variant_id,
+        );
+      } catch (e) {
+        console.error("[triggered-reward] Failed to remove orphan:", e);
+      } finally {
+        window._hubRewardUpdating = false;
+      }
+    }
+  }
+
+  if (!enabledRewards.length) return changed;
+
+  // Exclude triggered-reward gift items from the trigger check — otherwise
+  // the gift product itself can keep qualifying the trigger it was added by.
+  const nonGiftItems = cart.items.filter((i) => !i.properties?._triggered_reward);
+
+  const cartTotal = cart.total_price / 100;
+  const cartProductIds = new Set(
+    nonGiftItems.map((i) => `gid://shopify/Product/${i.product_id}`),
+  );
+  const cartVariantIds = new Set(
+    nonGiftItems.map((i) => `gid://shopify/ProductVariant/${i.variant_id}`),
+  );
+
+  for (const reward of enabledRewards) {
+    const qualifies = await checkTriggers(reward.triggers, {
+      cartTotal,
+      cartProductIds,
+      cartVariantIds,
+      cart,
+    });
+    const giftItems = reward.reward?.items || {};
+    const giftVariantIds = giftItems.variants || [];
+    const giftProductIds = new Set(giftItems.products || []);
+
+    // Only match items that were actually added as a triggered reward —
+    // a regular purchase of the same product must not block the free gift.
+    const giftInCart = cart.items.find(
+      (i) =>
+        String(i.properties?._triggered_reward) === String(reward.id) &&
+        (giftVariantIds.includes(
+          `gid://shopify/ProductVariant/${i.variant_id}`,
+        ) || giftProductIds.has(`gid://shopify/Product/${i.product_id}`)),
+    );
+
+    if (qualifies && !giftInCart && giftVariantIds.length > 0) {
+      // Add first variant of the gift product
+      const variantGid = giftVariantIds[0];
+      const variantId = variantGid.replace("gid://shopify/ProductVariant/", "");
+
+      try {
+        window._hubRewardUpdating = true;
+        const addRes = await fetch("/cart/add.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: [
+              {
+                id: Number(variantId),
+                quantity: 1,
+                properties: { _triggered_reward: reward.id },
+              },
+            ],
+          }),
+        });
+        if (!addRes.ok) {
+          const errBody = await addRes.text();
+          console.error(
+            "[triggered-reward] /cart/add.js failed:",
+            addRes.status,
+            errBody,
+          );
+        } else {
+          changed = true;
+          console.log("[triggered-reward] Added free gift:", variantId);
+        }
+      } catch (e) {
+        console.error("[triggered-reward] Failed to add gift:", e);
+      } finally {
+        window._hubRewardUpdating = false;
+      }
+    }
+
+    if (!qualifies && giftInCart) {
+      try {
+        window._hubRewardUpdating = true;
+        await fetch("/cart/change.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: giftInCart.key, quantity: 0 }),
+        });
+        changed = true;
+        console.log(
+          "[triggered-reward] Removed free gift (trigger failed):",
+          giftInCart.variant_id,
+        );
+      } catch (e) {
+        console.error("[triggered-reward] Failed to remove gift:", e);
+      } finally {
+        window._hubRewardUpdating = false;
+      }
+    }
+  }
+
+  return changed;
+};
+
+async function checkTriggers(
+  triggers,
+  { cartTotal, cartProductIds, cartVariantIds, cart },
+) {
+  if (!triggers || triggers.length === 0) return true;
+  for (const t of triggers) {
+    const result = await checkTrigger(t, { cartTotal, cartProductIds, cartVariantIds, cart });
+    if (!result) return false;
+  }
+  return true;
+}
+
+async function checkTrigger(
+  trigger,
+  { cartTotal, cartProductIds, cartVariantIds, cart },
+) {
+  switch (trigger.type) {
+    case "cart_total":
+      return cartTotal >= Number(trigger.minAmount || 0);
+
+    case "cart_quantity": {
+      const qty = cart.items.reduce((s, i) => s + i.quantity, 0);
+      return qty >= Number(trigger.minQuantity || 0);
+    }
+
+    case "specific_products": {
+      const pids = trigger.items?.products || [];
+      const vids = trigger.items?.variants || [];
+      return (
+        pids.some((id) => cartProductIds.has(id)) ||
+        vids.some((id) => cartVariantIds.has(id))
+      );
+    }
+
+    case "specific_collections": {
+      // trigger.items is a flat array of collection GIDs e.g. ["gid://shopify/Collection/123"]
+      const collectionGids = Array.isArray(trigger.items) ? trigger.items : [];
+      if (!collectionGids.length) return false;
+
+      // Shopify storefront requires handle (not numeric ID) for /collections/{handle}/products.json
+      // Build a one-time ID→handle map from /collections.json
+      if (!window._hubCollHandleMap) {
+        try {
+          const res = await fetch("/collections.json?limit=250");
+          if (res.ok) {
+            const data = await res.json();
+            window._hubCollHandleMap = {};
+            for (const col of data.collections) {
+              window._hubCollHandleMap[String(col.id)] = col.handle;
+            }
+          } else {
+            window._hubCollHandleMap = {};
+          }
+        } catch (e) {
+          console.error("[triggered-reward] Failed to fetch collections list:", e);
+          window._hubCollHandleMap = {};
+        }
+      }
+
+      window._hubCollCache = window._hubCollCache || {};
+
+      for (const collGid of collectionGids) {
+        const collId = collGid.replace("gid://shopify/Collection/", "");
+        const handle = window._hubCollHandleMap[collId];
+        if (!handle) {
+          console.warn("[triggered-reward] No handle found for collection ID:", collId);
+          continue;
+        }
+        try {
+          let collProductIds = window._hubCollCache[collId];
+          if (!collProductIds) {
+            const res = await fetch(`/collections/${handle}/products.json?limit=250`);
+            if (!res.ok) continue;
+            const data = await res.json();
+            collProductIds = new Set(
+              data.products.map((p) => `gid://shopify/Product/${p.id}`),
+            );
+            window._hubCollCache[collId] = collProductIds;
+          }
+          for (const pid of cartProductIds) {
+            if (collProductIds.has(pid)) return true;
+          }
+        } catch (e) {
+          console.error("[triggered-reward] Collection check failed:", handle, e);
+        }
+      }
+      return false;
+    }
+
+    case "customer_logged_in":
+      return false;
+
+    case "subscription":
+      return false;
+
+    default:
+      return true;
+  }
+}
+
+// ── Offers Panel ──────────────────────────────────────────────────────────────
+
+function hubRenderOffersPanel(blockId, allDiscountCodes, activeDiscountCodes, cart) {
+  const totalEl = document.getElementById(`hub-offers-cart-total-${blockId}`);
+  if (totalEl) {
+    totalEl.textContent = `Your Cart: ${hubUtils.formatMoney(cart.total_price || 0)}`;
+  }
+
+  const list = document.getElementById(`hub-offers-list-${blockId}`);
+  if (!list) return;
+
+  // cart.discount_codes is the real source — codes actually applied to this cart
+  const appliedCodes = new Set(
+    (cart.discount_codes || []).map((c) => (c.code || "").toUpperCase()).filter(Boolean)
+  );
+
+  const validCodes = (allDiscountCodes || []).filter(
+    (d) => d.title && d.status !== "EXPIRED" && d.type !== "DiscountAutomaticApp"
+  );
+
+  if (validCodes.length === 0) {
+    list.innerHTML = `<p style="text-align:center;color:#888;font-size:13px;padding:20px 0;">No offers available</p>`;
+    return;
+  }
+
+  list.innerHTML = validCodes.map((d) => {
+    const label = d.title.toUpperCase();
+    const isActive = appliedCodes.has(label);
+    const savings = d.savings || d.description || "";
+    const subtitle = d.subtitle || d.terms || "";
+    const actionBtn = isActive
+      ? `<button class="hub-coupon-action-btn remove" onclick="hubRemoveOfferCode('${label}','${blockId}')">REMOVE</button>`
+      : `<button class="hub-coupon-action-btn apply" onclick="hubApplyOfferCode2('${label}','${blockId}')">APPLY</button>`;
+
+    return `
+      <div class="hub-coupon-card">
+        <div class="hub-coupon-badge">${label}</div>
+        <div class="hub-coupon-body">
+          <div class="hub-coupon-top">
+            <span class="hub-coupon-code">${label}</span>
+            ${actionBtn}
+          </div>
+          ${savings ? `<div class="hub-coupon-savings">${savings}</div>` : ""}
+          ${subtitle ? `<div class="hub-coupon-desc">${subtitle}</div>` : ""}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+window.hubOpenOffersPanel = function (blockId) {
+  document.getElementById(`hub-offers-panel-${blockId}`)?.classList.add("hub-offers-open");
+  document.getElementById(`hub-offers-backdrop-${blockId}`)?.classList.add("hub-offers-open");
+  document.getElementById(`hub-offers-close-${blockId}`)?.classList.add("hub-offers-open");
+  document.querySelector(`.hub-cart-block-${blockId}`)?.classList.add("hub-offers-open-body");
+};
+
+window.hubCloseOffersPanel = function (blockId) {
+  document.getElementById(`hub-offers-panel-${blockId}`)?.classList.remove("hub-offers-open");
+  document.getElementById(`hub-offers-backdrop-${blockId}`)?.classList.remove("hub-offers-open");
+  document.getElementById(`hub-offers-close-${blockId}`)?.classList.remove("hub-offers-open");
+  document.querySelector(`.hub-cart-block-${blockId}`)?.classList.remove("hub-offers-open-body");
+};
+
+window.hubApplyOfferCode = async function (blockId) {
+  const input = document.getElementById(`hub-offers-input-${blockId}`);
+  const code = input?.value?.trim();
+  if (!code) return;
+  await hubApplyOfferCode2(code, blockId);
+  if (input) input.value = "";
+};
+
+async function hubApplyOfferCode2(code, blockId) {
+  try {
+    await fetch(`/discount/${encodeURIComponent(code)}`);
+    hubCloseOffersPanel(blockId);
+    const drawer = document.querySelector(`.hub-cart-block-${blockId}`);
+    if (drawer) await window.hubCartRender(drawer);
+  } catch (e) {
+    console.warn("[hub] Failed to apply offer code:", e);
+  }
+}
+
+window.hubRemoveOfferCode = async function (code, blockId) {
+  try {
+    await fetch("/cart/update.js", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ discount: "" }),
+    });
+    hubCloseOffersPanel(blockId);
+    const drawer = document.querySelector(`.hub-cart-block-${blockId}`);
+    if (drawer) await window.hubCartRender(drawer);
+  } catch (e) {
+    console.warn("[hub] Failed to remove offer code:", e);
   }
 };
