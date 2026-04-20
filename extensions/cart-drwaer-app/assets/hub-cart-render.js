@@ -47,6 +47,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const res = await fetch("/cart.js");
     let cart = await res.json();
 
+    window._hubCartProductIds = new Set(cart.items.map((i) => String(i.product_id)));
+
     const headerEl = document.querySelector(".upcart-header-text");
 
     if (headerEl) {
@@ -75,6 +77,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (changed) {
       const res2 = await fetch("/cart.js");
       cart = await res2.json();
+      window._hubCartProductIds = new Set(cart.items.map((i) => String(i.product_id)));
     }
 
     /* ── TRIGGERED REWARDS: auto-add / remove free gift ── */
@@ -82,6 +85,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (triggeredChanged) {
       const res3 = await fetch("/cart.js");
       cart = await res3.json();
+      window._hubCartProductIds = new Set(cart.items.map((i) => String(i.product_id)));
     }
 
     const container = drawer.querySelector(".hub-cart-items");
@@ -256,19 +260,32 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     window.renderProducts = async function (container, products, settings = {}) {
       const layout = settings.layout || "block";
-      const html = products
-        .map((p) => hubUtils.getProductCardHTML(p, settings))
-        .join("");
+      let swiperInstance = null;
+
+      // Pre-render, filtering out any product already in cart
+      const rendered = products
+        .map((p) => ({ p, html: hubUtils.getProductCardHTML(p, settings) }))
+        .filter(({ html }) => html !== "");
+
+      if (rendered.length === 0) {
+        container.innerHTML = "";
+        container.style.display = "none";
+        return;
+      }
+
+      const html = rendered.map(({ html }) => html).join("");
 
       if (layout === "carousel") {
         await loadSwiper();
         const indicator = settings.carouselIndicator || "progressBar";
+        const slidesHTML = rendered.map(({ html }) => `<div class="swiper-slide">${html}</div>`).join("");
+        container.style.display = "";
         container.innerHTML = `
           <div class="hub-swiper-wrapper">
             ${indicator === "buttons" ? `<div class="hub-swiper-prev">‹</div>` : ""}
             <div class="hub-swiper swiper">
               <div class="swiper-wrapper">
-                ${products.map((p) => `<div class="swiper-slide">${hubUtils.getProductCardHTML(p, settings)}</div>`).join("")}
+                ${slidesHTML}
               </div>
             </div>
             ${indicator === "buttons" ? `<div class="hub-swiper-next">›</div>` : ""}
@@ -276,6 +293,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           </div>
         `;
       } else {
+        container.style.display = "";
         container.innerHTML = `
           <div class="upcart-internal-upsell__vertical-layout-wrapper">${html}</div>
         `;
@@ -300,15 +318,29 @@ window.hubCartRender = async function (drawer, opts = {}) {
       // FIX: was `document.addEventListener` — leaked a new listener on every render
       container.addEventListener("click", async (e) => {
         const btn = e.target.closest(".hub-add-btn");
-        if (!btn) return;
+        if (!btn || btn.disabled) return;
+        btn.disabled = true;
         const parent = btn.closest(".hub-rec-product");
+        const swipeSlide = parent.closest(".swiper-slide");
         const select = parent.querySelector(".hub-variant-select");
         const variantId = select?.value || btn.dataset.variant;
-        await fetch("/cart/add.js", {
+        const addRes = await fetch("/cart/add.js", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: variantId, quantity: 1 }),
         });
+        if (!addRes.ok && addRes.status !== 409) {
+          btn.disabled = false;
+          return;
+        }
+        (swipeSlide || parent).remove();
+        const remaining = container.querySelectorAll(".swiper-slide").length;
+        if (remaining === 0) {
+          container.style.display = "none";
+        } else if (swiperInstance) {
+          swiperInstance.params.slidesPerView = remaining === 1 ? 1 : 1.5;
+          swiperInstance.update();
+        }
         document.dispatchEvent(new CustomEvent("cart:updated"));
       });
 
@@ -330,13 +362,14 @@ window.hubCartRender = async function (drawer, opts = {}) {
         }
 
         const swiper = new Swiper(swiperEl, {
-          slidesPerView: products.length === 1 ? 1 : 1.5,
+          slidesPerView: rendered.length === 1 ? 1 : 1.5,
           spaceBetween: 12,
           on: {
             init: updateProgress,
             slideChange: updateProgress,
           },
         });
+        swiperInstance = swiper;
 
         if (indicator === "buttons" && prevEl && nextEl) {
           prevEl.addEventListener("click", () => swiper.slidePrev());

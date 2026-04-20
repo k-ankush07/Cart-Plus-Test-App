@@ -85,7 +85,7 @@ export default function TieredRewards({ handleChange, rewardsSettings, currency 
                 <RangeSlider
                     value={rewardsSettings.barLength || 2}
                     onChange={(val) => update("barLength", val)}
-                    min={0}
+                    min={2}
                     max={16}
                     step={2}
                 />

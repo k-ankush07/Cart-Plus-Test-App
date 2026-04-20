@@ -22,7 +22,7 @@ export default function AdditionalNotes({ additionalNotesSettings }) {
                     <span className="upcart-public-component-collapse__expand-icon"><Icon source={open ? ChevronUpIcon : ChevronDownIcon} /></span>
                 </span>
             </button>
-            <div className={`cart-additional-notes__body${open ? " cart-additional-notes__body--open" : ""}`}>
+            <div className={`cart-additional-notes__body${open ? "cart-additional-notes__body--open" : ""}`}>
                 <textarea
                     className="cart-additional-notes__textarea upcart-public-notes__textarea"
                     placeholder={additionalNotesSettings?.placeholder || "Special instructions for your order"}

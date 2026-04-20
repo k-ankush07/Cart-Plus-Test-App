@@ -9,7 +9,7 @@ const _trashIcon = `
 function _qtyControl(key, quantity) {
   return `
     <div class="hub-qty-control">
-      <button class="hub-qty-btn" onclick="updateQty('${key}', ${quantity - 1})">−</button>
+      <button class="hub-qty-btn" onclick="updateQty('${key}', ${quantity - 1})"${quantity <= 1 ? " disabled" : ""}>−</button>
       <input type="text" value="${quantity}" class="hub-qty-input" oninput="handleQtyInput('${key}', this.value)" />
       <button class="hub-qty-btn" onclick="updateQty('${key}', ${quantity + 1})">+</button>
     </div>`;

@@ -223,6 +223,11 @@
   background: #f5f5f5;
 }
 
+.hub-qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .hub-qty-input {
   width: 36px;
   height: 30px;

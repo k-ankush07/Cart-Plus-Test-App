@@ -1,5 +1,5 @@
 const apiUrl =
-  "https://293d-2401-4900-1c71-e0ea-b54d-39f8-d3b7-c97a.ngrok-free.app";
+  "https://1ae3-2401-4900-1c6f-445c-b54d-39f8-d3b7-c97a.ngrok-free.app";
 
 // Used by hubUtils.applyRatings() — same Express backend, no separate Remix URL needed
 
@@ -99,25 +99,29 @@ function initCartDrawerAfterData() {
       try {
         const res = await fetch("/cart.js");
         const cart = await res.json();
+        const count = cart.item_count || 0;
+        const label = count === 1 ? "1 item" : `${count} items`;
 
-        const cartIcon = document.getElementById("cart-icon-bubble");
-        if (!cartIcon) return;
+        document.querySelectorAll(".cart-count-bubble").forEach((bubble) => {
+          const numEl = bubble.querySelector('[aria-hidden="true"]');
+          const lblEl = bubble.querySelector(".visually-hidden");
+          if (numEl) numEl.textContent = count;
+          if (lblEl) lblEl.textContent = label;
+          if (!numEl && !lblEl) {
+            bubble.innerHTML = `<span aria-hidden="true">${count}</span><span class="visually-hidden">${label}</span>`;
+          }
+        });
 
-        let bubble = cartIcon.querySelector(".cart-count-bubble");
-
-        if (!bubble) {
-          bubble = document.createElement("div");
-          bubble.className = "cart-count-bubble";
-          cartIcon.appendChild(bubble);
+        if (!document.querySelector(".cart-count-bubble")) {
+          const cartIcon = document.getElementById("cart-icon-bubble");
+          if (cartIcon) {
+            const bubble = document.createElement("div");
+            bubble.className = "cart-count-bubble";
+            bubble.innerHTML = `<span aria-hidden="true">${count}</span><span class="visually-hidden">${label}</span>`;
+            cartIcon.appendChild(bubble);
+          }
         }
-
-        bubble.innerHTML = `
-      <span aria-hidden="true">${cart.item_count}</span>
-      <span class="visually-hidden">${cart.item_count} items</span>
-    `;
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (_) {}
     };
 
     function openDrawer(showSkeleton = false) {
@@ -170,7 +174,7 @@ function initCartDrawerAfterData() {
           );
 
           if (cartLink) {
-            if (!window.__HUB_ACTIVE_CART__) return; // no published cart — let native cart handle it
+            if (!window.__HUB_ACTIVE_CART__) return;
             e.preventDefault();
             openDrawer(true);
             return;
@@ -431,6 +435,7 @@ window._hubFetchRecProducts = async function (settings = {}) {
   const selectedItems = settings?.selectedItems || [];
 
   const cartRes = await fetch("/cart.js");
+  if (!cartRes.ok || !cartRes.headers.get("content-type")?.includes("json")) return [];
   const cart = await cartRes.json();
   const cartHandles = new Set(cart.items.map((item) => item.handle));
 
@@ -734,10 +739,8 @@ window.getUpsellProducts = async function (settings, productId) {
       products = allProducts;
     }
 
-    if (!settings.showIfAlreadyInCart && window.cart) {
-      const cartHandles = new Set(window.cart.items.map((i) => i.handle));
-
-      products = products.filter((p) => !cartHandles.has(p.handle));
+    if (!settings.showIfAlreadyInCart && window._hubCartProductIds?.size) {
+      products = products.filter((p) => !window._hubCartProductIds.has(String(p.id)));
     }
 
     if (settings.limitUpsellsInCart) {

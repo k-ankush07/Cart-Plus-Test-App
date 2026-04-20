@@ -242,7 +242,7 @@ export default function AppCarts() {
                 content: loading ? "Creating..." : "Create cart",
                 icon: PlusIcon,
                 loading,
-                disabled: loading, 
+                disabled: loading,
                 onAction: handleCreateCart,
             }}
         >
@@ -272,7 +272,6 @@ export default function AppCarts() {
                         />
                     </Card>
                 </Layout.Section>
-
             </Layout>
 
             <Modal
