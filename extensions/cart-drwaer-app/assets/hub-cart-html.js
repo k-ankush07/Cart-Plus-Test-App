@@ -368,6 +368,10 @@ window.injectCartHTML = function (blockId, root) {
               <span>Coupon Discount</span>
               <span id="hub-coupon-${blockId}"></span>
             </div>
+            <div class="hub-breakdown-row" id="hub-shipping-row-${blockId}" style="display:none;">
+              <span>Shipping</span>
+              <span id="hub-shipping-cost-${blockId}"></span>
+            </div>
             <div class="hub-breakdown-row hub-breakdown-grand">
               <span>Grand Total</span>
               <span id="hub-grand-total-${blockId}"></span>

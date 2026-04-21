@@ -1119,3 +1119,17 @@ window.hubRemoveOfferCode = async function (code, blockId) {
     console.warn("[hub] Failed to remove offer code:", e);
   }
 };
+
+// Prefetch shipping zones on page load — store the promise so late callers await same request
+(function () {
+  const ratingsUrl = window.__HUB_RATINGS_URL__;
+  const shop = window.__SHOPIFY_SHOP__?.domain;
+  if (!ratingsUrl || !shop) return;
+  window._hubShippingZonesPromise = fetch(
+    `${ratingsUrl}/api/shipping-zones?shop=${shop}`,
+    { headers: { "ngrok-skip-browser-warning": "true" } }
+  )
+    .then((r) => r.ok ? r.json() : null)
+    .then((data) => { window._hubShippingZonesCache = data || null; return data; })
+    .catch(() => null);
+})();

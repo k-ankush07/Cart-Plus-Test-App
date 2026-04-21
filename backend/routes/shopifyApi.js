@@ -3,7 +3,7 @@ import { shopConfigModel } from "../model/schema.js";
 
 const router = express.Router();
 
-const apiVersion = '2026-01';
+const apiVersion = "2026-01";
 
 router.get("/product-ratings", async (req, res) => {
   try {
@@ -252,21 +252,32 @@ router.post("/discounts", async (req, res) => {
 
       // Extract discount value (percentage or fixed amount)
       const valueNode = discount.customerGets?.value;
-      const discountValue = valueNode?.percentage != null
-        ? { type: "percentage", value: valueNode.percentage * 100 }
-        : valueNode?.amount
-          ? { type: "fixed_amount", value: parseFloat(valueNode.amount.amount), currencyCode: valueNode.amount.currencyCode }
-          : null;
+      const discountValue =
+        valueNode?.percentage != null
+          ? { type: "percentage", value: valueNode.percentage * 100 }
+          : valueNode?.amount
+            ? {
+                type: "fixed_amount",
+                value: parseFloat(valueNode.amount.amount),
+                currencyCode: valueNode.amount.currencyCode,
+              }
+            : null;
 
       // Extract applies-to items (products or collections)
       const itemsNode = discount.customerGets?.items;
-      const appliesToProducts = itemsNode?.products?.edges?.map((e) => e.node.id) || [];
-      const appliesToCollections = itemsNode?.collections?.edges?.map((e) => e.node.id) || [];
+      const appliesToProducts =
+        itemsNode?.products?.edges?.map((e) => e.node.id) || [];
+      const appliesToCollections =
+        itemsNode?.collections?.edges?.map((e) => e.node.id) || [];
 
       // Extract minimum requirement
       const minReq = discount.minimumRequirement;
       const minimumRequirement = minReq?.greaterThanOrEqualToSubtotal
-        ? { type: "subtotal", value: parseFloat(minReq.greaterThanOrEqualToSubtotal.amount), currencyCode: minReq.greaterThanOrEqualToSubtotal.currencyCode }
+        ? {
+            type: "subtotal",
+            value: parseFloat(minReq.greaterThanOrEqualToSubtotal.amount),
+            currencyCode: minReq.greaterThanOrEqualToSubtotal.currencyCode,
+          }
         : minReq?.greaterThanOrEqualToQuantity
           ? { type: "quantity", value: minReq.greaterThanOrEqualToQuantity }
           : null;
@@ -316,6 +327,94 @@ router.post("/discounts", async (req, res) => {
       err?.response?.data || err.message || err,
     );
     res.json({ discounts: [] });
+  }
+});
+
+const fetchWithRetry = async (url, headers, retries = 3, delay = 1000) => {
+  let attempt = 0;
+  while (attempt < retries) {
+    try {
+      const res = await fetch(url, { headers });
+      if (res.status === 429) {
+        console.log(`Rate limit hit. Retrying in ${delay}ms...`);
+        await new Promise((r) => setTimeout(r, delay));
+        attempt++;
+        continue;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    } catch (err) {
+      throw err;
+    }
+  }
+  throw new Error("Max retries reached due to rate limiting.");
+};
+
+router.get("/shipping-zones", async (req, res) => {
+  const { shop } = req.query;
+
+  if (!shop) {
+    return res.status(400).json({ error: "Shop and accessToken are required" });
+  }
+
+  const config = await shopConfigModel.findOne({ shop });
+  if (!config?.accessToken) {
+    return res.json({ ratings: {} });
+  }
+
+  try {
+    const headers = {
+      "X-Shopify-Access-Token": config.accessToken,
+      "Content-Type": "application/json",
+    };
+
+    const shippingZonesData = await fetchWithRetry(
+      `https://${shop}/admin/api/${apiVersion}/shipping_zones.json`,
+      headers,
+    );
+
+    const countriesData = await fetchWithRetry(
+      `https://${shop}/admin/api/${apiVersion}/countries.json`,
+      headers,
+    );
+
+    const shippingZones = shippingZonesData.shipping_zones || [];
+    const countries = countriesData.countries || [];
+
+    const shippingZonesWithProvinces = shippingZones.map((zone) => ({
+      ...zone,
+      countries: (zone.countries || []).map((country) => {
+        const fullCountry = countries.find((c) => c.code === country.code);
+        return {
+          name: country.name,
+          code: country.code,
+          provinces: fullCountry?.provinces || [],
+          price_based_shipping_rates: zone.price_based_shipping_rates || [],
+          weight_based_shipping_rates: zone.weight_based_shipping_rates || [],
+        };
+      }),
+    }));
+
+    const allCountries = shippingZonesWithProvinces.flatMap((zone) =>
+      zone.countries.map((country) => ({
+        name: country.name,
+        code: country.code,
+        provinces: country.provinces,
+        price_based_shipping_rates: country.price_based_shipping_rates,
+        weight_based_shipping_rates: country.weight_based_shipping_rates,
+      })),
+    );
+
+    const uniqueCountries = Array.from(
+      new Map(allCountries.map((c) => [c.code, c])).values(),
+    );
+
+    res.json({
+      shipping: shippingZonesWithProvinces,
+      countries: uniqueCountries,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

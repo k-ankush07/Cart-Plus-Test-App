@@ -110,7 +110,11 @@ window.hubUtils = {
   },
 
   getProductCardHTML(product, settings = {}) {
-    if (!settings.showIfAlreadyInCart && window._hubCartProductIds?.has(String(product.id))) return "";
+    if (
+      !settings.showIfAlreadyInCart &&
+      window._hubCartProductIds?.has(String(product.id))
+    )
+      return "";
     const variants = product.variants || [];
     const mainImage =
       product?.images?.[0]?.src || product?.featured_image || "";
@@ -136,7 +140,9 @@ window.hubUtils = {
     const salePrice = Number(firstVariant?.price || 0);
     const comparePrice = Number(firstVariant?.compare_at_price || 0);
     const hasDiscount = comparePrice > salePrice;
-    const savePct = hasDiscount ? Math.round((1 - salePrice / comparePrice) * 100) : 0;
+    const savePct = hasDiscount
+      ? Math.round((1 - salePrice / comparePrice) * 100)
+      : 0;
     const comparePriceHTML = hasDiscount
       ? `<span class="hub-compare-price">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
          <span class="hub-save-badge">SAVE ${savePct}%</span>`
@@ -208,6 +214,60 @@ window.hubUtils = {
       });
     } catch (err) {
       console.warn("[hub] Could not fetch ratings:", err);
+    }
+  },
+
+  async shipping_Charges(container, cartTotalCents) {
+    const ratingsUrl = window.__HUB_RATINGS_URL__;
+    const shop = window.__SHOPIFY_SHOP__?.domain;
+    if (!ratingsUrl || !shop) return;
+
+    const blockId = window.HUB_CART_BLOCK_ID;
+    const shippingRow = document.getElementById(`hub-shipping-row-${blockId}`);
+    const shippingCostEl = document.getElementById(`hub-shipping-cost-${blockId}`);
+    if (!shippingRow || !shippingCostEl) return;
+
+    try {
+      // Use prefetch promise if cache not ready yet — avoids duplicate requests
+      if (!window._hubShippingZonesCache) {
+        if (window._hubShippingZonesPromise) {
+          await window._hubShippingZonesPromise;
+        } else {
+          const url = `${ratingsUrl}/api/shipping-zones?shop=${shop}`;
+          const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true" } });
+          if (!res.ok) return;
+          window._hubShippingZonesCache = await res.json();
+        }
+      }
+      const data = window._hubShippingZonesCache;
+      if (!data) return;
+
+      const input = document.querySelector('input[name="country_code"]');
+      const countryCode = input?.value || window.__SHOPIFY_CURRENCY__?.code;
+      if (!countryCode) return;
+
+      const countryData = (data.countries || []).find((c) => c.code === countryCode);
+      if (!countryData) return;
+
+      const cartTotalDollars = (cartTotalCents || 0) / 100;
+      const rates = countryData.price_based_shipping_rates || [];
+      let applicableRate = null;
+      for (const rate of rates) {
+        const min = parseFloat(rate.min_order_subtotal ?? 0);
+        const max = rate.max_order_subtotal != null ? parseFloat(rate.max_order_subtotal) : Infinity;
+        if (cartTotalDollars >= min && cartTotalDollars <= max) {
+          applicableRate = rate;
+          break;
+        }
+      }
+
+      if (!applicableRate) return;
+
+      const price = parseFloat(applicableRate.price ?? 0);
+      shippingRow.style.display = "";
+      shippingCostEl.textContent = price === 0 ? "Free" : hubUtils.formatMoney(price * 100);
+    } catch (err) {
+      // silent fail
     }
   },
 

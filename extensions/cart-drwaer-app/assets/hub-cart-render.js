@@ -214,6 +214,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
       customHtmlBlocks.scripts_before_load,
       drawer,
     );
+    /* ── SHIPPING CHARGES ── */
+    hubUtils.shipping_Charges(container, cart.total_price);
+
     /* ── REWARDS BAR ── */
     hubUtils.renderRewardsBar(blockId, cart, rewards);
 
