@@ -96,6 +96,21 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                         subscriptionUpgradesSettings={subscriptionUpgradesSettings}
                                         cartSettings={cartSettings}
                                     />
+                                    {!upsellsSettings.enabled && upsellsSettings.showSuggestedProduct && (
+                                        <div className="upsell-suggestion">
+                                            <label className="upsell-checkbox-wrapper">
+                                                <input
+                                                    type="checkbox"
+                                                />
+
+                                                <span className="custom-checkbox"></span>
+
+                                                <span className="upsell-text">
+                                                    Add The Impulse | Crossbody Sling for only $150
+                                                </span>
+                                            </label>
+                                        </div>
+                                    )}
                                     {/* between_line_items */}
                                     <CustomHtml cartSettings={cartSettings} position="between_line_items" />
                                     {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} />}

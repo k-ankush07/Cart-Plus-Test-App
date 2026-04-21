@@ -23,6 +23,11 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
         type: upsellsSettings.sourceType || "products",
         items: upsellsSettings.selectedItems || []
     });
+    
+    const [suggestedOpen, setSuggestedOpen] = useState(false);
+    const [suggestedSelected, setSuggestedSelected] = useState(
+        upsellsSettings.suggestedProduct || { type: "products", items: [] }
+    );
 
     const update = (key, value) => {
         handleChange("upsellsSettings", (prev) => ({
@@ -111,6 +116,47 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                         />
 
                     </BlockStack>
+
+                    <BlockStack gap="200">
+                        <Checkbox
+                            label="Suggested Products"
+                            checked={upsellsSettings.showSuggestedProduct}
+                            onChange={(val) => update("showSuggestedProduct", val)}
+                        />
+                        {upsellsSettings.showSuggestedProduct && (
+                            <Button onClick={() => setSuggestedOpen(true)}>
+                                {upsellsSettings.suggestedProduct?.items?.titles?.[0]
+                                    ? `Selected: ${upsellsSettings.suggestedProduct.items.titles[0]}`
+                                    : "Select Suggested Product"}
+                            </Button>
+                        )}
+                    </BlockStack>
+
+                    <Modal
+                        open={suggestedOpen}
+                        onClose={() => setSuggestedOpen(false)}
+                        title="Select Suggested Product"
+                        primaryAction={{
+                            content: "Save",
+                            onAction: () => {
+                                update("suggestedProduct", suggestedSelected);
+                                setSuggestedOpen(false);
+                            },
+                        }}
+                        secondaryActions={[{ content: "Close", onAction: () => setSuggestedOpen(false) }]}
+                    >
+                        <Modal.Section>
+                            <div style={{ height: "700px" }}>
+                                <ProductItemCollections
+                                    currency={currency}
+                                    maxSelect={1}
+                                    showCollections={false}
+                                    onSelect={(data) => setSuggestedSelected(data)}
+                                    initialSelected={suggestedSelected}
+                                />
+                            </div>
+                        </Modal.Section>
+                    </Modal>
 
                     <BlockStack gap="100">
                         <Checkbox

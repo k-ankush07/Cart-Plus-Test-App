@@ -431,19 +431,25 @@ window.startAnnTimer = function (blockId, timeStr) {
 // Called on page load so data is ready before the drawer opens.
 window._hubFetchRecProducts = async function (settings = {}) {
   const limit = settings.maxRecommendations || settings.productCount || 4;
-  const sourceType = settings.sourceType;
   const selectedItems = settings?.selectedItems || [];
+  const sourceType = settings.sourceType ||
+    (selectedItems?.products?.length ? "products" : null) ||
+    (selectedItems?.collections?.length ? "collections" : null) ||
+    (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Collection/") ? "collections" : null) ||
+    (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Product/") ? "products" : null);
 
   const cartRes = await fetch("/cart.js");
-  if (!cartRes.ok || !cartRes.headers.get("content-type")?.includes("json")) return [];
+  if (!cartRes.ok) return [];
   const cart = await cartRes.json();
-  const cartHandles = new Set(cart.items.map((item) => item.handle));
+  const cartHandles = new Set((cart.items || []).map((item) => item.handle));
 
   let finalProducts = [];
+
 
   if (sourceType === "products") {
     const selectedProductIds =
       settings?.selectedItems?.products?.map((gid) => gid.split("/").pop()) || [];
+
 
     if (selectedProductIds.length) {
       let allProducts = [];
@@ -466,9 +472,12 @@ window._hubFetchRecProducts = async function (settings = {}) {
       );
     }
   } else if (sourceType === "collections") {
-    const collectionIds = selectedItems.map((gid) => gid.split("/").pop());
+    const rawColIds = Array.isArray(selectedItems)
+      ? selectedItems
+      : (selectedItems?.collections || []);
+    const collectionIds = rawColIds.map((gid) => gid.split("/").pop());
 
-    const colRes = await fetch(`/collections.json`);
+    const colRes = await fetch(`/collections.json?limit=250`);
     const colData = await colRes.json();
 
     const matchedCollections = colData.collections.filter((c) =>
@@ -543,26 +552,19 @@ window._hubFetchRecProducts = async function (settings = {}) {
   return finalProducts;
 };
 
-// Renders recommendations. Uses prefetched data if available (instant),
-// otherwise falls back to fetching fresh.
 window.loadCartRecommendations = async function (settings = {}) {
   try {
     const container = document.getElementById("hub-rec-products");
     if (!container) return;
 
-    let finalProducts;
-
-    if (window._hubRecPrefetch) {
-      // Data was prefetched on page load — await it (likely already resolved)
-      finalProducts = await window._hubRecPrefetch;
-      window._hubRecPrefetch = null;
-    } else {
-      finalProducts = await window._hubFetchRecProducts(settings);
-    }
+    // Always fetch fresh — prefetch was filtered by cart state at page load,
+    // but recommendations show when cart is empty so that filter was wrong.
+    window._hubRecPrefetch = null;
+    const finalProducts = await window._hubFetchRecProducts(settings);
 
     window.renderProducts(container, finalProducts, settings);
   } catch (err) {
-    console.error(" Error:", err);
+    console.error("Recommendations error:", err);
   }
 };
 
@@ -665,8 +667,12 @@ window.getUpsellProducts = async function (settings, productId) {
   try {
     let products = [];
 
-    const sourceType = settings.sourceType;
     const selectedItems = settings?.selectedItems || {};
+    const sourceType = settings.sourceType ||
+      (selectedItems?.products?.length ? "products" : null) ||
+      (selectedItems?.collections?.length ? "collections" : null) ||
+      (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Collection/") ? "collections" : null) ||
+      (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Product/") ? "products" : null);
 
     if (settings.useAiRecommended) {
       let url = `/recommendations/products.json?product_id=${productId}`;
@@ -684,59 +690,52 @@ window.getUpsellProducts = async function (settings, productId) {
         selectedItems.products?.map((gid) => gid.split("/").pop()) || [];
 
       if (ids.length) {
+        // Fetch pages in parallel batches of 3 instead of one-by-one
         let allProducts = [];
         let page = 1;
-        let more = true;
+        let done = false;
 
-        while (more) {
-          const res = await fetch(`/products.json?limit=250&page=${page}`);
-          const data = await res.json();
-
-          if (data.products.length > 0) {
-            allProducts.push(...data.products);
-            page++;
-          } else {
-            more = false;
+        while (!done) {
+          const results = await Promise.all(
+            [page, page + 1, page + 2].map((p) =>
+              fetch(`/products.json?limit=250&page=${p}`)
+                .then((r) => r.json())
+                .catch(() => ({ products: [] })),
+            ),
+          );
+          for (const data of results) {
+            allProducts.push(...(data.products || []));
           }
+          if (!results[2].products?.length) done = true;
+          else page += 3;
         }
 
         products = allProducts.filter((p) => ids.includes(String(p.id)));
       }
     } else if (sourceType === "collections") {
-      const colIds = (selectedItems.collections || []).map((gid) =>
-        gid.split("/").pop(),
-      );
+      const rawColIds = Array.isArray(selectedItems)
+        ? selectedItems
+        : (selectedItems.collections || []);
+      const colIds = rawColIds.map((gid) => gid.split("/").pop());
 
-      const colRes = await fetch(`/collections.json`);
-      const colData = await colRes.json();
+      if (colIds.length) {
+        const colRes = await fetch(`/collections.json?limit=250`);
+        const colData = await colRes.json();
+        const matched = (colData.collections || []).filter((c) =>
+          colIds.includes(String(c.id)),
+        );
 
-      const matchedCollections = colData.collections.filter((c) =>
-        colIds.includes(String(c.id)),
-      );
+        const colResults = await Promise.all(
+          matched.map((col) =>
+            fetch(`/collections/${col.handle}/products.json?limit=250`)
+              .then((r) => r.json())
+              .then((d) => d.products || [])
+              .catch(() => []),
+          ),
+        );
 
-      let allProducts = [];
-
-      for (const col of matchedCollections) {
-        let page = 1;
-        let more = true;
-
-        while (more) {
-          const res = await fetch(
-            `/collections/${col.handle}/products.json?limit=250&page=${page}`,
-          );
-
-          const data = await res.json();
-
-          if (data.products.length > 0) {
-            allProducts.push(...data.products);
-            page++;
-          } else {
-            more = false;
-          }
-        }
+        products = colResults.flat();
       }
-
-      products = allProducts;
     }
 
     if (!settings.showIfAlreadyInCart && window._hubCartProductIds?.size) {
@@ -1064,14 +1063,47 @@ window.hubApplyOfferCode = async function (blockId) {
 
 async function hubApplyOfferCode2(code, blockId) {
   try {
+    const cartBefore = await (await fetch("/cart.js")).json();
+    const totalBefore = cartBefore.total_price || 0;
+
+    const hasExisting = (cartBefore.discount_codes || []).some((c) => c.code);
+    if (hasExisting) {
+      await fetch("/cart/update.js", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ discount: "" }),
+      });
+    }
     await fetch(`/discount/${encodeURIComponent(code)}`);
+
+    const cartAfter = await (await fetch("/cart.js")).json();
+    const savings = totalBefore - (cartAfter.total_price || 0);
+
     hubCloseOffersPanel(blockId);
     const drawer = document.querySelector(`.hub-cart-block-${blockId}`);
     if (drawer) await window.hubCartRender(drawer);
+
+    const overlay = document.getElementById(`hub-coupon-success-${blockId}`);
+    if (overlay) {
+      const label = code.toUpperCase();
+      document.getElementById(`hub-coupon-success-applied-${blockId}`).textContent = `"${label}" applied`;
+      document.getElementById(`hub-coupon-success-headline-${blockId}`).textContent =
+        savings > 0
+          ? `${hubUtils.formatMoney(savings)} SAVINGS WITH THIS COUPON`
+          : `COUPON APPLIED!`;
+      document.getElementById(`hub-coupon-success-desc-${blockId}`).textContent =
+        `Use code ${label} and save every time you order`;
+      overlay.style.display = "flex";
+    }
   } catch (e) {
     console.warn("[hub] Failed to apply offer code:", e);
   }
 }
+
+window.hubCloseCouponSuccess = function (blockId) {
+  const overlay = document.getElementById(`hub-coupon-success-${blockId}`);
+  if (overlay) overlay.style.display = "none";
+};
 
 window.hubRemoveOfferCode = async function (code, blockId) {
   try {

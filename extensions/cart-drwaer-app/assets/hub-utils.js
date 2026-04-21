@@ -110,7 +110,7 @@ window.hubUtils = {
   },
 
   getProductCardHTML(product, settings = {}) {
-    if (window._hubCartProductIds?.has(String(product.id))) return "";
+    if (!settings.showIfAlreadyInCart && window._hubCartProductIds?.has(String(product.id))) return "";
     const variants = product.variants || [];
     const mainImage =
       product?.images?.[0]?.src || product?.featured_image || "";

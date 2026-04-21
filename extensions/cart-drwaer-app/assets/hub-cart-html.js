@@ -270,21 +270,21 @@ window.injectCartHTML = function (blockId, root) {
       <!-- header (position: below_header) -->
       <div>${renderCustomHTML(customHtmlBlocks.below_header)}</div>
 
-      <!-- ANNOUNCEMENT (position: before) -->
-      <div>${renderCustomHTML(customHtmlBlocks.above_announcements)}</div>
-      <div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>
-
-      <!-- TRUST BADGES (position: top of cart) -->
-      <div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges" style="display:none;"></div>
-
-      <!-- UPSELLS (position: top of cart) -->
-      <div id="hub-upsell-top-${blockId}" class="hub-upsell"></div>
-
-      <!-- REWARDS -->
-      <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;"></div>
-
       <!-- ITEMS (scrollable) -->
       <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview">
+        <!-- ANNOUNCEMENT (position: before) -->
+        <div>${renderCustomHTML(customHtmlBlocks.above_announcements)}</div>
+        <div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>
+
+        <!-- TRUST BADGES (position: top of cart) -->
+        <div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges" style="display:none;"></div>
+
+        <!-- UPSELLS (position: top of cart) -->
+        <div id="hub-upsell-top-${blockId}" class="hub-upsell"></div>
+
+        <!-- REWARDS -->
+        <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;"></div>
+
         <div id="hub-cart-items-${blockId}" class="hub-cart-items ${disableFixedFooter ? "no-fixed-footer" : ""}">
           <!-- skeleton shown while cart data loads -->
           <div id="hub-skeleton-${blockId}" style="display:none;">
@@ -303,17 +303,19 @@ window.injectCartHTML = function (blockId, root) {
             </div>
           </div>
         </div>
-
-        <div>${renderCustomHTML(customHtmlBlocks.above_footer)}</div>
-
         <!-- NOTES (position: before) -->
         <div id="hub-notes-below-${blockId}"></div>
 
         <!-- ANNOUNCEMENT (position: after) -->
         <div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>
 
+        <!-- SUGGESTED PRODUCT -->
+        <div id="hub-suggested-product-${blockId}" class="hub-suggested-product" style="display:none;"></div>
+
         <!-- UPSELLS (position: bottom of cart) -->
         <div id="hub-upsell-bottom-${blockId}" class="hub-upsell"></div>
+
+        <div>${renderCustomHTML(customHtmlBlocks.above_footer)}</div>
       </div>
 
       <!-- FOOTER (fixed bottom) -->
@@ -388,6 +390,22 @@ window.injectCartHTML = function (blockId, root) {
       </div>
 
       <div>${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>
+
+      <!-- COUPON SUCCESS MODAL -->
+      <div id="hub-coupon-success-${blockId}" class="hub-coupon-success-overlay" style="display:none;">
+        <div class="hub-coupon-success-card">
+          <button class="hub-coupon-success-close" onclick="hubCloseCouponSuccess('${blockId}')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <div class="hub-coupon-success-icon">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <p class="hub-coupon-success-applied" id="hub-coupon-success-applied-${blockId}"></p>
+          <p class="hub-coupon-success-headline" id="hub-coupon-success-headline-${blockId}"></p>
+          <p class="hub-coupon-success-desc" id="hub-coupon-success-desc-${blockId}"></p>
+          <button class="hub-coupon-success-yay" onclick="hubCloseCouponSuccess('${blockId}')">YAY!</button>
+        </div>
+      </div>
 
       <!-- OFFERS PANEL OVERLAY -->
       <div id="hub-offers-backdrop-${blockId}" class="hub-offers-backdrop" onclick="hubCloseOffersPanel('${blockId}')"></div>

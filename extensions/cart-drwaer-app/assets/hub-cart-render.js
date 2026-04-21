@@ -333,13 +333,17 @@ window.hubCartRender = async function (drawer, opts = {}) {
           btn.disabled = false;
           return;
         }
-        (swipeSlide || parent).remove();
-        const remaining = container.querySelectorAll(".swiper-slide").length;
-        if (remaining === 0) {
-          container.style.display = "none";
-        } else if (swiperInstance) {
-          swiperInstance.params.slidesPerView = remaining === 1 ? 1 : 1.5;
-          swiperInstance.update();
+        if (!settings.showIfAlreadyInCart) {
+          (swipeSlide || parent).remove();
+          const remaining = container.querySelectorAll(".swiper-slide").length;
+          if (remaining === 0) {
+            container.style.display = "none";
+          } else if (swiperInstance) {
+            swiperInstance.params.slidesPerView = remaining === 1 ? 1 : 1.5;
+            swiperInstance.update();
+          }
+        } else {
+          btn.disabled = false;
         }
         document.dispatchEvent(new CustomEvent("cart:updated"));
       });
@@ -379,6 +383,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
     };
 
     if (cart.items.length === 0) {
+      const _suggestedEl = document.getElementById(`hub-suggested-product-${blockId}`);
+      if (_suggestedEl) { _suggestedEl.style.display = "none"; _suggestedEl.innerHTML = ""; }
+
       const recommendations =
         window.__HUB_ACTIVE_CART__?.recommendationsSettings;
 
@@ -743,7 +750,66 @@ window.hubCartRender = async function (drawer, opts = {}) {
             layout: upsellSettings.direction,
             showReviews: upsellSettings.showReviews,
             carouselIndicator: upsellSettings.carouselIndicator,
+            showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,
           });
+        }
+      }
+    }
+
+    /* ── SUGGESTED PRODUCT ── */
+    const suggestedEl = document.getElementById(`hub-suggested-product-${blockId}`);
+    if (suggestedEl) {
+      if (cart.items.length === 0) {
+        suggestedEl.style.display = "none";
+        suggestedEl.innerHTML = "";
+      } else {
+        const sp = upsellSettings?.suggestedProduct;
+        const showSuggested = upsellSettings?.showSuggestedProduct && !upsellSettings?.enabled;
+        if (showSuggested && sp?.items?.variants?.[0] && sp?.items?.titles?.[0]) {
+          const rawVariantId = sp.items.variants[0].replace("gid://shopify/ProductVariant/", "");
+          const title = sp.items.titles[0];
+          const image = sp.items.images?.[0] || "";
+          suggestedEl.style.display = "block";
+          suggestedEl.innerHTML = `
+            <div class="upsell-suggestion">
+              <label class="upsell-checkbox-wrapper">
+                <input type="checkbox" id="hub-suggested-cb-${blockId}" data-variant="${rawVariantId}" />
+                <span class="custom-checkbox"></span>
+                <span class="upsell-text">Add ${title}</span>
+              </label>
+            </div>`;
+          const cb = suggestedEl.querySelector(`#hub-suggested-cb-${blockId}`);
+          if (cb) {
+            const alreadyInCart = cart.items.some(i => String(i.variant_id) === String(rawVariantId));
+            cb.checked = alreadyInCart;
+            if (alreadyInCart) suggestedEl.style.display = "none";
+
+            cb.addEventListener("change", async function () {
+              const vid = this.dataset.variant;
+              if (this.checked) {
+                await fetch("/cart/add.js", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ id: Number(vid), quantity: 1 }),
+                });
+                suggestedEl.style.display = "none";
+              } else {
+                const latestCart = await (await fetch("/cart.js")).json();
+                const match = latestCart.items.find(i => String(i.variant_id) === String(vid));
+                if (match) {
+                  await fetch("/cart/change.js", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: match.key, quantity: 0 }),
+                  });
+                }
+              }
+              document.dispatchEvent(new CustomEvent("cart:updated"));
+            });
+          }
+        } else {
+          suggestedEl.style.display = "none";
+          suggestedEl.innerHTML = "";
         }
       }
     }
@@ -798,7 +864,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     // Collect ALL unique discount applications from both sources:
     // 1. cart_level_discount_applications (automatic / cart-wide)
-    // 2. line_level_discount_allocations on each item (line-level codes like "sahil")
     const seenTitles = new Set();
     const allDiscounts = [];
 

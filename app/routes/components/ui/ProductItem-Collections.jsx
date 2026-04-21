@@ -523,10 +523,12 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
                                         {/* LEFT */}
                                         <InlineStack gap="300" blockAlign="center">
 
-                                            <Checkbox
-                                                checked={selectedCollections.includes(id)}
-                                                onChange={() => handleCollectionSelect(id)}
-                                            />
+                                            <div onClick={(e) => e.stopPropagation()}>
+                                                <Checkbox
+                                                    checked={selectedCollections.includes(id)}
+                                                    onChange={() => handleCollectionSelect(id)}
+                                                />
+                                            </div>
 
                                             <Thumbnail source={image} size="small" />
 

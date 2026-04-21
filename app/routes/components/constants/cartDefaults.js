@@ -105,6 +105,8 @@ export const defaultUpsellsSettings = {
   showIfAlreadyInCart: false,
   limitUpsellsInCart: false,
   maxUpsellsInCart: 3,
+  showSuggestedProduct: false,
+  suggestedProduct: null,
   showReviews: false,
   title: "You'll love these",
   buttonText: "Add",
