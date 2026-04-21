@@ -12,15 +12,12 @@ function initCartDrawerAfterData() {
   const root =
     document.getElementById(`cart-drawer-App-${blockId}`) || document.body;
 
-  // Only remove theme's native cart elements when our custom drawer is being injected
   if (window.__HUB_ACTIVE_CART__) {
     document
       .querySelectorAll(
         "cart-drawer, #CartDrawer, .cart-drawer, ajax-cart, cart-notification"
       )
       .forEach((el) => {
-        // Patch theme methods to no-ops before removal so product-form.js
-        // doesn't crash when it calls renderContents on the detached element
         if (typeof el.renderContents === "function") el.renderContents = () => {};
         if (typeof el.open === "function") el.open = () => {};
         el.remove();
@@ -217,9 +214,8 @@ window.startAnnTimer = function (blockId, timeStr) {
   }
 
   const storageKey = `hub-timer-${blockId}`;
-  const storageMetaKey = `hub-timer-${blockId}-src`; // ← NEW: tracks which timeStr was saved
+  const storageMetaKey = `hub-timer-${blockId}-src`; 
 
-  // ← NEW: parse the intended duration from the API value first
   const parts = timeStr.split(":").map(Number);
   const intendedSeconds =
     parts.length === 2
@@ -228,9 +224,8 @@ window.startAnnTimer = function (blockId, timeStr) {
 
   let totalSeconds;
   const savedEndTime = localStorage.getItem(storageKey);
-  const savedSrc = localStorage.getItem(storageMetaKey); // ← NEW: what timeStr was saved
+  const savedSrc = localStorage.getItem(storageMetaKey); 
 
-  // ← NEW: if the API timeStr changed, throw away the old saved timer
   if (savedSrc !== timeStr) {
     localStorage.removeItem(storageKey);
     localStorage.removeItem(storageMetaKey);
@@ -242,7 +237,6 @@ window.startAnnTimer = function (blockId, timeStr) {
     const remaining = Math.floor((Number(freshEndTime) - Date.now()) / 1000);
 
     if (remaining > 0) {
-      // Resume — API timeStr matches what was saved, timer still running
       totalSeconds = remaining;
     } else {
       // Expired while page was closed
@@ -253,10 +247,9 @@ window.startAnnTimer = function (blockId, timeStr) {
       return;
     }
   } else {
-    // Fresh start — either first visit or API changed the timeStr
     totalSeconds = intendedSeconds;
     localStorage.setItem(storageKey, String(Date.now() + totalSeconds * 1000));
-    localStorage.setItem(storageMetaKey, timeStr); // ← NEW: record which timeStr we saved
+    localStorage.setItem(storageMetaKey, timeStr);
   }
 
   function fmt(s) {
