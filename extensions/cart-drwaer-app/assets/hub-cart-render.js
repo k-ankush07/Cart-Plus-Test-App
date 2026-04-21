@@ -131,14 +131,18 @@ window.hubCartRender = async function (drawer, opts = {}) {
     (function () {
       const fmt = hubUtils.formatMoney;
 
-      const originalTotal = cart.original_total_price || 0;   // Total MRP
-      const subtotal      = cart.items_subtotal_price || 0;    // after line discounts
-      const finalTotal    = cart.total_price || 0;             // Grand Total
-      const lineSaving    = originalTotal - subtotal;          // Discount On MRP
-      const couponSaving  = subtotal - finalTotal;             // Coupon / cart-level discount
-      const totalSaved    = originalTotal - finalTotal;        // You Saved
+      const originalTotal = cart.original_total_price || 0;    // Total MRP
+      const subtotal      = cart.items_subtotal_price || 0;     // after line discounts
+      const finalTotal    = cart.total_price || 0;              // Cart total before shipping
+      const shippingPrice = window._hubShippingPriceCents || 0; // Shipping (cents, from async fetch)
+      const grandTotal    = finalTotal + shippingPrice;         // Grand Total with shipping
+      const lineSaving    = originalTotal - subtotal;           // Discount On MRP
+      const couponSaving  = subtotal - finalTotal;              // Coupon / cart-level discount
+      const totalSaved    = originalTotal - finalTotal;         // You Saved (excl. shipping)
 
-      // Final price
+      window._hubCartFinalTotal = finalTotal; // stored so async shipping update can patch grand total
+
+      // Subtotal (before shipping)
       const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
       if (totalEl) totalEl.textContent = fmt(finalTotal);
 
@@ -153,7 +157,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         }
       }
 
-      // "You Saved" line
+      // "You Saved" line (savings on items only, not shipping)
       const savedEl = document.getElementById(`hub-total-saved-${blockId}`);
       if (savedEl) {
         if (totalSaved > 0) {
@@ -192,16 +196,28 @@ window.hubCartRender = async function (drawer, opts = {}) {
         }
       }
 
-      // Grand Total
+      // Shipping row (uses cached value; async fetch will patch if not yet resolved)
+      const shippingRow = document.getElementById(`hub-shipping-row-${blockId}`);
+      const shippingCostEl = document.getElementById(`hub-shipping-cost-${blockId}`);
+      if (shippingRow && shippingCostEl) {
+        if (shippingPrice > 0) {
+          shippingCostEl.textContent = fmt(shippingPrice);
+          shippingRow.style.display = "";
+        } else {
+          shippingRow.style.display = "none";
+        }
+      }
+
+      // Grand Total (cart total + shipping)
       const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
-      if (grandEl) grandEl.textContent = fmt(finalTotal);
+      if (grandEl) grandEl.textContent = fmt(grandTotal);
 
       // Checkout button text (update {{total_price}} placeholder)
       const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
       if (checkoutBtn) {
         const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
         const rawText = cartSettings.checkoutButtonText || "Proceed to checkout";
-        checkoutBtn.textContent = rawText.replace("{{total_price}}", fmt(finalTotal));
+        checkoutBtn.textContent = rawText.replace("{{total_price}}", fmt(grandTotal));
       }
     })();
 

@@ -264,8 +264,26 @@ window.hubUtils = {
       if (!applicableRate) return;
 
       const price = parseFloat(applicableRate.price ?? 0);
+      const shippingCents = price * 100;
+      window._hubShippingPriceCents = shippingCents;
+
       shippingRow.style.display = "";
-      shippingCostEl.textContent = price === 0 ? "Free" : hubUtils.formatMoney(price * 100);
+      shippingCostEl.textContent = price === 0 ? "Free" : hubUtils.formatMoney(shippingCents);
+
+      // Patch grand total and checkout button now that shipping is resolved
+      const finalTotal = window._hubCartFinalTotal || 0;
+      const grandTotal = finalTotal + shippingCents;
+      const fmt = hubUtils.formatMoney;
+
+      const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
+      if (grandEl) grandEl.textContent = fmt(grandTotal);
+
+      const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
+      if (checkoutBtn) {
+        const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+        const rawText = cartSettings.checkoutButtonText || "Proceed to checkout";
+        checkoutBtn.textContent = rawText.replace("{{total_price}}", fmt(grandTotal));
+      }
     } catch (err) {
       // silent fail
     }
