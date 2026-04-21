@@ -72,7 +72,7 @@ function ClassicLayout({ qty, setQty, showStrikethrough, textColor, cartSettings
                 fontSize: "11px", fontWeight: 700,
                 padding: "2px 7px", borderRadius: "3px",
               }}>
-                SAVE 50%
+                {cartSettings.savingsText} 50%
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -87,7 +87,7 @@ function ClassicLayout({ qty, setQty, showStrikethrough, textColor, cartSettings
       </div>
 
       {!subscriptionUpgradesSettings.enabled && (
-        <div style={{ width: "100%", display:'flex', justifyContent:'center' }}>
+        <div style={{ width: "100%", display: 'flex', justifyContent: 'center' }}>
           <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />
         </div>
       )}
@@ -141,7 +141,7 @@ function SubscriptionLayout({ qty, setQty, showStrikethrough, textColor, cartSet
           )}
           {cartSettings.showSavingsBelowPrices && (
             <span style={{ background: "#e6f4ea", color: savingColor, fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "3px" }}>
-              SAVE 10%
+              {cartSettings.savingsText} 10%
             </span>
           )}
         </div>
@@ -158,17 +158,17 @@ function SubscriptionLayout({ qty, setQty, showStrikethrough, textColor, cartSet
   );
 }
 
-function ModernLayout({ qty, setQty, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription }) {
+function ModernLayout({ qty, setQty, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings }) {
   return (
     <div className="cart-app-item upcart-product-item upcart-public-component-product-tile upcart-layout-modern">
 
       {/* Image with SAVE badge above */}
       <div style={{ position: "relative", flexShrink: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
-        <span style={{
+        {cartSettings.showSavingsBelowPrices && (<span style={{
           background: "#e6f4ea", color: savingColor,
           fontSize: "10px", fontWeight: 700,
           padding: "2px 6px", borderRadius: "3px", width: "fit-content",
-        }}>SAVE 50%</span>
+        }}>{cartSettings.savingsText} 50%</span>)}
         <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }}>
           <img className="upcart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>

@@ -66,7 +66,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                 <line x1="3" y1="6" x2="21" y2="6" />
                                 <path d="M16 10a4 4 0 0 1-8 0" />
                             </svg>
-                            <p style={{ color: designSettings.textColor || "#6b7280", fontSize: "16px", fontWeight: "500", margin: 0 }}>Your cart is empty</p>
+                            <p style={{ color: designSettings.textColor || "#6b7280", fontSize: "16px", fontWeight: "500", margin: 0 }}>{cartSettings.emptyCartMessage}</p>
                         </div>
                     ) : (
                         <>
