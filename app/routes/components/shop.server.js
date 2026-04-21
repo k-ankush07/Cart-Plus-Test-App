@@ -2,7 +2,13 @@ import { authenticate } from "../../shopify.server";
 
 export const shopLoader = async (request) => {
   try {
-    const { admin, session } = await authenticate.admin(request);
+    const authResponse = await authenticate.admin(request);
+
+    if (authResponse instanceof Response) {
+      return authResponse; 
+    }
+
+    const { admin, session } = authResponse;
     const accessToken = session?.accessToken;
 
     const shopRes = await admin.graphql(`

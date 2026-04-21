@@ -1,5 +1,6 @@
 import express from "express";
 import { shopConfigModel } from "../model/schema.js";
+import { getValidAccessToken } from "../utils/tokenHelper.js";
 
 const router = express.Router();
 
@@ -14,10 +15,7 @@ router.get("/product-ratings", async (req, res) => {
       return res.json({ ratings: {} });
     }
 
-    const config = await shopConfigModel.findOne({ shop });
-    if (!config?.accessToken) {
-      return res.json({ ratings: {} });
-    }
+    let token = await getValidAccessToken(shop);
 
     const gids = idList.map((id) => `gid://shopify/Product/${id}`);
 
@@ -33,28 +31,49 @@ router.get("/product-ratings", async (req, res) => {
       }
     `;
 
-    const apiRes = await fetch(
-      `https://${shop}/admin/api/${apiVersion}/graphql.json`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Shopify-Access-Token": config.accessToken,
+    const makeRequest = async (accessToken) => {
+      const res = await fetch(
+        `https://${shop}/admin/api/${apiVersion}/graphql.json`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": accessToken,
+          },
+          body: JSON.stringify({ query: gql, variables: { ids: gids } }),
         },
-        body: JSON.stringify({ query: gql, variables: { ids: gids } }),
-      },
-    );
+      );
 
-    const apiData = await apiRes.json();
+      return {
+        status: res.status,
+        data: await res.json(),
+      };
+    };
+
+    let response = await makeRequest(token);
+
+    if (
+      response.status === 401 ||
+      response.data?.errors?.some(
+        (e) =>
+          e.message.includes("Invalid API key") ||
+          e.message.includes("access token"),
+      )
+    ) {
+      token = await getValidAccessToken(shop);
+      response = await makeRequest(token);
+    }
+
+    const apiData = response.data;
     const ratings = {};
 
     for (const node of apiData?.data?.nodes ?? []) {
       if (!node?.legacyResourceId) continue;
 
       let ratingValue = null;
+
       if (node.rating?.value) {
         try {
-          // Native Shopify reviews metafield: {"scale_max":"5.0","scale_min":"1.0","value":"4.5"}
           const parsed = JSON.parse(node.rating.value);
           ratingValue = parseFloat(parsed.value ?? parsed);
         } catch {
@@ -80,10 +99,7 @@ router.get("/product-ratings", async (req, res) => {
 router.post("/discounts", async (req, res) => {
   const { shop } = req.body;
 
-  const config = await shopConfigModel.findOne({ shop });
-  if (!config?.accessToken) {
-    return res.json({ ratings: {} });
-  }
+  let token = await getValidAccessToken(shop);
 
   const buildQuery = (cursor) => ({
     query: `
@@ -223,18 +239,51 @@ router.post("/discounts", async (req, res) => {
         {
           method: "POST",
           headers: {
-            "X-Shopify-Access-Token": config.accessToken,
+            "X-Shopify-Access-Token": token,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(buildQuery(cursor)),
         },
       );
 
-      const discountData = await discountRes.json();
+      let discountData = await discountRes.json();
 
       if (discountData?.errors) {
-        console.error(" Shopify GraphQL errors:", discountData.errors);
-        break;
+        const isAuthError = discountData.errors.some(
+          (err) =>
+            err.message.includes("Invalid API key") ||
+            err.message.includes("access token"),
+        );
+
+        if (isAuthError) {
+          console.log("🔁 Token expired, retrying...");
+
+          token = await getValidAccessToken(shop);
+
+          const retryRes = await fetch(
+            `https://${shop}/admin/api/${apiVersion}/graphql.json`,
+            {
+              method: "POST",
+              headers: {
+                "X-Shopify-Access-Token": token,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(buildQuery(cursor)),
+            },
+          );
+
+          const retryData = await retryRes.json();
+
+          if (retryData?.errors) {
+            console.error(" Retry also failed:", retryData.errors);
+            break;
+          }
+
+          discountData = retryData;
+        } else {
+          console.error("Shopify GraphQL errors:", discountData.errors);
+          break;
+        }
       }
 
       const page = discountData?.data?.discountNodes;
@@ -354,32 +403,46 @@ router.get("/shipping-zones", async (req, res) => {
   const { shop } = req.query;
 
   if (!shop) {
-    return res.status(400).json({ error: "Shop and accessToken are required" });
-  }
-
-  const config = await shopConfigModel.findOne({ shop });
-  if (!config?.accessToken) {
-    return res.json({ ratings: {} });
+    return res.status(400).json({ error: "Shop is required" });
   }
 
   try {
-    const headers = {
-      "X-Shopify-Access-Token": config.accessToken,
-      "Content-Type": "application/json",
+    let token = await getValidAccessToken(shop);
+
+    const makeRequest = async (accessToken) => {
+      const headers = {
+        "X-Shopify-Access-Token": accessToken,
+        "Content-Type": "application/json",
+      };
+
+      const shippingZonesData = await fetch(
+        `https://${shop}/admin/api/${apiVersion}/shipping_zones.json`,
+        { headers },
+      );
+
+      const countriesData = await fetch(
+        `https://${shop}/admin/api/${apiVersion}/countries.json`,
+        { headers },
+      );
+
+      return {
+        shippingZonesData: await shippingZonesData.json(),
+        countriesData: await countriesData.json(),
+        status: shippingZonesData.status,
+      };
     };
 
-    const shippingZonesData = await fetchWithRetry(
-      `https://${shop}/admin/api/${apiVersion}/shipping_zones.json`,
-      headers,
-    );
+    let response = await makeRequest(token);
 
-    const countriesData = await fetchWithRetry(
-      `https://${shop}/admin/api/${apiVersion}/countries.json`,
-      headers,
-    );
+    if (response?.shippingZonesData?.errors || response?.status === 401) {
+      console.log("🔁 Token invalid, retrying...");
 
-    const shippingZones = shippingZonesData.shipping_zones || [];
-    const countries = countriesData.countries || [];
+      token = await getValidAccessToken(shop);
+      response = await makeRequest(token);
+    }
+
+    const shippingZones = response.shippingZonesData.shipping_zones || [];
+    const countries = response.countriesData.countries || [];
 
     const shippingZonesWithProvinces = shippingZones.map((zone) => ({
       ...zone,
@@ -414,6 +477,7 @@ router.get("/shipping-zones", async (req, res) => {
       countries: uniqueCountries,
     });
   } catch (err) {
+    console.error("Shipping Zones Error:", err);
     res.status(500).json({ error: err.message });
   }
 });

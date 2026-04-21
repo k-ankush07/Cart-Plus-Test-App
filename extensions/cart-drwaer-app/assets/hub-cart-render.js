@@ -47,7 +47,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const res = await fetch("/cart.js");
     let cart = await res.json();
 
-    window._hubCartProductIds = new Set(cart.items.map((i) => String(i.product_id)));
+    window._hubCartProductIds = new Set(
+      cart.items.map((i) => String(i.product_id)),
+    );
 
     const headerEl = document.querySelector(".upcart-header-text");
 
@@ -77,7 +79,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (changed) {
       const res2 = await fetch("/cart.js");
       cart = await res2.json();
-      window._hubCartProductIds = new Set(cart.items.map((i) => String(i.product_id)));
+      window._hubCartProductIds = new Set(
+        cart.items.map((i) => String(i.product_id)),
+      );
     }
 
     /* ── TRIGGERED REWARDS: auto-add / remove free gift ── */
@@ -85,7 +89,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (triggeredChanged) {
       const res3 = await fetch("/cart.js");
       cart = await res3.json();
-      window._hubCartProductIds = new Set(cart.items.map((i) => String(i.product_id)));
+      window._hubCartProductIds = new Set(
+        cart.items.map((i) => String(i.product_id)),
+      );
     }
 
     const container = drawer.querySelector(".hub-cart-items");
@@ -131,14 +137,14 @@ window.hubCartRender = async function (drawer, opts = {}) {
     (function () {
       const fmt = hubUtils.formatMoney;
 
-      const originalTotal = cart.original_total_price || 0;    // Total MRP
-      const subtotal      = cart.items_subtotal_price || 0;     // after line discounts
-      const finalTotal    = cart.total_price || 0;              // Cart total before shipping
+      const originalTotal = cart.original_total_price || 0; // Total MRP
+      const subtotal = cart.items_subtotal_price || 0; // after line discounts
+      const finalTotal = cart.total_price || 0; // Cart total before shipping
       const shippingPrice = window._hubShippingPriceCents || 0; // Shipping (cents, from async fetch)
-      const grandTotal    = finalTotal + shippingPrice;         // Grand Total with shipping
-      const lineSaving    = originalTotal - subtotal;           // Discount On MRP
-      const couponSaving  = subtotal - finalTotal;              // Coupon / cart-level discount
-      const totalSaved    = originalTotal - finalTotal;         // You Saved (excl. shipping)
+      const grandTotal = finalTotal + shippingPrice; // Grand Total with shipping
+      const lineSaving = originalTotal - subtotal; // Discount On MRP
+      const couponSaving = subtotal - finalTotal; // Coupon / cart-level discount
+      const totalSaved = originalTotal - finalTotal; // You Saved (excl. shipping)
 
       window._hubCartFinalTotal = finalTotal; // stored so async shipping update can patch grand total
 
@@ -173,8 +179,10 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (mrpEl) mrpEl.textContent = fmt(originalTotal);
 
       // Discount On MRP
-      const discMrpRow = document.getElementById(`hub-discount-mrp-row-${blockId}`);
-      const discMrpEl  = document.getElementById(`hub-discount-mrp-${blockId}`);
+      const discMrpRow = document.getElementById(
+        `hub-discount-mrp-row-${blockId}`,
+      );
+      const discMrpEl = document.getElementById(`hub-discount-mrp-${blockId}`);
       if (discMrpRow && discMrpEl) {
         if (lineSaving > 0) {
           discMrpEl.textContent = `-${fmt(lineSaving)}`;
@@ -186,7 +194,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
       // Coupon Discount
       const couponRow = document.getElementById(`hub-coupon-row-${blockId}`);
-      const couponEl  = document.getElementById(`hub-coupon-${blockId}`);
+      const couponEl = document.getElementById(`hub-coupon-${blockId}`);
       if (couponRow && couponEl) {
         if (couponSaving > 0) {
           couponEl.textContent = `-${fmt(couponSaving)}`;
@@ -197,8 +205,12 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }
 
       // Shipping row (uses cached value; async fetch will patch if not yet resolved)
-      const shippingRow = document.getElementById(`hub-shipping-row-${blockId}`);
-      const shippingCostEl = document.getElementById(`hub-shipping-cost-${blockId}`);
+      const shippingRow = document.getElementById(
+        `hub-shipping-row-${blockId}`,
+      );
+      const shippingCostEl = document.getElementById(
+        `hub-shipping-cost-${blockId}`,
+      );
       if (shippingRow && shippingCostEl) {
         if (shippingPrice > 0) {
           shippingCostEl.textContent = fmt(shippingPrice);
@@ -213,11 +225,17 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (grandEl) grandEl.textContent = fmt(grandTotal);
 
       // Checkout button text (update {{total_price}} placeholder)
-      const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
+      const checkoutBtn = document.getElementById(
+        `hub-checkout-btn-${blockId}`,
+      );
       if (checkoutBtn) {
         const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
-        const rawText = cartSettings.checkoutButtonText || "Proceed to checkout";
-        checkoutBtn.textContent = rawText.replace("{{total_price}}", fmt(grandTotal));
+        const rawText =
+          cartSettings.checkoutButtonText || "Proceed to checkout";
+        checkoutBtn.textContent = rawText.replace(
+          "{{total_price}}",
+          fmt(grandTotal),
+        );
       }
     })();
 
@@ -237,9 +255,16 @@ window.hubCartRender = async function (drawer, opts = {}) {
     hubUtils.renderRewardsBar(blockId, cart, rewards);
 
     /* ── DISCOUNT CODES ── */
-    hubUtils.getDiscounts().then(({ allDiscountCodes, activeDiscountCodes }) => {
-      hubRenderOffersPanel(blockId, allDiscountCodes, activeDiscountCodes, cart);
-    });
+    hubUtils
+      .getDiscounts()
+      .then(({ allDiscountCodes, activeDiscountCodes }) => {
+        hubRenderOffersPanel(
+          blockId,
+          allDiscountCodes,
+          activeDiscountCodes,
+          cart,
+        );
+      });
 
     const discountRow = document.getElementById(`hub-discount-row-${blockId}`);
     if (discountRow) {
@@ -268,16 +293,22 @@ window.hubCartRender = async function (drawer, opts = {}) {
         if (window.Swiper) return resolve();
         const css = document.createElement("link");
         css.rel = "stylesheet";
-        css.href = "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css";
+        css.href =
+          "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css";
         document.head.appendChild(css);
         const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js";
+        script.src =
+          "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js";
         script.onload = resolve;
         document.head.appendChild(script);
       });
     }
 
-    window.renderProducts = async function (container, products, settings = {}) {
+    window.renderProducts = async function (
+      container,
+      products,
+      settings = {},
+    ) {
       const layout = settings.layout || "block";
       let swiperInstance = null;
 
@@ -297,7 +328,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (layout === "carousel") {
         await loadSwiper();
         const indicator = settings.carouselIndicator || "progressBar";
-        const slidesHTML = rendered.map(({ html }) => `<div class="swiper-slide">${html}</div>`).join("");
+        const slidesHTML = rendered
+          .map(({ html }) => `<div class="swiper-slide">${html}</div>`)
+          .join("");
         container.style.display = "";
         container.innerHTML = `
           <div class="hub-swiper-wrapper">
@@ -338,33 +371,54 @@ window.hubCartRender = async function (drawer, opts = {}) {
       container.addEventListener("click", async (e) => {
         const btn = e.target.closest(".hub-add-btn");
         if (!btn || btn.disabled) return;
-        btn.disabled = true;
+
         const parent = btn.closest(".hub-rec-product");
         const swipeSlide = parent.closest(".swiper-slide");
         const select = parent.querySelector(".hub-variant-select");
         const variantId = select?.value || btn.dataset.variant;
-        const addRes = await fetch("/cart/add.js", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: variantId, quantity: 1 }),
-        });
-        if (!addRes.ok && addRes.status !== 409) {
-          btn.disabled = false;
-          return;
-        }
-        if (!settings.showIfAlreadyInCart) {
-          (swipeSlide || parent).remove();
-          const remaining = container.querySelectorAll(".swiper-slide").length;
-          if (remaining === 0) {
-            container.style.display = "none";
-          } else if (swiperInstance) {
-            swiperInstance.params.slidesPerView = remaining === 1 ? 1 : 1.5;
-            swiperInstance.update();
+
+        btn.disabled = true;
+
+        btn.dataset.original = btn.innerHTML;
+        btn.innerHTML = `<span class="loader"></span>`;
+
+        try {
+          const addRes = await fetch("/cart/add.js", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: variantId, quantity: 1 }),
+          });
+
+          if (!addRes.ok && addRes.status !== 409) {
+            throw new Error("Add failed");
           }
-        } else {
+
+          if (!settings.showIfAlreadyInCart) {
+            (swipeSlide || parent).remove();
+
+            const remaining =
+              container.querySelectorAll(".swiper-slide").length;
+
+            if (remaining === 0) {
+              container.style.display = "none";
+            } else if (swiperInstance) {
+              swiperInstance.params.slidesPerView = remaining === 1 ? 1 : 1.5;
+              swiperInstance.update();
+            }
+          }
+
+          document.dispatchEvent(new CustomEvent("cart:updated"));
+        } catch (err) {
+          console.error(err);
+
+          btn.innerHTML = btn.dataset.original || "Add";
           btn.disabled = false;
         }
-        document.dispatchEvent(new CustomEvent("cart:updated"));
+
+        if (settings.showIfAlreadyInCart) {
+          btn.innerHTML = btn.dataset.original || "Add";
+          btn.disabled = false;
+        }
       });
 
       if (layout === "carousel") {
@@ -380,7 +434,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
           if (!total) return;
           const perView = swiper.params.slidesPerView || 1;
           const visibleRatio = perView / total;
-          const fill = (visibleRatio + swiper.progress * (1 - visibleRatio)) * 100;
+          const fill =
+            (visibleRatio + swiper.progress * (1 - visibleRatio)) * 100;
           fillEl.style.width = Math.min(100, fill) + "%";
         }
 
@@ -402,8 +457,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
     };
 
     if (cart.items.length === 0) {
-      const _suggestedEl = document.getElementById(`hub-suggested-product-${blockId}`);
-      if (_suggestedEl) { _suggestedEl.style.display = "none"; _suggestedEl.innerHTML = ""; }
+      const _suggestedEl = document.getElementById(
+        `hub-suggested-product-${blockId}`,
+      );
+      if (_suggestedEl) {
+        _suggestedEl.style.display = "none";
+        _suggestedEl.innerHTML = "";
+      }
 
       const recommendations =
         window.__HUB_ACTIVE_CART__?.recommendationsSettings;
@@ -493,7 +553,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
           } else {
             const prodRes = await fetch(`/products/${item.handle}.js`);
             const prodData = await prodRes.json();
-            const variant = prodData.variants.find(v => v.id === item.variant_id);
+            const variant = prodData.variants.find(
+              (v) => v.id === item.variant_id,
+            );
             compareAtPrice = variant?.compare_at_price || 0;
             window._hubCompareCache[cacheKey] = compareAtPrice;
           }
@@ -516,9 +578,14 @@ window.hubCartRender = async function (drawer, opts = {}) {
           : `<span class="hub-price">${hubUtils.formatMoney(item.final_line_price)}</span>`;
 
         const variantHtml =
-          item.options_with_values && item.options_with_values.length > 0 && !item.product_has_only_default_variant
+          item.options_with_values &&
+          item.options_with_values.length > 0 &&
+          !item.product_has_only_default_variant
             ? item.options_with_values
-                .map(opt => `<p class="hub-item-variant"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`)
+                .map(
+                  (opt) =>
+                    `<p class="hub-item-variant"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`,
+                )
                 .join("")
             : "";
 
@@ -542,7 +609,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
                 .join("")
             : "";
 
-        const isReward = !!item.properties?._hub_reward || !!item.properties?._triggered_reward;
+        const isReward =
+          !!item.properties?._hub_reward ||
+          !!item.properties?._triggered_reward;
         const isTriggeredReward = !!item.properties?._triggered_reward;
         const subscriptionSettings =
           window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;
@@ -601,14 +670,19 @@ window.hubCartRender = async function (drawer, opts = {}) {
         }
 
         // Compute per-unit price and compare values for all layouts
-        const effectiveUnitPrice = item.quantity > 0
-          ? Math.round(item.final_line_price / item.quantity)
-          : item.price;
-        const subCompare = sellingPlan && item.original_price > effectiveUnitPrice ? item.original_price : 0;
+        const effectiveUnitPrice =
+          item.quantity > 0
+            ? Math.round(item.final_line_price / item.quantity)
+            : item.price;
+        const subCompare =
+          sellingPlan && item.original_price > effectiveUnitPrice
+            ? item.original_price
+            : 0;
         const priceCompare = item.price > effectiveUnitPrice ? item.price : 0;
-        const effectiveCompare = (compareAtPrice && compareAtPrice > effectiveUnitPrice)
-          ? compareAtPrice
-          : (priceCompare || subCompare);
+        const effectiveCompare =
+          compareAtPrice && compareAtPrice > effectiveUnitPrice
+            ? compareAtPrice
+            : priceCompare || subCompare;
         const hasCompare = effectiveCompare > 0;
         const unitSave = hasCompare ? effectiveCompare - effectiveUnitPrice : 0;
 
@@ -633,7 +707,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
         };
 
         const layoutName = cartSettings.cartItemLayout || "classic";
-        const layoutFn = window.hubItemLayouts?.[layoutName] || window.hubItemLayouts?.classic;
+        const layoutFn =
+          window.hubItemLayouts?.[layoutName] || window.hubItemLayouts?.classic;
         return layoutFn(layoutCtx);
       }),
     );
@@ -776,16 +851,26 @@ window.hubCartRender = async function (drawer, opts = {}) {
     }
 
     /* ── SUGGESTED PRODUCT ── */
-    const suggestedEl = document.getElementById(`hub-suggested-product-${blockId}`);
+    const suggestedEl = document.getElementById(
+      `hub-suggested-product-${blockId}`,
+    );
     if (suggestedEl) {
       if (cart.items.length === 0) {
         suggestedEl.style.display = "none";
         suggestedEl.innerHTML = "";
       } else {
         const sp = upsellSettings?.suggestedProduct;
-        const showSuggested = upsellSettings?.showSuggestedProduct && !upsellSettings?.enabled;
-        if (showSuggested && sp?.items?.variants?.[0] && sp?.items?.titles?.[0]) {
-          const rawVariantId = sp.items.variants[0].replace("gid://shopify/ProductVariant/", "");
+        const showSuggested =
+          upsellSettings?.showSuggestedProduct && !upsellSettings?.enabled;
+        if (
+          showSuggested &&
+          sp?.items?.variants?.[0] &&
+          sp?.items?.titles?.[0]
+        ) {
+          const rawVariantId = sp.items.variants[0].replace(
+            "gid://shopify/ProductVariant/",
+            "",
+          );
           const title = sp.items.titles[0];
           const image = sp.items.images?.[0] || "";
           suggestedEl.style.display = "block";
@@ -799,7 +884,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
             </div>`;
           const cb = suggestedEl.querySelector(`#hub-suggested-cb-${blockId}`);
           if (cb) {
-            const alreadyInCart = cart.items.some(i => String(i.variant_id) === String(rawVariantId));
+            const alreadyInCart = cart.items.some(
+              (i) => String(i.variant_id) === String(rawVariantId),
+            );
             cb.checked = alreadyInCart;
             if (alreadyInCart) suggestedEl.style.display = "none";
 
@@ -814,7 +901,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
                 suggestedEl.style.display = "none";
               } else {
                 const latestCart = await (await fetch("/cart.js")).json();
-                const match = latestCart.items.find(i => String(i.variant_id) === String(vid));
+                const match = latestCart.items.find(
+                  (i) => String(i.variant_id) === String(vid),
+                );
                 if (match) {
                   await fetch("/cart/change.js", {
                     method: "POST",
@@ -878,7 +967,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     // Build a set of manually entered code titles (lowercase) for quick lookup
     const manualCodes = new Set(
-      (cart.discount_codes || []).map((d) => d.code.toLowerCase())
+      (cart.discount_codes || []).map((d) => d.code.toLowerCase()),
     );
 
     // Collect ALL unique discount applications from both sources:
@@ -907,18 +996,23 @@ window.hubCartRender = async function (drawer, opts = {}) {
     });
 
     // Render each discount tag with correct button logic
-    const discountStatus = document.getElementById(`hub-discount-status-${blockId}`);
+    const discountStatus = document.getElementById(
+      `hub-discount-status-${blockId}`,
+    );
     if (discountStatus) {
       if (allDiscounts.length === 0) {
         discountStatus.innerHTML = "";
       } else {
-        discountStatus.innerHTML = allDiscounts.map((app) => {
-          const isManual = manualCodes.has(app.title.toLowerCase());
-          const removeBtn = isManual
-            ? `<button onclick="removeDiscountCode('${app.title}')" class="hub-discount-remove">Remove</button>`
-            : "";
-          const tagClass = isManual ? "hub-discount-applied" : "hub-discount-auto";
-          return `
+        discountStatus.innerHTML = allDiscounts
+          .map((app) => {
+            const isManual = manualCodes.has(app.title.toLowerCase());
+            const removeBtn = isManual
+              ? `<button onclick="removeDiscountCode('${app.title}')" class="hub-discount-remove">Remove</button>`
+              : "";
+            const tagClass = isManual
+              ? "hub-discount-applied"
+              : "hub-discount-auto";
+            return `
             <div class="${tagClass}">
               <div class="hub-discount-tag">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -928,7 +1022,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
               </div>
               ${removeBtn}
             </div>`;
-        }).join("");
+          })
+          .join("");
       }
     }
   } catch (err) {

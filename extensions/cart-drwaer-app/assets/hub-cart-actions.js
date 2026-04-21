@@ -3,21 +3,40 @@ function getDrawer() {
   return document.getElementById(`hub-cart-drawer-${blockId}`) || document;
 }
 
-async function updateQty(key, qty) {
-  if (qty < 1) {
-    return removeItem(key);
+async function updateQty(key, qty, btn = null) {
+  if (btn && btn.classList.contains("loading")) return;
+
+  if (btn) {
+    btn.classList.add("loading");
+    btn.innerHTML = `<span class="loader"></span>`;
+    btn.disabled = true;
   }
 
-  await fetch("/cart/change.js", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id: key,
-      quantity: qty,
-    }),
-  });
+  try {
+    if (qty < 1) {
+      await removeItem(key);
+      return;
+    }
+
+    await fetch("/cart/change.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: key,
+        quantity: qty,
+      }),
+    });
+  } catch (err) {
+    console.error("Qty update error:", err);
+  } finally {
+    if (btn) {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+      btn.innerHTML = btn.dataset.type === "plus" ? "+" : "−";
+    }
+  }
 }
 
 const _hubPendingRemovals = {};
@@ -46,9 +65,11 @@ async function removeItem(key, title) {
   const fill = toastEl.querySelector(".hub-undo-fill");
   if (fill) {
     fill.style.transition = `width ${UNDO_DURATION_MS}ms linear`;
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      fill.style.width = "0%";
-    }));
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        fill.style.width = "0%";
+      }),
+    );
   }
 
   _hubPendingRemovals[key] = {
@@ -75,7 +96,7 @@ async function _commitRemoval(key) {
   // Step 2: close the toast
   if (p.toastEl) {
     p.toastEl.classList.add("hub-toast-hiding");
-    await new Promise(r => setTimeout(r, 220));
+    await new Promise((r) => setTimeout(r, 220));
     p.toastEl.remove();
   }
 
@@ -86,19 +107,22 @@ async function _commitRemoval(key) {
     el.style.transition = "transform 0.3s ease, opacity 0.3s ease";
     el.style.transform = "translateX(-100%)";
     el.style.opacity = "0";
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise((r) => setTimeout(r, 300));
 
     // Collapse height so the list closes up
-    el.style.transition = "height 0.2s ease, margin 0.2s ease, padding 0.2s ease";
+    el.style.transition =
+      "height 0.2s ease, margin 0.2s ease, padding 0.2s ease";
     el.style.height = el.offsetHeight + "px";
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      el.style.height = "0";
-      el.style.marginTop = "0";
-      el.style.marginBottom = "0";
-      el.style.paddingTop = "0";
-      el.style.paddingBottom = "0";
-    }));
-    await new Promise(r => setTimeout(r, 220));
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        el.style.height = "0";
+        el.style.marginTop = "0";
+        el.style.marginBottom = "0";
+        el.style.paddingTop = "0";
+        el.style.paddingBottom = "0";
+      }),
+    );
+    await new Promise((r) => setTimeout(r, 220));
   }
 
   if (Object.keys(_hubPendingRemovals).length === 0) {
@@ -169,7 +193,7 @@ function showMessage(el, text, color = "black") {
   }, 4000);
 }
 
-window.applyDiscountCode = async function () {
+window.applyDiscountCode = async function (btn) {
   const input = document.getElementById("discount-code-input");
   const message = document.getElementById("discount-message");
 
@@ -180,48 +204,68 @@ window.applyDiscountCode = async function () {
     return;
   }
 
+  if (btn.classList.contains("loading")) return;
+
+  btn.classList.add("loading");
+  btn.dataset.original = btn.innerHTML;
+  btn.innerHTML = `<span class="loader"></span>`;
+  btn.disabled = true;
+
   try {
     await fetch(`/discount/${code}`, {
       method: "GET",
       credentials: "include",
     });
 
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
 
     const res = await fetch("/cart.js");
     const cart = await res.json();
 
-    // Check both line-level and cart-level discounts
     const hasLineDiscount = cart.items.some(
-      (item) => item.line_level_discount_allocations?.length > 0
-    );
-    const hasCartDiscount = cart.cart_level_discount_applications?.length > 0;
-    const hasCodeDiscount = cart.discount_codes?.some(
-      (d) => d.code.toLowerCase() === code.toLowerCase() && d.applicable
+      (item) => item.line_level_discount_allocations?.length > 0,
     );
 
-    const hasRealDiscount = hasLineDiscount || hasCartDiscount || hasCodeDiscount;
+    const hasCartDiscount = cart.cart_level_discount_applications?.length > 0;
+
+    const hasCodeDiscount = cart.discount_codes?.some(
+      (d) => d.code.toLowerCase() === code.toLowerCase() && d.applicable,
+    );
+
+    const hasRealDiscount =
+      hasLineDiscount || hasCartDiscount || hasCodeDiscount;
 
     if (!hasRealDiscount) {
       await fetch(`/discount/INVALID_REMOVE`, {
         credentials: "include",
       });
 
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 300));
     }
 
     await window.hubCartRender(getDrawer());
 
     const newMessage = document.getElementById("discount-message");
+    if (hasRealDiscount) {
+      showMessage(newMessage, "Discount applied successfully", "green");
+
+      input.value = "";
+      input.blur();
+    } else {
+      showMessage(newMessage, "Enter a valid discount code", "red");
+    }
 
     if (hasRealDiscount) {
       showMessage(newMessage, "Discount applied successfully", "green");
     } else {
       showMessage(newMessage, "Enter a valid discount code", "red");
     }
-
   } catch (err) {
     showMessage(message, "Something went wrong", "red");
+  } finally {
+    btn.classList.remove("loading");
+    btn.innerHTML = btn.dataset.original || "APPLY";
+    btn.disabled = false;
   }
 };
 
@@ -246,4 +290,21 @@ window.removeDiscountCode = async function () {
   } catch (err) {
     showMessage(message, "Failed to remove discount", "red");
   }
+};
+
+window.hubCheckoutClick = function (e, blockId, btn) {
+  e.preventDefault(); 
+  
+  if (btn.classList.contains("loading")) return;
+
+  btn.classList.add("loading");
+  btn.dataset.original = btn.innerHTML;
+  btn.innerHTML = `<span class="loader"></span>`;
+  btn.style.pointerEvents = "none";
+
+  const url = btn.getAttribute("href");
+
+  setTimeout(() => {
+    window.location.href = url;
+  }, 500);
 };

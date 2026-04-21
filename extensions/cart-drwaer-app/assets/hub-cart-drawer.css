@@ -1759,3 +1759,25 @@
 .hub-coupon-success-yay:hover {
   background: #2d4270;
 }
+
+.loader {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(170, 170, 170, 0.15);
+  border-top: 2px solid #c7c7c7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+.hub-qty-btn.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

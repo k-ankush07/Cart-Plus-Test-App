@@ -15,10 +15,11 @@ function initCartDrawerAfterData() {
   if (window.__HUB_ACTIVE_CART__) {
     document
       .querySelectorAll(
-        "cart-drawer, #CartDrawer, .cart-drawer, ajax-cart, cart-notification"
+        "cart-drawer, #CartDrawer, .cart-drawer, ajax-cart, cart-notification",
       )
       .forEach((el) => {
-        if (typeof el.renderContents === "function") el.renderContents = () => {};
+        if (typeof el.renderContents === "function")
+          el.renderContents = () => {};
         if (typeof el.open === "function") el.open = () => {};
         el.remove();
       });
@@ -138,7 +139,9 @@ function initCartDrawerAfterData() {
         // Load recommendations only when drawer opens, and only once
         if (!window._hubRecLoaded && window.__HUB_ACTIVE_CART__) {
           window._hubRecLoaded = true;
-          window.loadCartRecommendations?.(window.__HUB_ACTIVE_CART__.recommendationsSettings);
+          window.loadCartRecommendations?.(
+            window.__HUB_ACTIVE_CART__.recommendationsSettings,
+          );
         }
 
         updateCartCount();
@@ -214,7 +217,7 @@ window.startAnnTimer = function (blockId, timeStr) {
   }
 
   const storageKey = `hub-timer-${blockId}`;
-  const storageMetaKey = `hub-timer-${blockId}-src`; 
+  const storageMetaKey = `hub-timer-${blockId}-src`;
 
   const parts = timeStr.split(":").map(Number);
   const intendedSeconds =
@@ -224,7 +227,7 @@ window.startAnnTimer = function (blockId, timeStr) {
 
   let totalSeconds;
   const savedEndTime = localStorage.getItem(storageKey);
-  const savedSrc = localStorage.getItem(storageMetaKey); 
+  const savedSrc = localStorage.getItem(storageMetaKey);
 
   if (savedSrc !== timeStr) {
     localStorage.removeItem(storageKey);
@@ -301,7 +304,7 @@ window.startAnnTimer = function (blockId, timeStr) {
     try {
       localStorage.setItem(
         getCacheKey(shop),
-        JSON.stringify({ data, ts: Date.now() })
+        JSON.stringify({ data, ts: Date.now() }),
       );
     } catch (_) {}
   }
@@ -312,7 +315,7 @@ window.startAnnTimer = function (blockId, timeStr) {
 
     if (cartResult?.success && cartResult.data?.length) {
       const publishedCart = cartResult.data.find(
-        (cart) => cart.status === "published"
+        (cart) => cart.status === "published",
       );
 
       if (publishedCart) {
@@ -321,7 +324,9 @@ window.startAnnTimer = function (blockId, timeStr) {
         hasPublishedCart = true;
         initCartDrawerAfterData();
         // Start background prefetch immediately so data is ready when drawer opens
-        window._hubRecPrefetch = window._hubFetchRecProducts?.(publishedCart.recommendationsSettings);
+        window._hubRecPrefetch = window._hubFetchRecProducts?.(
+          publishedCart.recommendationsSettings,
+        );
       } else {
         console.log("No published cart found");
       }
@@ -394,7 +399,7 @@ window.startAnnTimer = function (blockId, timeStr) {
       const prevSticky = JSON.stringify(window.__HUB_STICKY_CART__ ?? null);
 
       const nextCart = JSON.stringify(
-        cartResult.data?.find((c) => c.status === "published") ?? null
+        cartResult.data?.find((c) => c.status === "published") ?? null,
       );
       const nextSticky = JSON.stringify(stickyResult.data ?? null);
 
@@ -425,11 +430,16 @@ window.startAnnTimer = function (blockId, timeStr) {
 window._hubFetchRecProducts = async function (settings = {}) {
   const limit = settings.maxRecommendations || settings.productCount || 4;
   const selectedItems = settings?.selectedItems || [];
-  const sourceType = settings.sourceType ||
+  const sourceType =
+    settings.sourceType ||
     (selectedItems?.products?.length ? "products" : null) ||
     (selectedItems?.collections?.length ? "collections" : null) ||
-    (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Collection/") ? "collections" : null) ||
-    (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Product/") ? "products" : null);
+    (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Collection/")
+      ? "collections"
+      : null) ||
+    (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Product/")
+      ? "products"
+      : null);
 
   const cartRes = await fetch("/cart.js");
   if (!cartRes.ok) return [];
@@ -438,11 +448,10 @@ window._hubFetchRecProducts = async function (settings = {}) {
 
   let finalProducts = [];
 
-
   if (sourceType === "products") {
     const selectedProductIds =
-      settings?.selectedItems?.products?.map((gid) => gid.split("/").pop()) || [];
-
+      settings?.selectedItems?.products?.map((gid) => gid.split("/").pop()) ||
+      [];
 
     if (selectedProductIds.length) {
       let allProducts = [];
@@ -461,20 +470,20 @@ window._hubFetchRecProducts = async function (settings = {}) {
       }
 
       finalProducts = allProducts.filter((p) =>
-        selectedProductIds.includes(String(p.id))
+        selectedProductIds.includes(String(p.id)),
       );
     }
   } else if (sourceType === "collections") {
     const rawColIds = Array.isArray(selectedItems)
       ? selectedItems
-      : (selectedItems?.collections || []);
+      : selectedItems?.collections || [];
     const collectionIds = rawColIds.map((gid) => gid.split("/").pop());
 
     const colRes = await fetch(`/collections.json?limit=250`);
     const colData = await colRes.json();
 
     const matchedCollections = colData.collections.filter((c) =>
-      collectionIds.includes(String(c.id))
+      collectionIds.includes(String(c.id)),
     );
 
     let allProducts = [];
@@ -485,7 +494,7 @@ window._hubFetchRecProducts = async function (settings = {}) {
 
       while (more) {
         const res = await fetch(
-          `/collections/${col.handle}/products.json?limit=250&page=${page}`
+          `/collections/${col.handle}/products.json?limit=250&page=${page}`,
         );
         const data = await res.json();
         if (data.products.length > 0) {
@@ -529,7 +538,7 @@ window._hubFetchRecProducts = async function (settings = {}) {
     if (shop && appUrl && finalProducts.length) {
       const handles = finalProducts.map((p) => p.handle).join(",");
       const ratingsRes = await fetch(
-        `${appUrl}/api/hub-ratings?shop=${encodeURIComponent(shop)}&handles=${encodeURIComponent(handles)}`
+        `${appUrl}/api/hub-ratings?shop=${encodeURIComponent(shop)}&handles=${encodeURIComponent(handles)}`,
       );
       if (ratingsRes.ok) {
         const ratings = await ratingsRes.json();
@@ -661,11 +670,17 @@ window.getUpsellProducts = async function (settings, productId) {
     let products = [];
 
     const selectedItems = settings?.selectedItems || {};
-    const sourceType = settings.sourceType ||
+    const sourceType =
+      settings.sourceType ||
       (selectedItems?.products?.length ? "products" : null) ||
       (selectedItems?.collections?.length ? "collections" : null) ||
-      (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Collection/") ? "collections" : null) ||
-      (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Product/") ? "products" : null);
+      (Array.isArray(selectedItems) &&
+      selectedItems[0]?.includes("/Collection/")
+        ? "collections"
+        : null) ||
+      (Array.isArray(selectedItems) && selectedItems[0]?.includes("/Product/")
+        ? "products"
+        : null);
 
     if (settings.useAiRecommended) {
       let url = `/recommendations/products.json?product_id=${productId}`;
@@ -708,7 +723,7 @@ window.getUpsellProducts = async function (settings, productId) {
     } else if (sourceType === "collections") {
       const rawColIds = Array.isArray(selectedItems)
         ? selectedItems
-        : (selectedItems.collections || []);
+        : selectedItems.collections || [];
       const colIds = rawColIds.map((gid) => gid.split("/").pop());
 
       if (colIds.length) {
@@ -732,7 +747,9 @@ window.getUpsellProducts = async function (settings, productId) {
     }
 
     if (!settings.showIfAlreadyInCart && window._hubCartProductIds?.size) {
-      products = products.filter((p) => !window._hubCartProductIds.has(String(p.id)));
+      products = products.filter(
+        (p) => !window._hubCartProductIds.has(String(p.id)),
+      );
     }
 
     if (settings.limitUpsellsInCart) {
@@ -744,7 +761,6 @@ window.getUpsellProducts = async function (settings, productId) {
     return [];
   }
 };
-
 
 // ── Triggered Rewards: auto-add / remove free gift products ──────────────────
 
@@ -790,7 +806,9 @@ window.handleTriggeredRewards = async function handleTriggeredRewards(cart) {
 
   // Exclude triggered-reward gift items from the trigger check — otherwise
   // the gift product itself can keep qualifying the trigger it was added by.
-  const nonGiftItems = cart.items.filter((i) => !i.properties?._triggered_reward);
+  const nonGiftItems = cart.items.filter(
+    (i) => !i.properties?._triggered_reward,
+  );
 
   const cartTotal = cart.total_price / 100;
   const cartProductIds = new Set(
@@ -818,7 +836,8 @@ window.handleTriggeredRewards = async function handleTriggeredRewards(cart) {
         String(i.properties?._triggered_reward) === String(reward.id) &&
         (giftVariantIds.includes(
           `gid://shopify/ProductVariant/${i.variant_id}`,
-        ) || giftProductIds.has(`gid://shopify/Product/${i.product_id}`)),
+        ) ||
+          giftProductIds.has(`gid://shopify/Product/${i.product_id}`)),
     );
 
     if (qualifies && !giftInCart && giftVariantIds.length > 0) {
@@ -889,7 +908,12 @@ async function checkTriggers(
 ) {
   if (!triggers || triggers.length === 0) return true;
   for (const t of triggers) {
-    const result = await checkTrigger(t, { cartTotal, cartProductIds, cartVariantIds, cart });
+    const result = await checkTrigger(t, {
+      cartTotal,
+      cartProductIds,
+      cartVariantIds,
+      cart,
+    });
     if (!result) return false;
   }
   return true;
@@ -937,7 +961,10 @@ async function checkTrigger(
             window._hubCollHandleMap = {};
           }
         } catch (e) {
-          console.error("[triggered-reward] Failed to fetch collections list:", e);
+          console.error(
+            "[triggered-reward] Failed to fetch collections list:",
+            e,
+          );
           window._hubCollHandleMap = {};
         }
       }
@@ -948,13 +975,18 @@ async function checkTrigger(
         const collId = collGid.replace("gid://shopify/Collection/", "");
         const handle = window._hubCollHandleMap[collId];
         if (!handle) {
-          console.warn("[triggered-reward] No handle found for collection ID:", collId);
+          console.warn(
+            "[triggered-reward] No handle found for collection ID:",
+            collId,
+          );
           continue;
         }
         try {
           let collProductIds = window._hubCollCache[collId];
           if (!collProductIds) {
-            const res = await fetch(`/collections/${handle}/products.json?limit=250`);
+            const res = await fetch(
+              `/collections/${handle}/products.json?limit=250`,
+            );
             if (!res.ok) continue;
             const data = await res.json();
             collProductIds = new Set(
@@ -966,7 +998,11 @@ async function checkTrigger(
             if (collProductIds.has(pid)) return true;
           }
         } catch (e) {
-          console.error("[triggered-reward] Collection check failed:", handle, e);
+          console.error(
+            "[triggered-reward] Collection check failed:",
+            handle,
+            e,
+          );
         }
       }
       return false;
@@ -985,7 +1021,12 @@ async function checkTrigger(
 
 // ── Offers Panel ──────────────────────────────────────────────────────────────
 
-function hubRenderOffersPanel(blockId, allDiscountCodes, activeDiscountCodes, cart) {
+function hubRenderOffersPanel(
+  blockId,
+  allDiscountCodes,
+  activeDiscountCodes,
+  cart,
+) {
   const totalEl = document.getElementById(`hub-offers-cart-total-${blockId}`);
   if (totalEl) {
     totalEl.textContent = `Your Cart: ${hubUtils.formatMoney(cart.total_price || 0)}`;
@@ -996,11 +1037,14 @@ function hubRenderOffersPanel(blockId, allDiscountCodes, activeDiscountCodes, ca
 
   // cart.discount_codes is the real source — codes actually applied to this cart
   const appliedCodes = new Set(
-    (cart.discount_codes || []).map((c) => (c.code || "").toUpperCase()).filter(Boolean)
+    (cart.discount_codes || [])
+      .map((c) => (c.code || "").toUpperCase())
+      .filter(Boolean),
   );
 
   const validCodes = (allDiscountCodes || []).filter(
-    (d) => d.title && d.status !== "EXPIRED" && d.type !== "DiscountAutomaticApp"
+    (d) =>
+      d.title && d.status !== "EXPIRED" && d.type !== "DiscountAutomaticApp",
   );
 
   if (validCodes.length === 0) {
@@ -1008,16 +1052,17 @@ function hubRenderOffersPanel(blockId, allDiscountCodes, activeDiscountCodes, ca
     return;
   }
 
-  list.innerHTML = validCodes.map((d) => {
-    const label = d.title.toUpperCase();
-    const isActive = appliedCodes.has(label);
-    const savings = d.savings || d.description || "";
-    const subtitle = d.subtitle || d.terms || "";
-    const actionBtn = isActive
-      ? `<button class="hub-coupon-action-btn remove" onclick="hubRemoveOfferCode('${label}','${blockId}')">REMOVE</button>`
-      : `<button class="hub-coupon-action-btn apply" onclick="hubApplyOfferCode2('${label}','${blockId}')">APPLY</button>`;
+  list.innerHTML = validCodes
+    .map((d) => {
+      const label = d.title.toUpperCase();
+      const isActive = appliedCodes.has(label);
+      const savings = d.savings || d.description || "";
+      const subtitle = d.subtitle || d.terms || "";
+      const actionBtn = isActive
+        ? `<button class="hub-coupon-action-btn remove" onclick="hubRemoveOfferCode('${label}','${blockId}', this)">REMOVE</button>`
+        : `<button class="hub-coupon-action-btn apply" onclick="hubApplyOfferCodeFromList('${label}','${blockId}', this)">APPLY</button>`;
 
-    return `
+      return `
       <div class="hub-coupon-card">
         <div class="hub-coupon-badge">${label}</div>
         <div class="hub-coupon-body">
@@ -1029,63 +1074,181 @@ function hubRenderOffersPanel(blockId, allDiscountCodes, activeDiscountCodes, ca
           ${subtitle ? `<div class="hub-coupon-desc">${subtitle}</div>` : ""}
         </div>
       </div>`;
-  }).join("");
+    })
+    .join("");
 }
 
 window.hubOpenOffersPanel = function (blockId) {
-  document.getElementById(`hub-offers-panel-${blockId}`)?.classList.add("hub-offers-open");
-  document.getElementById(`hub-offers-backdrop-${blockId}`)?.classList.add("hub-offers-open");
-  document.getElementById(`hub-offers-close-${blockId}`)?.classList.add("hub-offers-open");
-  document.querySelector(`.hub-cart-block-${blockId}`)?.classList.add("hub-offers-open-body");
+  document
+    .getElementById(`hub-offers-panel-${blockId}`)
+    ?.classList.add("hub-offers-open");
+  document
+    .getElementById(`hub-offers-backdrop-${blockId}`)
+    ?.classList.add("hub-offers-open");
+  document
+    .getElementById(`hub-offers-close-${blockId}`)
+    ?.classList.add("hub-offers-open");
+  document
+    .querySelector(`.hub-cart-block-${blockId}`)
+    ?.classList.add("hub-offers-open-body");
 };
 
 window.hubCloseOffersPanel = function (blockId) {
-  document.getElementById(`hub-offers-panel-${blockId}`)?.classList.remove("hub-offers-open");
-  document.getElementById(`hub-offers-backdrop-${blockId}`)?.classList.remove("hub-offers-open");
-  document.getElementById(`hub-offers-close-${blockId}`)?.classList.remove("hub-offers-open");
-  document.querySelector(`.hub-cart-block-${blockId}`)?.classList.remove("hub-offers-open-body");
+  document
+    .getElementById(`hub-offers-panel-${blockId}`)
+    ?.classList.remove("hub-offers-open");
+  document
+    .getElementById(`hub-offers-backdrop-${blockId}`)
+    ?.classList.remove("hub-offers-open");
+  document
+    .getElementById(`hub-offers-close-${blockId}`)
+    ?.classList.remove("hub-offers-open");
+  document
+    .querySelector(`.hub-cart-block-${blockId}`)
+    ?.classList.remove("hub-offers-open-body");
 };
 
-window.hubApplyOfferCode = async function (blockId) {
+function showMessage(el, text, color = "black") {
+  el.style.color = color;
+  el.innerText = text;
+
+  setTimeout(() => {
+    el.innerText = "";
+  }, 4000);
+}
+
+window.hubApplyOfferCode = async function (blockId, btn) {
   const input = document.getElementById(`hub-offers-input-${blockId}`);
+  const message = document.getElementById(`hub-offers-msg-${blockId}`);
+
   const code = input?.value?.trim();
-  if (!code) return;
-  await hubApplyOfferCode2(code, blockId);
-  if (input) input.value = "";
+
+  if (!code) {
+    if (message) showMessage(message, "Please enter a discount code", "red");
+    return;
+  }
+
+  if (btn && btn.classList.contains("loading")) return;
+
+  if (btn) {
+    btn.classList.add("loading");
+    btn.dataset.original = btn.innerHTML;
+    btn.innerHTML = `<span class="loader"></span>`;
+    btn.disabled = true;
+  }
+
+  try {
+    await hubApplyOfferCode2(code, blockId);
+
+    if (input) input.value = "";
+  } finally {
+    if (btn) {
+      btn.classList.remove("loading");
+      btn.innerHTML = btn.dataset.original || "APPLY";
+      btn.disabled = false;
+    }
+  }
+};
+
+window.hubApplyOfferCodeFromList = async function (code, blockId, btn) {
+
+  if (btn && btn.classList.contains("loading")) return;
+
+  if (btn) {
+    btn.classList.add("loading");
+    btn.dataset.original = btn.innerHTML;
+    btn.innerHTML = `<span class="loader"></span>`;
+    btn.disabled = true;
+  }
+
+  try {
+    await hubApplyOfferCode2(code, blockId);
+  } finally {
+    if (btn) {
+      btn.classList.remove("loading");
+      btn.innerHTML = btn.dataset.original || "APPLY";
+      btn.disabled = false;
+    }
+  }
 };
 
 async function hubApplyOfferCode2(code, blockId) {
   try {
+    const message = document.getElementById(`hub-offers-msg-${blockId}`);
+
     const cartBefore = await (await fetch("/cart.js")).json();
     const totalBefore = cartBefore.total_price || 0;
 
-    const hasExisting = (cartBefore.discount_codes || []).some((c) => c.code);
-    if (hasExisting) {
+    if (!code) return;
+    
+
+    if ((cartBefore.discount_codes || []).length > 0) {
       await fetch("/cart/update.js", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ discount: "" }),
       });
     }
-    await fetch(`/discount/${encodeURIComponent(code)}`);
+
+    await fetch(`/discount/${encodeURIComponent(code)}`, {
+      credentials: "include",
+    });
+
+    await new Promise((r) => setTimeout(r, 500));
 
     const cartAfter = await (await fetch("/cart.js")).json();
     const savings = totalBefore - (cartAfter.total_price || 0);
 
+    const hasLineDiscount = cartAfter.items.some(
+      (item) => item.line_level_discount_allocations?.length > 0,
+    );
+
+    const hasCartDiscount =
+      cartAfter.cart_level_discount_applications?.length > 0;
+
+    const hasCodeDiscount = cartAfter.discount_codes?.some(
+      (d) => d.code.toLowerCase() === code.toLowerCase() && d.applicable,
+    );
+
+    const isValid = hasLineDiscount || hasCartDiscount || hasCodeDiscount;
+
+    if (!isValid) {
+      if (message) {
+        showMessage(message, "Enter a valid discount code", "red");
+      }
+
+      await fetch(`/discount/INVALID_REMOVE`, {
+        credentials: "include",
+      });
+
+      return;
+    }
+
     hubCloseOffersPanel(blockId);
+
     const drawer = document.querySelector(`.hub-cart-block-${blockId}`);
     if (drawer) await window.hubCartRender(drawer);
 
     const overlay = document.getElementById(`hub-coupon-success-${blockId}`);
+
     if (overlay) {
       const label = code.toUpperCase();
-      document.getElementById(`hub-coupon-success-applied-${blockId}`).textContent = `"${label}" applied`;
-      document.getElementById(`hub-coupon-success-headline-${blockId}`).textContent =
+
+      document.getElementById(
+        `hub-coupon-success-applied-${blockId}`,
+      ).textContent = `"${label}" applied`;
+
+      document.getElementById(
+        `hub-coupon-success-headline-${blockId}`,
+      ).textContent =
         savings > 0
           ? `${hubUtils.formatMoney(savings)} SAVINGS WITH THIS COUPON`
           : `COUPON APPLIED!`;
-      document.getElementById(`hub-coupon-success-desc-${blockId}`).textContent =
-        `Use code ${label} and save every time you order`;
+
+      document.getElementById(
+        `hub-coupon-success-desc-${blockId}`,
+      ).textContent = `Use code ${label} and save every time you order`;
+
       overlay.style.display = "flex";
     }
   } catch (e) {
@@ -1098,18 +1261,37 @@ window.hubCloseCouponSuccess = function (blockId) {
   if (overlay) overlay.style.display = "none";
 };
 
-window.hubRemoveOfferCode = async function (code, blockId) {
+window.hubRemoveOfferCode = async function (code, blockId, btn) {
+
+  if (btn && btn.classList.contains("loading")) return;
+
+  if (btn) {
+    btn.classList.add("loading");
+    btn.dataset.original = btn.innerHTML;
+    btn.innerHTML = `<span class="loader"></span>`;
+    btn.disabled = true;
+  }
+
   try {
     await fetch("/cart/update.js", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ discount: "" }),
     });
+
     hubCloseOffersPanel(blockId);
+
     const drawer = document.querySelector(`.hub-cart-block-${blockId}`);
     if (drawer) await window.hubCartRender(drawer);
+
   } catch (e) {
     console.warn("[hub] Failed to remove offer code:", e);
+  } finally {
+    if (btn) {
+      btn.classList.remove("loading");
+      btn.innerHTML = btn.dataset.original || "REMOVE";
+      btn.disabled = false;
+    }
   }
 };
 
@@ -1120,9 +1302,12 @@ window.hubRemoveOfferCode = async function (code, blockId) {
   if (!ratingsUrl || !shop) return;
   window._hubShippingZonesPromise = fetch(
     `${ratingsUrl}/api/shipping-zones?shop=${shop}`,
-    { headers: { "ngrok-skip-browser-warning": "true" } }
+    { headers: { "ngrok-skip-browser-warning": "true" } },
   )
-    .then((r) => r.ok ? r.json() : null)
-    .then((data) => { window._hubShippingZonesCache = data || null; return data; })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((data) => {
+      window._hubShippingZonesCache = data || null;
+      return data;
+    })
     .catch(() => null);
 })();

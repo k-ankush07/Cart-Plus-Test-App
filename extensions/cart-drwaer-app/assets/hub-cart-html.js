@@ -335,7 +335,7 @@ window.injectCartHTML = function (blockId, root) {
         <div id="hub-discount-status-${blockId}"></div>
         <div class="hub-discount-input-row" id="hub-discount-row-${blockId}">
           <input type="text" id="discount-code-input" placeholder="Discount code" class="hub-discount-input" />
-          <button onclick="applyDiscountCode()" class="hub-discount-apply-btn">Apply</button>
+          <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn">Apply</button>
           <button onclick="hubOpenOffersPanel('${blockId}')" class="hub-view-offers-btn">View Offers</button>
         </div>
         <p id="discount-message" class="hub-discount-message"></p>
@@ -383,7 +383,7 @@ window.injectCartHTML = function (blockId, root) {
 
         <!-- CHECKOUT -->
         <div>${renderCustomHTML(customHtmlBlocks.above_checkout)}</div>
-        <a id="hub-checkout-btn-${blockId}" href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" class="hub-cart-checkout-btn" style="border-radius:${designSettings.buttonRadius}px;">
+        <a id="hub-checkout-btn-${blockId}" href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" onclick="hubCheckoutClick(event, '${blockId}', this)" class="hub-cart-checkout-btn" style="border-radius:${designSettings.buttonRadius}px;">
           ${checkoutButtonText}
         </a>
         <div>${renderCustomHTML(customHtmlBlocks.below_checkout)}</div>
@@ -431,8 +431,9 @@ window.injectCartHTML = function (blockId, root) {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" id="hub-offers-input-${blockId}" placeholder="Enter Coupon Code" class="hub-offers-code-input" />
           </div>
-          <button onclick="hubApplyOfferCode('${blockId}')" class="hub-offers-apply-btn">APPLY</button>
+          <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn">APPLY</button>
         </div>
+        <div id="hub-offers-msg-${blockId}" class="hub-discount-message"></div>
         <div id="hub-offers-list-${blockId}" class="hub-offers-list"></div>
       </div>
     </div>
