@@ -1,3 +1,4 @@
+import { useState } from "react";
 import AdditionalNotes from "./AdditionalNotes";
 import AddOns from "./AddOns";
 import DiscountCode from "./DiscountCodes";
@@ -8,12 +9,21 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
     addonsSettings, currency, discountCodesSettings, trustBadgesSettings, disableFixedFooter,
     cartSettings }) {
 
+    const [loading, setLoading] = useState(false);
+
     const totalPrice = 84.40;
 
     const checkoutText = cartSettings.checkoutButtonText?.replace(
         "{{total_price}}",
         `$${totalPrice}`
     );
+
+    const handleCheckout = () => {
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+        }, 2000);
+    }
 
     return (
         <div
@@ -57,8 +67,9 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                             "--btn-hover-text": designSettings.buttonHoverColor,
                             "--btn-text": designSettings.buttonTextColor,
                         }}
+                        onClick={handleCheckout}
                     >
-                        {checkoutText}
+                        {loading ? (<span className="loader"></span>) : (checkoutText)}
                     </button>
                 </div>
 

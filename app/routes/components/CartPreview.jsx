@@ -134,6 +134,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     recommendationsSettings={recommendationsSettings}
                                     currency={currency}
                                     cartSettings={cartSettings}
+                                    upsellsSettings={upsellsSettings}
                                 />
                             )}
                         </>

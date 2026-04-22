@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.931.0",
+    "@graphql-tools/url-loader": "^9.1.1",
     "@monaco-editor/react": "^4.7.0",
     "@prisma/client": "^6.16.3",
     "@react-router/dev": "^7.9.3",

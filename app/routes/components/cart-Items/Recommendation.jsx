@@ -24,7 +24,7 @@ const DEFAULT_PRODUCT = {
     ]
 };
 
-export default function Recommendation({ recommendationsSettings, currency, cartSettings }) {
+export default function Recommendation({ recommendationsSettings, currency, cartSettings, upsellsSettings }) {
 
     const [products, setProducts] = useState([]);
     const [selectedVariants, setSelectedVariants] = useState({});
@@ -95,10 +95,19 @@ export default function Recommendation({ recommendationsSettings, currency, cart
     };
 
     const ProductCard = ({ product }) => {
+        const [loading, setLoading] = useState(false);
+
         const selectedVariant =
             selectedVariants[product.id] || product.variants[0];
 
         if (!selectedVariant) return null;
+
+        const hanldeAddProduct = () => {
+            setLoading(true);
+            setTimeout(() => {
+                setLoading(false);
+            }, 2000);
+        }
 
         return (
             <div className="upcart-internal-component-upsell-tile">
@@ -162,8 +171,9 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                             <button
                                 type="button"
                                 className="upcart-internal-component__button"
+                                onClick={hanldeAddProduct}
                             >
-                                Add
+                                {loading ? (<span className="loader"></span>) : (upsellsSettings.buttonText)}
                             </button>
                         </div>
 

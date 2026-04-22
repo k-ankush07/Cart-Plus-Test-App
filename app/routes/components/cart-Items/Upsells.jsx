@@ -129,8 +129,17 @@ export default function Upsells({ upsellsSettings }) {
     };
 
     const ProductCard = ({ product }) => {
+        const [loading, setLoading] = useState(false);
+
         const selectedVariant = selectedVariants[product.id] || product.variants[0];
         if (!selectedVariant) return null;
+
+        const hanldeAddProduct = () => {
+            setLoading(true);
+            setTimeout(() => {
+                setLoading(false);
+            }, 2000);
+        }
 
         return (
             <div className="upcart-internal-component-upsell-tile upcart-upsell-item-card">
@@ -180,8 +189,9 @@ export default function Upsells({ upsellsSettings }) {
                                 ))}
                             </select>
 
-                            <button type="button" className="upcart-internal-component__button upcart-upsells-button">
-                                {buttonText}
+                            <button type="button" className="upcart-internal-component__button upcart-upsells-button"
+                                onClick={hanldeAddProduct}>
+                                {loading ? (<span className="loader"></span>) : (buttonText)}
                             </button>
                         </div>
                     </div>

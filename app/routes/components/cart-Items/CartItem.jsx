@@ -11,17 +11,17 @@ const TrashIcon = () => (
   </svg>
 );
 
-function QtyStepper({ qty, onDecrement, onIncrement }) {
+function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
   return (
     <div className="cart-app-item__qty upcart-public-component-product-tile__quantity-selector">
-      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus upcart-public-component-product-tile__quantity-minus">−</button>
+      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus upcart-public-component-product-tile__quantity-minus">{loadingType === "dec" ? <span className="loader"></span> : "−"}</button>
       <span className="cart-app-item__qty-value upcart-product-quantity-input">{qty}</span>
-      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus upcart-public-component-product-tile__quantity-plus">+</button>
+      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus upcart-public-component-product-tile__quantity-plus"> {loadingType === "inc" ? <span className="loader"></span> : "+"}</button>
     </div>
   );
 }
 
-function ClassicLayout({ qty, setQty, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
+function ClassicLayout({ qty, loadingType, setLoadingType, updateQty, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
   return (
     <div className="cart-app-item upcart-product-item upcart-public-component-product-tile" style={{ flexDirection: "column" }}>
       <div style={{ display: "flex", gap: "8px", width: "100%" }}>
@@ -76,9 +76,26 @@ function ClassicLayout({ qty, setQty, showStrikethrough, textColor, cartSettings
               </div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
-              <button className="cart-app-item__remove" onClick={() => { }} aria-label="Remove item">
-                <TrashIcon />
+              <QtyStepper
+                qty={qty}
+                loadingType={loadingType}
+                onDecrement={() => updateQty("dec")}
+                onIncrement={() => updateQty("inc")}
+              />
+              <button
+                className="cart-app-item__remove"
+                disabled={loadingType === "remove"}
+                onClick={async () => {
+                  setLoadingType("remove");
+                  await new Promise((res) => setTimeout(res, 800));
+                  setLoadingType(null);
+                }}
+              >
+                {loadingType === "remove" ? (
+                  <span className="loader"></span>
+                ) : (
+                  <TrashIcon />
+                )}
               </button>
             </div>
           </div>
@@ -95,7 +112,7 @@ function ClassicLayout({ qty, setQty, showStrikethrough, textColor, cartSettings
   );
 }
 
-function SubscriptionLayout({ qty, setQty, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
+function SubscriptionLayout({ qty, loadingType, setLoadingType, updateQty, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
   return (
     <div className="cart-app-item upcart-product-item upcart-public-component-product-tile upcart-layout-subscription">
       <div className="cart-app-item__image upcart-product-image-wrapper" style={{ width: "72px", height: "72px", flexShrink: 0 }}>
@@ -120,8 +137,24 @@ function SubscriptionLayout({ qty, setQty, showStrikethrough, textColor, cartSet
 
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
-            <button className="cart-app-item__remove" onClick={() => { }} aria-label="Remove item">
-              <TrashIcon />
+            <button
+              className="cart-app-item__remove"
+              disabled={loadingType === "remove"}
+              onClick={async () => {
+                setLoadingType("remove");
+
+                await new Promise((res) => setTimeout(res, 800));
+
+                console.log("removed");
+
+                setLoadingType(null);
+              }}
+            >
+              {loadingType === "remove" ? (
+                <span className="loader"></span>
+              ) : (
+                <TrashIcon />
+              )}
             </button>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "12px", fontWeight: 600 }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -149,7 +182,12 @@ function SubscriptionLayout({ qty, setQty, showStrikethrough, textColor, cartSet
         {/* Qty +  button */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
           <div>
-            <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
+            <QtyStepper
+              qty={qty}
+              loadingType={loadingType}
+              onDecrement={() => updateQty("dec")}
+              onIncrement={() => updateQty("inc")}
+            />
           </div>
         </div>
         {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
@@ -158,7 +196,7 @@ function SubscriptionLayout({ qty, setQty, showStrikethrough, textColor, cartSet
   );
 }
 
-function ModernLayout({ qty, setQty, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings }) {
+function ModernLayout({ qty, loadingType, setLoadingType, updateQty, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings }) {
   return (
     <div className="cart-app-item upcart-product-item upcart-public-component-product-tile upcart-layout-modern">
 
@@ -203,8 +241,24 @@ function ModernLayout({ qty, setQty, showStrikethrough, textColor, savingColor, 
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
-            <button className="cart-app-item__remove" onClick={() => { }} aria-label="Remove item">
-              <TrashIcon />
+            <button
+              className="cart-app-item__remove"
+              disabled={loadingType === "remove"}
+              onClick={async () => {
+                setLoadingType("remove");
+
+                await new Promise((res) => setTimeout(res, 800));
+
+                console.log("removed");
+
+                setLoadingType(null);
+              }}
+            >
+              {loadingType === "remove" ? (
+                <span className="loader"></span>
+              ) : (
+                <TrashIcon />
+              )}
             </button>
             {showStrikethrough && (
               <span style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$400.00</span>
@@ -222,7 +276,12 @@ function ModernLayout({ qty, setQty, showStrikethrough, textColor, savingColor, 
 
         {/* button + qty */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
-          <QtyStepper qty={qty} onDecrement={() => qty > 1 && setQty(qty - 1)} onIncrement={() => setQty(qty + 1)} />
+          <QtyStepper
+            qty={qty}
+            loadingType={loadingType}
+            onDecrement={() => updateQty("dec")}
+            onIncrement={() => updateQty("inc")}
+          />
         </div>
         {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
       </div>
@@ -235,7 +294,37 @@ export default function CartItem({ showStrikethrough, textColor, savingColor, Su
   const [qty, setQty] = useState(1);
   const layout = cartSettings.cartItemLayout || "classic";
 
-  const sharedProps = { qty, setQty, showStrikethrough, textColor, savingColor, cartSettings, subscriptionUpgradesSettings, Subscription };
+  const [loadingType, setLoadingType] = useState(null);
+
+  const updateQty = async (type) => {
+    if (loadingType) return;
+
+    setLoadingType(type);
+
+    await new Promise((res) => setTimeout(res, 800));
+
+    setQty((prev) => {
+      if (type === "inc") return prev + 1;
+      if (type === "dec" && prev > 1) return prev - 1;
+      return prev;
+    });
+
+    setLoadingType(null);
+  };
+
+  const sharedProps = {
+    qty,
+    setQty,
+    loadingType,
+    setLoadingType,
+    updateQty,
+    showStrikethrough,
+    textColor,
+    savingColor,
+    cartSettings,
+    subscriptionUpgradesSettings,
+    Subscription
+  };
 
   return (
     <div className="upcart-products-section cart-app__items">
