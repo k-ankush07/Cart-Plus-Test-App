@@ -176,7 +176,7 @@ function scopeCss(css, scope) {
         document.body.style.overflow = "hidden";
 
         if (window.hubCartRender) {
-          window.hubCartRender(drawer);
+          window.hubCartRender(drawer, { showSkeleton: true });
         }
       }
     });

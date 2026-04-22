@@ -1763,8 +1763,8 @@
 .loader {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(170, 170, 170, 0.15);
-  border-top: 2px solid #c7c7c7;
+  border: 2px solid rgba(64, 64, 64, 0.15);
+  border-top: 2px solid #fcfcfc;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   display: inline-block;

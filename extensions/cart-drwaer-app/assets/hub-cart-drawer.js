@@ -243,10 +243,11 @@ window.startAnnTimer = function (blockId, timeStr) {
       totalSeconds = remaining;
     } else {
       // Expired while page was closed
-      localStorage.removeItem(storageKey);
-      localStorage.removeItem(storageMetaKey);
+      localStorage.setItem(`${storageKey}-done`, "true");
       const el = document.getElementById(`hub-timer-${blockId}`);
-      if (el) el.textContent = "00:00";
+      if (el) {
+        el.style.display = "none";
+      }
       return;
     }
   } else {
@@ -265,11 +266,10 @@ window.startAnnTimer = function (blockId, timeStr) {
     if (totalSeconds <= 0) {
       clearInterval(_annTimerIntervals[blockId]);
       delete _annTimerIntervals[blockId];
-      localStorage.removeItem(storageKey);
-      localStorage.removeItem(storageMetaKey);
+      localStorage.setItem(`${storageKey}-done`, "true");
+
       const el = document.getElementById(`hub-timer-${blockId}`);
-      if (el) el.textContent = "00:00";
-      return;
+      if (el) el.style.display = "none";
     }
 
     const el = document.getElementById(`hub-timer-${blockId}`);
@@ -1151,7 +1151,6 @@ window.hubApplyOfferCode = async function (blockId, btn) {
 };
 
 window.hubApplyOfferCodeFromList = async function (code, blockId, btn) {
-
   if (btn && btn.classList.contains("loading")) return;
 
   if (btn) {
@@ -1180,7 +1179,6 @@ async function hubApplyOfferCode2(code, blockId) {
     const totalBefore = cartBefore.total_price || 0;
 
     if (!code) return;
-    
 
     if ((cartBefore.discount_codes || []).length > 0) {
       await fetch("/cart/update.js", {
@@ -1262,7 +1260,6 @@ window.hubCloseCouponSuccess = function (blockId) {
 };
 
 window.hubRemoveOfferCode = async function (code, blockId, btn) {
-
   if (btn && btn.classList.contains("loading")) return;
 
   if (btn) {
@@ -1283,7 +1280,6 @@ window.hubRemoveOfferCode = async function (code, blockId, btn) {
 
     const drawer = document.querySelector(`.hub-cart-block-${blockId}`);
     if (drawer) await window.hubCartRender(drawer);
-
   } catch (e) {
     console.warn("[hub] Failed to remove offer code:", e);
   } finally {

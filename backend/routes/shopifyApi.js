@@ -435,7 +435,6 @@ router.get("/shipping-zones", async (req, res) => {
     let response = await makeRequest(token);
 
     if (response?.shippingZonesData?.errors || response?.status === 401) {
-      console.log("🔁 Token invalid, retrying...");
 
       token = await getValidAccessToken(shop);
       response = await makeRequest(token);
