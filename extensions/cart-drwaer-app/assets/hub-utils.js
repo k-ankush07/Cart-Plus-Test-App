@@ -477,14 +477,14 @@ window.hubUtils = {
 
     let titleHtml = "";
     if (cartTotal >= maxAmount) {
-      titleHtml = `<p class="hub-rewards-title" style="color:${textColor}">${rewards.successText || "All rewards unlocked!"}</p>`;
+      titleHtml = `<p class="hub-rewards-title">${rewards.successText || "All rewards unlocked!"}</p>`;
     } else if (currentTier) {
       const remaining = getTierValue(currentTier) - cartTotal;
       const amountStr = isQuantity
         ? `${remaining} items`
         : hubUtils.formatMoney(remaining * 100);
       const raw = currentTier.title || "You're {AMOUNT} away!";
-      titleHtml = `<p class="hub-rewards-title" style="color:${textColor}">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
+      titleHtml = `<p class="hub-rewards-title">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
     }
 
     const fillPctNum = parseFloat(fillPct);
@@ -512,7 +512,7 @@ window.hubUtils = {
             <div class="hub-rewards-dot" style="background:${dotBg};width:${dotSize}px;height:${dotSize}px">
               ${tier.showIcon ? hubUtils.getTierIcon(tier.type, iconColor) : ""}
             </div>
-            <span class="hub-rewards-dot-label" style="color:${textColor}">${tier.description || ""}</span>
+            <span class="hub-rewards-dot-label">${tier.description || ""}</span>
           </div>
         </div>`;
       })

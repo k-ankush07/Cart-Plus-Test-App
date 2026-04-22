@@ -25,7 +25,7 @@ function getHeadingSize(tag) {
 }
 
 function getIconSize(size) {
-  const map = { small: 14, medium: 18, large: 22, xlarge: 26 };
+  const map = { small: 14, medium: 22, large: 30, xlarge: 36 };
   return map[size] || 20;
 }
 
@@ -55,7 +55,7 @@ window.injectCartHTML = function (blockId, root) {
     0;
   // ── Derived header values ──────────────────────────────────────────────────
   const headerPadding =
-    headerSettings.height === "slim" ? "16px 30px" : "30px 30px";
+    headerSettings.height === "slim" ? "15px 25px" : "30px 30px";
   const iconSizePx = getIconSize(headerSettings.iconSize);
   const iconStrokeWidth = headerSettings.iconThickNess === "thick" ? 3 : 2;
   const titleDisplayText = (
@@ -107,7 +107,7 @@ window.injectCartHTML = function (blockId, root) {
           ? "right"
           : "left";
 
-    const wrapperStyle = `flex:1;text-align:${textAlign};`;
+    const wrapperStyle = `flex:1;text-align:${textAlign}; line-height:1;`;
 
     if (titleType === "logo") {
       const fallback =

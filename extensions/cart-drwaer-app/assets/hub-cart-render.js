@@ -112,15 +112,25 @@ window.hubCartRender = async function (drawer, opts = {}) {
       const isBefore = ann.position !== "after";
       const target = isBefore ? annBefore : annAfter;
       if (target) {
-        const height = ann.height === "thick" ? "14px 20px" : "8px 20px";
+        const paddingMap = {
+          slim: "4px 33px",
+          normal: "10px 33px",
+          thick: "18px 33px",
+        };
+
+        const height = paddingMap[ann.height] || "10px 33px";
         const timerText = ann.timer || "10:00";
+        const isAfter = ann.position === "after";
+
         target.style.cssText = `
           display: block;
           background-color: ${ann.backgroundColor || "#ffffff"};
-          border-bottom: 2px solid ${ann.borderColor || "#e5e5e5"};
+          border-top: 1px solid ${ann.borderColor || "#e5e5e5"};
+          border-bottom: 1px solid ${ann.borderColor || "#e5e5e5"};
           padding: ${height};
           font-size: ${ann.fontSize || 14}px;
           text-align: center;
+          ${isAfter ? "margin-top: auto;" : ""}
         `;
         target.innerHTML = ann.text
           ? ann.text.replace(
@@ -467,6 +477,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
       const recommendations =
         window.__HUB_ACTIVE_CART__?.recommendationsSettings;
+      const emptyCartMessage = cartSettings.emptyCartMessage;
 
       drawer
         .querySelectorAll(".hub-additional-notes")
@@ -498,7 +509,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
       container.innerHTML = `
         <div class="hub-cart-empty">
          <div>${hubUtils.renderCustomHTML(customHtmlBlocks.empty_cart)}</div>
-          <p class="hub-empty-title">Your cart is empty</p>
+          
+          <h3 class="hub-empty-title styles_CartPreview__empty__">${emptyCartMessage}</h3>
         </div>
       `;
 
@@ -543,6 +555,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           cartSettings.showSavingsBelowPrices || false;
 
         const colorItems = designSettings.textColor || "#000";
+        const showStrikethrough = designSettings.showStrikethrough || false;
 
         // Fetch compare_at_price from product API (cart.js doesn't include it)
         let compareAtPrice = 0;
@@ -563,58 +576,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
           compareAtPrice = 0;
         }
 
-        const hasDiscount = item.original_line_price !== item.final_line_price;
-
-        const savedAmount = hasDiscount
-          ? item.original_line_price - item.final_line_price
-          : 0;
-        const saveHtml =
-          hasDiscount && showSavingsBelowPrices
-            ? `<p class="hub-item-save">Save ${hubUtils.formatMoney(savedAmount)}</p>`
-            : "";
-        const priceHtml = hasDiscount
-          ? `<span class="hub-price-original">${hubUtils.formatMoney(item.original_line_price)}</span>
-             <span class="hub-price">${hubUtils.formatMoney(item.final_line_price)}</span>`
-          : `<span class="hub-price">${hubUtils.formatMoney(item.final_line_price)}</span>`;
-
-        const variantHtml =
-          item.options_with_values &&
-          item.options_with_values.length > 0 &&
-          !item.product_has_only_default_variant
-            ? item.options_with_values
-                .map(
-                  (opt) =>
-                    `<p class="hub-item-variant"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`,
-                )
-                .join("")
-            : "";
-
-        const propertiesHtml =
-          item.properties && Object.keys(item.properties).length > 0
-            ? Object.entries(item.properties)
-                .filter(([k]) => !k.startsWith("_"))
-                .map(([k, v]) =>
-                  v ? `<p class="hub-item-variant">${k}: ${v}</p>` : "",
-                )
-                .join("")
-            : "";
-
-        const discountHtml =
-          item.line_level_discount_allocations?.length > 0
-            ? item.line_level_discount_allocations
-                .map(
-                  (d) =>
-                    `<p class="hub-item-discount">- ${d.discount_application.title} (${hubUtils.formatMoney(d.amount)})</p>`,
-                )
-                .join("")
-            : "";
-
-        const isReward =
-          !!item.properties?._hub_reward ||
-          !!item.properties?._triggered_reward;
-        const isTriggeredReward = !!item.properties?._triggered_reward;
         const subscriptionSettings =
           window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;
+
         const sellingPlan = item.selling_plan_allocation;
         let sellingPlanHtml = "";
         const planOptionsText =
@@ -669,26 +633,82 @@ window.hubCartRender = async function (drawer, opts = {}) {
           `;
         }
 
-        // Compute per-unit price and compare values for all layouts
         const effectiveUnitPrice =
           item.quantity > 0
             ? Math.round(item.final_line_price / item.quantity)
             : item.price;
+
         const subCompare =
           sellingPlan && item.original_price > effectiveUnitPrice
             ? item.original_price
             : 0;
+
         const priceCompare = item.price > effectiveUnitPrice ? item.price : 0;
+
         const effectiveCompare =
           compareAtPrice && compareAtPrice > effectiveUnitPrice
             ? compareAtPrice
             : priceCompare || subCompare;
+
+        const hasDiscount = effectiveCompare > effectiveUnitPrice;
+
+        const unitSave = hasDiscount
+          ? effectiveCompare - effectiveUnitPrice
+          : 0;
+
+        const saveHtml =
+          hasDiscount && showSavingsBelowPrices
+            ? `<p class="hub-item-save">Save ${hubUtils.formatMoney(unitSave)}</p>`
+            : "";
+
+        const priceHtml = hasDiscount
+          ? `<span class="hub-price-original">${hubUtils.formatMoney(effectiveCompare)}</span>
+     <span class="hub-price">${hubUtils.formatMoney(effectiveUnitPrice)}</span>`
+          : `<span class="hub-price">${hubUtils.formatMoney(effectiveUnitPrice)}</span>`;
+
         const hasCompare = effectiveCompare > 0;
-        const unitSave = hasCompare ? effectiveCompare - effectiveUnitPrice : 0;
+
+        const variantHtml =
+          item.options_with_values &&
+          item.options_with_values.length > 0 &&
+          !item.product_has_only_default_variant
+            ? item.options_with_values
+                .map(
+                  (opt) =>
+                    `<p class="hub-item-variant"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`,
+                )
+                .join("")
+            : "";
+
+        const propertiesHtml =
+          item.properties && Object.keys(item.properties).length > 0
+            ? Object.entries(item.properties)
+                .filter(([k]) => !k.startsWith("_"))
+                .map(([k, v]) =>
+                  v ? `<p class="hub-item-variant">${k}: ${v}</p>` : "",
+                )
+                .join("")
+            : "";
+
+        const discountHtml =
+          item.line_level_discount_allocations?.length > 0
+            ? item.line_level_discount_allocations
+                .map(
+                  (d) =>
+                    `<p class="hub-item-discount">- ${d.discount_application.title} (${hubUtils.formatMoney(d.amount)})</p>`,
+                )
+                .join("")
+            : "";
+
+        const isReward =
+          !!item.properties?._hub_reward ||
+          !!item.properties?._triggered_reward;
+        const isTriggeredReward = !!item.properties?._triggered_reward;
 
         const layoutCtx = {
           item,
           colorItems,
+          showStrikethrough,
           isReward,
           isTriggeredReward,
           effectiveUnitPrice,

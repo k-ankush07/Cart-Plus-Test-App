@@ -29,6 +29,8 @@
     "@shopify/shopify_function": "~2.0.0"
   },
   "devDependencies": {
+    "@graphql-codegen/typescript": "^5.0.10",
+    "@graphql-codegen/typescript-operations": "^5.1.0",
     "@shopify/shopify-function-test-helpers": "^1.0.0",
     "vitest": "^3.2.4"
   }

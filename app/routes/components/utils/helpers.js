@@ -29,9 +29,9 @@ export const getIconSize = (size) => {
     case "small":
       return "14px";
     case "medium":
-      return "18px";
-    case "large":
       return "22px";
+    case "large":
+      return "30px";
     default:
       return "18px";
   }

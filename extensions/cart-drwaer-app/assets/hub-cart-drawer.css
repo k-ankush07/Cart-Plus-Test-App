@@ -60,7 +60,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
   transition: background 0.15s;
 }
 
@@ -637,15 +636,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 0;
-  color: #aaa;
-  font-size: 14px;
   gap: 12px;
+}
+
+.styles_CartPreview__empty__ h3 {
+    color: #000;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 16px;
+    margin: auto;
+    text-align: center;
 }
 
 .hub-cart-recommendations {
   padding: 14px 24px 24px;
-  border-top: 1px solid #e5e5e5;
+  /* border-top: 1px solid #e5e5e5; */
 }
 
 /* ── Footer ── */
@@ -843,15 +849,16 @@
 
 /* ── Rewards bar ── */
 .hub-rewards-wrap {
-  padding: 14px 20px 36px;
-  border-bottom: 1px solid #e5e5e5;
+  padding: 15px 20px 30px;
+  /* border-bottom: 1px solid #e5e5e5; */
 }
 
 .hub-rewards-title {
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   margin: 0 0 16px;
   line-height: 1.4;
+  color: #2D2D2D;
 }
 
 .hub-rewards-segments {
@@ -904,6 +911,8 @@
   position: absolute;
   top: 100%;
   margin-top: 4px;
+  color: #2D2D2D;
+  font-weight: 600;
 }
 
 .hub-tier-cell:last-child .hub-rewards-dot-label {

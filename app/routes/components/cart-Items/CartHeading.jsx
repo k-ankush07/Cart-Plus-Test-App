@@ -50,7 +50,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose })
             style={{
                 padding:
                     headerSettings.height === "slim"
-                        ? "16px 30px"
+                        ? "15px 25px"
                         : "30px 30px",
                 background: headerSettings.backgroundColor
             }}

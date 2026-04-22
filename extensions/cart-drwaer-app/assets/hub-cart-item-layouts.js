@@ -24,6 +24,7 @@ function _deleteBtn(key, title) {
 }
 
 function _unitPriceBlock(ctx) {
+  
   if (ctx.isReward) {
     return ctx.isTriggeredReward && ctx.item.price > 0
       ? `<p class="hub-item-reward-badge">Free gift</p><p class="hub-item-unit-price"><s>${hubUtils.formatMoney(ctx.item.price)}</s></p>`
@@ -62,13 +63,13 @@ function _wrapper(key, inner, sellingPlanHtml, customHtmlBlocks) {
 // ── Layout 1: Classic ────────────────────────────────────────────────────────
 // Image left | info middle (title, variants, discounts) | right (price + save + qty + trash)
 function classicItemHTML(ctx) {
-  const { item, colorItems, isReward, priceHtml, variantHtml, propertiesHtml, discountHtml, sellingPlan, sellingPlanHtml, customHtmlBlocks, hasCompare, effectiveUnitPrice, effectiveCompare, saveHtml } = ctx;
+  const { item, colorItems, showStrikethrough, isReward, priceHtml, variantHtml, propertiesHtml, discountHtml, sellingPlan, sellingPlanHtml, customHtmlBlocks, hasCompare, effectiveUnitPrice, effectiveCompare, saveHtml } = ctx;
 
   const rightCol = isReward
     ? `<span class="hub-price hub-price-free">FREE</span>`
     : `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-        <span class="hub-item-unit-price${hasCompare ? " hub-item-unit-price--sale" : ""}" style="font-weight:700">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
-        ${hasCompare ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
+        <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}" style="font-weight:700">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
+        ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
        </div>
        ${saveHtml}
        <div class="hub-item-actions" style="justify-content:flex-end;margin-top:8px">
@@ -101,16 +102,16 @@ function classicItemHTML(ctx) {
 // Image left (smaller) | title + trash/discount-badge top-right | price row |
 // variants | qty stepper | subscribe-upgrade button
 function subscriptionItemHTML(ctx) {
-  const { item, colorItems, isReward, priceHtml, variantHtml, propertiesHtml, discountHtml, sellingPlan, sellingPlanHtml, customHtmlBlocks, hasCompare, effectiveUnitPrice, effectiveCompare, saveHtml } = ctx;
+  const { item, colorItems, showStrikethrough, isReward, priceHtml, variantHtml, propertiesHtml, discountHtml, sellingPlan, sellingPlanHtml, customHtmlBlocks, hasCompare, effectiveUnitPrice, effectiveCompare, saveHtml } = ctx;
 
   const discountBadges = _discountBadgesHtml(item);
 
   const priceRow = isReward
     ? `<p class="hub-item-reward-badge">Free gift</p>`
     : `<div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">
-        <span class="hub-item-unit-price${hasCompare ? " hub-item-unit-price--sale" : ""}" style="font-weight:700">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
-        ${hasCompare ? `<span class="hub-item-compare-price" style="text-decoration:line-through;font-size:12px;color:#999">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
-        ${hasCompare ? `<span class="hub-item-unit-save" style="background:#e6f4ea;color:#1e7e34;font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px">Save ${hubUtils.formatMoney(ctx.unitSave)}</span>` : ""}
+        <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}" style="font-weight:700">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
+        ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price" style="text-decoration:line-through;font-size:12px;color:#999">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
+        ${hasCompare && showStrikethrough ? `<span class="hub-item-unit-save" style="background:#e6f4ea;color:#1e7e34;font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px">Save ${hubUtils.formatMoney(ctx.unitSave)}</span>` : ""}
        </div>
        ${saveHtml}`;
 
@@ -147,7 +148,7 @@ function subscriptionItemHTML(ctx) {
 // SAVE badge above image | title + variant dropdowns left | trash + price right |
 // subscribe-upgrade button + qty stepper bottom row
 function modernItemHTML(ctx) {
-  const { item, colorItems, isReward, priceHtml, variantHtml, propertiesHtml, discountHtml, sellingPlan, sellingPlanHtml, customHtmlBlocks, hasCompare, effectiveUnitPrice, effectiveCompare, unitSave, saveHtml } = ctx;
+  const { item, colorItems, showStrikethrough, isReward, priceHtml, variantHtml, propertiesHtml, discountHtml, sellingPlan, sellingPlanHtml, customHtmlBlocks, hasCompare, effectiveUnitPrice, effectiveCompare, unitSave, saveHtml } = ctx;
 
   const discountBadges = _discountBadgesHtml(item);
 
@@ -158,8 +159,8 @@ function modernItemHTML(ctx) {
   const priceBlock = isReward
     ? `<span class="hub-price hub-price-free">FREE</span>`
     : `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-        ${hasCompare ? `<span class="hub-item-compare-price" style="text-decoration:line-through;font-size:12px;color:#999">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
-        <span class="hub-item-unit-price${hasCompare ? " hub-item-unit-price--sale" : ""}" style="font-weight:700;font-size:15px">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
+        ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price" style="text-decoration:line-through;font-size:12px;color:#999">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
+        <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}" style="font-weight:700;font-size:15px">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
         ${discountBadges}
        </div>`;
 
