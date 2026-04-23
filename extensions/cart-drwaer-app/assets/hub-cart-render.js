@@ -1,5 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
+function hexToRGBA(hex, opacity) {
+  const r = parseInt(hex.substring(1, 3), 16);
+  const g = parseInt(hex.substring(3, 5), 16);
+  const b = parseInt(hex.substring(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
 window.hubCartRender = async function (drawer, opts = {}) {
   if (window._hubRenderInProgress) return;
   window._subscriptionOpen = {};
@@ -96,6 +103,11 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     const container = drawer.querySelector(".hub-cart-items");
     if (!container) return;
+
+    const cartItemsEl = document.getElementById(`hub-cart-items-${blockId}`);
+    if (cartItemsEl) {
+      cartItemsEl.classList.toggle("footer-empty", cart.items.length === 0);
+    }
 
     /* ── ANNOUNCEMENT ── */
     const ann = window.__HUB_ACTIVE_CART__?.announcementSettings;
@@ -344,13 +356,29 @@ window.hubCartRender = async function (drawer, opts = {}) {
         container.style.display = "";
         container.innerHTML = `
           <div class="hub-swiper-wrapper">
-            ${indicator === "buttons" ? `<div class="hub-swiper-prev">‹</div>` : ""}
+            ${
+              indicator === "buttons"
+                ? `<div class="hub-swiper-prev">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path d="M15 18l-6-6 6-6"/>
+              </svg>
+              </div>`
+                : ""
+            }
             <div class="hub-swiper swiper">
               <div class="swiper-wrapper">
                 ${slidesHTML}
               </div>
             </div>
-            ${indicator === "buttons" ? `<div class="hub-swiper-next">›</div>` : ""}
+            ${
+              indicator === "buttons"
+                ? `<div class="hub-swiper-next">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 6l6 6-6 6"/>
+            </svg>
+              </div>`
+                : ""
+            }
             ${indicator === "progressBar" ? `<div class="hub-progress-bar"><div class="hub-progress-bar-fill"></div></div>` : ""}
           </div>
         `;
@@ -368,13 +396,22 @@ window.hubCartRender = async function (drawer, opts = {}) {
         const select = card.querySelector(".hub-variant-select");
         const priceEl = card.querySelector(".sale-price");
         const imgEl = card.querySelector(".hub-product-img");
-        select.addEventListener("change", function () {
-          const selected = this.options[this.selectedIndex];
-          priceEl.textContent = hubUtils.formatMoney(
-            Number(selected.dataset.price),
-          );
-          if (selected.dataset.image) imgEl.src = selected.dataset.image;
-        });
+
+        if (select) {
+          select.addEventListener("change", function () {
+            const selected = this.options[this.selectedIndex];
+
+            if (priceEl) {
+              priceEl.textContent = hubUtils.formatMoney(
+                Number(selected.dataset.price),
+              );
+            }
+
+            if (imgEl && selected.dataset.image) {
+              imgEl.src = selected.dataset.image;
+            }
+          });
+        }
       });
 
       // FIX: was `document.addEventListener` — leaked a new listener on every render
@@ -449,12 +486,38 @@ window.hubCartRender = async function (drawer, opts = {}) {
           fillEl.style.width = Math.min(100, fill) + "%";
         }
 
+        function updateArrows(swiper) {
+          if (!prevEl || !nextEl) return;
+
+          if (swiper.isBeginning) {
+            prevEl.style.opacity = "0.6";
+            prevEl.style.pointerEvents = "none";
+          } else {
+            prevEl.style.opacity = "1";
+            prevEl.style.pointerEvents = "auto";
+          }
+
+          if (swiper.isEnd) {
+            nextEl.style.opacity = "0.6";
+            nextEl.style.pointerEvents = "none";
+          } else {
+            nextEl.style.opacity = "1";
+            nextEl.style.pointerEvents = "auto";
+          }
+        }
+
         const swiper = new Swiper(swiperEl, {
-          slidesPerView: rendered.length === 1 ? 1 : 1.5,
+          slidesPerView: rendered.length === 1 ? 1 : 1.2,
           spaceBetween: 12,
           on: {
-            init: updateProgress,
-            slideChange: updateProgress,
+            init(swiper) {
+              updateProgress(swiper);
+              updateArrows(swiper);
+            },
+            slideChange(swiper) {
+              updateProgress(swiper);
+              updateArrows(swiper);
+            },
           },
         });
         swiperInstance = swiper;
@@ -494,13 +557,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (!recommendations?.enabled) {
         recHTML = `
           <div class="hub-cart-recommendations">
-            <p class="hub-rec-subtitle">${recommendations.headerText || ""}</p>
-            <h3 class="hub-rec-title">${recommendations.productHeaderText || "You may also like"}</h3>
-            ${
-              recommendations.showShopNowButton
-                ? `<a href="${recommendations.buttonUrl}" class="hub-rec-btn">${recommendations.buttonText || "Shop Now"}</a>`
-                : ""
-            }
+           
+            <h3 class="hub-rec-title hub-public-upsell__title">${recommendations.productHeaderText || "You may also like"}</h3>
             <div id="hub-rec-products"></div>
           </div>
         `;
@@ -509,8 +567,19 @@ window.hubCartRender = async function (drawer, opts = {}) {
       container.innerHTML = `
         <div class="hub-cart-empty">
          <div>${hubUtils.renderCustomHTML(customHtmlBlocks.empty_cart)}</div>
-          
           <h3 class="hub-empty-title styles_CartPreview__empty__">${emptyCartMessage}</h3>
+          ${
+            !recommendations?.enabled
+              ? `<p class="hub-rec-subtitle hub-public-upsell__header">
+         ${recommendations?.headerText || ""}
+       </p>`
+              : ""
+          }
+           ${
+             recommendations.showShopNowButton
+               ? `<a href="${recommendations.buttonUrl}" class="hub-rec-btn hub-public-upsell__shop-now-button">${recommendations.buttonText || "Shop Now"}</a>`
+               : ""
+           }
         </div>
       `;
 
@@ -556,6 +625,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
         const colorItems = designSettings.textColor || "#000";
         const showStrikethrough = designSettings.showStrikethrough || false;
+        const savingsColor = designSettings.savingsColor || '#16a34a';
 
         // Fetch compare_at_price from product API (cart.js doesn't include it)
         let compareAtPrice = 0;
@@ -655,10 +725,12 @@ window.hubCartRender = async function (drawer, opts = {}) {
         const unitSave = hasDiscount
           ? effectiveCompare - effectiveUnitPrice
           : 0;
+        const layoutName = cartSettings.cartItemLayout || "classic";
 
         const saveHtml =
-          hasDiscount && showSavingsBelowPrices
-            ? `<p class="hub-item-save">Save ${hubUtils.formatMoney(unitSave)}</p>`
+          hasDiscount && showSavingsBelowPrices && layoutName !== "subscription"
+            ? `<p class="hub-item-save" style="color:${savingsColor}; 
+            background:${hexToRGBA(designSettings.savingsColor, 0.1)};">Save ${hubUtils.formatMoney(unitSave)}</p>`
             : "";
 
         const priceHtml = hasDiscount
@@ -709,6 +781,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           item,
           colorItems,
           showStrikethrough,
+          savingsColor,
           isReward,
           isTriggeredReward,
           effectiveUnitPrice,
@@ -725,8 +798,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           customHtmlBlocks,
           showSavingsBelowPrices,
         };
-
-        const layoutName = cartSettings.cartItemLayout || "classic";
+        
         const layoutFn =
           window.hubItemLayouts?.[layoutName] || window.hubItemLayouts?.classic;
         return layoutFn(layoutCtx);
@@ -981,7 +1053,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (cart.total_discount > 0) {
       container.insertAdjacentHTML(
         "beforeend",
-        `<p class="hub-savings">You saved ${hubUtils.formatMoney(cart.total_discount)}</p>`,
+        ``,
       );
     }
 

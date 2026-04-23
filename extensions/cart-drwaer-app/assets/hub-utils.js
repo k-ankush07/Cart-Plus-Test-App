@@ -148,6 +148,8 @@ window.hubUtils = {
          <span class="hub-save-badge">SAVE ${savePct}%</span>`
       : "";
 
+    const hasMultipleVariants = variants.length > 1;
+
     return `
     <div class="hub-rec-product upcart-internal-component-upsell-tile">
       <div class="upcart-internal-component-upsell-tile__info_count">
@@ -170,15 +172,18 @@ window.hubUtils = {
             </span>
             ${comparePriceHTML}
           </div>
-        </div>
-     
-        <div class="upcart-internal-component-upsell-tile__variant-row">
-          <select class="hub-variant-select">
-            ${variantOptions}
-          </select>
+           <div class="upcart-internal-component-upsell-tile__variant-row">
+           ${
+              hasMultipleVariants
+                ? `<select class="hub-variant-select">
+                     ${variantOptions}
+                   </select>`
+                : ""
+            }
           <button class="hub-add-btn" data-variant="${firstVariant?.id}">
             Add
           </button>
+        </div>
         </div>
       </div>
     </div>
@@ -224,7 +229,9 @@ window.hubUtils = {
 
     const blockId = window.HUB_CART_BLOCK_ID;
     const shippingRow = document.getElementById(`hub-shipping-row-${blockId}`);
-    const shippingCostEl = document.getElementById(`hub-shipping-cost-${blockId}`);
+    const shippingCostEl = document.getElementById(
+      `hub-shipping-cost-${blockId}`,
+    );
     if (!shippingRow || !shippingCostEl) return;
 
     try {
@@ -234,7 +241,9 @@ window.hubUtils = {
           await window._hubShippingZonesPromise;
         } else {
           const url = `${ratingsUrl}/api/shipping-zones?shop=${shop}`;
-          const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true" } });
+          const res = await fetch(url, {
+            headers: { "ngrok-skip-browser-warning": "true" },
+          });
           if (!res.ok) return;
           window._hubShippingZonesCache = await res.json();
         }
@@ -246,7 +255,9 @@ window.hubUtils = {
       const countryCode = input?.value || window.__SHOPIFY_CURRENCY__?.code;
       if (!countryCode) return;
 
-      const countryData = (data.countries || []).find((c) => c.code === countryCode);
+      const countryData = (data.countries || []).find(
+        (c) => c.code === countryCode,
+      );
       if (!countryData) return;
 
       const cartTotalDollars = (cartTotalCents || 0) / 100;
@@ -254,7 +265,10 @@ window.hubUtils = {
       let applicableRate = null;
       for (const rate of rates) {
         const min = parseFloat(rate.min_order_subtotal ?? 0);
-        const max = rate.max_order_subtotal != null ? parseFloat(rate.max_order_subtotal) : Infinity;
+        const max =
+          rate.max_order_subtotal != null
+            ? parseFloat(rate.max_order_subtotal)
+            : Infinity;
         if (cartTotalDollars >= min && cartTotalDollars <= max) {
           applicableRate = rate;
           break;
@@ -268,7 +282,8 @@ window.hubUtils = {
       window._hubShippingPriceCents = shippingCents;
 
       shippingRow.style.display = "";
-      shippingCostEl.textContent = price === 0 ? "Free" : hubUtils.formatMoney(shippingCents);
+      shippingCostEl.textContent =
+        price === 0 ? "Free" : hubUtils.formatMoney(shippingCents);
 
       // Patch grand total and checkout button now that shipping is resolved
       const finalTotal = window._hubCartFinalTotal || 0;
@@ -278,11 +293,17 @@ window.hubUtils = {
       const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
       if (grandEl) grandEl.textContent = fmt(grandTotal);
 
-      const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
+      const checkoutBtn = document.getElementById(
+        `hub-checkout-btn-${blockId}`,
+      );
       if (checkoutBtn) {
         const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
-        const rawText = cartSettings.checkoutButtonText || "Proceed to checkout";
-        checkoutBtn.textContent = rawText.replace("{{total_price}}", fmt(grandTotal));
+        const rawText =
+          cartSettings.checkoutButtonText || "Proceed to checkout";
+        checkoutBtn.textContent = rawText.replace(
+          "{{total_price}}",
+          fmt(grandTotal),
+        );
       }
     } catch (err) {
       // silent fail
