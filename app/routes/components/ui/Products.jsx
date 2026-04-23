@@ -70,6 +70,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
             const newProducts = edges.map((p) => ({
                 id: p.node.id,
                 title: p.node.title,
+                handle: p.node.handle,
                 image: p.node.images.edges[0]?.node?.url,
                 price: p.node.variants.edges[0]?.node?.price || "0",
                 variants: p.node.variants.edges.map((v) => ({
@@ -78,6 +79,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
                     price: v.node.price,
                     available: v.node.availableForSale,
                     image: v.node.image?.url || null,
+                    handle: p.node.handle,
                 }))
             }));
 
@@ -115,7 +117,6 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
 
     const toggleSelect = (variant, product) => {
         let updated;
-
         const exists = selected.some((v) => v.id === variant.id);
 
         if (exists) {
@@ -126,6 +127,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
                     ...variant,
                     productTitle: product.title,
                     productImage: product.image,
+                    handle: product.handle,
                 },
             ];
         }
@@ -159,6 +161,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
                     ...firstVariant,
                     productTitle: product.title,
                     productImage: product.image,
+                    handle: product.handle,
                 },
             ];
         }
@@ -180,7 +183,6 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
             selected.some((s) => s.id === v.id)
         );
     });
-
 
     return (
         <BlockStack gap="300">

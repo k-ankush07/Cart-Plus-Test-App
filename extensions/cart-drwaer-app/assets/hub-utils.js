@@ -68,14 +68,33 @@ window.hubUtils = {
   getAdditionalNotesHTML(blockId, settings, note = "") {
     if (settings?.enabled !== false) return "";
 
+    document.addEventListener("click", (e) => {
+      const toggle = e.target.closest(".drop-icon");
+      if (!toggle) return;
+
+      const wrapper = toggle.closest(".hub-additional-notes");
+      if (!wrapper) return;
+
+      wrapper.classList.toggle("open");
+    });
+
     return `
     <div class="hub-additional-notes ${settings.placement}">
-      <p class="hub-notes-title">${settings.title}</p>
-      <textarea 
-        id="hub-cart-note-${blockId}" 
-        class="hub-notes-textarea"
-        placeholder="${settings.placeholder}"
-      >${note || ""}</textarea>
+      <p class="hub-notes-title">
+        <img src="https://hubsyntax.com/cart-images/Group.svg" alt="icon">
+        ${settings.title}
+        <span class="drop-icon">
+          <img src="https://hubsyntax.com/cart-images/Vector%20(3).svg" alt="icon">
+        </span>
+      </p>
+
+      <div class="hub-notes-content">
+        <textarea 
+          id="hub-cart-note-${blockId}" 
+          class="hub-notes-textarea"
+          placeholder="${settings.placeholder}"
+        >${note || ""}</textarea>
+      </div>
     </div>
   `;
   },
@@ -137,6 +156,8 @@ window.hubUtils = {
       ? `<div class="upcart-internal-component-upsell-tile__rating hub-rating-slot" data-pid="${product.id}"></div>`
       : "";
 
+    const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
+
     const salePrice = Number(firstVariant?.price || 0);
     const comparePrice = Number(firstVariant?.compare_at_price || 0);
     const hasDiscount = comparePrice > salePrice;
@@ -174,14 +195,14 @@ window.hubUtils = {
           </div>
            <div class="upcart-internal-component-upsell-tile__variant-row">
            ${
-              hasMultipleVariants
-                ? `<select class="hub-variant-select">
+             hasMultipleVariants
+               ? `<select class="hub-variant-select">
                      ${variantOptions}
                    </select>`
-                : ""
-            }
+               : ""
+           }
           <button class="hub-add-btn" data-variant="${firstVariant?.id}">
-            Add
+            ${upsellSettings.buttonText || "Add"}
           </button>
         </div>
         </div>

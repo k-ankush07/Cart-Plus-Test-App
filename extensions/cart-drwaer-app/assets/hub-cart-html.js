@@ -306,14 +306,14 @@ window.injectCartHTML = function (blockId, root) {
         <!-- NOTES (position: before) -->
         <div id="hub-notes-below-${blockId}"></div>
 
-        <!-- ANNOUNCEMENT (position: after) -->
-        <div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>
-
         <!-- SUGGESTED PRODUCT -->
         <div id="hub-suggested-product-${blockId}" class="hub-suggested-product" style="display:none;"></div>
 
         <!-- UPSELLS (position: bottom of cart) -->
         <div id="hub-upsell-bottom-${blockId}" class="hub-upsell"></div>
+
+        <!-- ANNOUNCEMENT (position: after) -->
+        <div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>
 
         <div>${renderCustomHTML(customHtmlBlocks.above_footer)}</div>
       </div>
@@ -333,9 +333,11 @@ window.injectCartHTML = function (blockId, root) {
 
         <!-- DISCOUNT -->
         <div id="hub-discount-status-${blockId}"></div>
-        <div class="hub-discount-input-row" id="hub-discount-row-${blockId}">
+        <div class="hub-discount-input-row"id="hub-discount-row-${blockId}">
+          <div class="hub-discount-input-btn">
           <input type="text" id="discount-code-input" placeholder="Discount code" class="hub-discount-input" />
           <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn">Apply</button>
+          </div>
           <button onclick="hubOpenOffersPanel('${blockId}')" class="hub-view-offers-btn">View Offers</button>
         </div>
         <p id="discount-message" class="hub-discount-message"></p>

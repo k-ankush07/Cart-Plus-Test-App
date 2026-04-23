@@ -68,6 +68,42 @@ window.hubCartRender = async function (drawer, opts = {}) {
       ).replace("{{cart_quantity}}", cart.item_count || 0);
     }
 
+    const notesSettings = window.__HUB_ACTIVE_CART__?.additionalNotesSettings;
+    const belowEl = document.getElementById(`hub-notes-below-${blockId}`);
+    const footerEl = document.getElementById(`hub-notes-footer-${blockId}`);
+
+    if (belowEl) belowEl.innerHTML = "";
+    if (footerEl) footerEl.innerHTML = "";
+    drawer
+      .querySelectorAll(".hub-additional-notes")
+      .forEach((el) => el.remove());
+
+    if (
+      notesSettings?.enabled === false &&
+      notesSettings.placement === "below_items" &&
+      cart.items.length > 0
+    ) {
+      if (belowEl)
+        belowEl.innerHTML = hubUtils.getAdditionalNotesHTML(
+          blockId,
+          notesSettings,
+          cart.note,
+        );
+    }
+
+    if (
+      notesSettings?.enabled === false &&
+      notesSettings.placement === "top_of_footer" &&
+      cart.items.length > 0
+    ) {
+      if (footerEl)
+        footerEl.innerHTML = hubUtils.getAdditionalNotesHTML(
+          blockId,
+          notesSettings,
+          cart.note,
+        );
+    }
+
     const footer = drawer.querySelector(".hub-cart-footer");
     if (footer) {
       if (cart.items.length === 0) {
@@ -557,7 +593,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (!recommendations?.enabled) {
         recHTML = `
           <div class="hub-cart-recommendations">
-           
             <h3 class="hub-rec-title hub-public-upsell__title">${recommendations.productHeaderText || "You may also like"}</h3>
             <div id="hub-rec-products"></div>
           </div>
@@ -616,6 +651,36 @@ window.hubCartRender = async function (drawer, opts = {}) {
       return aIsGift - bIsGift;
     });
 
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".hub-upgrade-btn");
+      if (!btn) return;
+
+      const wrapper = btn.closest(".hub-selling-plan-wrapper");
+      if (!wrapper) return;
+
+      const text = btn.querySelector(".btn-text");
+
+      let loader = btn.querySelector(".loader");
+      if (!loader) {
+        loader = document.createElement("span");
+        loader.className = "loader";
+        loader.innerText = "";
+        btn.appendChild(loader);
+      }
+
+      wrapper.classList.remove("show-subscription");
+
+      if (text) text.style.display = "none";
+      loader.style.display = "inline-block";
+
+      setTimeout(() => {
+        loader.style.display = "none";
+        if (text) text.style.display = "inline-block";
+
+        wrapper.classList.add("show-subscription");
+      }, 3000);
+    });
+
     const itemsHTML = await Promise.all(
       sortedItems.map(async (item) => {
         if (item.properties?._hub_addon) return "";
@@ -625,7 +690,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
         const colorItems = designSettings.textColor || "#000";
         const showStrikethrough = designSettings.showStrikethrough || false;
-        const savingsColor = designSettings.savingsColor || '#16a34a';
+        const savingsColor = designSettings.savingsColor || "#16a34a";
 
         // Fetch compare_at_price from product API (cart.js doesn't include it)
         let compareAtPrice = 0;
@@ -690,10 +755,11 @@ window.hubCartRender = async function (drawer, opts = {}) {
                 : ""
             }">
               <div class="hub-one-time-view">
-                <button class="hub-upgrade-btn">${buttonText}</button>
+                <button class="hub-upgrade-btn">
+                <span class="btn-text">${buttonText}</span>
+                </button>
               </div>
               <div class="hub-subscription-view">
-                <div class="hub-selected-plan">Subscribe and save / ${selectedPlanName}</div>
                 <select class="hub-selling-plan-select" data-key="${item.key}">
                   <option value="" disabled ${!sellingPlan ? "selected" : ""}>${planHeadingText}</option>
                   ${options}
@@ -798,7 +864,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           customHtmlBlocks,
           showSavingsBelowPrices,
         };
-        
+
         const layoutFn =
           window.hubItemLayouts?.[layoutName] || window.hubItemLayouts?.classic;
         return layoutFn(layoutCtx);
@@ -846,6 +912,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
         if (isShipping) {
           addonsEl.innerHTML = `
             <div class="hub-addon-shipping-protection">
+            <div class="upcart-internal-addons__image-wrapper">
+            <img 
+            src="https://cdn.shopify.com/s/files/1/0733/2531/4260/files/shipping-protection.png" 
+            alt="Shipping Protection" 
+            class="hub-addon-sp-img"
+            />
+            </div>
               <div class="hub-addon-sp-info">
                 <p class="hub-addon-sp-title">${addonsSettings.title || "Shipping Protection"}</p>
                 <p class="hub-addon-sp-desc">${addonsSettings.description || ""}</p>
@@ -923,6 +996,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
         upsellSettings,
         productId,
       );
+      const headingUpsell = upsellSettings.title;
+
       const position = upsellSettings.position || "bottom";
       const upsellContainer =
         position === "top"
@@ -930,9 +1005,32 @@ window.hubCartRender = async function (drawer, opts = {}) {
           : document.getElementById(`hub-upsell-bottom-${blockId}`);
 
       if (upsellContainer) {
+        upsellContainer.classList.add("upsell-container");
+
+        if (position === "bottom") {
+          upsellContainer.classList.add("upsell-bottom");
+        } else {
+          upsellContainer.classList.add("upsell-top");
+        }
+
         upsellContainer.innerHTML = "";
+
         if (upsellProducts.length > 0) {
-          window.renderProducts(upsellContainer, upsellProducts, {
+          const wrapper = document.createElement("div");
+          wrapper.className = "upsell-inner";
+
+          const heading = document.createElement("h3");
+          heading.className = "upsell-heading";
+          heading.innerHTML = headingUpsell;
+
+          const productsDiv = document.createElement("div");
+          productsDiv.className = "upsell-products";
+
+          wrapper.appendChild(heading);
+          wrapper.appendChild(productsDiv);
+          upsellContainer.appendChild(wrapper);
+
+          window.renderProducts(productsDiv, upsellProducts, {
             layout: upsellSettings.direction,
             showReviews: upsellSettings.showReviews,
             carouselIndicator: upsellSettings.carouselIndicator,
@@ -971,7 +1069,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
               <label class="upsell-checkbox-wrapper">
                 <input type="checkbox" id="hub-suggested-cb-${blockId}" data-variant="${rawVariantId}" />
                 <span class="custom-checkbox"></span>
-                <span class="upsell-text">Add ${title}</span>
+                <span class="upsell-text suggestion-product">Add ${title}</span>
               </label>
             </div>`;
           const cb = suggestedEl.querySelector(`#hub-suggested-cb-${blockId}`);
@@ -1014,47 +1112,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }
     }
 
-    const notesSettings = window.__HUB_ACTIVE_CART__?.additionalNotesSettings;
-    const belowEl = document.getElementById(`hub-notes-below-${blockId}`);
-    const footerEl = document.getElementById(`hub-notes-footer-${blockId}`);
-
-    if (belowEl) belowEl.innerHTML = "";
-    if (footerEl) footerEl.innerHTML = "";
-    drawer
-      .querySelectorAll(".hub-additional-notes")
-      .forEach((el) => el.remove());
-
-    if (
-      notesSettings?.enabled === false &&
-      notesSettings.placement === "below_items" &&
-      cart.items.length > 0
-    ) {
-      if (belowEl)
-        belowEl.innerHTML = getAdditionalNotesHTML(
-          blockId,
-          notesSettings,
-          cart.note,
-        );
-    }
-
-    if (
-      notesSettings?.enabled === false &&
-      notesSettings.placement === "top_of_footer" &&
-      cart.items.length > 0
-    ) {
-      if (footerEl)
-        footerEl.innerHTML = getAdditionalNotesHTML(
-          blockId,
-          notesSettings,
-          cart.note,
-        );
-    }
-
     if (cart.total_discount > 0) {
-      container.insertAdjacentHTML(
-        "beforeend",
-        ``,
-      );
+      container.insertAdjacentHTML("beforeend", ``);
     }
 
     // Build a set of manually entered code titles (lowercase) for quick lookup

@@ -340,6 +340,7 @@ export default function AddOnsSettings({ addonsSettings, handleChange, currency,
                                 if (!v) { setTempProduct(null); return; }
                                 setTempProduct({
                                     id: v.id,
+                                    handle: v.handle,
                                     title: v.productTitle || v.title,
                                     image: v.productImage || v.image,
                                     price: v.price,
