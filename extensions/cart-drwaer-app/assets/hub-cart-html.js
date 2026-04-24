@@ -37,9 +37,13 @@ function getBorderWidth(border) {
 window.hubToggleTotalBreakdown = function (el, blockId) {
   var b = document.getElementById("hub-total-breakdown-" + blockId);
   var open = b.classList.toggle("hub-breakdown-open");
-  el.querySelector(".hub-total-arrow").style.transform = open ? "rotate(180deg)" : "rotate(0deg)";
+  el.querySelector(".hub-total-arrow").style.transform = open
+    ? "rotate(180deg)"
+    : "rotate(0deg)";
   el.parentElement.classList.toggle("hub-total-summary--open", open);
-  document.getElementById("hub-cart-drawer-" + blockId).classList.toggle("hub-cart-total-open", open);
+  document
+    .getElementById("hub-cart-drawer-" + blockId)
+    .classList.toggle("hub-cart-total-open", open);
 };
 
 window.injectCartHTML = function (blockId, root) {
@@ -177,8 +181,10 @@ window.injectCartHTML = function (blockId, root) {
   const disableFixedFooter = cartSettings.disableFixedFooter || false;
   const goToCartPageOnCheckout = cartSettings.goToCartPageOnCheckout || false;
   const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
-  const checkoutButtonText = cartSettings.checkoutButtonText || "Proceed to checkout";
-  const continueShoppingText = cartSettings.continueShoppingText || "Or continue shopping";
+  const checkoutButtonText =
+    cartSettings.checkoutButtonText || "Proceed to checkout";
+  const continueShoppingText =
+    cartSettings.continueShoppingText || "Or continue shopping";
 
   // Inject button color + hover style for this drawer
   const btnStyleId = `hub-btn-style-${blockId}`;
@@ -208,7 +214,8 @@ window.injectCartHTML = function (blockId, root) {
   if (!document.getElementById(mobileStyleId)) {
     const ms = document.createElement("style");
     ms.id = mobileStyleId;
-    const mobileWidth = designSettings.mobileWidth === "full" ? "100vw" : "90vw";
+    const mobileWidth =
+      designSettings.mobileWidth === "full" ? "100vw" : "90vw";
     ms.textContent = `
       @media (max-width: 480px) {
         #hub-cart-drawer-${blockId} {
@@ -332,15 +339,32 @@ window.injectCartHTML = function (blockId, root) {
         <div id="hub-notes-footer-${blockId}"></div>
 
         <!-- DISCOUNT -->
-        <div id="hub-discount-status-${blockId}"></div>
-        <div class="hub-discount-input-row"id="hub-discount-row-${blockId}">
-          <div class="hub-discount-input-btn">
-          <input type="text" id="discount-code-input" placeholder="Discount code" class="hub-discount-input" />
+        
+        <div class="hub-discount-input-row-items"id="hub-discount-row-${blockId}">
+         <div class="hub-discount-heading">Coupon Code</div>
+        <div class="hub-discount-input-row">
+        <div id="hub-discount-status-${blockId}" class="hub-discount-status-code"></div>
+         <div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}">
+           <img 
+            src="https://hubsyntax.com/cart-images/Group%20(1).svg" 
+            alt="discount-code" 
+            class="discount-code-img"
+            />
+            
+          <input type="text" id="discount-code-input-${blockId}"  placeholder="Discount code" class="hub-discount-input" />
           <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn">Apply</button>
           </div>
-          <button onclick="hubOpenOffersPanel('${blockId}')" class="hub-view-offers-btn">View Offers</button>
+          <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
+           <div class="discount-offer-btn" onclick="hubOpenOffersPanel('${blockId}')">
+          <button class="hub-view-offers-btn">View all offers</button>
+          <img 
+            src="https://hubsyntax.com/cart-images/Vector%20(4).svg" 
+            alt="discount-code" 
+            class="discount-code-img"
+            />
+          </div>
         </div>
-        <p id="discount-message" class="hub-discount-message"></p>
+        </div>
 
         <!-- TOTAL SUMMARY -->
         <div class="hub-total-summary">
@@ -389,10 +413,14 @@ window.injectCartHTML = function (blockId, root) {
           ${checkoutButtonText}
         </a>
         <div>${renderCustomHTML(customHtmlBlocks.below_checkout)}</div>
-        ${designSettings.continueshopping ? `<a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping"
+        ${
+          designSettings.continueshopping
+            ? `<a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping"
            onclick="(function(e){e.preventDefault();document.getElementById('hub-close-${blockId}').click();})(event)">
           ${continueShoppingText}
-        </a>` : ""}
+        </a>`
+            : ""
+        }
       </div>
 
       <div>${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>

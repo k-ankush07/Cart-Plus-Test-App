@@ -1146,36 +1146,84 @@ window.hubCartRender = async function (drawer, opts = {}) {
       });
     });
 
-    // Render each discount tag with correct button logic
     const discountStatus = document.getElementById(
       `hub-discount-status-${blockId}`,
     );
-    if (discountStatus) {
-      if (allDiscounts.length === 0) {
-        discountStatus.innerHTML = "";
-      } else {
-        discountStatus.innerHTML = allDiscounts
-          .map((app) => {
-            const isManual = manualCodes.has(app.title.toLowerCase());
-            const removeBtn = isManual
-              ? `<button onclick="removeDiscountCode('${app.title}')" class="hub-discount-remove">Remove</button>`
-              : "";
-            const tagClass = isManual
-              ? "hub-discount-applied"
-              : "hub-discount-auto";
-            return `
-            <div class="${tagClass}">
-              <div class="hub-discount-tag">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
-                </svg>
-                <span>${app.title}</span>
+
+    const inputEl = document.querySelector(
+      `#hub-discount-row-${blockId} .hub-discount-input-btn`,
+    );
+
+    const applyBtn = document.querySelector(
+      `#hub-discount-row-${blockId} .hub-discount-apply-btn`,
+    );
+
+    if (!discountStatus || !inputEl || !applyBtn) return;
+
+    const hasDiscount = allDiscounts.length > 0;
+
+    if (!hasDiscount) {
+      discountStatus.innerHTML = "";
+
+      inputEl.style.display = "flex";
+
+      applyBtn.innerText = "Apply";
+      applyBtn.disabled = false;
+    } else {
+      discountStatus.innerHTML = allDiscounts
+        .map((app) => {
+          const isManual = manualCodes.has(app.title.toLowerCase());
+
+          return `
+        <div class="hub-discount-row">
+
+          <!-- LEFT -->
+          <div class="hub-discount-left">
+           <div class="hub-discount-image">
+             <img 
+              src="https://hubsyntax.com/cart-images/Group%20(1).svg" 
+              class="discount-icon"
+            /> 
+           </div>
+
+            <div class="hub-discount-chip">
+              <div class="hub-discount-title-btn">
+              <span class="code">${app.title}</span>
+              ${
+                isManual
+                  ? `<button onclick="removeDiscountCode(this, '${app.title}')" class="remove-btn">
+                    <img 
+                    src="https://hubsyntax.com/cart-images/Vector%20(5).svg" 
+                    class="hub-remove-icon"
+                   />
+                    </button>`
+                  : ""
+              }
               </div>
-              ${removeBtn}
-            </div>`;
-          })
-          .join("");
-      }
+
+              ${
+                app.total_allocated_amount
+                  ? `<div class="saved-badge">
+                       Saved ${hubUtils.formatMoney(app.total_allocated_amount)}
+                     </div>`
+                  : ""
+              }
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="hub-discount-right">
+            Applied ✓
+          </div>
+
+        </div>
+      `;
+        })
+        .join("");
+
+      inputEl.style.display = "none";
+      applyBtn.innerText = "Applied";
+      applyBtn.disabled = true;
     }
   } catch (err) {
     console.error("Cart render error:", err);

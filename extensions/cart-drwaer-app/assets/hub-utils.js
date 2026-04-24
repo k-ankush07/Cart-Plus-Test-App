@@ -68,16 +68,6 @@ window.hubUtils = {
   getAdditionalNotesHTML(blockId, settings, note = "") {
     if (settings?.enabled !== false) return "";
 
-    document.addEventListener("click", (e) => {
-      const toggle = e.target.closest(".drop-icon");
-      if (!toggle) return;
-
-      const wrapper = toggle.closest(".hub-additional-notes");
-      if (!wrapper) return;
-
-      wrapper.classList.toggle("open");
-    });
-
     return `
     <div class="hub-additional-notes ${settings.placement}">
       <p class="hub-notes-title">

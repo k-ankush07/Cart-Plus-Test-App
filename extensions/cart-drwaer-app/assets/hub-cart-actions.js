@@ -194,8 +194,10 @@ function showMessage(el, text, color = "black") {
 }
 
 window.applyDiscountCode = async function (btn) {
-  const input = document.getElementById("discount-code-input");
-  const message = document.getElementById("discount-message");
+  const wrapper = btn.closest(".hub-discount-input-row-items");
+
+  const input = wrapper?.querySelector(".hub-discount-input");
+  const message = wrapper?.querySelector(".hub-discount-message");
 
   const code = input.value.trim();
 
@@ -210,6 +212,8 @@ window.applyDiscountCode = async function (btn) {
   btn.dataset.original = btn.innerHTML;
   btn.innerHTML = `<span class="loader"></span>`;
   btn.disabled = true;
+
+  let hasRealDiscount = false;
 
   try {
     await fetch(`/discount/${code}`, {
@@ -232,45 +236,49 @@ window.applyDiscountCode = async function (btn) {
       (d) => d.code.toLowerCase() === code.toLowerCase() && d.applicable,
     );
 
-    const hasRealDiscount =
-      hasLineDiscount || hasCartDiscount || hasCodeDiscount;
+    hasRealDiscount = hasLineDiscount || hasCartDiscount || hasCodeDiscount;
 
     if (!hasRealDiscount) {
       await fetch(`/discount/INVALID_REMOVE`, {
         credentials: "include",
       });
-
       await new Promise((r) => setTimeout(r, 300));
     }
 
     await window.hubCartRender(getDrawer());
 
     const newMessage = document.getElementById("discount-message");
+
     if (hasRealDiscount) {
       showMessage(newMessage, "Discount applied successfully", "green");
+
+      btn.innerText = "Applied";
+      btn.disabled = true;
+      input.style.display = "none";
 
       input.value = "";
       input.blur();
-    } else {
-      showMessage(newMessage, "Enter a valid discount code", "red");
-    }
 
-    if (hasRealDiscount) {
-      showMessage(newMessage, "Discount applied successfully", "green");
+      localStorage.setItem("appliedDiscount", code);
     } else {
       showMessage(newMessage, "Enter a valid discount code", "red");
+
+      btn.innerHTML = btn.dataset.original || "APPLY";
+      btn.disabled = false;
     }
   } catch (err) {
     showMessage(message, "Something went wrong", "red");
-  } finally {
-    btn.classList.remove("loading");
+
     btn.innerHTML = btn.dataset.original || "APPLY";
     btn.disabled = false;
+  } finally {
+    btn.classList.remove("loading");
   }
 };
 
-window.removeDiscountCode = async function () {
-  const message = document.getElementById("discount-message");
+window.removeDiscountCode = async function (btn) {
+   const wrapper = btn.closest(".hub-discount-input-row-items");
+   const message = wrapper?.querySelector(".hub-discount-message");
 
   try {
     await fetch("/cart/update.js", {
@@ -285,7 +293,7 @@ window.removeDiscountCode = async function () {
 
     await window.hubCartRender(getDrawer());
 
-    const newMessage = document.getElementById("discount-message");
+    const newMessage = wrapper.querySelector(".hub-discount-message");
     showMessage(newMessage, "Discount removed", "green");
   } catch (err) {
     showMessage(message, "Failed to remove discount", "red");
@@ -293,8 +301,8 @@ window.removeDiscountCode = async function () {
 };
 
 window.hubCheckoutClick = function (e, blockId, btn) {
-  e.preventDefault(); 
-  
+  e.preventDefault();
+
   if (btn.classList.contains("loading")) return;
 
   btn.classList.add("loading");
@@ -308,3 +316,17 @@ window.hubCheckoutClick = function (e, blockId, btn) {
     window.location.href = url;
   }, 500);
 };
+
+if (!window._hubNotesClickBound) {
+  window._hubNotesClickBound = true;
+
+  document.addEventListener("click", (e) => {
+    const toggle = e.target.closest(".drop-icon, .drop-icon *");
+    if (!toggle) return;
+
+    const wrapper = toggle.closest(".hub-additional-notes");
+    if (!wrapper) return;
+
+    wrapper.classList.toggle("open");
+  });
+}
