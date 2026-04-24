@@ -251,7 +251,7 @@ window.applyDiscountCode = async function (btn) {
 
     if (hasRealDiscount) {
       showMessage(newMessage, "Discount applied successfully", "green");
-      
+
       input.value = "";
       input.blur();
 
@@ -273,6 +273,13 @@ window.applyDiscountCode = async function (btn) {
 };
 
 window.removeDiscountCode = async function (btn, blockId) {
+  if (!btn || btn.classList.contains("loading")) return;
+
+  btn.classList.add("loading");
+  btn.dataset.original = btn.innerHTML;
+  btn.innerHTML = `<span class="loader"></span>`;
+  btn.disabled = true;
+
   try {
     await fetch("/cart/update.js", {
       method: "POST",
@@ -280,10 +287,16 @@ window.removeDiscountCode = async function (btn, blockId) {
       body: JSON.stringify({ discount: "" }),
     });
 
-    await window.hubCartRender(getDrawer());
+    await new Promise((r) => setTimeout(r, 400));
 
+    await window.hubCartRender(getDrawer());
   } catch (err) {
     console.error(err);
+
+    btn.innerHTML = btn.dataset.original || "REMOVE";
+    btn.disabled = false;
+  } finally {
+    btn.classList.remove("loading");
   }
 };
 

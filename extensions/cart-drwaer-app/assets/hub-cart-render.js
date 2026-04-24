@@ -47,7 +47,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     let cart = await res.json();
 
     hubUtils.updateDiscountUI(blockId, cart);
-    
+
     window._hubCartProductIds = new Set(
       cart.items.map((i) => String(i.product_id)),
     );
@@ -326,7 +326,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
         discountRow.style.display = "none";
       }
 
-      const discountInput = discountRow.querySelector("#discount-code-input");
+      const discountInput = discountRow.querySelector(
+        `#discount-code-input-${blockId}`,
+      );
       const discountApplyBtn = discountRow.querySelector(
         ".hub-discount-apply-btn",
       );
@@ -337,6 +339,29 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
       if (discountApplyBtn && discountCodesSettings?.buttonText) {
         discountApplyBtn.textContent = discountCodesSettings.buttonText;
+      }
+    }
+
+    const offersRow = document.querySelector(`.hub-offers-input-row`);
+    if (offersRow) {
+      if (discountCodesSettings?.enabled === false) {
+        offersRow.style.display = "flex";
+      } else {
+        offersRow.style.display = "none";
+      }
+
+      const offersInput = offersRow.querySelector(
+        `#hub-offers-input-${blockId}`,
+      );
+
+      const offersBtn = offersRow.querySelector(".hub-offers-apply-btn");
+
+      if (offersInput && discountCodesSettings?.placeholder) {
+        offersInput.placeholder = discountCodesSettings.placeholder;
+      }
+
+      if (offersBtn && discountCodesSettings?.buttonText) {
+        offersBtn.textContent = discountCodesSettings.buttonText;
       }
     }
 
@@ -824,12 +849,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
         const discountHtml =
           item.line_level_discount_allocations?.length > 0
-            ? item.line_level_discount_allocations
-                .map(
-                  (d) =>
-                    ``,
-                )
-                .join("")
+            ? item.line_level_discount_allocations.map((d) => ``).join("")
             : "";
 
         const isReward =
@@ -1139,7 +1159,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
         }
       });
     });
-
   } catch (err) {
     console.error("Cart render error:", err);
   } finally {

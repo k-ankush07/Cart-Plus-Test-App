@@ -351,7 +351,7 @@ window.injectCartHTML = function (blockId, root) {
             class="discount-code-img"
             />
             
-          <input type="text" id="discount-code-input-${blockId}"  placeholder="Discount code" class="hub-discount-input" />
+          <input type="text" id="discount-code-input-${blockId}" placeholder="Discount code" class="hub-discount-input" />
           <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn">Apply</button>
           </div>
           <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
@@ -429,10 +429,18 @@ window.injectCartHTML = function (blockId, root) {
       <div id="hub-coupon-success-${blockId}" class="hub-coupon-success-overlay" style="display:none;">
         <div class="hub-coupon-success-card">
           <button class="hub-coupon-success-close" onclick="hubCloseCouponSuccess('${blockId}')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <img 
+            src="https://www.hubsyntax.com/cart-images/Vector%20(6).svg" 
+            alt="discount-code" 
+            class="discount-code-img"
+            />
           </button>
           <div class="hub-coupon-success-icon">
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+         <img 
+            src="https://www.hubsyntax.com/cart-images/Group%201707479978.svg" 
+            alt="discount-code" 
+            class="discount-code-img"
+            />
           </div>
           <p class="hub-coupon-success-applied" id="hub-coupon-success-applied-${blockId}"></p>
           <p class="hub-coupon-success-headline" id="hub-coupon-success-headline-${blockId}"></p>
@@ -450,20 +458,32 @@ window.injectCartHTML = function (blockId, root) {
         <div class="hub-offers-header">
           <div class="hub-offers-title-group">
            <button class="hub-offers-back" onclick="hubCloseOffersPanel('${blockId}')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <img 
+            src=" https://www.hubsyntax.com/cart-images/Vector%20(1)%20(1).svg" 
+            alt="right-arrow" 
+            class="right-img"
+            />
           </button>
+           <div class="hub-offers-title-subtitle">
             <span class="hub-offers-title">Apply Coupon</span>
             <span class="hub-offers-cart-total" id="hub-offers-cart-total-${blockId}"></span>
+           </div>
           </div>
         </div>
         <div class="hub-offers-input-row">
           <div class="hub-offers-input-wrap">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+           <div class="hub-offers-input">
+           <img 
+            src="https://hubsyntax.com/cart-images/Group%20(1).svg" 
+            alt="discount-code" 
+            class="discount-code-img"
+            />
             <input type="text" id="hub-offers-input-${blockId}" placeholder="Enter Coupon Code" class="hub-offers-code-input" />
           </div>
-          <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn">APPLY</button>
+            <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn">APPLY</button>
+           </div>
+            <div id="hub-offers-msg-${blockId}" class="hub-discount-message"></div>
         </div>
-        <div id="hub-offers-msg-${blockId}" class="hub-discount-message"></div>
         <div id="hub-offers-list-${blockId}" class="hub-offers-list"></div>
       </div>
     </div>

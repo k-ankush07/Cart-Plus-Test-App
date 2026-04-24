@@ -1059,8 +1059,15 @@ function hubRenderOffersPanel(
     .map((d) => {
       const label = d.title.toUpperCase();
       const isActive = appliedCodes.has(label);
-      const savings = d.savings || d.description || "";
-      const subtitle = d.subtitle || d.terms || "";
+      const savings = d.discountValue
+        ? d.discountValue.type === "percentage"
+          ? `Save ${d.discountValue.value}% on this order!`
+          : `Save ${d.discountValue.value} on this order!`
+        : "";
+      const subtitle = d.minimumRequirement
+        ? `Use code ${d.title.toUpperCase()} & get discount on orders above ${hubUtils.formatMoney(d.minimumRequirement)}`
+        : `Use code ${d.title.toUpperCase()} & enjoy this offer`;
+
       const actionBtn = isActive
         ? `<button class="hub-coupon-action-btn remove" onclick="hubRemoveOfferCode('${label}','${blockId}', this)">REMOVE</button>`
         : `<button class="hub-coupon-action-btn apply" onclick="hubApplyOfferCodeFromList('${label}','${blockId}', this)">APPLY</button>`;
@@ -1186,7 +1193,7 @@ async function hubApplyOfferCode2(code, blockId) {
     });
 
     const existingCode = cartBefore.discount_codes?.find(
-      (d) => d.applicable === true
+      (d) => d.applicable === true,
     );
 
     await fetch(`/discount/${encodeURIComponent(code)}`, {
@@ -1198,18 +1205,17 @@ async function hubApplyOfferCode2(code, blockId) {
     const cartAfter = await (await fetch("/cart.js")).json();
 
     const savings =
-      (cartAfter.original_total_price || 0) -
-      (cartAfter.total_price || 0);
+      (cartAfter.original_total_price || 0) - (cartAfter.total_price || 0);
 
     const discountObj = cartAfter.discount_codes?.find(
-      (d) => d.code.toLowerCase() === code.toLowerCase()
+      (d) => d.code.toLowerCase() === code.toLowerCase(),
     );
 
     const isValid = discountObj?.applicable === true;
     const isConflict = discountObj && discountObj.applicable === false;
 
     const errorEl = document.getElementById(
-      `coupon-error-${code.toUpperCase()}`
+      `coupon-error-${code.toUpperCase()}`,
     );
 
     if (!isValid) {
@@ -1243,20 +1249,19 @@ async function hubApplyOfferCode2(code, blockId) {
       const label = code.toUpperCase();
 
       document.getElementById(
-        `hub-coupon-success-applied-${blockId}`
+        `hub-coupon-success-applied-${blockId}`,
       ).textContent = `"${label}" applied`;
 
       document.getElementById(
-        `hub-coupon-success-headline-${blockId}`
+        `hub-coupon-success-headline-${blockId}`,
       ).textContent =
         savings > 0
           ? `${hubUtils.formatMoney(savings)} SAVINGS WITH THIS COUPON`
           : `COUPON APPLIED!`;
 
       document.getElementById(
-        `hub-coupon-success-desc-${blockId}`
-      ).textContent =
-        `Use code ${label} and save every time you order`;
+        `hub-coupon-success-desc-${blockId}`,
+      ).textContent = `Use code ${label} and save every time you order`;
 
       overlay.style.display = "flex";
     }
