@@ -604,6 +604,123 @@ window.hubUtils = {
     const items = document.getElementById(`hub-cart-items-${blockId}`);
     if (items) items.style.visibility = "visible";
   },
+  updateDiscountUI(blockId, cart) {
+    const manualCodes = new Set(
+      (cart.discount_codes || []).map((d) => d.code.toLowerCase()),
+    );
+
+    const seen = new Set();
+    const allDiscounts = [];
+
+    (cart.cart_level_discount_applications || []).forEach((app) => {
+      const key = app.title.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        allDiscounts.push(app);
+      }
+    });
+
+    (cart.items || []).forEach((item) => {
+      (item.line_level_discount_allocations || []).forEach((d) => {
+        const app = d.discount_application;
+        if (!app) return;
+
+        const key = app.title.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          allDiscounts.push(app);
+        }
+      });
+    });
+
+    const discountStatus = document.getElementById(
+      `hub-discount-status-${blockId}`,
+    );
+    const inputWrap = document.querySelector(
+      `#hub-discount-row-${blockId} .hub-discount-input-btn`,
+    );
+    const applyBtn = document.querySelector(
+      `#hub-discount-row-${blockId} .hub-discount-apply-btn`,
+    );
+
+    if (!discountStatus || !inputWrap || !applyBtn) return;
+
+    const hasDiscount = allDiscounts.length > 0;
+
+    if (!hasDiscount) {
+      discountStatus.innerHTML = "";
+      inputWrap.style.display = "flex";
+      applyBtn.innerText = "Apply";
+      applyBtn.disabled = false;
+      return;
+    }
+
+    discountStatus.innerHTML = allDiscounts
+      .map((app) => {
+        const isManual = manualCodes.has(app.title.toLowerCase());
+
+        return `
+      <div class="hub-discount-row">
+
+        <!-- LEFT -->
+        <div class="hub-discount-left">
+          
+          <div class="hub-discount-image">
+            <img 
+              src="https://hubsyntax.com/cart-images/Group%20(1).svg" 
+              class="discount-icon"
+            />
+          </div>
+
+          <div class="hub-discount-chip">
+
+            <div class="hub-discount-title-btn">
+              <span class="code">${app.title}</span>
+
+              ${
+                isManual
+                  ? `<button onclick="removeDiscountCode(this, '${blockId}')" class="remove-btn">
+                      <img 
+                        src="https://hubsyntax.com/cart-images/Vector%20(5).svg" 
+                        class="hub-remove-icon"
+                      />
+                    </button>`
+                  : ""
+              }
+
+            </div>
+
+            ${
+              app.total_allocated_amount
+                ? `<div class="saved-badge">
+                    Saved ${hubUtils.formatMoney(app.total_allocated_amount)}
+                   </div>`
+                : ""
+            }
+
+          </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="hub-discount-right">
+          Applied ✓
+        </div>
+
+      </div>
+    `;
+      })
+      .join("");
+
+    inputWrap.style.display = "none";
+    applyBtn.innerText = "Applied";
+    applyBtn.disabled = true;
+  },
+  hexToRGBA(hex, opacity) {
+    const r = parseInt(hex.substring(1, 3), 16);
+    const g = parseInt(hex.substring(3, 5), 16);
+    const b = parseInt(hex.substring(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  },
 };
 
 hubUtils.getAllRecommendations = async function () {

@@ -72,6 +72,8 @@ function _wrapper(key, inner, sellingPlanHtml, customHtmlBlocks) {
 function classicItemHTML(ctx) {
   const { item, colorItems, showStrikethrough, isReward, priceHtml, variantHtml, propertiesHtml, discountHtml, sellingPlan, sellingPlanHtml, customHtmlBlocks, hasCompare, effectiveUnitPrice, effectiveCompare, saveHtml } = ctx;
 
+  const discountBadges = _discountBadgesHtml(item);
+  
   const rightCol = isReward
     ? `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
 

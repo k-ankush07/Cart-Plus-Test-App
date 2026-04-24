@@ -1,5 +1,4 @@
-const apiUrl =
-  "http://localhost:9002";
+const apiUrl = "http://localhost:9002";
 
 // Used by hubUtils.applyRatings() — same Express backend, no separate Remix URL needed
 
@@ -1038,13 +1037,17 @@ function hubRenderOffersPanel(
   // cart.discount_codes is the real source — codes actually applied to this cart
   const appliedCodes = new Set(
     (cart.discount_codes || [])
+      .filter((c) => c.applicable === true)
       .map((c) => (c.code || "").toUpperCase())
       .filter(Boolean),
   );
 
   const validCodes = (allDiscountCodes || []).filter(
     (d) =>
-      d.title && d.status !== "EXPIRED" && d.type !== "DiscountAutomaticApp",
+      d.title &&
+      d.status !== "EXPIRED" &&
+      d.type !== "DiscountAutomaticApp" &&
+      d.type !== "DiscountAutomaticBasic",
   );
 
   if (validCodes.length === 0) {
@@ -1072,6 +1075,7 @@ function hubRenderOffersPanel(
           </div>
           ${savings ? `<div class="hub-coupon-savings">${savings}</div>` : ""}
           ${subtitle ? `<div class="hub-coupon-desc">${subtitle}</div>` : ""}
+           <div class="hub-coupon-error" id="coupon-error-${label}" style="color:black;font-size:12px;margin-top:5px;"></div>
         </div>
       </div>`;
     })
@@ -1173,20 +1177,17 @@ window.hubApplyOfferCodeFromList = async function (code, blockId, btn) {
 
 async function hubApplyOfferCode2(code, blockId) {
   try {
-    const message = document.getElementById(`hub-offers-msg-${blockId}`);
-
     const cartBefore = await (await fetch("/cart.js")).json();
-    const totalBefore = cartBefore.total_price || 0;
 
     if (!code) return;
 
-    if ((cartBefore.discount_codes || []).length > 0) {
-      await fetch("/cart/update.js", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ discount: "" }),
-      });
-    }
+    document.querySelectorAll(".hub-coupon-error").forEach((el) => {
+      el.innerText = "";
+    });
+
+    const existingCode = cartBefore.discount_codes?.find(
+      (d) => d.applicable === true
+    );
 
     await fetch(`/discount/${encodeURIComponent(code)}`, {
       credentials: "include",
@@ -1195,29 +1196,38 @@ async function hubApplyOfferCode2(code, blockId) {
     await new Promise((r) => setTimeout(r, 500));
 
     const cartAfter = await (await fetch("/cart.js")).json();
-    const savings = totalBefore - (cartAfter.total_price || 0);
 
-    const hasLineDiscount = cartAfter.items.some(
-      (item) => item.line_level_discount_allocations?.length > 0,
+    const savings =
+      (cartAfter.original_total_price || 0) -
+      (cartAfter.total_price || 0);
+
+    const discountObj = cartAfter.discount_codes?.find(
+      (d) => d.code.toLowerCase() === code.toLowerCase()
     );
 
-    const hasCartDiscount =
-      cartAfter.cart_level_discount_applications?.length > 0;
+    const isValid = discountObj?.applicable === true;
+    const isConflict = discountObj && discountObj.applicable === false;
 
-    const hasCodeDiscount = cartAfter.discount_codes?.some(
-      (d) => d.code.toLowerCase() === code.toLowerCase() && d.applicable,
+    const errorEl = document.getElementById(
+      `coupon-error-${code.toUpperCase()}`
     );
-
-    const isValid = hasLineDiscount || hasCartDiscount || hasCodeDiscount;
 
     if (!isValid) {
-      if (message) {
-        showMessage(message, "Enter a valid discount code", "red");
+      if (errorEl) {
+        errorEl.innerText = isConflict
+          ? `${code} couldn't be used with your existing discounts.`
+          : "Enter a valid discount code";
+
+        setTimeout(() => {
+          errorEl.innerText = "";
+        }, 4000);
       }
 
-      await fetch(`/discount/INVALID_REMOVE`, {
-        credentials: "include",
-      });
+      if (existingCode) {
+        await fetch(`/discount/${existingCode.code}`, {
+          credentials: "include",
+        });
+      }
 
       return;
     }
@@ -1233,19 +1243,20 @@ async function hubApplyOfferCode2(code, blockId) {
       const label = code.toUpperCase();
 
       document.getElementById(
-        `hub-coupon-success-applied-${blockId}`,
+        `hub-coupon-success-applied-${blockId}`
       ).textContent = `"${label}" applied`;
 
       document.getElementById(
-        `hub-coupon-success-headline-${blockId}`,
+        `hub-coupon-success-headline-${blockId}`
       ).textContent =
         savings > 0
           ? `${hubUtils.formatMoney(savings)} SAVINGS WITH THIS COUPON`
           : `COUPON APPLIED!`;
 
       document.getElementById(
-        `hub-coupon-success-desc-${blockId}`,
-      ).textContent = `Use code ${label} and save every time you order`;
+        `hub-coupon-success-desc-${blockId}`
+      ).textContent =
+        `Use code ${label} and save every time you order`;
 
       overlay.style.display = "flex";
     }

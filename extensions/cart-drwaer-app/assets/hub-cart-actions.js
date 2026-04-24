@@ -251,11 +251,7 @@ window.applyDiscountCode = async function (btn) {
 
     if (hasRealDiscount) {
       showMessage(newMessage, "Discount applied successfully", "green");
-
-      btn.innerText = "Applied";
-      btn.disabled = true;
-      input.style.display = "none";
-
+      
       input.value = "";
       input.blur();
 
@@ -276,27 +272,18 @@ window.applyDiscountCode = async function (btn) {
   }
 };
 
-window.removeDiscountCode = async function (btn) {
-   const wrapper = btn.closest(".hub-discount-input-row-items");
-   const message = wrapper?.querySelector(".hub-discount-message");
-
+window.removeDiscountCode = async function (btn, blockId) {
   try {
     await fetch("/cart/update.js", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        discount: "",
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ discount: "" }),
     });
 
     await window.hubCartRender(getDrawer());
 
-    const newMessage = wrapper.querySelector(".hub-discount-message");
-    showMessage(newMessage, "Discount removed", "green");
   } catch (err) {
-    showMessage(message, "Failed to remove discount", "red");
+    console.error(err);
   }
 };
 

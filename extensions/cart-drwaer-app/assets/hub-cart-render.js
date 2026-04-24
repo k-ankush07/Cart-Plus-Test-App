@@ -1,12 +1,4 @@
 // ─────────────────────────────────────────────────────────────────────────────
-
-function hexToRGBA(hex, opacity) {
-  const r = parseInt(hex.substring(1, 3), 16);
-  const g = parseInt(hex.substring(3, 5), 16);
-  const b = parseInt(hex.substring(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-}
-
 window.hubCartRender = async function (drawer, opts = {}) {
   if (window._hubRenderInProgress) return;
   window._subscriptionOpen = {};
@@ -54,6 +46,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const res = await fetch("/cart.js");
     let cart = await res.json();
 
+    hubUtils.updateDiscountUI(blockId, cart);
+    
     window._hubCartProductIds = new Set(
       cart.items.map((i) => String(i.product_id)),
     );
@@ -796,7 +790,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         const saveHtml =
           hasDiscount && showSavingsBelowPrices && layoutName !== "subscription"
             ? `<p class="hub-item-save" style="color:${savingsColor}; 
-            background:${hexToRGBA(designSettings.savingsColor, 0.1)};">Save ${hubUtils.formatMoney(unitSave)}</p>`
+            background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">Save ${hubUtils.formatMoney(unitSave)}</p>`
             : "";
 
         const priceHtml = hasDiscount
@@ -833,7 +827,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
             ? item.line_level_discount_allocations
                 .map(
                   (d) =>
-                    `<p class="hub-item-discount">- ${d.discount_application.title} (${hubUtils.formatMoney(d.amount)})</p>`,
+                    ``,
                 )
                 .join("")
             : "";
@@ -1146,85 +1140,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
       });
     });
 
-    const discountStatus = document.getElementById(
-      `hub-discount-status-${blockId}`,
-    );
-
-    const inputEl = document.querySelector(
-      `#hub-discount-row-${blockId} .hub-discount-input-btn`,
-    );
-
-    const applyBtn = document.querySelector(
-      `#hub-discount-row-${blockId} .hub-discount-apply-btn`,
-    );
-
-    if (!discountStatus || !inputEl || !applyBtn) return;
-
-    const hasDiscount = allDiscounts.length > 0;
-
-    if (!hasDiscount) {
-      discountStatus.innerHTML = "";
-
-      inputEl.style.display = "flex";
-
-      applyBtn.innerText = "Apply";
-      applyBtn.disabled = false;
-    } else {
-      discountStatus.innerHTML = allDiscounts
-        .map((app) => {
-          const isManual = manualCodes.has(app.title.toLowerCase());
-
-          return `
-        <div class="hub-discount-row">
-
-          <!-- LEFT -->
-          <div class="hub-discount-left">
-           <div class="hub-discount-image">
-             <img 
-              src="https://hubsyntax.com/cart-images/Group%20(1).svg" 
-              class="discount-icon"
-            /> 
-           </div>
-
-            <div class="hub-discount-chip">
-              <div class="hub-discount-title-btn">
-              <span class="code">${app.title}</span>
-              ${
-                isManual
-                  ? `<button onclick="removeDiscountCode(this, '${app.title}')" class="remove-btn">
-                    <img 
-                    src="https://hubsyntax.com/cart-images/Vector%20(5).svg" 
-                    class="hub-remove-icon"
-                   />
-                    </button>`
-                  : ""
-              }
-              </div>
-
-              ${
-                app.total_allocated_amount
-                  ? `<div class="saved-badge">
-                       Saved ${hubUtils.formatMoney(app.total_allocated_amount)}
-                     </div>`
-                  : ""
-              }
-            </div>
-          </div>
-
-          <!-- RIGHT -->
-          <div class="hub-discount-right">
-            Applied ✓
-          </div>
-
-        </div>
-      `;
-        })
-        .join("");
-
-      inputEl.style.display = "none";
-      applyBtn.innerText = "Applied";
-      applyBtn.disabled = true;
-    }
   } catch (err) {
     console.error("Cart render error:", err);
   } finally {
