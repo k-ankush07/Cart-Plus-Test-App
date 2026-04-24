@@ -1149,7 +1149,7 @@ window.hubApplyOfferCode = async function (blockId, btn) {
   }
 
   try {
-    await hubApplyOfferCode2(code, blockId);
+    await hubApplyOfferCode2(code, blockId, message);
 
     if (input) input.value = "";
   } finally {
@@ -1182,7 +1182,26 @@ window.hubApplyOfferCodeFromList = async function (code, blockId, btn) {
   }
 };
 
-async function hubApplyOfferCode2(code, blockId) {
+/* ── DISCOUNT CODES ── */
+hubUtils.getDiscounts().then(({ allDiscountCodes, activeDiscountCodes }) => {
+  const blockId = window.HUB_CART_BLOCK_ID;
+
+  if (!blockId) {
+    console.warn("blockId not found");
+    return;
+  }
+
+  window.__HUB_ALL_CODES__ = allDiscountCodes;
+
+  hubRenderOffersPanel(
+    blockId,
+    allDiscountCodes,
+    activeDiscountCodes,
+    window.__HUB_ACTIVE_CART__ || { discount_codes: [] },
+  );
+});
+
+async function hubApplyOfferCode2(code, blockId, messageEl = null) {
   try {
     const cartBefore = await (await fetch("/cart.js")).json();
 
@@ -1211,22 +1230,39 @@ async function hubApplyOfferCode2(code, blockId) {
       (d) => d.code.toLowerCase() === code.toLowerCase(),
     );
 
+    const allDiscountCodes = window.__HUB_ALL_CODES__ || [];
+
+    const isAvailableCode = allDiscountCodes.some(
+      (d) => d?.title && d.title.toLowerCase() === code.toLowerCase(),
+    );
     const isValid = discountObj?.applicable === true;
-    const isConflict = discountObj && discountObj.applicable === false;
+    const isConflict = isAvailableCode && discountObj?.applicable === false;
+    const isInvalid = !isAvailableCode;
 
     const errorEl = document.getElementById(
       `coupon-error-${code.toUpperCase()}`,
     );
 
     if (!isValid) {
-      if (errorEl) {
-        errorEl.innerText = isConflict
-          ? `${code} couldn't be used with your existing discounts.`
-          : "Enter a valid discount code";
+      let errorMsg = "Enter a valid discount code";
+
+      if (isConflict) {
+        errorMsg = `${code} couldn't be used with your existing discounts.`;
+      } else if (isInvalid) {
+        errorMsg = "Enter a valid discount code";
+      }
+
+      if (errorEl && isConflict) {
+        errorEl.innerText = errorMsg;
 
         setTimeout(() => {
           errorEl.innerText = "";
         }, 4000);
+      }
+
+      if (messageEl) {
+        showMessage(messageEl, errorMsg, "red");
+        console.log(" messageEl:", errorMsg);
       }
 
       if (existingCode) {

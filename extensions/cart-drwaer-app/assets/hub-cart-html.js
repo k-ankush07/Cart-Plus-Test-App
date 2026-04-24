@@ -470,7 +470,8 @@ window.injectCartHTML = function (blockId, root) {
            </div>
           </div>
         </div>
-        <div class="hub-offers-input-row">
+        <div class="hub-offers-code">
+         <div class="hub-offers-input-row">
           <div class="hub-offers-input-wrap">
            <div class="hub-offers-input">
            <img 
@@ -480,9 +481,10 @@ window.injectCartHTML = function (blockId, root) {
             />
             <input type="text" id="hub-offers-input-${blockId}" placeholder="Enter Coupon Code" class="hub-offers-code-input" />
           </div>
-            <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn">APPLY</button>
+           <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn">APPLY</button>
            </div>
-            <div id="hub-offers-msg-${blockId}" class="hub-discount-message"></div>
+        </div>
+         <div id="hub-offers-msg-${blockId}" class="hub-discount-message"></div>
         </div>
         <div id="hub-offers-list-${blockId}" class="hub-offers-list"></div>
       </div>

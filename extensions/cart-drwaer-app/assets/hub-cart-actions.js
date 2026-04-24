@@ -252,15 +252,14 @@ window.applyDiscountCode = async function (btn) {
     if (hasRealDiscount) {
       showMessage(newMessage, "Discount applied successfully", "green");
 
-      input.value = "";
-      input.blur();
-
       localStorage.setItem("appliedDiscount", code);
     } else {
       showMessage(newMessage, "Enter a valid discount code", "red");
+    }
 
-      btn.innerHTML = btn.dataset.original || "APPLY";
-      btn.disabled = false;
+    if (input) {
+      input.value = "";
+      input.blur();
     }
   } catch (err) {
     showMessage(message, "Something went wrong", "red");
