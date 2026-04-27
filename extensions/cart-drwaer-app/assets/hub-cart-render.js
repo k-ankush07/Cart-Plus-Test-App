@@ -597,6 +597,10 @@ window.hubCartRender = async function (drawer, opts = {}) {
         window.__HUB_ACTIVE_CART__?.recommendationsSettings;
       const emptyCartMessage = cartSettings.emptyCartMessage;
 
+      const btnColor = designSettings.buttonColor || "#000000";
+      const btnHoverColor = designSettings.buttonHoverColor || "#333333";
+      const textColor = designSettings.buttonTextColor || "#ffffff";
+
       drawer
         .querySelectorAll(".hub-additional-notes")
         .forEach((el) => el.remove());
@@ -612,7 +616,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (!recommendations?.enabled) {
         recHTML = `
           <div class="hub-cart-recommendations">
-            <h3 class="hub-rec-title hub-public-upsell__title">${recommendations.productHeaderText || "You may also like"}</h3>
+            <h3 class="hub-rec-title hub-public-upsell__title" style="color:${designSettings.textColor};>
+            ${recommendations.productHeaderText || "You may also like"}</h3>
             <div id="hub-rec-products"></div>
           </div>
         `;
@@ -624,14 +629,20 @@ window.hubCartRender = async function (drawer, opts = {}) {
           <h3 class="hub-empty-title styles_CartPreview__empty__">${emptyCartMessage}</h3>
           ${
             !recommendations?.enabled
-              ? `<p class="hub-rec-subtitle hub-public-upsell__header">
+              ? `<p class="hub-rec-subtitle hub-public-upsell__header" style="color:${designSettings.textColor};">
          ${recommendations?.headerText || ""}
        </p>`
               : ""
           }
            ${
              recommendations.showShopNowButton
-               ? `<a href="${recommendations.buttonUrl}" class="hub-rec-btn hub-public-upsell__shop-now-button">${recommendations.buttonText || "Shop Now"}</a>`
+               ? `<a href="${recommendations.buttonUrl}" class="hub-rec-btn hub-public-upsell__shop-now-button"
+                style="
+          --btn-bg:${btnColor};
+          --btn-hover:${btnHoverColor};
+          --btn-text:${textColor};
+        "
+               >${recommendations.buttonText || "Shop Now"}</a>`
                : ""
            }
         </div>
@@ -1011,6 +1022,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         productId,
       );
       const headingUpsell = upsellSettings.title;
+      const textColor = designSettings?.textColor || "#000";
 
       const position = upsellSettings.position || "bottom";
       const upsellContainer =
@@ -1036,6 +1048,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           const heading = document.createElement("h3");
           heading.className = "upsell-heading";
           heading.innerHTML = headingUpsell;
+          heading.style.color = textColor;
 
           const productsDiv = document.createElement("div");
           productsDiv.className = "upsell-products";

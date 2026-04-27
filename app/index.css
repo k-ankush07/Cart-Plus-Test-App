@@ -280,6 +280,14 @@ body,
     color: var(--btn-hover-text);
 }
 
+.upcart-internal-style__title-large_button a:hover{
+    color: var(--btn-hover-text);
+}
+
+.upcart-internal-component-upsell-tile__variant-row button:hover {
+    color: var(--btn-hover-text);
+}
+
 .upload-box {
     border: 2px dashed #d1d5db;
     padding: 20px;

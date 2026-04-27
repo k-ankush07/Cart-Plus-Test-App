@@ -287,11 +287,11 @@ window.injectCartHTML = function (blockId, root) {
         <!-- TRUST BADGES (position: top of cart) -->
         <div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges" style="display:none;"></div>
 
-        <!-- UPSELLS (position: top of cart) -->
-        <div id="hub-upsell-top-${blockId}" class="hub-upsell"></div>
-
         <!-- REWARDS -->
         <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;"></div>
+
+        <!-- UPSELLS (position: top of cart) -->
+        <div id="hub-upsell-top-${blockId}" class="hub-upsell"></div>
 
         <div id="hub-cart-items-${blockId}" class="hub-cart-items ${disableFixedFooter ? "no-fixed-footer" : ""}">
           <!-- skeleton shown while cart data loads -->

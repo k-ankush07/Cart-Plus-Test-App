@@ -87,7 +87,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     {!rewardsSettings.enabled && (
                                         <TieredReward rewardsSettings={rewardsSettings} />)}
 
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "top" && <Upsells upsellsSettings={upsellsSettings} />}
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "top" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} />}
                                     <CartItem
                                         showStrikethrough={designSettings.showStrikethrough}
                                         textColor={designSettings.textColor}
@@ -113,7 +113,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     )}
                                     {/* between_line_items */}
                                     <CustomHtml cartSettings={cartSettings} position="between_line_items" />
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} />}
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} />}
 
                                     {/* below_cart_items */}
                                     <CustomHtml cartSettings={cartSettings} position="below_cart_items" />
@@ -135,6 +135,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     currency={currency}
                                     cartSettings={cartSettings}
                                     upsellsSettings={upsellsSettings}
+                                    designSettings={designSettings}
                                 />
                             )}
                         </>

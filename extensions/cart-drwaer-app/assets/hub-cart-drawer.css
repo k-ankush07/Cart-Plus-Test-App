@@ -1278,10 +1278,18 @@ h3.styles_CartPreview__empty__ {
   cursor: pointer;
   white-space: nowrap;
   width: 100%;
-  background: #123348;
   border-radius: 15px;
-  color: #FFFF6A;
   padding: 8px;
+}
+
+.hub-add-btn {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  transition: 0.3s ease;
+}
+
+.hub-add-btn:hover {
+  color: var(--btn-hover);
 }
 
 .upcart-internal-style__title-large {
@@ -1910,13 +1918,17 @@ span.upsell-text.suggestion-product {
 
 .hub-public-upsell__shop-now-button {
   border-radius: 35px;
-  background: #123348;
-  color: white;
   width: 100%;
   text-align: center;
   padding: 10px;
   font-weight: 400;
   text-decoration: none;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+}
+
+.hub-public-upsell__shop-now-button:hover {
+  color: var(--btn-hover);
 }
 
 .hub-public-upsell__title {

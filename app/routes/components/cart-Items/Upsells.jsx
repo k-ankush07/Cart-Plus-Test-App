@@ -45,7 +45,7 @@ const DEFAULT_PRODUCTS = [
     },
 ];
 
-export default function Upsells({ upsellsSettings }) {
+export default function Upsells({ upsellsSettings, designSettings }) {
     const [products, setProducts] = useState([]);
     const [selectedVariants, setSelectedVariants] = useState({});
     const prevRef = useRef(null);
@@ -150,7 +150,7 @@ export default function Upsells({ upsellsSettings }) {
 
                     <div className="upcart-internal-component-upsell-tile__info">
                         <a href="#no" className="upcart-internal-component-upsell-tile__title-link">
-                            <h3 className="upcart-internal-component-upsell-tile__title upcart-upsell-item-title">
+                            <h3 className="upcart-internal-component-upsell-tile__title upcart-upsell-item-title" style={{ color: designSettings.textColor || "#6b7280", }}>
                                 {product.title}
                             </h3>
                         </a>
@@ -158,11 +158,11 @@ export default function Upsells({ upsellsSettings }) {
                         <div className="upcart-upsell-item-price-row">
                             {selectedVariant.compareAtPrice &&
                                 parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
-                                    <span className="compare-price upcart-upsell-item-compare-price">
+                                    <span className="compare-price upcart-upsell-item-compare-price" >
                                         {selectedVariant.compareAtPrice}
                                     </span>
                                 )}
-                            <span className="sale-price upcart-upsell-item-price">{selectedVariant.price}</span>
+                            <span className="sale-price upcart-upsell-item-price" style={{ color: designSettings.textColor || "#6b7280", }}>{selectedVariant.price}</span>
                         </div>
 
                         {showReviews && (
@@ -181,6 +181,7 @@ export default function Upsells({ upsellsSettings }) {
                                 className="upcart-upsell-item-variant-selector"
                                 value={selectedVariant.id}
                                 onChange={(e) => handleVariantChange(product.id, e.target.value)}
+                                style={{ color: designSettings.textColor || "#6b7280", }}
                             >
                                 {product.variants.map((variant) => (
                                     <option key={variant.id} value={variant.id}>
@@ -190,6 +191,12 @@ export default function Upsells({ upsellsSettings }) {
                             </select>
 
                             <button type="button" className="upcart-internal-component__button upcart-upsells-button"
+                                style={{
+                                    borderRadius: `${designSettings.buttonRadius}px`,
+                                    backgroundColor: designSettings.buttonColor,
+                                    "--btn-hover-text": designSettings.buttonHoverColor,
+                                    "--btn-text": designSettings.buttonTextColor,
+                                }}
                                 onClick={hanldeAddProduct}>
                                 {loading ? (<span className="loader"></span>) : (buttonText)}
                             </button>

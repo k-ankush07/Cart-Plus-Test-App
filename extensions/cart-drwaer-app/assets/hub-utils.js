@@ -147,6 +147,7 @@ window.hubUtils = {
       : "";
 
     const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
+    const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
 
     const salePrice = Number(firstVariant?.price || 0);
     const comparePrice = Number(firstVariant?.compare_at_price || 0);
@@ -161,6 +162,10 @@ window.hubUtils = {
 
     const hasMultipleVariants = variants.length > 1;
 
+    const btnColor = designSettings.buttonColor || "#000000";
+    const btnHoverColor = designSettings.buttonHoverColor || "#333333";
+    const textColor = designSettings.buttonTextColor || "#ffffff";
+
     return `
     <div class="hub-rec-product upcart-internal-component-upsell-tile">
       <div class="upcart-internal-component-upsell-tile__info_count">
@@ -171,14 +176,14 @@ window.hubUtils = {
         </div>
         <div class="upcart-internal-component-upsell-tile__info">
           <a href="/products/${product.handle}"
-            class="upcart-internal-component-upsell-tile__title-link">
-            <h4 class="upcart-internal-component-upsell-tile__title">
+            class="upcart-internal-component-upsell-tile__title-link" style="color:${designSettings.textColor};">
+            <h4 class="upcart-internal-component-upsell-tile__title" style="color:${designSettings.textColor};">
               ${product.title}
             </h4>
           </a>
           ${ratingHTML}
-          <div class="price">
-            <span class="sale-price">
+          <div class="price" style="color:${designSettings.textColor};">
+            <span class="sale-price" style="color:${designSettings.textColor};">
               ${hubUtils.formatMoney(Math.round(salePrice * 100))}
             </span>
             ${comparePriceHTML}
@@ -186,12 +191,17 @@ window.hubUtils = {
            <div class="upcart-internal-component-upsell-tile__variant-row">
            ${
              hasMultipleVariants
-               ? `<select class="hub-variant-select">
+               ? `<select class="hub-variant-select" style="color:${designSettings.textColor};">
                      ${variantOptions}
                    </select>`
                : ""
            }
-          <button class="hub-add-btn" data-variant="${firstVariant?.id}">
+          <button class="hub-add-btn" data-variant="${firstVariant?.id}" 
+          style="
+          --btn-bg:${btnColor};
+          --btn-hover:${btnHoverColor};
+          --btn-text:${textColor};
+      ">
             ${upsellSettings.buttonText || "Add"}
           </button>
         </div>

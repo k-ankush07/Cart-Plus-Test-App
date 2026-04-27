@@ -38,11 +38,7 @@ function hsbToHex({ hue, saturation, brightness }) {
 function RichTextEditor({ value, onChange }) {
     const ref = useRef(null);
 
-    const [color, setColor] = useState({
-        hue: 0,
-        saturation: 1,
-        brightness: 1,
-    });
+    const [color, setColor] = useState(null);
 
     const [popoverActive, setPopoverActive] = useState(false);
 
@@ -67,13 +63,16 @@ function RichTextEditor({ value, onChange }) {
 
     const applyColor = (newColor) => {
         setColor(newColor);
+
+        if (!newColor) return;
+
         const hex = hsbToHex(newColor);
         format("foreColor", hex);
     };
 
     return (
         <BlockStack gap="200">
-           
+
 
             <div
                 style={{
@@ -111,7 +110,16 @@ function RichTextEditor({ value, onChange }) {
                             onClose={() => setPopoverActive(false)}
                         >
                             <div style={{ padding: "10px" }}>
-                                <ColorPicker onChange={applyColor} color={color} />
+                                <ColorPicker
+                                    onChange={applyColor}
+                                    color={
+                                        color || {
+                                            hue: 0,
+                                            saturation: 0,
+                                            brightness: 0
+                                        }
+                                    }
+                                />
                             </div>
                         </Popover>
                     </InlineStack>

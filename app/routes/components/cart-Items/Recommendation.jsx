@@ -24,7 +24,7 @@ const DEFAULT_PRODUCT = {
     ]
 };
 
-export default function Recommendation({ recommendationsSettings, currency, cartSettings, upsellsSettings }) {
+export default function Recommendation({ recommendationsSettings, currency, cartSettings, upsellsSettings, designSettings }) {
 
     const [products, setProducts] = useState([]);
     const [selectedVariants, setSelectedVariants] = useState({});
@@ -123,21 +123,21 @@ export default function Recommendation({ recommendationsSettings, currency, cart
 
                         {/* TITLE */}
                         <a href="#no" className="upcart-internal-component-upsell-tile__title-link">
-                            <h3 className="upcart-internal-component-upsell-tile__title">
+                            <h3 className="upcart-internal-component-upsell-tile__title" style={{ color: designSettings.textColor || "#6b7280", }}>
                                 {product.title}
                             </h3>
                         </a>
 
-                        <p className="price">
+                        <p className="price" style={{ color: designSettings.textColor || "#6b7280", }}>
 
                             {selectedVariant.compareAtPrice &&
                                 parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
-                                    <span className="compare-price">
+                                    <span className="compare-price" style={{ color: designSettings.textColor || "#6b7280", }}>
                                         {selectedVariant.compareAtPrice} {currency}
                                     </span>
                                 )}
 
-                            <span className="sale-price">
+                            <span className="sale-price" style={{ color: designSettings.textColor || "#6b7280", }}>
                                 {selectedVariant.price} {currency}
                             </span>
 
@@ -154,15 +154,16 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                             </div>
                         )}
 
-                        <div className="upcart-internal-component-upsell-tile__variant-row">
+                        <div className="upcart-internal-component-upsell-tile__variant-row" style={{ color: designSettings.textColor || "#6b7280", }}>
                             <select
                                 value={selectedVariant.id}
                                 onChange={(e) =>
                                     handleVariantChange(product.id, e.target.value)
                                 }
+                                style={{ color: designSettings.textColor || "#6b7280", }}
                             >
                                 {product.variants.map(variant => (
-                                    <option key={variant.id} value={variant.id}>
+                                    <option key={variant.id} value={variant.id} style={{ color: designSettings.textColor || "#6b7280", }}>
                                         {variant.title}
                                     </option>
                                 ))}
@@ -172,6 +173,12 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                                 type="button"
                                 className="upcart-internal-component__button"
                                 onClick={hanldeAddProduct}
+                                style={{
+                                    borderRadius: `${designSettings.buttonRadius}px`,
+                                    backgroundColor: designSettings.buttonColor,
+                                    "--btn-hover-text": designSettings.buttonHoverColor,
+                                    "--btn-text": designSettings.buttonTextColor,
+                                }}
                             >
                                 {loading ? (<span className="loader"></span>) : (upsellsSettings.buttonText)}
                             </button>
@@ -219,12 +226,19 @@ export default function Recommendation({ recommendationsSettings, currency, cart
 
         setTimeout(() => {
             if (recommendationsSettings.carouselIndicator === "buttons") {
+
+                if (!swiper.params.navigation) {
+                    swiper.params.navigation = {};
+                }
+
                 swiper.params.navigation.prevEl = prevRef.current;
                 swiper.params.navigation.nextEl = nextRef.current;
 
-                swiper.navigation.destroy();
-                swiper.navigation.init();
-                swiper.navigation.update();
+                if (swiper.navigation) {
+                    swiper.navigation.destroy();
+                    swiper.navigation.init();
+                    swiper.navigation.update();
+                }
             }
 
             if (recommendationsSettings.carouselIndicator === "progressBar") {
@@ -243,7 +257,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
             <div className="upcart-internal-upsell upcart-public-upsell">
 
                 {/* HEADER */}
-                <div className="upcart-internal-upsell__header upcart-recommendations-title">
+                <div className="upcart-internal-upsell__header upcart-recommendations-title" style={{ color: designSettings.textColor || "#6b7280", }}>
                     <p dangerouslySetInnerHTML={{
                         __html: recommendationsSettings.headerText
                     }} />
@@ -251,14 +265,19 @@ export default function Recommendation({ recommendationsSettings, currency, cart
 
                 {/* BUTTON */}
                 {recommendationsSettings.showShopNowButton && (
-                    <div className="upcart-internal-style__title-large_button">
+                    <div className="upcart-internal-style__title-large_button" style={{
+                            borderRadius: `${designSettings.buttonRadius}px`,
+                            backgroundColor: designSettings.buttonColor,
+                            "--btn-hover-text": designSettings.buttonHoverColor,
+                            "--btn-text": designSettings.buttonTextColor,
+                        }}>
                         <a href={recommendationsSettings.buttonUrl} className="upcart-recommendations-shop-now-button">
                             {recommendationsSettings.buttonText}
                         </a>
                     </div>
                 )}
 
-                <div className="upcart-internal-style__title-large">
+                <div className="upcart-internal-style__title-large" style={{ color: designSettings.textColor || "#6b7280", }}>
                     <p dangerouslySetInnerHTML={{
                         __html: recommendationsSettings.productHeaderText
                     }} />
@@ -269,12 +288,24 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                         {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev">‹</div>)}
                         <Swiper
                             modules={[Navigation]}
+                            navigation={{
+                                prevEl: prevRef.current,
+                                nextEl: nextRef.current,
+                            }}
                             onInit={(swiper) => {
                                 swiperRef.current = swiper;
+
+                                if (!swiper.params.navigation) {
+                                    swiper.params.navigation = {};
+                                }
+
                                 swiper.params.navigation.prevEl = prevRef.current;
                                 swiper.params.navigation.nextEl = nextRef.current;
-                                swiper.navigation.init();
-                                swiper.navigation.update();
+
+                                if (swiper.navigation) {
+                                    swiper.navigation.init();
+                                    swiper.navigation.update();
+                                }
                             }}
                             onSlideChange={(swiper) => {
                                 updateProgress(swiper);

@@ -36,7 +36,7 @@ function ClassicLayout({ qty, loadingType, setLoadingType, updateQty, showStrike
             <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, wordBreak: "break-word", overflowWrap: "break-word" }}>
               The Power Backpack Duffel
             </div>
-            <div style={{ fontSize: "12px", color: "#777" }}>Premium Global Brands</div>
+            <div style={{ fontSize: "12px", color: "#777", color: textColor, }} >Premium Global Brands</div>
             <div className="cart-app-item__variant" style={{ color: textColor, fontSize: "12px" }}>
               Size: <strong>STANDARD</strong>
             </div>
@@ -126,10 +126,10 @@ function SubscriptionLayout({ qty, loadingType, setLoadingType, updateQty, showS
             <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
               Pain oil
             </div>
-            <div style={{ fontSize: "12px", color: "#777" }}>Premium Global Brands</div>
+            <div style={{ fontSize: "12px", color: "#777", color: textColor, }}>Premium Global Brands</div>
 
             {/* Variants */}
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#777" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: textColor, }}>
               <span>Qty: <strong style={{ color: textColor }}>100ml</strong></span>
               <span style={{ color: "#ccc" }}>|</span>
               <span>Bottles: <strong style={{ color: textColor }}>1</strong></span>
