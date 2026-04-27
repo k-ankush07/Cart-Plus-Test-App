@@ -5,18 +5,7 @@ export const getCart = async (apiUrl, cartId) => {
   return res.json();
 };
 
-export const createCart = async (apiUrl, data) => {
-  const res = await fetch(`${apiUrl}/api/create-cart`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
 
-  return res.json();
-};
 
 export const updateCart = async (apiUrl, cartId, data) => {
   return fetch(`${apiUrl}/api/update-cart/${cartId}`, {
