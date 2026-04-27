@@ -89,6 +89,68 @@ window.hubUtils = {
   `;
   },
 
+  initNoteListener(blockId) {
+    const textarea = document.getElementById(`hub-cart-note-${blockId}`);
+    if (!textarea) return;
+
+    if (!document.getElementById("hub-note-spin-style")) {
+      const style = document.createElement("style");
+      style.id = "hub-note-spin-style";
+      style.textContent = `
+      @keyframes hub-note-spin {
+        to { transform: rotate(360deg); }
+      }
+      .hub-note-spinner {
+        display: inline-block !important;
+        width: 12px !important;
+        height: 12px !important;
+        min-width: 12px !important;
+        min-height: 12px !important;
+        border: 2px solid #ccc !important;
+        border-top-color: red !important;
+        border-radius: 50% !important;
+        animation: hub-note-spin 0.7s linear infinite !important;
+        vertical-align: middle !important;
+        margin-left: 6px !important;
+        box-sizing: border-box !important;
+      }
+    `;
+      document.head.appendChild(style);
+    }
+
+    let debounceTimer;
+
+    textarea.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+
+      const wrapper = textarea.closest(".hub-additional-notes");
+      const title = wrapper?.querySelector("p");
+
+      title?.querySelectorAll(".hub-note-spinner").forEach((s) => s.remove());
+
+      if (title) {
+        const spinner = document.createElement("span");
+        spinner.classList.add("hub-note-spinner");
+        title.appendChild(spinner);
+      }
+
+      debounceTimer = setTimeout(async () => {
+        try {
+          await fetch("/cart/update.js", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ note: textarea.value }),
+          });
+        } catch (err) {
+        } finally {
+          const w2 = textarea.closest(".hub-additional-notes");
+          const t2 = w2?.querySelector("p");
+          t2?.querySelectorAll(".hub-note-spinner").forEach((s) => s.remove());
+        }
+      }, 800);
+    });
+  },
+
   renderTrustBadges(blockId, settings, itemCount) {
     if (!settings || settings.enabled !== false) return;
 

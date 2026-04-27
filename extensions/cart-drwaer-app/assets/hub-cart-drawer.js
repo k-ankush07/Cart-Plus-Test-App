@@ -640,30 +640,6 @@ function debounce(fn, delay) {
   };
 }
 
-document.addEventListener(
-  "input",
-  debounce(async (e) => {
-    if (!e.target.classList.contains("hub-notes-textarea")) return;
-
-    const note = e.target.value;
-
-    try {
-      const res = await fetch("/cart/update.js", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ note }),
-      });
-
-      const data = await res.json();
-      console.log("NOTE SAVED:", data);
-    } catch (err) {
-      console.error("Note save error:", err);
-    }
-  }, 500),
-);
-
 window.getUpsellProducts = async function (settings, productId) {
   try {
     let products = [];

@@ -685,6 +685,9 @@ span.hub-offers-title {
 
 .hub-discount-input {
   flex: 1;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0%;
   padding: 9px 12px;
   border: 1px solid #d0d0d0;
   border-radius: 4px;
@@ -693,6 +696,8 @@ span.hub-offers-title {
   transition: border-color 0.15s;
   border: 0;
   box-shadow: none;
+  padding: 0;
+  padding-left: 10px;
 }
 
 .hub-discount-input:focus {
@@ -847,7 +852,7 @@ h3.styles_CartPreview__empty__ {
 }
 
 .hub-total-final {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #2D2D2D;
   font-weight: 700;
@@ -918,13 +923,13 @@ h3.styles_CartPreview__empty__ {
 
 .hub-cart-checkout-btn {
   display: block;
-  padding: 20px;
+  padding: 15px;
   background: #1a1a1a;
   color: #fff;
   text-align: center;
   text-decoration: none;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.15s;
@@ -1114,13 +1119,13 @@ h3.styles_CartPreview__empty__ {
 .hub-continue-shopping {
   display: block;
   text-align: center;
-  font-size: 18px;
+  font-size: 15px;
   color: #555;
   text-decoration: none;
   cursor: pointer;
   font-weight: 700;
   line-height: 20px;
-  padding: 20px;
+  padding: 15px;
   width: calc(100% - 40px);
   margin: 0 20px !important;
 }
@@ -1532,7 +1537,7 @@ h3.styles_CartPreview__empty__ {
 .hub-addon-product-title {
   font-size: 13px;
   font-weight: 500;
-  margin: 0 0 2px;
+  line-height: 18px;
 }
 
 .hub-discount-input-row {
@@ -1541,7 +1546,13 @@ h3.styles_CartPreview__empty__ {
 
 .hub-trust-badges-inner img {
   width: 100%;
-  padding: 0 20px;
+}
+
+.hub-trust-badges-inner {
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+    padding: 10px 20px;
 }
 
 .hub-cart-drawer {
@@ -2016,7 +2027,7 @@ span.upsell-text.suggestion-product {
 }
 
 .hub-additional-notes {
-  padding: 20px;
+  padding: 20px 20px 10px;
 }
 
 .hub-additional-notes textarea {
@@ -2096,6 +2107,7 @@ span.upsell-text.suggestion-product {
   margin-bottom: 15px;
   padding: 20px 20px 0;
   border-radius: 5px;
+
 }
 
 .hub-discount-input-btn input#discount-code-input {

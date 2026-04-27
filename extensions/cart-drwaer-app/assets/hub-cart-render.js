@@ -83,6 +83,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           notesSettings,
           cart.note,
         );
+         hubUtils.initNoteListener(blockId);
     }
 
     if (
@@ -96,6 +97,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           notesSettings,
           cart.note,
         );
+         hubUtils.initNoteListener(blockId);
     }
 
     const footer = drawer.querySelector(".hub-cart-footer");

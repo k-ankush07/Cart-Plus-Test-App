@@ -15,7 +15,7 @@ import {
 
 const PRESET_OPTIONS = [
     { label: "Select", value: "" },
-    { label: "Payment icons", value: "https://storage.googleapis.com/upcart-public/payment-icons.webp" },
+    { label: "Payment icons", value: "https://cdn.shopify.com/s/files/1/0875/3679/5938/files/Frame_2121451254_1.svg" },
 ];
 
 export default function Trustbadges({ trustBadgesSettings, handleChange, accessToken, shop, apiUrl }) {
