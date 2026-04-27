@@ -725,7 +725,7 @@ span.hub-offers-title {
 }
 
 h3.styles_CartPreview__empty__ {
-  color: #123348;
+  color: #000;
   font-size: 32px;
   font-style: normal;
   font-weight: 600;
@@ -947,8 +947,8 @@ h3.styles_CartPreview__empty__ {
 .hub-rewards-title {
   text-align: center;
   font-size: 14px;
-  margin: 0 0 16px;
-  line-height: 1.4;
+  padding-bottom: 15px;
+  line-height: 12px;
   color: #2D2D2D;
 }
 
@@ -1001,7 +1001,7 @@ h3.styles_CartPreview__empty__ {
   text-align: center;
   position: absolute;
   top: 100%;
-  margin-top: 4px;
+  padding-top: 6px;
   color: #2D2D2D;
   font-weight: 600;
 }
@@ -1664,6 +1664,7 @@ h3.styles_CartPreview__empty__ {
   padding: 5px;
   display: flex;
   border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
 }
 
 .custom-close-btn:hover {

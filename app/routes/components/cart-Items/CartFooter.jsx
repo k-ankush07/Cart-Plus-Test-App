@@ -76,7 +76,10 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 {/* below_checkout */}
                 <CustomHtml cartSettings={cartSettings} position="below_checkout" />
 
-                {designSettings.continueshopping && (<div className="styles_Footer__continueShopping__ upcart-continue-shopping"><p>{cartSettings.continueShoppingText}</p></div>)}
+                {designSettings.continueshopping && (<div className="styles_Footer__continueShopping__ upcart-continue-shopping "
+                    style={{ color: designSettings.textColor }}>
+                    <p>{cartSettings.continueShoppingText}</p>
+                </div>)}
                 {trustBadgesSettings?.position === "bottom" && (
                     <TrustBadges trustBadgesSettings={trustBadgesSettings} />
                 )}

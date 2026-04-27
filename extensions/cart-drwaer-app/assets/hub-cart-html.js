@@ -75,6 +75,7 @@ window.injectCartHTML = function (blockId, root) {
     `--icon-border-hover:${headerSettings.borderHoverColor}`,
     `--border-color:${headerSettings.iconBorderColor}`,
     `--border-width:${getBorderWidth(headerSettings.iconBorder)}`,
+    `--border-radius:${designSettings.buttonRadius}px`
   ].join(";");
 
   // Close button HTML (reusable)

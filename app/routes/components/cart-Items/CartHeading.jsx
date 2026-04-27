@@ -15,13 +15,13 @@ export default function CartHeading({ headerSettings, designSettings, onClose })
                 style={{
                     flexShrink: 0,
                     "--icon-color": headerSettings.iconColor,
-
                     "--icon-bg": headerSettings.iconBgColor,
                     "--icon-hover-bg": headerSettings.iconbgHoverColor,
                     "--icon-hover-color": headerSettings.iconHoverColor,
                     "--icon-border-hover": headerSettings.borderHoverColor,
                     "--border-color": headerSettings.iconBorderColor,
                     "--border-width": getBorderWidth(headerSettings.iconBorder),
+                    borderRadius: `${designSettings.buttonRadius}px`,
                 }}
             >
                 <svg
