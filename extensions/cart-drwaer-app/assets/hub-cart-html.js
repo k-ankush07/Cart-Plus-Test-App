@@ -329,8 +329,6 @@ window.injectCartHTML = function (blockId, root) {
       <div id="hub-footer-rec-${blockId}"></div>
 
       <div class="hub-cart-footer" style="background-color:${designSettings.accentColor || ""};">
-        <!-- TRUST BADGES (position: top of footer) -->
-        <div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges" style="display:none;"></div>
 
         <!-- ADD-ONS -->
         <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
@@ -372,7 +370,11 @@ window.injectCartHTML = function (blockId, root) {
            onclick="hubToggleTotalBreakdown(this, '${blockId}')">
             <div class="hub-total-header-left">
               <span class="hub-total-label">Estimated Total</span>
-              <span class="hub-total-arrow">∨</span>
+              <span class="hub-total-arrow">
+             <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            </span>
             </div>
             <div class="hub-total-header-right">
               <span class="hub-total-original" id="hub-total-original-${blockId}"></span>
@@ -396,7 +398,7 @@ window.injectCartHTML = function (blockId, root) {
             </div>
             <div class="hub-breakdown-row" id="hub-shipping-row-${blockId}" style="display:none;">
               <span>Shipping</span>
-              <span id="hub-shipping-cost-${blockId}"></span>
+              <span id="hub-shipping-cost-${blockId}" class="hub-shipping-cost-show"></span>
             </div>
             <div class="hub-breakdown-row hub-breakdown-grand">
               <span>Grand Total</span>
@@ -415,12 +417,15 @@ window.injectCartHTML = function (blockId, root) {
         <div>${renderCustomHTML(customHtmlBlocks.below_checkout)}</div>
         ${
           designSettings.continueshopping
-            ? `<a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping"
+            ? `<a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping" style="color:${designSettings.textColor}"
            onclick="(function(e){e.preventDefault();document.getElementById('hub-close-${blockId}').click();})(event)">
           ${continueShoppingText}
         </a>`
             : ""
         }
+
+        <!-- TRUST BADGES (position: top of footer) -->
+        <div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges" style="display:none;"></div>
       </div>
 
       <div>${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>

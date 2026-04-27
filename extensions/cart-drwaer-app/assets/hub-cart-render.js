@@ -832,7 +832,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
             ? item.options_with_values
                 .map(
                   (opt) =>
-                    `<p class="hub-item-variant"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`,
+                    `<p class="hub-item-variant" style="color:${colorItems}"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`,
                 )
                 .join("")
             : "";

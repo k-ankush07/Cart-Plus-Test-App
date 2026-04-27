@@ -1,12 +1,11 @@
 import express from "express";
-import { shopConfigModel } from "../model/schema.js";
-import { getValidAccessToken } from "../utils/tokenHelper.js";
+import { makeShopifyGraphQL, makeShopifyREST } from "../utils/shopifyFetch.js";
 
 const router = express.Router();
 
-const apiVersion = "2026-01";
+// ─── Product Ratings ─────────────────────────────────────────────────────────
 
-router.get("/product-ratings", async (req, res) => {
+router.get("/product-ratings", async (req, res, next) => {
   try {
     const { shop, ids } = req.query;
     const idList = ids?.split(",").filter(Boolean) ?? [];
@@ -14,8 +13,6 @@ router.get("/product-ratings", async (req, res) => {
     if (!shop || !idList.length) {
       return res.json({ ratings: {} });
     }
-
-    let token = await getValidAccessToken(shop);
 
     const gids = idList.map((id) => `gid://shopify/Product/${id}`);
 
@@ -31,47 +28,13 @@ router.get("/product-ratings", async (req, res) => {
       }
     `;
 
-    const makeRequest = async (accessToken) => {
-      const res = await fetch(
-        `https://${shop}/admin/api/${apiVersion}/graphql.json`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Shopify-Access-Token": accessToken,
-          },
-          body: JSON.stringify({ query: gql, variables: { ids: gids } }),
-        },
-      );
-
-      return {
-        status: res.status,
-        data: await res.json(),
-      };
-    };
-
-    let response = await makeRequest(token);
-
-    if (
-      response.status === 401 ||
-      response.data?.errors?.some(
-        (e) =>
-          e.message.includes("Invalid API key") ||
-          e.message.includes("access token"),
-      )
-    ) {
-      token = await getValidAccessToken(shop);
-      response = await makeRequest(token);
-    }
-
-    const apiData = response.data;
+    const data = await makeShopifyGraphQL(shop, gql, { ids: gids });
     const ratings = {};
 
-    for (const node of apiData?.data?.nodes ?? []) {
+    for (const node of data?.data?.nodes ?? []) {
       if (!node?.legacyResourceId) continue;
 
       let ratingValue = null;
-
       if (node.rating?.value) {
         try {
           const parsed = JSON.parse(node.rating.value);
@@ -90,236 +53,188 @@ router.get("/product-ratings", async (req, res) => {
     }
 
     return res.json({ ratings });
-  } catch (error) {
-    console.error("PRODUCT RATINGS ERROR:", error);
-    return res.json({ ratings: {} });
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post("/discounts", async (req, res) => {
-  const { shop } = req.body;
+// ─── Discounts ───────────────────────────────────────────────────────────────
 
-  let token = await getValidAccessToken(shop);
+const buildDiscountQuery = (cursor) => ({
+  query: `
+    query GetDiscounts($cursor: String) {
+      discountNodes(first: 250, after: $cursor) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            id
+            discount {
+              __typename
 
-  const buildQuery = (cursor) => ({
-    query: `
-      query GetDiscounts($cursor: String) {
-        discountNodes(first: 250, after: $cursor) {
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-          edges {
-            node {
-              id
-              discount {
-                __typename
-
-                ... on DiscountCodeBasic {
-                  title
-                  startsAt
-                  endsAt
-                  status
-                  usageLimit
-                  appliesOncePerCustomer
-                  minimumRequirement {
-                    ... on DiscountMinimumSubtotal {
-                      greaterThanOrEqualToSubtotal { amount currencyCode }
-                    }
-                    ... on DiscountMinimumQuantity {
-                      greaterThanOrEqualToQuantity
-                    }
+              ... on DiscountCodeBasic {
+                title
+                startsAt
+                endsAt
+                status
+                usageLimit
+                appliesOncePerCustomer
+                minimumRequirement {
+                  ... on DiscountMinimumSubtotal {
+                    greaterThanOrEqualToSubtotal { amount currencyCode }
                   }
-                  combinesWith { orderDiscounts productDiscounts shippingDiscounts }
-                  customerGets {
-                    value {
-                      ... on DiscountPercentage { percentage }
-                      ... on DiscountAmount { amount { amount currencyCode } }
-                    }
-                    items {
-                      ... on DiscountProducts {
-                        products(first: 10) { edges { node { id } } }
-                      }
-                      ... on DiscountCollections {
-                        collections(first: 10) { edges { node { id } } }
-                      }
-                    }
+                  ... on DiscountMinimumQuantity {
+                    greaterThanOrEqualToQuantity
                   }
-                  customerSelection { __typename }
-                  codes(first: 10) { edges { node { code } } }
                 }
-
-                ... on DiscountCodeFreeShipping {
-                  title
-                  startsAt
-                  endsAt
-                  status
-                  codes(first: 10) { edges { node { code } } }
-                  minimumRequirement {
-                    ... on DiscountMinimumSubtotal {
-                      greaterThanOrEqualToSubtotal { amount currencyCode }
-                    }
-                    ... on DiscountMinimumQuantity {
-                      greaterThanOrEqualToQuantity
-                    }
+                combinesWith { orderDiscounts productDiscounts shippingDiscounts }
+                customerGets {
+                  value {
+                    ... on DiscountPercentage { percentage }
+                    ... on DiscountAmount { amount { amount currencyCode } }
                   }
-                  combinesWith { orderDiscounts productDiscounts shippingDiscounts }
-                }
-
-                ... on DiscountAutomaticBasic {
-                  title
-                  startsAt
-                  endsAt
-                  status
-                  minimumRequirement {
-                    ... on DiscountMinimumSubtotal {
-                      greaterThanOrEqualToSubtotal { amount currencyCode }
+                  items {
+                    ... on DiscountProducts {
+                      products(first: 10) { edges { node { id } } }
                     }
-                    ... on DiscountMinimumQuantity {
-                      greaterThanOrEqualToQuantity
-                    }
-                  }
-                  combinesWith { orderDiscounts productDiscounts shippingDiscounts }
-                  customerGets {
-                    value {
-                      ... on DiscountPercentage { percentage }
-                      ... on DiscountAmount { amount { amount currencyCode } }
-                    }
-                    items {
-                      ... on DiscountProducts {
-                        products(first: 10) { edges { node { id } } }
-                      }
-                      ... on DiscountCollections {
-                        collections(first: 10) { edges { node { id } } }
-                      }
+                    ... on DiscountCollections {
+                      collections(first: 10) { edges { node { id } } }
                     }
                   }
                 }
+                customerSelection { __typename }
+                codes(first: 10) { edges { node { code } } }
+              }
 
-                ... on DiscountAutomaticApp {
-                  title
-                  startsAt
-                  endsAt
-                  status
+              ... on DiscountCodeFreeShipping {
+                title
+                startsAt
+                endsAt
+                status
+                codes(first: 10) { edges { node { code } } }
+                minimumRequirement {
+                  ... on DiscountMinimumSubtotal {
+                    greaterThanOrEqualToSubtotal { amount currencyCode }
+                  }
+                  ... on DiscountMinimumQuantity {
+                    greaterThanOrEqualToQuantity
+                  }
                 }
+                combinesWith { orderDiscounts productDiscounts shippingDiscounts }
+              }
 
-                ... on DiscountAutomaticFreeShipping {
-                  title
-                  startsAt
-                  endsAt
-                  status
-                  minimumRequirement {
-                    ... on DiscountMinimumSubtotal {
-                      greaterThanOrEqualToSubtotal { amount currencyCode }
+              ... on DiscountAutomaticBasic {
+                title
+                startsAt
+                endsAt
+                status
+                minimumRequirement {
+                  ... on DiscountMinimumSubtotal {
+                    greaterThanOrEqualToSubtotal { amount currencyCode }
+                  }
+                  ... on DiscountMinimumQuantity {
+                    greaterThanOrEqualToQuantity
+                  }
+                }
+                combinesWith { orderDiscounts productDiscounts shippingDiscounts }
+                customerGets {
+                  value {
+                    ... on DiscountPercentage { percentage }
+                    ... on DiscountAmount { amount { amount currencyCode } }
+                  }
+                  items {
+                    ... on DiscountProducts {
+                      products(first: 10) { edges { node { id } } }
                     }
-                    ... on DiscountMinimumQuantity {
-                      greaterThanOrEqualToQuantity
+                    ... on DiscountCollections {
+                      collections(first: 10) { edges { node { id } } }
                     }
                   }
-                  combinesWith { orderDiscounts productDiscounts shippingDiscounts }
                 }
+              }
+
+              ... on DiscountAutomaticApp {
+                title
+                startsAt
+                endsAt
+                status
+              }
+
+              ... on DiscountAutomaticFreeShipping {
+                title
+                startsAt
+                endsAt
+                status
+                minimumRequirement {
+                  ... on DiscountMinimumSubtotal {
+                    greaterThanOrEqualToSubtotal { amount currencyCode }
+                  }
+                  ... on DiscountMinimumQuantity {
+                    greaterThanOrEqualToQuantity
+                  }
+                }
+                combinesWith { orderDiscounts productDiscounts shippingDiscounts }
               }
             }
           }
         }
       }
-    `,
-    variables: { cursor: cursor || null },
-  });
+    }
+  `,
+  variables: { cursor: cursor || null },
+});
 
+router.post("/discounts", async (req, res, next) => {
   try {
+    const { shop } = req.body;
+
+    if (!shop) {
+      return res.status(400).json({ error: "shop is required" });
+    }
+
+    // Paginate through all discount nodes
     let allEdges = [];
     let cursor = null;
     let hasNextPage = true;
 
-    // Paginate through all discount nodes
     while (hasNextPage) {
-      const discountRes = await fetch(
-        `https://${shop}/admin/api/${apiVersion}/graphql.json`,
-        {
-          method: "POST",
-          headers: {
-            "X-Shopify-Access-Token": token,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(buildQuery(cursor)),
-        },
-      );
+      const { query, variables } = buildDiscountQuery(cursor);
+      const data = await makeShopifyGraphQL(shop, query, variables);
 
-      let discountData = await discountRes.json();
-
-      if (discountData?.errors) {
-        const isAuthError = discountData.errors.some(
-          (err) =>
-            err.message.includes("Invalid API key") ||
-            err.message.includes("access token"),
-        );
-
-        if (isAuthError) {
-          console.log("🔁 Token expired, retrying...");
-
-          token = await getValidAccessToken(shop);
-
-          const retryRes = await fetch(
-            `https://${shop}/admin/api/${apiVersion}/graphql.json`,
-            {
-              method: "POST",
-              headers: {
-                "X-Shopify-Access-Token": token,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(buildQuery(cursor)),
-            },
-          );
-
-          const retryData = await retryRes.json();
-
-          if (retryData?.errors) {
-            console.error(" Retry also failed:", retryData.errors);
-            break;
-          }
-
-          discountData = retryData;
-        } else {
-          console.error("Shopify GraphQL errors:", discountData.errors);
-          break;
-        }
-      }
-
-      const page = discountData?.data?.discountNodes;
-      allEdges = allEdges.concat(page?.edges || []);
-      hasNextPage = page?.pageInfo?.hasNextPage || false;
-      cursor = page?.pageInfo?.endCursor || null;
+      const page = data?.data?.discountNodes;
+      allEdges = allEdges.concat(page?.edges ?? []);
+      hasNextPage = page?.pageInfo?.hasNextPage ?? false;
+      cursor = page?.pageInfo?.endCursor ?? null;
     }
 
-    let allDiscountCodes = [];
-    let activeDiscountCodes = [];
+    // Normalize edges into flat discount records
+    const allDiscountCodes = [];
+    const activeDiscountCodes = [];
 
-    allEdges.forEach((item) => {
-      const discount = item.node.discount;
-      if (!discount) return;
+    for (const item of allEdges) {
+      const discount = item.node?.discount;
+      if (!discount) continue;
 
-      // Extract discount value (percentage or fixed amount)
       const valueNode = discount.customerGets?.value;
       const discountValue =
         valueNode?.percentage != null
           ? { type: "percentage", value: valueNode.percentage * 100 }
           : valueNode?.amount
-            ? {
-                type: "fixed_amount",
-                value: parseFloat(valueNode.amount.amount),
-                currencyCode: valueNode.amount.currencyCode,
-              }
-            : null;
+          ? {
+              type: "fixed_amount",
+              value: parseFloat(valueNode.amount.amount),
+              currencyCode: valueNode.amount.currencyCode,
+            }
+          : null;
 
-      // Extract applies-to items (products or collections)
       const itemsNode = discount.customerGets?.items;
       const appliesToProducts =
-        itemsNode?.products?.edges?.map((e) => e.node.id) || [];
+        itemsNode?.products?.edges?.map((e) => e.node.id) ?? [];
       const appliesToCollections =
-        itemsNode?.collections?.edges?.map((e) => e.node.id) || [];
+        itemsNode?.collections?.edges?.map((e) => e.node.id) ?? [];
 
-      // Extract minimum requirement
       const minReq = discount.minimumRequirement;
       const minimumRequirement = minReq?.greaterThanOrEqualToSubtotal
         ? {
@@ -328,8 +243,8 @@ router.post("/discounts", async (req, res) => {
             currencyCode: minReq.greaterThanOrEqualToSubtotal.currencyCode,
           }
         : minReq?.greaterThanOrEqualToQuantity
-          ? { type: "quantity", value: minReq.greaterThanOrEqualToQuantity }
-          : null;
+        ? { type: "quantity", value: minReq.greaterThanOrEqualToQuantity }
+        : null;
 
       const baseData = {
         id: item.node.id,
@@ -348,115 +263,67 @@ router.post("/discounts", async (req, res) => {
         customerSelection: discount.customerSelection?.__typename ?? null,
       };
 
-      const codes = discount.codes?.edges?.map((e) => e.node.code) || [];
+      const codes = discount.codes?.edges?.map((e) => e.node.code) ?? [];
 
       if (codes.length > 0) {
-        codes.forEach((code) => {
-          const data = { ...baseData, code };
-          allDiscountCodes.push(data);
-          if (discount.status === "ACTIVE") activeDiscountCodes.push(data);
-        });
+        for (const code of codes) {
+          const record = { ...baseData, code };
+          allDiscountCodes.push(record);
+          if (discount.status === "ACTIVE") activeDiscountCodes.push(record);
+        }
       } else {
         // Automatic discounts have no codes
-        const data = { ...baseData, code: null };
-        allDiscountCodes.push(data);
-        if (discount.status === "ACTIVE") activeDiscountCodes.push(data);
+        const record = { ...baseData, code: null };
+        allDiscountCodes.push(record);
+        if (discount.status === "ACTIVE") activeDiscountCodes.push(record);
       }
-    });
+    }
 
-    res.json({
+    return res.json({
       total: allDiscountCodes.length,
       activeCount: activeDiscountCodes.length,
       allDiscountCodes,
       activeDiscountCodes,
     });
   } catch (err) {
-    console.error(
-      "Failed to fetch discounts:",
-      err?.response?.data || err.message || err,
-    );
-    res.json({ discounts: [] });
+    next(err);
   }
 });
 
-const fetchWithRetry = async (url, headers, retries = 3, delay = 1000) => {
-  let attempt = 0;
-  while (attempt < retries) {
-    try {
-      const res = await fetch(url, { headers });
-      if (res.status === 429) {
-        console.log(`Rate limit hit. Retrying in ${delay}ms...`);
-        await new Promise((r) => setTimeout(r, delay));
-        attempt++;
-        continue;
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    } catch (err) {
-      throw err;
-    }
-  }
-  throw new Error("Max retries reached due to rate limiting.");
-};
+// ─── Shipping Zones ───────────────────────────────────────────────────────────
 
-router.get("/shipping-zones", async (req, res) => {
-  const { shop } = req.query;
-
-  if (!shop) {
-    return res.status(400).json({ error: "Shop is required" });
-  }
-
+router.get("/shipping-zones", async (req, res, next) => {
   try {
-    let token = await getValidAccessToken(shop);
+    const { shop } = req.query;
 
-    const makeRequest = async (accessToken) => {
-      const headers = {
-        "X-Shopify-Access-Token": accessToken,
-        "Content-Type": "application/json",
-      };
-
-      const shippingZonesData = await fetch(
-        `https://${shop}/admin/api/${apiVersion}/shipping_zones.json`,
-        { headers },
-      );
-
-      const countriesData = await fetch(
-        `https://${shop}/admin/api/${apiVersion}/countries.json`,
-        { headers },
-      );
-
-      return {
-        shippingZonesData: await shippingZonesData.json(),
-        countriesData: await countriesData.json(),
-        status: shippingZonesData.status,
-      };
-    };
-
-    let response = await makeRequest(token);
-
-    if (response?.shippingZonesData?.errors || response?.status === 401) {
-
-      token = await getValidAccessToken(shop);
-      response = await makeRequest(token);
+    if (!shop) {
+      return res.status(400).json({ error: "shop is required" });
     }
 
-    const shippingZones = response.shippingZonesData.shipping_zones || [];
-    const countries = response.countriesData.countries || [];
+    // Fetch in parallel — both are independent REST calls
+    const [shippingZonesData, countriesData] = await Promise.all([
+      makeShopifyREST(shop, "shipping_zones.json"),
+      makeShopifyREST(shop, "countries.json"),
+    ]);
+
+    const shippingZones = shippingZonesData.shipping_zones ?? [];
+    const countries = countriesData.countries ?? [];
 
     const shippingZonesWithProvinces = shippingZones.map((zone) => ({
       ...zone,
-      countries: (zone.countries || []).map((country) => {
+      countries: (zone.countries ?? []).map((country) => {
         const fullCountry = countries.find((c) => c.code === country.code);
         return {
           name: country.name,
           code: country.code,
-          provinces: fullCountry?.provinces || [],
-          price_based_shipping_rates: zone.price_based_shipping_rates || [],
-          weight_based_shipping_rates: zone.weight_based_shipping_rates || [],
+          provinces: fullCountry?.provinces ?? [],
+          price_based_shipping_rates: zone.price_based_shipping_rates ?? [],
+          weight_based_shipping_rates: zone.weight_based_shipping_rates ?? [],
         };
       }),
     }));
 
+    // Deduplicated flat country list
     const allCountries = shippingZonesWithProvinces.flatMap((zone) =>
       zone.countries.map((country) => ({
         name: country.name,
@@ -464,20 +331,19 @@ router.get("/shipping-zones", async (req, res) => {
         provinces: country.provinces,
         price_based_shipping_rates: country.price_based_shipping_rates,
         weight_based_shipping_rates: country.weight_based_shipping_rates,
-      })),
+      }))
     );
 
     const uniqueCountries = Array.from(
-      new Map(allCountries.map((c) => [c.code, c])).values(),
+      new Map(allCountries.map((c) => [c.code, c])).values()
     );
 
-    res.json({
+    return res.json({
       shipping: shippingZonesWithProvinces,
       countries: uniqueCountries,
     });
   } catch (err) {
-    console.error("Shipping Zones Error:", err);
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
