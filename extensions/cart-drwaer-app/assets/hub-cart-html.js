@@ -390,7 +390,7 @@ window.injectCartHTML = function (blockId, root) {
               <span id="hub-mrp-${blockId}"></span>
             </div>
             <div class="hub-breakdown-row hub-breakdown-discount" id="hub-discount-mrp-row-${blockId}" style="display:none;">
-              <span>Discount On MRP</span>
+              <span>${cartSettings.discountsSavingsText}</span>
               <span id="hub-discount-mrp-${blockId}"></span>
             </div>
             <div class="hub-breakdown-row hub-breakdown-discount" id="hub-coupon-row-${blockId}" style="display:none;">

@@ -42,7 +42,7 @@ function _unitPriceBlock(ctx) {
       ${
         ctx.hasCompare
           ? `<span class="hub-item-save" style="color:${ctx.savingsColor};
-      background:${hexToRGBA(ctx.savingsColor.savingsColor, 0.1)};">Save ${hubUtils.formatMoney(ctx.unitSave)}</span>`
+      background:${hexToRGBA(ctx.savingsColor.savingsColor, 0.1)};">${ctx.savingsText} ${hubUtils.formatMoney(ctx.unitSave)}</span>`
           : ""
       }
     </div>
@@ -84,6 +84,7 @@ function classicItemHTML(ctx) {
     item,
     colorItems,
     showStrikethrough,
+    savingsText,
     isReward,
     priceHtml,
     variantHtml,
@@ -166,6 +167,7 @@ function subscriptionItemHTML(ctx) {
     colorItems,
     showStrikethrough,
     savingsColor,
+    savingsText,
     isReward,
     priceHtml,
     variantHtml,
@@ -187,13 +189,13 @@ function subscriptionItemHTML(ctx) {
     <div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">
         <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
         ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
-        ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">Save ${hubUtils.formatMoney(ctx.unitSave)}</span>` : ""}
+        ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(ctx.unitSave)}</span>` : ""}
        </div>
     `
     : `<div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">
         <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
         ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
-        ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">Save ${hubUtils.formatMoney(ctx.unitSave)}</span>` : ""}
+        ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(ctx.unitSave)}</span>` : ""}
        </div>
        ${saveHtml}`;
 

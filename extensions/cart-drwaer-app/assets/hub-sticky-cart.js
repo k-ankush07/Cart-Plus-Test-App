@@ -88,7 +88,12 @@ function scopeCss(css, scope) {
     // ── Only bind the listener once ──
     if (!_badgeListenerBound) {
       _badgeListenerBound = true;
-      document.addEventListener("cart:updated", updateStickyBadge);
+
+      document.addEventListener("cart:updated", () => {
+        updateStickyBadge();
+
+        setTimeout(updateStickyBadge, 300);
+      });
     }
 
     // ── Only build the button DOM once ──

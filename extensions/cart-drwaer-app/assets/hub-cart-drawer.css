@@ -209,8 +209,8 @@
 .hub-qty-btn {
   background: none;
   border: none;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   cursor: pointer;
   font-size: 14px;
   color: #333;
@@ -230,8 +230,8 @@
 }
 
 .hub-qty-input {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border: none;
   text-align: center;
   font-size: 12px;
@@ -250,9 +250,9 @@
   align-items: center;
   transition: color 0.15s;
   border: 1px solid #E8E8E8;
-  height: 30px;
+  height: 26px;
   border-radius: 5px;
-  width: 30px;
+  width: 26px;
   display: flex;
   justify-content: center;
 }
@@ -2121,6 +2121,7 @@ span.upsell-text.suggestion-product {
 .hub-discount-input-row-items {
   flex-wrap: wrap;
   padding: 0 20px;
+  padding-top: 15px;
 }
 
 .hub-discount-heading {

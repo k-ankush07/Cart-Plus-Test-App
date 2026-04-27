@@ -83,7 +83,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           notesSettings,
           cart.note,
         );
-         hubUtils.initNoteListener(blockId);
+      hubUtils.initNoteListener(blockId);
     }
 
     if (
@@ -97,7 +97,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           notesSettings,
           cart.note,
         );
-         hubUtils.initNoteListener(blockId);
+      hubUtils.initNoteListener(blockId);
     }
 
     const footer = drawer.querySelector(".hub-cart-footer");
@@ -114,23 +114,25 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const rewards = window.__HUB_ACTIVE_CART__?.rewardsSettings;
 
     /* ── AUTO-ADD / REMOVE REWARD PRODUCTS ── */
+    let isCartChanged = false;
+
+    /* reward */
     const changed = await hubUtils.maybeUpdateRewardProducts(cart, rewards);
     if (changed) {
       const res2 = await fetch("/cart.js");
       cart = await res2.json();
-      window._hubCartProductIds = new Set(
-        cart.items.map((i) => String(i.product_id)),
-      );
+      isCartChanged = true;
     }
 
-    /* ── TRIGGERED REWARDS: auto-add / remove free gift ── */
     const triggeredChanged = await window.handleTriggeredRewards(cart);
     if (triggeredChanged) {
       const res3 = await fetch("/cart.js");
       cart = await res3.json();
-      window._hubCartProductIds = new Set(
-        cart.items.map((i) => String(i.product_id)),
-      );
+      isCartChanged = true;
+    }
+
+    if (isCartChanged) {
+      document.dispatchEvent(new CustomEvent("cart:updated"));
     }
 
     const container = drawer.querySelector(".hub-cart-items");
@@ -824,11 +826,12 @@ window.hubCartRender = async function (drawer, opts = {}) {
           ? effectiveCompare - effectiveUnitPrice
           : 0;
         const layoutName = cartSettings.cartItemLayout || "classic";
+        const savingsText = cartSettings.savingsText || "Save";
 
         const saveHtml =
           hasDiscount && showSavingsBelowPrices && layoutName !== "subscription"
             ? `<p class="hub-item-save" style="color:${savingsColor}; 
-            background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">Save ${hubUtils.formatMoney(unitSave)}</p>`
+            background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(unitSave)}</p>`
             : "";
 
         const priceHtml = hasDiscount
@@ -875,6 +878,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           colorItems,
           showStrikethrough,
           savingsColor,
+          savingsText,
           isReward,
           isTriggeredReward,
           effectiveUnitPrice,
