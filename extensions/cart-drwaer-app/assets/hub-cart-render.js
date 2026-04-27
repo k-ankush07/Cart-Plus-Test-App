@@ -645,6 +645,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           --btn-bg:${btnColor};
           --btn-hover:${btnHoverColor};
           --btn-text:${textColor};
+          border-radius:${designSettings.buttonRadius}px;
         "
                >${recommendations.buttonText || "Shop Now"}</a>`
                : ""
@@ -833,7 +834,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
             ? `<p class="hub-item-save" style="color:${savingsColor}; 
             background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(unitSave)}</p>`
             : "";
-
+            
         const priceHtml = hasDiscount
           ? `<span class="hub-price-original">${hubUtils.formatMoney(effectiveCompare)}</span>
      <span class="hub-price">${hubUtils.formatMoney(effectiveUnitPrice)}</span>`

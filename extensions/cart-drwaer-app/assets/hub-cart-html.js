@@ -75,7 +75,7 @@ window.injectCartHTML = function (blockId, root) {
     `--icon-border-hover:${headerSettings.borderHoverColor}`,
     `--border-color:${headerSettings.iconBorderColor}`,
     `--border-width:${getBorderWidth(headerSettings.iconBorder)}`,
-    `--border-radius:${designSettings.buttonRadius}px`
+    `--border-radius:${designSettings.buttonRadius}px`,
   ].join(";");
 
   // Close button HTML (reusable)
@@ -187,14 +187,15 @@ window.injectCartHTML = function (blockId, root) {
   const continueShoppingText =
     cartSettings.continueShoppingText || "Or continue shopping";
 
+  const btnColor = designSettings.buttonColor || "#000000";
+  const btnHoverColor = designSettings.buttonHoverColor || "#333333";
+  const textColor = designSettings.buttonTextColor || "#000";
+
   // Inject button color + hover style for this drawer
   const btnStyleId = `hub-btn-style-${blockId}`;
   if (!document.getElementById(btnStyleId)) {
     const bs = document.createElement("style");
     bs.id = btnStyleId;
-    const btnColor = designSettings.buttonColor || "#000000";
-    const btnHoverColor = designSettings.buttonHoverColor || "#333333";
-    const textColor = designSettings.buttonTextColor || "#000";
 
     bs.textContent = `
       #hub-cart-drawer-${blockId} .hub-cart-checkout-btn {
@@ -449,9 +450,16 @@ window.injectCartHTML = function (blockId, root) {
             />
           </div>
           <p class="hub-coupon-success-applied" id="hub-coupon-success-applied-${blockId}"></p>
-          <p class="hub-coupon-success-headline" id="hub-coupon-success-headline-${blockId}"></p>
+          <p class="hub-coupon-success-headline" id="hub-coupon-success-headline-${blockId}" style="color:${designSettings.textColor}"></p>
           <p class="hub-coupon-success-desc" id="hub-coupon-success-desc-${blockId}"></p>
-          <button class="hub-coupon-success-yay" onclick="hubCloseCouponSuccess('${blockId}')">YAY!</button>
+          <button class="hub-coupon-success-yay" onclick="hubCloseCouponSuccess('${blockId}')"
+          style="
+          --btn-bg:${btnColor};
+          --btn-hover:${btnHoverColor};
+          --btn-text:${textColor};
+          border-radius:${designSettings.buttonRadius}px;
+        "
+          >YAY!</button>
         </div>
       </div>
 

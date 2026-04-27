@@ -263,6 +263,7 @@ window.hubUtils = {
           --btn-bg:${btnColor};
           --btn-hover:${btnHoverColor};
           --btn-text:${textColor};
+          border-radius:${designSettings.buttonRadius}px;
       ">
             ${upsellSettings.buttonText || "Add"}
           </button>

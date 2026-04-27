@@ -37,12 +37,12 @@ function _unitPriceBlock(ctx) {
   }
   return `
     <div class="hub-item-unit-price-wrap">
-      ${ctx.hasCompare ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(ctx.effectiveCompare)}</span>` : ""}
-      <span class="hub-item-unit-price${ctx.hasCompare ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(ctx.effectiveUnitPrice)}</span>
+      ${ctx.hasCompare ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(ctx.effectiveCompare * ctx.item.quantity)}</span>` : ""}
+      <span class="hub-item-unit-price${ctx.hasCompare ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(ctx.item.final_line_price)}</span>
       ${
         ctx.hasCompare
           ? `<span class="hub-item-save" style="color:${ctx.savingsColor};
-      background:${hexToRGBA(ctx.savingsColor.savingsColor, 0.1)};">${ctx.savingsText} ${hubUtils.formatMoney(ctx.unitSave)}</span>`
+      background:${hexToRGBA(ctx.savingsColor, 0.1)};">${ctx.savingsText} ${hubUtils.formatMoney(ctx.unitSave * ctx.item.quantity)}</span>`
           : ""
       }
     </div>
@@ -50,7 +50,6 @@ function _unitPriceBlock(ctx) {
 }
 
 function _discountBadgesHtml(item) {
-
   if (!item.discounts?.length) return "";
 
   return item.discounts
@@ -63,7 +62,7 @@ function _discountBadgesHtml(item) {
         class="discount-code-img"
       />
       ${d.title}
-    </span>`
+    </span>`,
     )
     .join("");
 }
@@ -96,45 +95,49 @@ function classicItemHTML(ctx) {
     hasCompare,
     effectiveUnitPrice,
     effectiveCompare,
+    unitSave,
     saveHtml,
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item);
 
+  // LINE TOTAL = item.final_line_price (unit price × quantity, after discounts)
+  // COMPARE TOTAL = effectiveCompare × quantity (original price × quantity)
+  const lineTotal = item.final_line_price;
+  const compareTotal = effectiveCompare * item.quantity;
+
   const rightCol = isReward
     ? `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-
-    <div style="display:flex;align-items:center;gap:8px">
-    <span class="hub-price hub-price-free">FREE</span>
-    ${_deleteBtn(item.key, item.product_title)}
-  </div>
-
-  <div style="display:flex;align-items:center;gap:6px">
-    <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
-      ${hubUtils.formatMoney(effectiveUnitPrice)}
-    </span>
-
-    ${
-      hasCompare && showStrikethrough
-        ? `
-      <span class="hub-item-compare-price">
-        ${hubUtils.formatMoney(effectiveCompare)}
-      </span>
-    `
-        : ""
-    }
-  </div>
-
-  </div>`
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="hub-price hub-price-free">FREE</span>
+          ${_deleteBtn(item.key, item.product_title)}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
+            ${hubUtils.formatMoney(lineTotal)}
+          </span>
+          ${
+            hasCompare && showStrikethrough
+              ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(compareTotal)}</span>`
+              : ""
+          }
+        </div>
+      </div>`
     : `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-        <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
-        ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
-       </div>
-       ${saveHtml}
-       <div class="hub-item-actions" style="justify-content:flex-end;margin-top:8px">
-         ${_qtyControl(item.key, item.quantity)}
-         ${_deleteBtn(item.key, item.product_title)}
-       </div>`;
+        <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
+          ${hubUtils.formatMoney(lineTotal)}
+        </span>
+        ${
+          hasCompare && showStrikethrough
+            ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(compareTotal)}</span>`
+            : ""
+        }
+      </div>
+      ${saveHtml}
+      <div class="hub-item-actions" style="justify-content:flex-end;margin-top:5px">
+        ${_qtyControl(item.key, item.quantity)}
+        ${_deleteBtn(item.key, item.product_title)}
+      </div>`;
 
   const inner = `
     <div class="hub-cart-item" style="color:${colorItems};flex-wrap:wrap">
@@ -143,7 +146,7 @@ function classicItemHTML(ctx) {
       </div>
       <div class="hub-item-info">
         <a href="/products/${item.handle}" class="hub-item-title" style="color:${colorItems}">${item.product_title || item.title}</a>
-        ${sellingPlan ? `<p class="hub-item-subscription-label"> ${sellingPlan.selling_plan.name}</p>` : ""}
+        ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
         ${variantHtml}
         ${propertiesHtml}
         ${discountHtml}
@@ -179,23 +182,33 @@ function subscriptionItemHTML(ctx) {
     hasCompare,
     effectiveUnitPrice,
     effectiveCompare,
+    unitSave,
     saveHtml,
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item);
 
+  // LINE TOTAL = item.final_line_price (unit price × quantity, after discounts)
+  // COMPARE TOTAL = effectiveCompare × quantity (original price × quantity)
+  const lineTotal = item.final_line_price;
+  const compareTotal = effectiveCompare * item.quantity;
+  const totalSave = unitSave * item.quantity;
+
   const priceRow = isReward
     ? `<p class="hub-price hub-price-free">Free</p>
-    <div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">
-        <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
-        ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
-        ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(ctx.unitSave)}</span>` : ""}
-       </div>
-    `
+       <div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">
+         <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
+           ${hubUtils.formatMoney(lineTotal)}
+         </span>
+         ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(compareTotal)}</span>` : ""}
+         ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(totalSave)}</span>` : ""}
+       </div>`
     : `<div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">
-        <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">${hubUtils.formatMoney(effectiveUnitPrice)}</span>
-        ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(effectiveCompare)}</span>` : ""}
-        ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(ctx.unitSave)}</span>` : ""}
+         <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
+           ${hubUtils.formatMoney(lineTotal)}
+         </span>
+         ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(compareTotal)}</span>` : ""}
+         ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(totalSave)}</span>` : ""}
        </div>
        ${saveHtml}`;
 
@@ -212,18 +225,17 @@ function subscriptionItemHTML(ctx) {
             ${discountBadges}
           </div>
         </div>
-         ${variantHtml}
-        ${sellingPlan ? `<p class="hub-item-subscription-label"> ${sellingPlan.selling_plan.name}</p>` : ""}
-         ${priceRow}
+        ${variantHtml}
+        ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
+        ${priceRow}
         ${propertiesHtml}
         ${discountHtml}
         ${
           isReward
             ? ""
-            : `
-          <div class="hub-item-actions" style="flex-direction:column;align-items:flex-start;gap:8px;margin-top:8px">
-            ${_qtyControl(item.key, item.quantity)}
-          </div>`
+            : `<div class="hub-item-actions" style="flex-direction:column;align-items:flex-start;gap:8px;margin-top:5px">
+                 ${_qtyControl(item.key, item.quantity)}
+               </div>`
         }
       </div>
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
@@ -258,26 +270,26 @@ function modernItemHTML(ctx) {
 
   const discountBadges = _discountBadgesHtml(item);
 
+  // LINE TOTAL = item.final_line_price (unit price × quantity, after discounts)
+  // COMPARE TOTAL = effectiveCompare × quantity (original price × quantity)
+  const lineTotal = item.final_line_price;
+  const compareTotal = effectiveCompare * item.quantity;
+
   const saveBadge = hasCompare ? `${saveHtml}` : "";
 
   const priceBlock = `
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-    ${isReward ? `<span class="hub-price hub-price-free">FREE</span>` : ""}
-    ${
-      hasCompare && showStrikethrough
-        ? `
-      <span class="hub-item-compare-price">
-        ${hubUtils.formatMoney(effectiveCompare)}
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+      ${isReward ? `<span class="hub-price hub-price-free">FREE</span>` : ""}
+      ${
+        hasCompare && showStrikethrough
+          ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(compareTotal)}</span>`
+          : ""
+      }
+      <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
+        ${hubUtils.formatMoney(lineTotal)}
       </span>
-    `
-        : ""
-    }
-    <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
-      ${hubUtils.formatMoney(effectiveUnitPrice)}
-    </span>
-    ${discountBadges}
-  </div>
-  `;
+      ${discountBadges}
+    </div>`;
 
   const inner = `
     <div class="hub-cart-item hub-cart-item--modern" style="color:${colorItems};flex-wrap:wrap">
@@ -291,7 +303,7 @@ function modernItemHTML(ctx) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
           <div>
             <a href="/products/${item.handle}" class="hub-item-title" style="color:${colorItems}">${item.product_title || item.title}</a>
-            ${sellingPlan ? `<p class="hub-item-subscription-label"> ${sellingPlan.selling_plan.name}</p>` : ""}
+            ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
             ${variantHtml}
             ${propertiesHtml}
           </div>
@@ -301,16 +313,14 @@ function modernItemHTML(ctx) {
             ${
               isReward
                 ? ""
-                : `
-          <div class="hub-item-actions" style="justify-content:space-between;margin-top:8px">
-            <div></div>
-            ${_qtyControl(item.key, item.quantity)}
-          </div>`
+                : `<div class="hub-item-actions" style="justify-content:space-between;margin-top:5px">
+                     <div></div>
+                     ${_qtyControl(item.key, item.quantity)}
+                   </div>`
             }
           </div>
         </div>
         ${discountHtml}
-        
       </div>
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
     </div>`;

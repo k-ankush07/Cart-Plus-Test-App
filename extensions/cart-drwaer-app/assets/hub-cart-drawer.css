@@ -139,7 +139,7 @@
   font-weight: 500;
   color: #1a6b5c;
   text-decoration: none;
-  margin-bottom: 4px;
+  padding-bottom: 4px;
   line-height: 1.4;
 }
 
@@ -1598,7 +1598,7 @@ h3.styles_CartPreview__empty__ {
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  background: #123348;
+  background: #1a1a1a;
   color: #fff;
   border-radius: 5px;
   padding: 5px 10px;
@@ -1882,8 +1882,6 @@ span.upsell-text.suggestion-product {
 
 .hub-coupon-success-yay {
   width: 100%;
-  background: #123348;
-  color: #fff;
   border: none;
   border-radius: 35px;
   padding: 14px;
@@ -1891,6 +1889,12 @@ span.upsell-text.suggestion-product {
   font-weight: 700;
   letter-spacing: 1px;
   cursor: pointer;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+}
+
+.hub-coupon-success-yay:hover{
+    color: var(--btn-hover);
 }
 
 .loader {
@@ -2227,6 +2231,7 @@ span.hub-item-discount-badge {
   font-weight: 500;
   padding: 2px 6px;
   border-radius: 15px;
+  margin: 5px 0;
 }
 
 .hub-offers-back-svg {
