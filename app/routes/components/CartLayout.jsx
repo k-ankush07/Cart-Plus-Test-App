@@ -1,5 +1,5 @@
 import { Page, Button, Modal, TextField, InlineStack, Badge, Popover, ActionList, Icon } from "@shopify/polaris";
-import { EditIcon, ArrowLeftIcon, } from "@shopify/polaris-icons";
+import { EditIcon, ArrowLeftIcon, InfoIcon  } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../index.css";
@@ -40,6 +40,7 @@ export default function CartLayout({
   const [cartName, setCartName] = useState(initialCartName || "Untitled cart");
   const [cartStatus, setCartStatus] = useState(cart?.status || "unpublished");
   const [previewPopoverOpen, setPreviewPopoverOpen] = useState(false);
+  const [publishModal, setPublishModal] = useState(false);
   const [previewMode, setPreviewMode] = useState("items");
   // Sync state when cart prop changes (after switching carts via dropdown)
   useEffect(() => {
@@ -87,7 +88,7 @@ export default function CartLayout({
     if (isPublished) {
       setUnpublishModal(true);
     } else {
-      handlePublish();
+      setPublishModal(true);
     }
   };
 
@@ -340,6 +341,49 @@ export default function CartLayout({
             />
           </Modal.Section>
         </Modal>
+
+        {/* ── Publish confirmation modal ── */}
+        <Modal
+          open={publishModal}
+          onClose={() => setPublishModal(false)}
+          title={`Publish "${cartName}"?`}
+          primaryAction={{
+            content: "Publish cart",
+            loading: publishLoading,
+            onAction: async () => {
+              await handlePublish();
+              setPublishModal(false);
+            },
+          }}
+          secondaryActions={[
+            { content: "Cancel", onAction: () => setPublishModal(false) },
+          ]}
+        >
+          <Modal.Section>
+            <p>Publishing will make this cart live. The current live cart will be moved to draft.</p>
+
+            <div style={{
+              display: "flex",
+              gap: "10px",
+              backgroundColor: "#EBF5FB",
+              padding: "12px",
+              borderRadius: "8px",
+              marginTop: "12px",
+              border: "1px solid #AED6F1"
+            }}>
+              <Icon source={InfoIcon} tone="info" />
+              <div>
+                <p style={{ fontWeight: 600, color: "#1558D6", marginBottom: "4px" }}>
+                  Your cart has triggered rewards
+                </p>
+                <p style={{ color: "#333" }}>
+                  Once this cart is live, triggered rewards discounts will be active via Shopify's discount system — even if the app embed is off.
+                </p>
+              </div>
+            </div>
+          </Modal.Section>
+        </Modal>
+
       </Page>
 
       {/* Toggle arrow — fixed outside wrapper so overflow:hidden never clips it */}

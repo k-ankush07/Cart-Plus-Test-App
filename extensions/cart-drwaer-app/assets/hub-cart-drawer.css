@@ -938,6 +938,10 @@ h3.styles_CartPreview__empty__ {
   margin: 0 20px !important;
 }
 
+.hub-cart-checkout-btn:hover {
+  opacity: .8;
+}
+
 .hub-price-free {
   color: #2e7d32;
   font-weight: 700;
@@ -1549,10 +1553,10 @@ h3.styles_CartPreview__empty__ {
 }
 
 .hub-trust-badges-inner {
-    display: inline-flex;
-    justify-content: center;
-    width: 100%;
-    padding: 10px 20px;
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 20px;
 }
 
 .hub-cart-drawer {
@@ -1893,8 +1897,8 @@ span.upsell-text.suggestion-product {
   color: var(--btn-text);
 }
 
-.hub-coupon-success-yay:hover{
-    color: var(--btn-hover);
+.hub-coupon-success-yay:hover {
+  color: var(--btn-hover);
 }
 
 .loader {

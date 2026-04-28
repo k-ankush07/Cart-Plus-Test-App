@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const PRODUCT_IMAGE = "https://cdn.shopify.com/s/files/1/0642/9435/5203/products/campstool-1.jpg";
 
@@ -11,17 +11,76 @@ const TrashIcon = () => (
   </svg>
 );
 
-function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
+// ─── Undo Toast ───────────────────────────────────────────────────────────────
+function UndoToast({ message, onUndo, onDismiss }) {
   return (
-    <div className="cart-app-item__qty upcart-public-component-product-tile__quantity-selector">
-      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus upcart-public-component-product-tile__quantity-minus">{loadingType === "dec" ? <span className="loader"></span> : "−"}</button>
-      <span className="cart-app-item__qty-value upcart-product-quantity-input">{qty}</span>
-      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus upcart-public-component-product-tile__quantity-plus"> {loadingType === "inc" ? <span className="loader"></span> : "+"}</button>
+    <div style={{
+      position: "absolute",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: "#222",
+      color: "#fff",
+      borderRadius: 8,
+      padding: "10px 16px",
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      fontSize: 13,
+      fontWeight: 500,
+      boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+      zIndex: 9999,
+      minWidth: 220,
+      maxWidth: 340,
+      whiteSpace: "nowrap",
+      animation: "slideUp 0.25s ease",
+      top:100
+    }}>
+      <style>{`
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `}</style>
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+        Removed '<strong>{message}</strong>'.
+      </span>
+      <button
+        onClick={onUndo}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#7ec8f4",
+          fontWeight: 700,
+          fontSize: 13,
+          cursor: "pointer",
+          marginLeft: "auto",
+          flexShrink: 0,
+          padding: 0,
+        }}
+      >
+        Undo
+      </button>
     </div>
   );
 }
 
-function ClassicLayout({ qty, loadingType, setLoadingType, updateQty, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
+// ─── Qty Stepper ──────────────────────────────────────────────────────────────
+function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
+  return (
+    <div className="cart-app-item__qty upcart-public-component-product-tile__quantity-selector">
+      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus upcart-public-component-product-tile__quantity-minus">
+        {loadingType === "dec" ? <span className="loader"></span> : "−"}
+      </button>
+      <span className="cart-app-item__qty-value upcart-product-quantity-input">{qty}</span>
+      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus upcart-public-component-product-tile__quantity-plus">
+        {loadingType === "inc" ? <span className="loader"></span> : "+"}
+      </button>
+    </div>
+  );
+}
+
+// ─── Classic Layout ───────────────────────────────────────────────────────────
+function ClassicLayout({productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
   return (
     <div className="cart-app-item upcart-product-item upcart-public-component-product-tile" style={{ flexDirection: "column" }}>
       <div style={{ display: "flex", gap: "8px", width: "100%" }}>
@@ -34,16 +93,15 @@ function ClassicLayout({ qty, loadingType, setLoadingType, updateQty, showStrike
           {/* Left */}
           <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: 0 }}>
             <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, wordBreak: "break-word", overflowWrap: "break-word" }}>
-              The Power Backpack Duffel
+              {productName}
             </div>
-            <div style={{ fontSize: "12px", color: "#777", color: textColor, }} >Premium Global Brands</div>
+            <div style={{ fontSize: "12px", color: textColor }}>Premium Global Brands</div>
             <div className="cart-app-item__variant" style={{ color: textColor, fontSize: "12px" }}>
               Size: <strong>STANDARD</strong>
             </div>
             <div className="cart-app-item__variant" style={{ color: textColor, fontSize: "12px" }}>
               Color: <strong>BLACK</strong>
             </div>
-            {/* Discount badge */}
             <span style={{
               display: "inline-flex", alignItems: "center", gap: "4px",
               background: "#e6f4ea", color: "#1e7e34",
@@ -84,18 +142,9 @@ function ClassicLayout({ qty, loadingType, setLoadingType, updateQty, showStrike
               />
               <button
                 className="cart-app-item__remove"
-                disabled={loadingType === "remove"}
-                onClick={async () => {
-                  setLoadingType("remove");
-                  await new Promise((res) => setTimeout(res, 800));
-                  setLoadingType(null);
-                }}
+                onClick={onRemoveClick}
               >
-                {loadingType === "remove" ? (
-                  <span className="loader"></span>
-                ) : (
-                  <TrashIcon />
-                )}
+                <TrashIcon />
               </button>
             </div>
           </div>
@@ -104,7 +153,7 @@ function ClassicLayout({ qty, loadingType, setLoadingType, updateQty, showStrike
       </div>
 
       {!subscriptionUpgradesSettings.enabled && (
-        <div style={{ width: "100%", display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
           <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />
         </div>
       )}
@@ -112,7 +161,8 @@ function ClassicLayout({ qty, loadingType, setLoadingType, updateQty, showStrike
   );
 }
 
-function SubscriptionLayout({ qty, loadingType, setLoadingType, updateQty, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
+// ─── Subscription Layout ──────────────────────────────────────────────────────
+function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
   return (
     <div className="cart-app-item upcart-product-item upcart-public-component-product-tile upcart-layout-subscription">
       <div className="cart-app-item__image upcart-product-image-wrapper" style={{ width: "72px", height: "72px", flexShrink: 0 }}>
@@ -120,41 +170,24 @@ function SubscriptionLayout({ qty, loadingType, setLoadingType, updateQty, showS
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px", minWidth: 0 }}>
 
-        {/* Title + trash + MEGA20 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
-              Pain oil
+            {productName}
             </div>
-            <div style={{ fontSize: "12px", color: "#777", color: textColor, }}>Premium Global Brands</div>
-
-            {/* Variants */}
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: textColor, }}>
+            <div style={{ fontSize: "12px", color: textColor }}>Premium Global Brands</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: textColor }}>
               <span>Qty: <strong style={{ color: textColor }}>100ml</strong></span>
               <span style={{ color: "#ccc" }}>|</span>
               <span>Bottles: <strong style={{ color: textColor }}>1</strong></span>
             </div>
-
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
             <button
               className="cart-app-item__remove"
-              disabled={loadingType === "remove"}
-              onClick={async () => {
-                setLoadingType("remove");
-
-                await new Promise((res) => setTimeout(res, 800));
-
-                console.log("removed");
-
-                setLoadingType(null);
-              }}
+              onClick={onRemoveClick}
             >
-              {loadingType === "remove" ? (
-                <span className="loader"></span>
-              ) : (
-                <TrashIcon />
-              )}
+              <TrashIcon />
             </button>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "12px", fontWeight: 600 }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -166,7 +199,6 @@ function SubscriptionLayout({ qty, loadingType, setLoadingType, updateQty, showS
           </div>
         </div>
 
-        {/* Price row */}
         <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
           <span style={{ color: textColor, fontWeight: 700, fontSize: "14px" }}>$27.00</span>
           {showStrikethrough && (
@@ -179,34 +211,36 @@ function SubscriptionLayout({ qty, loadingType, setLoadingType, updateQty, showS
           )}
         </div>
 
-        {/* Qty +  button */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
-          <div>
-            <QtyStepper
-              qty={qty}
-              loadingType={loadingType}
-              onDecrement={() => updateQty("dec")}
-              onIncrement={() => updateQty("inc")}
-            />
-          </div>
+        <div style={{ marginTop: "4px" }}>
+          <QtyStepper
+            qty={qty}
+            loadingType={loadingType}
+            onDecrement={() => updateQty("dec")}
+            onIncrement={() => updateQty("inc")}
+          />
         </div>
-        {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
+
+        {!subscriptionUpgradesSettings.enabled && (
+          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />
+        )}
       </div>
     </div>
   );
 }
 
-function ModernLayout({ qty, loadingType, setLoadingType, updateQty, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings }) {
+// ─── Modern Layout ────────────────────────────────────────────────────────────
+function ModernLayout({productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings }) {
   return (
     <div className="cart-app-item upcart-product-item upcart-public-component-product-tile upcart-layout-modern">
 
-      {/* Image with SAVE badge above */}
       <div style={{ position: "relative", flexShrink: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
-        {cartSettings.showSavingsBelowPrices && (<span style={{
-          background: "#e6f4ea", color: savingColor,
-          fontSize: "10px", fontWeight: 700,
-          padding: "2px 6px", borderRadius: "3px", width: "fit-content",
-        }}>{cartSettings.savingsText} 50%</span>)}
+        {cartSettings.showSavingsBelowPrices && (
+          <span style={{
+            background: "#e6f4ea", color: savingColor,
+            fontSize: "10px", fontWeight: 700,
+            padding: "2px 6px", borderRadius: "3px", width: "fit-content",
+          }}>{cartSettings.savingsText} 50%</span>
+        )}
         <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }}>
           <img className="upcart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
@@ -214,13 +248,11 @@ function ModernLayout({ qty, loadingType, setLoadingType, updateQty, showStriket
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", minWidth: 0 }}>
 
-        {/* Title + trash + price */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
-              The Denmark Teal -<br />Unbreakable Luggage
+              <span dangerouslySetInnerHTML={{ __html: productName }} />
             </div>
-            {/* Variant selectors */}
             <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
               <button style={{
                 display: "inline-flex", alignItems: "center", gap: "4px",
@@ -243,22 +275,9 @@ function ModernLayout({ qty, loadingType, setLoadingType, updateQty, showStriket
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
             <button
               className="cart-app-item__remove"
-              disabled={loadingType === "remove"}
-              onClick={async () => {
-                setLoadingType("remove");
-
-                await new Promise((res) => setTimeout(res, 800));
-
-                console.log("removed");
-
-                setLoadingType(null);
-              }}
+              onClick={onRemoveClick}
             >
-              {loadingType === "remove" ? (
-                <span className="loader"></span>
-              ) : (
-                <TrashIcon />
-              )}
+              <TrashIcon />
             </button>
             {showStrikethrough && (
               <span style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$400.00</span>
@@ -274,7 +293,6 @@ function ModernLayout({ qty, loadingType, setLoadingType, updateQty, showStriket
           </div>
         </div>
 
-        {/* button + qty */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
           <QtyStepper
             qty={qty}
@@ -283,33 +301,65 @@ function ModernLayout({ qty, loadingType, setLoadingType, updateQty, showStriket
             onIncrement={() => updateQty("inc")}
           />
         </div>
-        {!subscriptionUpgradesSettings.enabled && (<Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />)}
+
+        {!subscriptionUpgradesSettings.enabled && (
+          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />
+        )}
       </div>
     </div>
   );
 }
 
-export default function CartItem({ showStrikethrough, textColor, savingColor, Subscription,
-  subscriptionUpgradesSettings, cartSettings }) {
+// ─── Main CartItem ────────────────────────────────────────────────────────────
+export default function CartItem({
+  showStrikethrough,
+  textColor,
+  savingColor,
+  Subscription,
+  subscriptionUpgradesSettings,
+  cartSettings,
+  productName = "The Monaco - Black",
+  onConfirmRemove, 
+}) {
   const [qty, setQty] = useState(1);
-  const layout = cartSettings.cartItemLayout || "classic";
-
   const [loadingType, setLoadingType] = useState(null);
+  const [isRemoved, setIsRemoved] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const layout = cartSettings.cartItemLayout || "classic";
+  const undoTimerRef = useRef(null);
 
   const updateQty = async (type) => {
     if (loadingType) return;
-
     setLoadingType(type);
-
     await new Promise((res) => setTimeout(res, 800));
-
     setQty((prev) => {
       if (type === "inc") return prev + 1;
       if (type === "dec" && prev > 1) return prev - 1;
       return prev;
     });
-
     setLoadingType(null);
+  };
+
+  const handleRemoveClick = () => {
+    setIsRemoved(true);
+    setShowToast(true);
+
+    clearTimeout(undoTimerRef.current);
+
+    undoTimerRef.current = setTimeout(() => {
+      setShowToast(false);
+
+      setIsRemoved(false);
+
+    }, 4000);
+  };
+
+  const handleUndo = () => {
+    clearTimeout(undoTimerRef.current);
+    setIsRemoved(false);
+    setShowToast(false);
   };
 
   const sharedProps = {
@@ -318,23 +368,44 @@ export default function CartItem({ showStrikethrough, textColor, savingColor, Su
     loadingType,
     setLoadingType,
     updateQty,
+    onRemoveClick: handleRemoveClick,
     showStrikethrough,
     textColor,
     savingColor,
     cartSettings,
     subscriptionUpgradesSettings,
-    Subscription
+    Subscription,
+    productName
   };
 
   return (
-    <div className="upcart-products-section cart-app__items">
-      {layout === "subscription" ? (
-        <SubscriptionLayout {...sharedProps} />
-      ) : layout === "modern" ? (
-        <ModernLayout {...sharedProps} />
-      ) : (
-        <ClassicLayout {...sharedProps} />
+    <>
+      {/* Item wrapper — dimmed when removed */}
+      <div
+        className="upcart-products-section cart-app__items"
+        style={{
+          opacity: isDeleting ? 0 : isRemoved ? 0.4 : 1,
+          pointerEvents: isRemoved ? "none" : "auto",
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        {layout === "subscription" ? (
+          <SubscriptionLayout {...sharedProps} />
+        ) : layout === "modern" ? (
+          <ModernLayout {...sharedProps} />
+        ) : (
+          <ClassicLayout {...sharedProps} />
+        )}
+      </div>
+
+      {/* Undo Toast */}
+      {showToast && (
+        <UndoToast
+          message={productName}
+          onUndo={handleUndo}
+          onDismiss={() => setShowToast(false)}
+        />
       )}
-    </div>
+    </>
   );
 }

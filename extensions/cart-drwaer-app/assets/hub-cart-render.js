@@ -628,30 +628,41 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }
 
       container.innerHTML = `
-        <div class="hub-cart-empty">
-         <div>${hubUtils.renderCustomHTML(customHtmlBlocks.empty_cart)}</div>
-          <h3 class="hub-empty-title styles_CartPreview__empty__">${emptyCartMessage}</h3>
-          ${
-            !recommendations?.enabled
-              ? `<p class="hub-rec-subtitle hub-public-upsell__header" style="color:${designSettings.textColor};">
-         ${recommendations?.headerText || ""}
-       </p>`
-              : ""
-          }
-           ${
-             recommendations.showShopNowButton
-               ? `<a href="${recommendations.buttonUrl}" class="hub-rec-btn hub-public-upsell__shop-now-button"
+  <div class="hub-cart-empty">
+    <div>${hubUtils.renderCustomHTML(customHtmlBlocks.empty_cart)}</div>
+
+    <h3 class="hub-empty-title styles_CartPreview__empty__">
+      ${emptyCartMessage}
+    </h3>
+
+    ${
+      !recommendations?.enabled
+        ? `
+        <p class="hub-rec-subtitle hub-public-upsell__header"
+          style="color:${designSettings.textColor};">
+          ${recommendations?.headerText || ""}
+        </p>
+
+        ${
+          recommendations?.showShopNowButton
+            ? `<a href="${recommendations.buttonUrl}"
+                class="hub-rec-btn hub-public-upsell__shop-now-button"
                 style="
-          --btn-bg:${btnColor};
-          --btn-hover:${btnHoverColor};
-          --btn-text:${textColor};
-          border-radius:${designSettings.buttonRadius}px;
-        "
-               >${recommendations.buttonText || "Shop Now"}</a>`
-               : ""
-           }
-        </div>
-      `;
+                  --btn-bg:${btnColor};
+                  --btn-hover:${btnHoverColor};
+                  --btn-text:${textColor};
+                  border-radius:${designSettings.buttonRadius}px;
+                ">
+                ${recommendations.buttonText || "Shop Now"}
+              </a>`
+            : ""
+        }
+      `
+        : ""
+    }
+
+  </div>
+`;
 
       const footerRec = document.getElementById(`hub-footer-rec-${blockId}`);
       if (footerRec && !footerRec.innerHTML.trim()) {
@@ -832,9 +843,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
         const saveHtml =
           hasDiscount && showSavingsBelowPrices && layoutName !== "subscription"
             ? `<p class="hub-item-save" style="color:${savingsColor}; 
-            background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(unitSave)}</p>`
+    background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(unitSave * item.quantity)}</p>`
             : "";
-            
+
         const priceHtml = hasDiscount
           ? `<span class="hub-price-original">${hubUtils.formatMoney(effectiveCompare)}</span>
      <span class="hub-price">${hubUtils.formatMoney(effectiveUnitPrice)}</span>`
