@@ -1,5 +1,5 @@
 import { Page, Button, Modal, TextField, InlineStack, Badge, Popover, ActionList, Icon } from "@shopify/polaris";
-import { EditIcon, ArrowLeftIcon, InfoIcon  } from "@shopify/polaris-icons";
+import { EditIcon, ArrowLeftIcon, InfoIcon, CheckIcon, CaretDownIcon } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../index.css";
@@ -113,15 +113,44 @@ export default function CartLayout({
 
   // Build ActionList items: other carts + rename option
   const otherCarts = allCarts.filter((c) => c.cartId !== cart?.cartId);
-
   const switcherItems = [
+    {
+      items: [
+        {
+          content: (
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {isPublished ? (
+                  <circle cx="4" cy="4" r="4" fill="#22863a" />
+                ) : (
+                  <circle cx="4" cy="4" r="3.5" stroke="#8c8c8c" strokeWidth="1" fill="none" />
+                )}
+              </svg>
+              {cartName}
+            </span>
+          ),
+          suffix: <Icon source={CheckIcon} />,
+          active: true,
+          onAction: () => setSwitcherOpen(false),
+        },
+      ],
+    },
+
     ...(otherCarts.length > 0
       ? [{
         items: otherCarts.map((c) => ({
-          content: c.cartName || "Untitled cart",
-          suffix: c.status === "published"
-            ? <Badge tone="success">Live</Badge>
-            : null,
+          content: (
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {c.status === "published" ? (
+                  <circle cx="4" cy="4" r="4" fill="#22863a" />
+                ) : (
+                  <circle cx="4" cy="4" r="3.5" stroke="#8c8c8c" strokeWidth="1" fill="none" />
+                )}
+              </svg>
+              {c.cartName || "Untitled cart"}
+            </span>
+          ),
           onAction: () => {
             setSwitcherOpen(false);
             navigate(`/app/cart-editor/${c.cartId}`);
@@ -149,7 +178,7 @@ export default function CartLayout({
     <>
       <Page fullWidth>
         {/* ── Top bar ── */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", paddingRight: isPreviewVisible ? (designSettings?.desktopWidth === "wide" ? "500px" : "440px") : "0px", transition: "padding-right 0.35s cubic-bezier(0.4, 0, 0.2, 1)" }}>
+        <div className={`header-wrapper ${isPreviewVisible ? 'preview-visible' : ''} ${designSettings?.desktopWidth === "wide" ? 'wide' : 'normal'}`}>
 
           {/* Left: cart switcher + badge */}
           <InlineStack gap="200" blockAlign="center">
@@ -169,6 +198,13 @@ export default function CartLayout({
                     onClick={() => setSwitcherOpen((o) => !o)}
                   >
                     <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {isPublished ? (
+                          <circle cx="4" cy="4" r="4" fill="#22863a" />
+                        ) : (
+                          <circle cx="4" cy="4" r="3.5" stroke="#8c8c8c" strokeWidth="1" fill="none" />
+                        )}
+                      </svg>
                       {cartName}
                       <span
                         onClick={(e) => {
@@ -194,6 +230,7 @@ export default function CartLayout({
             {/* Edit icon — opens rename modal directly */}
             <Button
               icon={EditIcon}
+              tone="base"
               variant="plain"
               onClick={() => { setNewCartName(cartName); setRenameModal(true); }}
               accessibilityLabel="Rename cart"
@@ -210,7 +247,8 @@ export default function CartLayout({
               active={previewPopoverOpen}
               activator={
                 <Button
-                  disclosure="down"
+                  variant="tertiary"
+                  icon={CaretDownIcon}
                   onClick={() => setPreviewPopoverOpen((prev) => !prev)}
                 >
                   {previewMode === "items" ? "Show items in cart" : "Show empty cart"}
@@ -242,12 +280,31 @@ export default function CartLayout({
             </Button>
 
             <Button
-              tone={isPublished ? "critical" : "success"}
+              variant="secondary"
               loading={publishLoading}
               onClick={handleTogglePublish}
+
+              icon={
+                <img
+                  src={
+                    isPublished
+                      ? "https://www.hubsyntax.com/cart-images/earth.svg"
+                      : "https://www.hubsyntax.com/cart-images/close_earth.svg"
+                  }
+                  width={14}
+                  height={14}
+                  style={{
+                    filter: "brightness(0)",
+                    display: "block",
+                    marginRight: "4px",
+                    opacity: '0.7'
+                  }}
+                />
+              }
             >
               {isPublished ? "Unpublish" : "Publish"}
             </Button>
+
           </InlineStack>
         </div>
 
@@ -303,8 +360,9 @@ export default function CartLayout({
           open={unpublishModal}
           onClose={() => setUnpublishModal(false)}
           title={`Unpublish '${cartName}'?`}
+          size="small"
           primaryAction={{
-            content: "Unpublish",
+            content: "Unpublish Cart",
             tone: "critical",
             loading: publishLoading,
             onAction: handlePublish,
@@ -323,6 +381,7 @@ export default function CartLayout({
           open={renameModal}
           onClose={() => setRenameModal(false)}
           title="Rename cart"
+          size="small"
           primaryAction={{
             content: "Save",
             loading: renameLoading,
@@ -334,7 +393,11 @@ export default function CartLayout({
         >
           <Modal.Section>
             <TextField
-              label="Cart name *"
+              label={
+                <span>
+                  Cart name <span class="required-asterisk" aria-hidden="true"> *</span>
+                </span>
+              }
               value={newCartName}
               onChange={setNewCartName}
               autoComplete="off"
@@ -347,6 +410,7 @@ export default function CartLayout({
           open={publishModal}
           onClose={() => setPublishModal(false)}
           title={`Publish "${cartName}"?`}
+          size="small"
           primaryAction={{
             content: "Publish cart",
             loading: publishLoading,
@@ -369,14 +433,13 @@ export default function CartLayout({
               padding: "12px",
               borderRadius: "8px",
               marginTop: "12px",
-              border: "1px solid #AED6F1"
             }}>
-              <Icon source={InfoIcon} tone="info" />
+              <span aria-hidden="true" class="icon color-base tone-auto size-base"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a.75.75 0 0 1-.75-.75v-3.5a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.75.75"></path><path d="M7 5a1 1 0 1 1 2 0 1 1 0 0 1-2 0"></path><path fill-rule="evenodd" d="M15 8a7 7 0 1 1-14 0 7 7 0 0 1 14 0m-1.5 0a5.5 5.5 0 1 1-11 0 5.5 5.5 0 1 1 11 0"></path></svg></span>
               <div>
-                <p style={{ fontWeight: 600, color: "#1558D6", marginBottom: "4px" }}>
+                <p style={{ fontWeight: 600, color: "#003a5a", marginBottom: "4px" }}>
                   Your cart has triggered rewards
                 </p>
-                <p style={{ color: "#333" }}>
+                <p style={{ color: "#003a5a" }}>
                   Once this cart is live, triggered rewards discounts will be active via Shopify's discount system — even if the app embed is off.
                 </p>
               </div>
