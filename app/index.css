@@ -1150,3 +1150,8 @@ span.icon.color-base.tone-auto.size-base {
     justify-content: center;
     align-items: center;
 }
+
+.Polaris-ProgressBar__Indicator {
+  background-color: #1a1a1a !important;
+}
+

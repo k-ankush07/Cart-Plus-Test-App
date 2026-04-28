@@ -1,16 +1,33 @@
 import {
-  Card,
+  LegacyCard,
+  LegacyStack,
   Text,
-  BlockStack,
-  InlineStack,
+  Checkbox,
+  Select,
   TextField,
+  InlineStack,
+  BlockStack,
+  Box,
+  Icon,
+  RangeSlider,
   ButtonGroup,
+  Card,
   Button,
   Divider,
   Spinner,
-  RangeSlider,
-  InlineGrid
+  InlineGrid,
+  DropZone,
+  ProgressBar
 } from "@shopify/polaris";
+
+import {
+  TextTitleIcon,
+  ImageIcon,
+  AdjustIcon,
+  LayoutHeaderIcon,
+  PlusCircleIcon
+} from "@shopify/polaris-icons";
+
 import ColorInput from "../ui/ColorInput";
 import { uploadImage } from "../../../services/apiRoutes";
 import { useState } from "react";
@@ -18,6 +35,7 @@ import "../../../index.css";
 
 export default function HeaderSettings({ handleChange, headerSettings, accessToken, shop, apiUrl }) {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const updateHeader = (key, value) => {
     handleChange("header", (prev) => ({
@@ -32,8 +50,19 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
 
     try {
       setIsUploading(true);
+      setUploadProgress(0);
+
+      const interval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) { clearInterval(interval); return 90; }
+          return prev + 10;
+        });
+      }, 200);
 
       const data = await uploadImage(apiUrl, file, shop, accessToken);
+
+      clearInterval(interval);
+      setUploadProgress(100);
 
       if (!data.imageUrl) {
         console.warn("imageUrl missing in backend response!");
@@ -46,20 +75,39 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
       console.error("Upload failed:", err);
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
-  return (
-    <Card>
-      <BlockStack gap="400">
-        <Text variant="headingMd">Header Settings</Text>
+  const isDisabled = headerSettings.iconBorder === "none";
 
-        {/* GENERAL */}
-        <BlockStack gap="300">
-          <Text variant="headingSm">General</Text>
-          <InlineStack gap="300" align="space-between">
-            <Text>Height</Text>
-            <ButtonGroup segmented>
+  return (
+    <div className="mainContent">
+
+      {/* Page heading — matches reference HTML exactly */}
+      <Box paddingBlockEnd="400">
+        <BlockStack gap="400">
+          <InlineStack align="space-between" blockAlign="center">
+            <InlineStack blockAlign="center" gap="100">
+              <Box>
+                <Icon source={LayoutHeaderIcon} />
+              </Box>
+              <InlineStack gap="200">
+                <Text variant="headingMd" as="h2">Header</Text>
+              </InlineStack>
+            </InlineStack>
+            <InlineStack gap="200" />
+          </InlineStack>
+        </BlockStack>
+      </Box>
+      <LegacyCard sectioned title="General">
+        <LegacyStack vertical spacing="tight">
+          <BlockStack gap="100">
+            <Text as="p" variant="bodyMd">
+              Height
+            </Text>
+
+            <ButtonGroup variant="segmented">
               {["slim", "tall"].map((value) => (
                 <Button
                   key={value}
@@ -70,12 +118,13 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
                 </Button>
               ))}
             </ButtonGroup>
-          </InlineStack>
+          </BlockStack>
+          <BlockStack gap="100">
+            <Text as="p" variant="bodyMd">
+              Bottom border
+            </Text>
 
-          <InlineStack gap="300" align="space-between">
-            <Text>Bottom border</Text>
-
-            <ButtonGroup segmented>
+            <ButtonGroup variant="segmented">
               {["none", "thin"].map((val) => (
                 <Button
                   key={val}
@@ -86,223 +135,279 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
                 </Button>
               ))}
             </ButtonGroup>
-          </InlineStack>
-
-          <ColorInput
-            label="Background color"
-            value={headerSettings.backgroundColor}
-            onChange={(val) => updateHeader("backgroundColor", val)}
-          />
-        </BlockStack>
-
-        <Divider />
-
-        {/* TITLE */}
-        <ButtonGroup>
-          {[
-            { label: "Inherit from theme titles", value: "inherit" },
-            { label: "Brand logo", value: "logo" },
-            { label: "Define text styles", value: "custom" },
-          ].map((item) => (
-            <Button
-              key={item.value}
-              pressed={headerSettings.titleType === item.value}
-              onClick={() => updateHeader("titleType", item.value)}
-            >
-              {item.label}
-            </Button>
-          ))}
-        </ButtonGroup>
-
-        {headerSettings.titleType === "inherit" && (
-          <>
-            <TextField
-              label="Text"
-              value={headerSettings.titleText}
-              onChange={(val) => updateHeader("titleText", val)}
-              helpText="Use {{cart_quantity}} for the # of items in cart"
+            <ColorInput
+              label="Background color"
+              value={headerSettings.backgroundColor}
+              onChange={(val) => updateHeader("backgroundColor", val)}
             />
+          </BlockStack>
+        </LegacyStack>
+      </LegacyCard>
 
-            <InlineStack align="space-between">
-              <Text>Alignment</Text>
-              <ButtonGroup segmented>
-                {["side", "center"].map((val) => (
-                  <Button
-                    key={val}
-                    pressed={headerSettings.alignment === val}
-                    onClick={() => updateHeader("alignment", val)}
-                  >
-                    {val}
-                  </Button>
-                ))}
-              </ButtonGroup>
-            </InlineStack>
-
-            <InlineStack align="space-between">
-              <Text>Heading element</Text>
-              <ButtonGroup segmented>
-                {["h2", "h3", "h4"].map((val) => (
-                  <Button
-                    key={val}
-                    pressed={headerSettings.heading === val}
-                    onClick={() => updateHeader("heading", val)}
-                  >
-                    {val.toUpperCase()}
-                  </Button>
-                ))}
-              </ButtonGroup>
-            </InlineStack>
-          </>
-        )}
-
-        {headerSettings.titleType === "logo" && (
-          <>
-            <div
-              className="upload-box"
-              style={{
-                cursor: headerSettings.logo ? "pointer" : "default",
-                position: "relative",
-                minHeight: "120px",
-              }}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                id="logo-upload"
-                onChange={handleUpload}
-              />
-
-              {isUploading && (
+      <LegacyCard sectioned title="Title">
+        <LegacyStack vertical spacing="tight">
+          <BlockStack gap="100">
+            <LegacyStack distribution="fillEvenly">
+              {[
+                { label: "Inherit from theme titles", value: "inherit", icon: TextTitleIcon },
+                { label: "Brand logo", value: "logo", icon: ImageIcon },
+                { label: "Define text styles", value: "custom", icon: AdjustIcon },
+              ].map((item) => (
                 <div
+                  key={item.value}
+                  onClick={() => updateHeader("titleType", item.value)}
                   style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)"
+                    cursor: "pointer",
+                    width: "100%",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    borderWidth: "1px",
+                    borderStyle: "solid",
+                    borderColor: headerSettings.titleType === item.value ? "rgb(46, 94, 131)" : "rgb(202, 204, 207)",
+                    backgroundColor: headerSettings.titleType === item.value ? "rgb(236, 244, 254)" : "transparent",
                   }}
                 >
-                  <Spinner accessibilityLabel="Uploading" size="large" />
+                  <BlockStack inlineAlign="center" gap="100">
+                    <Icon source={item.icon} />
+                    <Text variant={headerSettings.titleType === item.value ? "bodyMd" : "bodyMd"}>
+                      {item.label}
+                    </Text>
+                  </BlockStack>
                 </div>
-              )}
+              ))}
+            </LegacyStack>
+          </BlockStack>
 
-              {!isUploading && headerSettings.logo && (
-                <img
-                  src={headerSettings.logo}
-                  alt="Logo"
-                  onClick={() => document.getElementById("logo-upload").click()}
-                  style={{
-                    maxWidth: "200px",
-                    margin: "0 auto",
-                    display: "block",
-                    cursor: "pointer"
+          {headerSettings.titleType === "inherit" && (
+            <BlockStack gap="200">
+              <TextField
+                label="Text"
+                value={headerSettings.titleText}
+                onChange={(val) => updateHeader("titleText", val)}
+                helpText="Use {{cart_quantity}} for the # of items in cart"
+              />
+
+              <BlockStack gap="100">
+                <Text as="p">Alignment</Text>
+                <ButtonGroup variant="segmented">
+                  {["side", "center"].map((val) => (
+                    <Button
+                      key={val}
+                      pressed={headerSettings.alignment === val}
+                      onClick={() => updateHeader("alignment", val)}
+                    >
+                      {val.charAt(0).toUpperCase() + val.slice(1)}
+                    </Button>
+                  ))}
+                </ButtonGroup>
+              </BlockStack>
+
+              <BlockStack gap="100">
+                <Text as="p">Heading element</Text>
+                <ButtonGroup variant="segmented">
+                  {[
+                    { value: "h2", label: "Heading 2 (H2)" },
+                    { value: "h3", label: "Heading 3 (H3)" },
+                    { value: "h4", label: "Heading 4 (H4)" },
+                  ].map((item) => (
+                    <Button
+                      key={item.value}
+                      pressed={headerSettings.heading === item.value}
+                      onClick={() => updateHeader("heading", item.value)}
+                    >
+                      {item.label}
+                    </Button>
+                  ))}
+                </ButtonGroup>
+              </BlockStack>
+            </BlockStack>
+          )}
+
+          {headerSettings.titleType === "logo" && (
+            <BlockStack gap="200">
+
+              {isUploading ? (
+                <DropZone
+                  label="Logo"
+                  accept="image/*"
+                  type="image"
+                  disabled
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                    <Box width="35%">
+                      <ProgressBar
+                        progress={uploadProgress}
+                        size="small"
+                        tone="primary"
+                      />
+                    </Box>
+                  </div>
+                </DropZone>
+              ) : headerSettings.logo ? (
+                <DropZone
+                  label="Logo"
+                  accept="image/*"
+                  type="image"
+                  onDrop={(_, acceptedFiles) => {
+                    if (acceptedFiles.length > 0) {
+                      handleUpload({ target: { files: acceptedFiles } });
+                    }
                   }}
-                />
+                >
+                  <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateHeader("logo", null);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: "8px",
+                        right: "8px",
+                        background: "rgba(0,0,0,0.5)",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: "24px",
+                        height: "24px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        color: "#fff",
+                        fontSize: "14px",
+                        lineHeight: 1,
+                        zIndex: 10,
+                      }}
+                    >
+                      ✕
+                    </button>
+
+                    <Box padding="500">
+                      <img
+                        alt="Logo"
+                        src={headerSettings.logo}
+                        width="100%"
+                        height="100%"
+                        style={{ objectFit: "contain", maxHeight: "100px" }}
+                      />
+                    </Box>
+                  </div>
+                </DropZone>
+              ) : (
+                <DropZone
+                  label="Logo"
+                  accept="image/*"
+                  type="image"
+                  onDrop={(_, acceptedFiles) => {
+                    if (acceptedFiles.length > 0) {
+                      handleUpload({ target: { files: acceptedFiles } });
+                    }
+                  }}
+                >
+                  <DropZone.FileUpload
+                    actionTitle="Upload brand logo"
+                    actionHint="Click or drag image here"
+                  />
+                </DropZone>
               )}
 
-              {/* Upload UI */}
-              {!isUploading && !headerSettings.logo && (
-                <>
-                  <Button onClick={() => document.getElementById("logo-upload").click()}>
-                    Upload brand logo
-                  </Button>
+              {/* Alignment */}
+              <BlockStack gap="100">
+                <Text as="p">Alignment</Text>
+                <ButtonGroup variant="segmented">
+                  {["side", "center"].map((val) => (
+                    <Button
+                      key={val}
+                      pressed={headerSettings.alignment === val}
+                      onClick={() => updateHeader("alignment", val)}
+                    >
+                      {val.charAt(0).toUpperCase() + val.slice(1)}
+                    </Button>
+                  ))}
+                </ButtonGroup>
+              </BlockStack>
 
-                  <Text variant="bodySm" as="p">
-                    Click or drag image here
-                  </Text>
-                </>
-              )}
-            </div>
+              {/* Logo size */}
+              <RangeSlider
+                label="Logo size"
+                value={headerSettings.logoSize || 24}
+                onChange={(val) => updateHeader("logoSize", val)}
+                min={14}
+                max={48}
+                step={1}
+              />
 
-            <InlineStack align="space-between">
-              <Text>Alignment</Text>
-              <ButtonGroup segmented>
-                {["side", "center"].map((val) => (
-                  <Button
-                    key={val}
-                    pressed={headerSettings.alignment === val}
-                    onClick={() => updateHeader("alignment", val)}
-                  >
-                    {val}
-                  </Button>
-                ))}
-              </ButtonGroup>
-            </InlineStack>
-            <RangeSlider
-              label="Logo size"
-              value={headerSettings.logoSize || 120}
-              onChange={(val) => updateHeader("logoSize", val)}
-              min={15}
-              max={60}
-              step={3}
-            />
-          </>
-        )}
+            </BlockStack>
+          )}
 
-        {headerSettings.titleType === "custom" && (
-          <>
-            <TextField
-              label="Text"
-              value={headerSettings.titleText}
-              onChange={(val) => updateHeader("titleText", val)}
-            />
+          {headerSettings.titleType === "custom" && (
+            <BlockStack gap="400">
+              <TextField
+                label="Text"
+                value={headerSettings.titleText}
+                onChange={(val) => updateHeader("titleText", val)}
+                helpText="Use {{cart_quantity}} for the # of items in cart"
+              />
 
-            <ColorInput
-              label="Text color override"
-              value={headerSettings.textColor || "#000000"}
-              onChange={(val) => updateHeader("textColor", val)}
-            />
+              <ColorInput
+                label="Text color override"
+                value={headerSettings.textColor || "#000000"}
+                onChange={(val) => updateHeader("textColor", val)}
+              />
 
-            <InlineStack align="space-between">
-              <Text>Alignment</Text>
-              <ButtonGroup segmented>
-                {["side", "center"].map((val) => (
-                  <Button
-                    key={val}
-                    pressed={headerSettings.alignment === val}
-                    onClick={() => updateHeader("alignment", val)}
-                  >
-                    {val}
-                  </Button>
-                ))}
-              </ButtonGroup>
-            </InlineStack>
+              <BlockStack gap="100">
+                <Text as="p">Alignment</Text>
+                <ButtonGroup variant="segmented">
+                  {["side", "center"].map((val) => (
+                    <Button
+                      key={val}
+                      pressed={headerSettings.alignment === val}
+                      onClick={() => updateHeader("alignment", val)}
+                    >
+                      {val.charAt(0).toUpperCase() + val.slice(1)}
+                    </Button>
+                  ))}
+                </ButtonGroup>
+              </BlockStack>
 
-            <InlineStack align="space-between">
-              <Text>Font weight</Text>
-              <ButtonGroup segmented>
-                {["normal", "semibold", "bold"].map((val) => (
-                  <Button
-                    key={val}
-                    pressed={headerSettings.fontWeight === val}
-                    onClick={() => updateHeader("fontWeight", val)}
-                  >
-                    {val}
-                  </Button>
-                ))}
-              </ButtonGroup>
-            </InlineStack>
-            <RangeSlider
-              label="Font size"
-              value={headerSettings.fontSize || 120}
-              onChange={(val) => updateHeader("fontSize", val)}
-              min={16}
-              max={50}
-              step={3}
-            />
-          </>
-        )}
+              <BlockStack gap="100">
+                <Text as="p">Font weight</Text>
+                <ButtonGroup variant="segmented">
+                  {["normal", "semibold", "bold"].map((val) => (
+                    <Button
+                      key={val}
+                      pressed={headerSettings.fontWeight === val}
+                      onClick={() => updateHeader("fontWeight", val)}
+                    >
+                      {val.charAt(0).toUpperCase() + val.slice(1)}
+                    </Button>
+                  ))}
+                </ButtonGroup>
+              </BlockStack>
 
-        <Divider />
+              <RangeSlider
+                label="Font size"
+                value={headerSettings.fontSize || 24}
+                onChange={(val) => updateHeader("fontSize", val)}
+                min={14}
+                max={48}
+                step={1}
+                prefix="14px"
+                suffix="48px"
+              />
+            </BlockStack>
+          )}
+        </LegacyStack>
+      </LegacyCard>
 
-        {/* CLOSE BUTTON */}
-        <BlockStack gap="300">
-          <Text variant="headingSm">Close button</Text>
+      <LegacyCard sectioned title="Close button">
+        <LegacyStack vertical spacing="tight">
+          <BlockStack gap="100">
+            <Text as="p" variant="bodyMd">
+              Location
+            </Text>
 
-          <InlineStack gap="300" align="space-between">
-            <Text>Location</Text>
-
-            <ButtonGroup segmented>
+            <ButtonGroup variant="segmented">
               {["left", "right"].map((val) => (
                 <Button
                   key={val}
@@ -313,7 +418,8 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
                 </Button>
               ))}
             </ButtonGroup>
-          </InlineStack>
+          </BlockStack>
+
           <InlineGrid columns={2} gap="200">
             <ColorInput
               label="Background color"
@@ -327,53 +433,39 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
             />
 
           </InlineGrid>
-          <InlineStack gap="300" align="space-between">
-            <Text>Icon size</Text>
+          <Box paddingBlockStart="200" paddingBlockEnd="200">
+            <Divider />
+          </Box>
 
-            <ButtonGroup segmented>
-              <Button
-                pressed={headerSettings.iconSize === "small"}
-                onClick={() => updateHeader("iconSize", "small")}
-              >
-                Small
-              </Button>
-
-              <Button
-                pressed={headerSettings.iconSize === "medium"}
-                onClick={() => updateHeader("iconSize", "medium")}
-              >
-                Medium
-              </Button>
-
-              <Button
-                pressed={headerSettings.iconSize === "large"}
-                onClick={() => updateHeader("iconSize", "large")}
-              >
-                Large
-              </Button>
+          <BlockStack gap="100">
+            <Text as="p">Icon size</Text>
+            <ButtonGroup variant="segmented">
+              {["small", "medium", "large"].map((val) => (
+                <Button
+                  key={val}
+                  pressed={headerSettings.iconSize === val}
+                  onClick={() => updateHeader("iconSize", val)}
+                >
+                  {val.charAt(0).toUpperCase() + val.slice(1)}
+                </Button>
+              ))}
             </ButtonGroup>
-          </InlineStack>
+          </BlockStack>
 
-          <InlineStack gap="300" align="space-between">
-            <Text>Icon thickness</Text>
-
-            <ButtonGroup segmented>
-              <Button
-                pressed={headerSettings.iconThickNess === "normal"}
-                onClick={() => updateHeader("iconThickNess", "normal")}
-              >
-                Normal
-              </Button>
-
-              <Button
-                pressed={headerSettings.iconThickNess === "thick"}
-                onClick={() => updateHeader("iconThickNess", "thick")}
-              >
-                Thick
-              </Button>
+          <BlockStack gap="100">
+            <Text as="p">Icon thickness</Text>
+            <ButtonGroup variant="segmented">
+              {["normal", "thick"].map((val) => (
+                <Button
+                  key={val}
+                  pressed={headerSettings.iconThickNess === val}
+                  onClick={() => updateHeader("iconThickNess", val)}
+                >
+                  {val.charAt(0).toUpperCase() + val.slice(1)}
+                </Button>
+              ))}
             </ButtonGroup>
-          </InlineStack>
-
+          </BlockStack>
           {headerSettings.iconHoverEnabled ? (
             <InlineGrid columns={2} gap="200">
               <ColorInput
@@ -388,7 +480,7 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
               />
             </InlineGrid>
           ) : (
-            <InlineStack align="space-between" gap="200">
+            <InlineStack align="space-between" blockAlign="end" gap="200">
               <div style={{ flex: 1 }}>
                 <ColorInput
                   label="Icon color"
@@ -397,50 +489,33 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
                 />
               </div>
 
-              <div style={{ paddingTop: "24px" }}>
+              <Box paddingBlockEnd="050">
                 <Button
-                  plain
+                  variant="plain"
+                  removeUnderline
+                  icon={PlusCircleIcon}
                   onClick={() => updateHeader("iconHoverEnabled", true)}
                 >
-                  + Add hover color
+                  Add hover color
                 </Button>
-              </div>
+              </Box>
             </InlineStack>
           )}
 
-          <InlineStack gap="300" align="space-between">
-            <Text>Border</Text>
-
-            <ButtonGroup segmented>
-              <Button
-                pressed={headerSettings.iconBorder === "none"}
-                onClick={() => updateHeader("iconBorder", "none")}
-              >
-                None
-              </Button>
-
-              <Button
-                pressed={headerSettings.iconBorder === "thin"}
-                onClick={() => updateHeader("iconBorder", "thin")}
-              >
-                Thin
-              </Button>
-
-              <Button
-                pressed={headerSettings.iconBorder === "normal"}
-                onClick={() => updateHeader("iconBorder", "normal")}
-              >
-                Normal
-              </Button>
-
-              <Button
-                pressed={headerSettings.iconBorder === "thick"}
-                onClick={() => updateHeader("iconBorder", "thick")}
-              >
-                Thick
-              </Button>
+          <BlockStack gap="100">
+            <Text as="p">Border</Text>
+            <ButtonGroup variant="segmented">
+              {["none", "thin", "normal", "thick"].map((val) => (
+                <Button
+                  key={val}
+                  pressed={headerSettings.iconBorder === val}
+                  onClick={() => updateHeader("iconBorder", val)}
+                >
+                  {val.charAt(0).toUpperCase() + val.slice(1)}
+                </Button>
+              ))}
             </ButtonGroup>
-          </InlineStack>
+          </BlockStack>
 
           {headerSettings.iconBorder !== "none" ? (
             headerSettings.borderHoverEnabled ? (
@@ -450,7 +525,6 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
                   value={headerSettings.iconBorderColor}
                   onChange={(val) => updateHeader("iconBorderColor", val)}
                 />
-
                 <ColorInput
                   label="Border hover color"
                   value={headerSettings.borderHoverColor}
@@ -458,7 +532,7 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
                 />
               </InlineGrid>
             ) : (
-              <InlineStack align="space-between" gap="200">
+              <InlineStack gap="400" blockAlign="end" wrap>
                 <div style={{ flex: 1 }}>
                   <ColorInput
                     label="Border color"
@@ -466,25 +540,48 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
                     onChange={(val) => updateHeader("iconBorderColor", val)}
                   />
                 </div>
-
-                <div style={{ paddingTop: "24px" }}>
+                <Box paddingBlockEnd="050">
                   <Button
-                    plain
+                    variant="plain"
+                    removeUnderline
+                    icon={PlusCircleIcon}
                     onClick={() => updateHeader("borderHoverEnabled", true)}
                   >
-                    + Add hover color
+                    Add hover color
                   </Button>
-                </div>
+                </Box>
               </InlineStack>
             )
           ) : (
-            <div style={{ opacity: 0.4, pointerEvents: "none" }}>
-              <ColorInput label="Border color" value="#000000" onChange={() => { }} />
-            </div>
+            <InlineStack gap="400" blockAlign="end" wrap>
+              <div
+                style={{
+                  flex: 1,
+                  opacity: isDisabled ? 0.5 : 1,
+                  pointerEvents: isDisabled ? "none" : "auto",
+                }}
+              >
+                <ColorInput
+                  label="Border color"
+                  value={headerSettings.iconBorderColor || "#000000"}
+                  onChange={() => { }}
+                  disabled
+                />
+              </div>
+              <Box paddingBlockEnd="050">
+                <Button
+                  variant="plain"
+                  removeUnderline
+                  icon={PlusCircleIcon}
+                  disabled
+                >
+                  Add hover color
+                </Button>
+              </Box>
+            </InlineStack>
           )}
-
-        </BlockStack>
-      </BlockStack>
-    </Card>
+        </LegacyStack>
+      </LegacyCard>
+    </div>
   );
 }
