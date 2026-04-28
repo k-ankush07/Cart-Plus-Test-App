@@ -78,33 +78,27 @@ export default function ColorInput({ label, value, onChange }) {
 
     const hsb = rgbToHsb(hexToRgb(value));
 
+    const activator = (
+        <div onClick={togglePopover}>
+            <TextField
+                label={label}
+                value={value}
+                onChange={(val) => onChange(val)}
+                autoComplete="off"
+                suffix={
+                    <div
+                        className="color-suffix-box"
+                        style={{ background: value }}
+                    />
+                }
+            />
+        </div>
+    );
+
     return (
         <Popover
             active={active}
-            activator={
-                <TextField
-                    label={label}
-                    value={value}
-                    onChange={(val) => onChange(val)}
-                    autoComplete="off"
-                    suffix={
-                        <div
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                togglePopover();
-                            }}
-                            style={{
-                                width: 25,
-                                height: 25,
-                                background: value,
-                                borderRadius: 4,
-                                border: "1px solid #ccc",
-                                cursor: "pointer",
-                            }}
-                        />
-                    }
-                />
-            }
+            activator={activator}
             onClose={closePopover}
             preferredAlignment="right"
             preferredPosition="below"

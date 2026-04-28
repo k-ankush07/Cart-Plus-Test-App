@@ -1127,3 +1127,26 @@ span.icon.color-base.tone-auto.size-base {
     fill: currentColor;
     display: block;
 }
+
+.color-suffix-box {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #c9cccf;
+}
+
+.Polaris-TextField__Suffix {
+    margin-right: 4px !important;
+}
+
+.styles_ButtonRadiusIcon__ZFqx_ {
+    background-color: #f7f7f7;
+    border-radius: 6px;
+    height: 30px;
+    min-width: 30px;
+    display: flex;
+    margin-right: 8px;
+    justify-content: center;
+    align-items: center;
+}

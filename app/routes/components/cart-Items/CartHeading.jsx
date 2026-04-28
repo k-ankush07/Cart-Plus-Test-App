@@ -25,21 +25,20 @@ export default function CartHeading({ headerSettings, designSettings, onClose })
                 }}
             >
                 <svg
-                    className="upcart-header-close-button-icon"
+                    className="upcart-internal-header__close-button-icon upcart-public-header__close-button-icon"
                     width={getIconSize(headerSettings.iconSize)}
                     height={getIconSize(headerSettings.iconSize)}
-                    viewBox="0 0 24 24"
+                    viewBox="0 0 20 20"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth={
-                        headerSettings.iconThickNess === "thick" ? 3 : 2
-                    }
+                    strokeWidth={headerSettings.iconThickNess === "thick" ? 3 : 2}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                 >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
+                    <line x1="4" y1="4" x2="16" y2="16" />
+                    <line x1="16" y1="4" x2="4" y2="16" />
                 </svg>
+
             </button>
         );
     };
