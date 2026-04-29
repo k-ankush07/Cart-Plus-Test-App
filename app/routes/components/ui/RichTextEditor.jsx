@@ -85,44 +85,72 @@ function RichTextEditor({ value, onChange }) {
                 <div
                     style={{
                         borderBottom: "1px solid #e0e0e0",
-                        padding: "6px",
-                        background: "#f6f6f7",
+                        padding: "12px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10
                     }}
                 >
-                    <InlineStack gap="200" align="left">
-                        <Button size="slim" onClick={() => format("bold")}>
-                            <b>B</b>
-                        </Button>
-                        <Button size="slim" onClick={() => format("italic")}>
-                            <i>I</i>
-                        </Button>
-                        <Button size="slim" onClick={() => format("underline")}>
-                            <u>U</u>
-                        </Button>
-
-                        <Popover
-                            active={popoverActive}
-                            activator={
-                                <Button size="slim" onClick={() => setPopoverActive(!popoverActive)}>
-                                    🎨
-                                </Button>
-                            }
-                            onClose={() => setPopoverActive(false)}
+                    {[
+                        { cmd: "bold", icon: "https://www.hubsyntax.com/cart-images/bold-1.png", alt: "Bold" },
+                        { cmd: "italic", icon: "https://www.hubsyntax.com/cart-images/italic-1.png", alt: "Italic" },
+                        { cmd: "underline", icon: "https://www.hubsyntax.com/cart-images/underline-1.png", alt: "Underline" },
+                    ].map(({ cmd, icon, alt }) => (
+                        <div
+                            key={cmd}
+                            onClick={() => format(cmd)}
+                            title={alt}
+                            style={{
+                                width: "30px",
+                                height: "30px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: "pointer",
+                                borderRadius: "4px",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "#e0e0e0")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                         >
-                            <div style={{ padding: "10px" }}>
-                                <ColorPicker
-                                    onChange={applyColor}
-                                    color={
-                                        color || {
-                                            hue: 0,
-                                            saturation: 0,
-                                            brightness: 0
-                                        }
-                                    }
+                            <img src={icon} alt={alt} style={{ width: "20px", }} />
+                        </div>
+                    ))}
+
+                    {/* Color Picker */}
+                    <Popover
+                        active={popoverActive}
+                        activator={
+                            <div
+                                onClick={() => setPopoverActive(!popoverActive)}
+                                title="Text color"
+                                style={{
+                                    width: "30px",
+                                    height: "30px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "pointer",
+                                    borderRadius: "4px",
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "#e0e0e0")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                            >
+                                <img
+                                    src="https://www.hubsyntax.com/cart-images/color-fill-outline-1.png"
+                                    alt="Color picker"
+                                    style={{ width: "20px" }}
                                 />
                             </div>
-                        </Popover>
-                    </InlineStack>
+                        }
+                        onClose={() => setPopoverActive(false)}
+                    >
+                        <div style={{ padding: "10px" }}>
+                            <ColorPicker
+                                onChange={applyColor}
+                                color={color || { hue: 0, saturation: 0, brightness: 0 }}
+                            />
+                        </div>
+                    </Popover>
                 </div>
 
                 <div
@@ -131,8 +159,7 @@ function RichTextEditor({ value, onChange }) {
                     onInput={handleInput}
                     suppressContentEditableWarning
                     style={{
-                        padding: "10px",
-                        minHeight: "80px",
+                        padding: "16px",
                         outline: "none",
                     }}
                 />

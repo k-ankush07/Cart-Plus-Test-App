@@ -79,7 +79,6 @@ export default function HeaderSettings({ handleChange, headerSettings, accessTok
 
   return (
     <div className="mainContent">
-
       {/* Page heading — matches reference HTML exactly */}
       <Box paddingBlockEnd="400">
         <BlockStack gap="400">
