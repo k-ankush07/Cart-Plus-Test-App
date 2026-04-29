@@ -319,7 +319,6 @@ body,
 }
 
 .tier-card {
-    border: 1px solid #e5e5e5;
     padding: 18px 20px 10px;
     background: #fff;
 }
@@ -332,11 +331,11 @@ body,
 }
 
 .progress-wrapper {
-    padding: 0 0 30px 0;
+    padding: 0 0 20px 0;
 }
 
 .progress-track {
-    margin-top: 30px;
+    margin-top: 10px;
 }
 
 /* Segmented flex bar */
@@ -1155,3 +1154,6 @@ span.icon.color-base.tone-auto.size-base {
   background-color: #1a1a1a !important;
 }
 
+span.upcart-rewards-tier-icon{
+    display: flex;
+}
