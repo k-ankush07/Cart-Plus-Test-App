@@ -757,6 +757,10 @@ window.hubCartRender = async function (drawer, opts = {}) {
           compareAtPrice = 0;
         }
 
+      const btnColor = designSettings.buttonColor || "#000000";
+       const btnHoverColor = designSettings.buttonHoverColor || "#333333";
+       const textColor = designSettings.buttonTextColor || "#ffffff";
+
         const subscriptionSettings =
           window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;
 
@@ -801,7 +805,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
                 : ""
             }">
               <div class="hub-one-time-view">
-                <button class="hub-upgrade-btn">
+                <button class="hub-upgrade-btn" style="border-radius:${designSettings.buttonRadius}px;--btn-bg:${btnColor};
+             --btn-hover:${btnHoverColor};
+            --btn-text:${textColor};">
                 <span class="btn-text">${buttonText}</span>
                 </button>
               </div>

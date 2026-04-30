@@ -101,6 +101,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                         cartSettings={cartSettings}
                                         setQty={setQty}
                                         qty={qty}
+                                        designSettings={designSettings}
                                     />
                                     {!upsellsSettings.enabled && upsellsSettings.showSuggestedProduct && (
                                         <div className="upsell-suggestion">

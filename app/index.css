@@ -277,6 +277,16 @@ body,
     transition: all 0.2s ease;
 }
 
+.subscription-upgrade-btn {
+    color: var(--btn-text);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.subscription-upgrade-btn:hover {
+     color: var(--btn-hover-text);
+}
+
 .cart-app__checkout:hover {
     color: var(--btn-hover-text);
 }
@@ -457,6 +467,7 @@ body,
 /* Subscription Upgrade Preview */
 .subscription-upgrade-preview {
     padding: 12px 0 4px;
+    width: 100%;
 }
 
 .subscription-upgrade-btn {
@@ -469,8 +480,9 @@ body,
     text-align: center;
     border: none;
     border-radius: 4px;
-    cursor: default;
+    cursor: pointer;
     font-family: inherit;
+    width: 100%;
 }
 
 .upcart-internal-upsell__shop-now-button a {

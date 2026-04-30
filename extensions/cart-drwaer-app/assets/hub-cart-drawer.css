@@ -932,7 +932,7 @@ h3.styles_CartPreview__empty__ {
   font-weight: 600;
   border-radius: 4px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: 0.3s ease;
   line-height: 20px;
   width: calc(100% - 40px);
   margin: 0 20px !important;
@@ -1298,6 +1298,16 @@ h3.styles_CartPreview__empty__ {
 }
 
 .hub-add-btn:hover {
+  color: var(--btn-hover);
+}
+
+.hub-upgrade-btn {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  transition: 0.3s ease;
+}
+
+.hub-upgrade-btn:hover {
   color: var(--btn-hover);
 }
 
@@ -1972,8 +1982,6 @@ span.upsell-text.suggestion-product {
 
 .hub-one-time-view .hub-upgrade-btn {
   width: 100%;
-  background: #2D2D2D;
-  color: white;
   font-weight: 400;
   font-size: 14px;
   line-height: 12px;

@@ -80,7 +80,7 @@ function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
 }
 
 // ─── Classic Layout ───────────────────────────────────────────────────────────
-function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
+function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile" style={{ flexDirection: "column" }}>
       <div style={{ display: "flex", gap: "8px", width: "100%" }}>
@@ -156,7 +156,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
 
       {!subscriptionUpgradesSettings.enabled && (
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />
+          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings}  designSettings={designSettings}/>
         </div>
       )}
     </div>
@@ -164,7 +164,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
 }
 
 // ─── Subscription Layout ──────────────────────────────────────────────────────
-function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
+function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile upcart-layout-subscription">
       <div className="cart-app-item__image upcart-product-image-wrapper custom-cart-public-component-product-tile__image-wrapper" style={{ width: "72px", height: "72px", flexShrink: 0 }}>
@@ -223,7 +223,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
         </div>
 
         {!subscriptionUpgradesSettings.enabled && (
-          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />
+          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} designSettings={designSettings} />
         )}
       </div>
     </div>
@@ -306,7 +306,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
         </div>
 
         {!subscriptionUpgradesSettings.enabled && (
-          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} />
+          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} cartSettings={cartSettings} />
         )}
       </div>
     </div>
@@ -323,7 +323,8 @@ export default function CartItem({
   cartSettings,
   productName = "The Monaco - Black",
   qty,
-  setQty
+  setQty,
+  designSettings
 }) {
   const [loadingType, setLoadingType] = useState(null);
   const [isRemoved, setIsRemoved] = useState(false);
@@ -378,7 +379,8 @@ export default function CartItem({
     cartSettings,
     subscriptionUpgradesSettings,
     Subscription,
-    productName
+    productName,
+    designSettings
   };
 
   return (
