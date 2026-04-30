@@ -14,6 +14,7 @@ import Expresspayments from "./ui-cart-options/Express-payments";
 import Trustbadges from "./ui-cart-options/Trustbadges";
 import CartSettings from "./ui-cart-options/CartSettings";
 import CartItem from "./ui-cart-options/CartItems";
+import CartSummary from "./ui-cart-options/CartSummary";
 import "../../index.css";
 
 export default function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
@@ -123,6 +124,9 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 handleChange={handleChange}
                 cartSettings={cartSettings}
             />
+        ),
+        "Cart summary": (
+            <CartSummary />
         )
     };
 

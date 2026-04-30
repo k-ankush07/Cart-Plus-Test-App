@@ -1,4 +1,5 @@
 import { LegacyCard, ActionList, Icon } from "@shopify/polaris";
+
 import {
   HideIcon,
   PaintBrushFlatIcon,      // Design

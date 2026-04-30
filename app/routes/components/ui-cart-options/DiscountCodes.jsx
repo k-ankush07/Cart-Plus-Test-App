@@ -11,7 +11,13 @@ import {
     Link,
     Text,
     TextField,
+    Box,
+    Icon 
 } from "@shopify/polaris";
+
+import {
+    DiscountIcon,             // Discount codes
+} from "@shopify/polaris-icons";
 
 export default function DiscountCodes({ discountCodesSettings, handleChange }) {
     const [showLimitations, setShowLimitations] = useState(false);
@@ -24,69 +30,80 @@ export default function DiscountCodes({ discountCodesSettings, handleChange }) {
     };
 
     return (
-        <BlockStack gap="400">
-            <Card>
-                <BlockStack gap="300">
+        <div className="mainContent">
+            {/* Page heading — matches reference HTML exactly */}
+            <Box paddingBlockEnd="400">
+                <BlockStack gap="400">
                     <InlineStack gap="300" align="space-between" blockAlign="center">
-                        <InlineStack gap="200" align="center">
-                            <Text variant="headingMd">Discount codes</Text>
-
-                            <Badge tone={discountCodesSettings.enabled ? "critical" : "success"}>
-                                {discountCodesSettings.enabled ? "Disabled" : "Active"}
-                            </Badge>
+                        <InlineStack blockAlign="center" gap="100">
+                            <Box>
+                                <Icon source={DiscountIcon} />
+                            </Box>
+                            <InlineStack gap="200">
+                                <Text variant="headingMd" as="h2">Discount codes</Text>
+                            </InlineStack>
+                            <Box paddingInlineStart="200">
+                                <Badge tone={discountCodesSettings.enabled ? "critical" : "success"}>
+                                    {discountCodesSettings.enabled ? "Disabled" : "Active"}
+                                </Badge>
+                            </Box>
                         </InlineStack>
+                        <InlineStack gap="200" />
                         <Button
                             variant={discountCodesSettings.enabled ? "primary" : "secondary"}
                             onClick={() => update("enabled", !discountCodesSettings.enabled)}
                         >
-                            {discountCodesSettings.enabled ? "Enabled" : "Disabled"}
+                            {discountCodesSettings.enabled ? "Enable" : "Disable"}
                         </Button>
                     </InlineStack>
-
-                    <Divider />
-
-                    <TextField
-                        label="Discount input placeholder"
-                        value={discountCodesSettings.placeholder}
-                        onChange={(val) => update("placeholder", val)}
-                        autoComplete="off"
-                    />
-
-                    <TextField
-                        label="Discount apply button text"
-                        value={discountCodesSettings.buttonText}
-                        onChange={(val) => update("buttonText", val)}
-                        autoComplete="off"
-                    />
-
-                    <Banner tone="warning">
-                        <BlockStack gap="200">
-                            <Text variant="bodyMd" fontWeight="semibold">Discount limitations</Text>
-                            <Text variant="bodySm">
-                                Upcart is not able to support all discount functionality available in checkout. Please review the following limitations.
-                            </Text>
-                            <Collapsible open={showLimitations} id="discount-limitations">
-                                <BlockStack gap="100">
-                                    <Text variant="bodySm">• Buy X Get Y discounts are not supported</Text>
-                                    <Text variant="bodySm">• Free shipping discounts may not apply correctly</Text>
-                                    <Text variant="bodySm">• Some automatic discounts may not stack with code discounts</Text>
-                                    <Text variant="bodySm">• Discounts requiring minimum purchase amounts may behave differently</Text>
-                                </BlockStack>
-                            </Collapsible>
-                            <div>
-                                <Button
-                                    variant="plain"
-                                    onClick={() => setShowLimitations((v) => !v)}
-                                >
-                                    {showLimitations ? "Show less" : "Show more"}
-                                </Button>
-                            </div>
-                        </BlockStack>
-                    </Banner>
                 </BlockStack>
-            </Card>
+            </Box>
 
-            <Card>
+            <BlockStack gap="400">
+                <Card>
+                    <BlockStack gap="300">
+                        <TextField
+                            label="Discount input placeholder"
+                            value={discountCodesSettings.placeholder}
+                            onChange={(val) => update("placeholder", val)}
+                            autoComplete="off"
+                        />
+
+                        <TextField
+                            label="Discount apply button text"
+                            value={discountCodesSettings.buttonText}
+                            onChange={(val) => update("buttonText", val)}
+                            autoComplete="off"
+                        />
+
+                        <Banner tone="warning">
+                            <BlockStack gap="200">
+                                <Text variant="bodyMd" fontWeight="semibold">Discount limitations</Text>
+                                <Text variant="bodySm">
+                                    Upcart is not able to support all discount functionality available in checkout. Please review the following limitations.
+                                </Text>
+                                <Collapsible open={showLimitations} id="discount-limitations">
+                                    <BlockStack gap="100">
+                                        <Text variant="bodySm">• Buy X Get Y discounts are not supported</Text>
+                                        <Text variant="bodySm">• Free shipping discounts may not apply correctly</Text>
+                                        <Text variant="bodySm">• Some automatic discounts may not stack with code discounts</Text>
+                                        <Text variant="bodySm">• Discounts requiring minimum purchase amounts may behave differently</Text>
+                                    </BlockStack>
+                                </Collapsible>
+                                <div>
+                                    <Button
+                                        variant="plain"
+                                        onClick={() => setShowLimitations((v) => !v)}
+                                    >
+                                        {showLimitations ? "Show less" : "Show more"}
+                                    </Button>
+                                </div>
+                            </BlockStack>
+                        </Banner>
+                    </BlockStack>
+                </Card>
+
+                {/* <Card>
                 <BlockStack gap="200">
                     <InlineStack gap="200" blockAlign="center">
                         <Text variant="headingSm">Custom template</Text>
@@ -99,7 +116,8 @@ export default function DiscountCodes({ discountCodesSettings, handleChange }) {
                         </Link>
                     </Text>
                 </BlockStack>
-            </Card>
-        </BlockStack>
+            </Card> */}
+            </BlockStack>
+        </div>
     );
 }
