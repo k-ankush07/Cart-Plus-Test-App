@@ -1,3 +1,4 @@
+import { useState } from "react";
 import CartItem from "./cart-Items/CartItem";
 import "../../index.css";
 import Announcements from "./cart-Items/Announcements";
@@ -33,6 +34,8 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
 
     const emptyCart = previewMode === "empty";
 
+    const [qty, setQty] = useState(1);
+
     return (
         <div
             className={`cart-app upcart-cart ${designSettings.inheritFonts ? "" : "cart-app--customFont"}`}
@@ -51,7 +54,8 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                     <CartHeading
                         headerSettings={headerSettings}
                         designSettings={designSettings}
-                        onClose={onClosePreview} />
+                        onClose={onClosePreview}
+                        qty={qty} />
                     {headerSettings.border === "thin" && <div className="cart-app__divider"></div>}
                 </div>
 
@@ -95,6 +99,8 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                         Subscription={Subscription}
                                         subscriptionUpgradesSettings={subscriptionUpgradesSettings}
                                         cartSettings={cartSettings}
+                                        setQty={setQty}
+                                        qty={qty}
                                     />
                                     {!upsellsSettings.enabled && upsellsSettings.showSuggestedProduct && (
                                         <div className="upsell-suggestion">

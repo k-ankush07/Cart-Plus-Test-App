@@ -18,6 +18,7 @@ import {
   ShieldCheckMarkIcon,      // Trust badges
   SettingsIcon,             // Settings
 } from "@shopify/polaris-icons";
+
 import { useState } from "react";
 
 export default function Sidebar({

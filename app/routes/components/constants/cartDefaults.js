@@ -94,6 +94,7 @@ export const defaultRecommendationsSettings = {
   layout: "block",
   showReviews: false,
   carouselIndicator: "progressBar",
+  reviewCountText: "({{review_count}} reviews)",
 };
 
 export const defaultUpsellsSettings = {
@@ -108,6 +109,7 @@ export const defaultUpsellsSettings = {
   showSuggestedProduct: false,
   suggestedProduct: null,
   showReviews: false,
+  reviewCountText:"({{review_count}} reviews)",
   title: "You'll love these",
   buttonText: "Add",
   position: "bottom",

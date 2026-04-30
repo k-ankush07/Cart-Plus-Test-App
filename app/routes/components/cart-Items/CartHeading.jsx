@@ -5,7 +5,7 @@ import {
     getBorderWidth,
 } from "../utils/helpers";
 
-export default function CartHeading({ headerSettings, designSettings, onClose }) {
+export default function CartHeading({ headerSettings, designSettings, onClose, qty }) {
 
     const CloseButton = ({ headerSettings }) => {
         return (
@@ -112,15 +112,12 @@ export default function CartHeading({ headerSettings, designSettings, onClose })
                                 margin: 0,
                             }}
                         >
-                            {headerSettings.titleText?.replace("{{cart_quantity}}", "2") ||
-                                "Cart • 2"}
+                            {headerSettings.titleText?.replace("{{cart_quantity}}", qty) || `Cart • ${qty}`}
                         </span>
                     ) : (
                         (() => {
                             const HeadingTag = headerSettings.heading || "h3";
-                            const text =
-                                headerSettings.titleText?.replace("{{cart_quantity}}", "2") ||
-                                "Cart • 2";
+                            const text = headerSettings.titleText?.replace("{{cart_quantity}}", qty) || `Cart • ${qty}`;
 
                             return (
                                 <HeadingTag

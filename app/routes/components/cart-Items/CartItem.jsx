@@ -33,7 +33,7 @@ function UndoToast({ message, onUndo, onDismiss }) {
       maxWidth: 340,
       whiteSpace: "nowrap",
       animation: "slideUp 0.25s ease",
-      top:100
+      top: 100
     }}>
       <style>{`
         @keyframes slideUp {
@@ -80,7 +80,7 @@ function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
 }
 
 // ─── Classic Layout ───────────────────────────────────────────────────────────
-function ClassicLayout({productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
+function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription }) {
   return (
     <div className="cart-app-item upcart-product-item upcart-public-component-product-tile" style={{ flexDirection: "column" }}>
       <div style={{ display: "flex", gap: "8px", width: "100%" }}>
@@ -173,7 +173,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div className="cart-app-item__title upcart-product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
-            {productName}
+              {productName}
             </div>
             <div style={{ fontSize: "12px", color: textColor }}>Premium Global Brands</div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: textColor }}>
@@ -229,7 +229,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
 }
 
 // ─── Modern Layout ────────────────────────────────────────────────────────────
-function ModernLayout({productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings }) {
+function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings }) {
   return (
     <div className="cart-app-item upcart-product-item upcart-public-component-product-tile upcart-layout-modern">
 
@@ -319,9 +319,9 @@ export default function CartItem({
   subscriptionUpgradesSettings,
   cartSettings,
   productName = "The Monaco - Black",
-  onConfirmRemove, 
+  qty,
+  setQty
 }) {
-  const [qty, setQty] = useState(1);
   const [loadingType, setLoadingType] = useState(null);
   const [isRemoved, setIsRemoved] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -379,7 +379,7 @@ export default function CartItem({
   };
 
   return (
-    <>
+    <div style={{ position: 'relative' }}>
       {/* Item wrapper — dimmed when removed */}
       <div
         className="upcart-products-section cart-app__items"
@@ -406,6 +406,6 @@ export default function CartItem({
           onDismiss={() => setShowToast(false)}
         />
       )}
-    </>
+    </div>
   );
 }
