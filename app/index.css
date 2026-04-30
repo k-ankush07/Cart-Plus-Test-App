@@ -281,7 +281,7 @@ body,
     color: var(--btn-hover-text);
 }
 
-.upcart-internal-style__title-large_button a:hover {
+.custom-cart-internal-style__title-large_button a:hover {
     color: var(--btn-hover-text);
 }
 
@@ -436,7 +436,7 @@ body,
     margin-bottom: 8px;
 }
 
-.upcart-internal-upsell__header {
+.custom-cart-internal-upsell__header {
     text-align: center;
     padding: 28px;
     font-size: 18px;
@@ -477,15 +477,6 @@ body,
     text-align: center;
     color: white;
     text-decoration: none;
-}
-
-.upcart-internal-style__title-large {
-    color: #000;
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    padding: 0 30px;
-    text-align: center;
 }
 
 .upcart-internal-upsell__vertical-layout-wrapper {
@@ -544,13 +535,13 @@ body,
     object-fit: contain;
 }
 
-.upcart-internal-component-upsell-tile__info {
+.custom-cart-internal-component-upsell-tile__info {
     flex: 1;
     min-width: 0;
     max-width: 100%;
 }
 
-.upcart-internal-component-upsell-tile__title-link {
+.custom-cart-internal-component-upsell-tile__title-link {
     text-decoration: none;
     color: #000;
 }
@@ -605,7 +596,7 @@ body,
     white-space: nowrap;
 }
 
-.upcart-internal-style__title-large {
+.custom-cart-internal-style__title-large {
     color: #000;
     font-size: 20px;
     font-weight: 600;
@@ -614,7 +605,7 @@ body,
     text-align: center;
 }
 
-.upcart-internal-style__title-large_button {
+.custom-cart-internal-style__title-large_button {
     box-sizing: border-box;
     margin: 20px 30px;
     padding: 8px;
@@ -628,7 +619,7 @@ body,
     color: white;
 }
 
-.upcart-internal-style__title-large_button a {
+.custom-cart-internal-style__title-large_button a {
     color: white;
     text-decoration: none;
 }
@@ -681,7 +672,7 @@ body,
     color: #000;
 }
 
-.upcart-slider-wrapper {
+.custom-cart-slider-wrapper {
     position: relative;
     padding: 30px;
 }
@@ -723,7 +714,7 @@ body,
     cursor: not-allowed;
 }
 
-.upcart-public-upsell {
+.custom-cart-public-upsell {
     margin-bottom: 8px;
     padding: 12px 0 8px;
 }

@@ -38,7 +38,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
 
     return (
         <div
-            className={`cart-app upcart-cart ${designSettings.inheritFonts ? "" : "cart-app--customFont"}`}
+            className={`cart-app custom-cart ${designSettings.inheritFonts ? "" : "cart-app--customFont"}`}
             style={{
                 backgroundColor: designSettings.backgroundColor,
                 maxWidth: designSettings.desktopWidth === "wide" ? "500px" : "440px",
@@ -49,7 +49,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 <style dangerouslySetInnerHTML={{ __html: scopeCss(cartSettings.customCss, ".cart-app") }} />
             )}
 
-            <div className="cart-app__container">
+            <div className="cart-app__container styles_CartPreview__card__">
                 <div className="cart-app__heading">
                     <CartHeading
                         headerSettings={headerSettings}
@@ -62,7 +62,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 {/* below_header */}
                 <CustomHtml cartSettings={cartSettings} position="below_header" />
 
-                <div className="cart-app__body upcart-cart-body">
+                <div className="cart-app__body custom-cart-body">
                     {(emptyCart && activeTab !== "Recommendations") || (activeTab === "Recommendations" && recommendationsSettings.enabled) ? (
                         <div className="cart-app__empty" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px", gap: "12px" }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke={designSettings.textColor || "#9ca3af"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

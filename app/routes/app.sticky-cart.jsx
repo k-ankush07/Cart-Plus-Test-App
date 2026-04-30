@@ -374,7 +374,7 @@ export default function StickyCart() {
         <BlockStack gap="400">
           <Layout>
             {/* Left: Settings */}
-            <Layout.Section variant="oneHalf">
+            <Layout.Section>
               <Card>
                 <BlockStack gap="400">
                   <BlockStack gap="100">
@@ -464,7 +464,7 @@ export default function StickyCart() {
             </Layout.Section>
 
             {/* Right: Preview */}
-            <Layout.Section variant="oneHalf">
+            <Layout.Section variant="oneThird">
               <Card padding="0">
                 {/* Browser bar */}
                 <Box

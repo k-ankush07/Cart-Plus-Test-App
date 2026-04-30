@@ -11,7 +11,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
         return (
             <button
                 onClick={onClose}
-                className="cart-app__close custom-close-btn upcart-header-close-button"
+                className="cart-app__close custom-close-btn custom-cart-public-header__close-button custom-cart-header-close-button"
                 style={{
                     flexShrink: 0,
                     "--icon-color": headerSettings.iconColor,
@@ -25,7 +25,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                 }}
             >
                 <svg
-                    className="upcart-internal-header__close-button-icon upcart-public-header__close-button-icon"
+                    className="upcart-internal-header__close-button-icon custom-cart-public-header__close-button-icon"
                     width={getIconSize(headerSettings.iconSize)}
                     height={getIconSize(headerSettings.iconSize)}
                     viewBox="0 0 20 20"
@@ -45,7 +45,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
 
     return (
         <div
-            className="cart-app__header-top upcart-header"
+            className="cart-app__header-top custom-cart-public-header"
             style={{
                 padding:
                     headerSettings.height === "slim"

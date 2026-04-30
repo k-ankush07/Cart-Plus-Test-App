@@ -110,51 +110,51 @@ export default function Recommendation({ recommendationsSettings, currency, cart
         }
 
         return (
-            <div className="upcart-internal-component-upsell-tile">
-                <div className="upcart-internal-component-upsell-tile__info_count">
+            <div className="upcart-internal-component-upsell-tile custom-cart-public-component-upsell-tile">
+                <div className="upcart-internal-component-upsell-tile__info_count custom-cart-public-component-upsell-tile">
 
                     {/* IMAGE */}
-                    <div className="upcart-internal-component-upsell-tile__image-container">
-                        <img src={selectedVariant.image || product.image} />
+                    <div className="upcart-internal-component-upsell-tile__image-container custom-cart-public-component-upsell-tile__image-container">
+                        <img src={selectedVariant.image || product.image} className="custom-cart-public-component-upsell-tile__image" />
                     </div>
 
                     {/* RIGHT CONTENT */}
-                    <div className="upcart-internal-component-upsell-tile__info">
+                    <div className="custom-cart-internal-component-upsell-tile__info">
 
                         {/* TITLE */}
-                        <a href="#no" className="upcart-internal-component-upsell-tile__title-link">
-                            <h3 className="upcart-internal-component-upsell-tile__title" style={{ color: designSettings.textColor || "#6b7280", }}>
+                        <a href="#no" className="custom-cart-internal-component-upsell-tile__title-link">
+                            <h3 className="upcart-internal-component-upsell-tile__title custom-cart-public-component-upsell-tile__title" style={{ color: designSettings.textColor || "#6b7280", }}>
                                 {product.title}
                             </h3>
                         </a>
 
-                        <p className="price" style={{ color: designSettings.textColor || "#6b7280", }}>
+                        <p className="price custom-cart-public-component-upsell-tile__price-row" style={{ color: designSettings.textColor || "#6b7280", }}>
 
                             {selectedVariant.compareAtPrice &&
                                 parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
-                                    <span className="compare-price" style={{ color: designSettings.textColor || "#6b7280", }}>
+                                    <span className="compare-price custom-cart-public-component-upsell-tile__price-compare-at" style={{ color: designSettings.textColor || "#6b7280", }}>
                                         {selectedVariant.compareAtPrice} {currency}
                                     </span>
                                 )}
 
-                            <span className="sale-price" style={{ color: designSettings.textColor || "#6b7280", }}>
+                            <span className="sale-price custom-cart-public-component-upsell-tile__price" style={{ color: designSettings.textColor || "#6b7280", }}>
                                 {selectedVariant.price} {currency}
                             </span>
 
                         </p>
 
                         {recommendationsSettings.showReviews && (
-                            <div className="rating">
-                                <span className="stars">
+                            <div className="rating custom-cart-public-component-upsell-tile__rating-row">
+                                <span className="stars custom-cart-public-component-upsell-tile__stars">
                                     {"★★★★★".slice(0, Math.round(product.rating))}
                                 </span>
-                                <span className="rating-text">
+                                <span className="rating-text custom-cart-public-component-upsell-tile__reviews">
                                     {product.rating} ({product.reviewCount})
                                 </span>
                             </div>
                         )}
 
-                        <div className="upcart-internal-component-upsell-tile__variant-row" style={{ color: designSettings.textColor || "#6b7280", }}>
+                        <div className="upcart-internal-component-upsell-tile__variant-row custom-cart-public-component-upsell-tile__variant-row" style={{ color: designSettings.textColor || "#6b7280", }}>
                             <select
                                 value={selectedVariant.id}
                                 onChange={(e) =>
@@ -171,7 +171,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
 
                             <button
                                 type="button"
-                                className="upcart-internal-component__button"
+                                className="upcart-internal-component__button custom-cart-public-component__button"
                                 onClick={hanldeAddProduct}
                                 style={{
                                     borderRadius: `${designSettings.buttonRadius}px`,
@@ -248,16 +248,16 @@ export default function Recommendation({ recommendationsSettings, currency, cart
     }, [recommendationsSettings.carouselIndicator]);
 
     return (
-        <div className="cart_CartPreview__empty__body upcart-recommendation-module">
+        <div className="cart_CartPreview__empty__body custom-cart-recommendation-module">
 
             <div className="cart_CartPreview__empty__">
                 <h3>{cartSettings.emptyCartMessage}</h3>
             </div>
 
-            <div className="upcart-internal-upsell upcart-public-upsell">
+            <div className="custom-cart-internal-upsell custom-cart-public-upsell">
 
                 {/* HEADER */}
-                <div className="upcart-internal-upsell__header upcart-recommendations-title" style={{ color: designSettings.textColor || "#6b7280", }}>
+                <div className="custom-cart-internal-upsell__header upcart-recommendations-title" style={{ color: designSettings.textColor || "#6b7280", }}>
                     <p dangerouslySetInnerHTML={{
                         __html: recommendationsSettings.headerText
                     }} />
@@ -265,7 +265,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
 
                 {/* BUTTON */}
                 {recommendationsSettings.showShopNowButton && (
-                    <div className="upcart-internal-style__title-large_button" style={{
+                    <div className="custom-cart-internal-style__title-large_button" style={{
                             borderRadius: `${designSettings.buttonRadius}px`,
                             backgroundColor: designSettings.buttonColor,
                             "--btn-hover-text": designSettings.buttonHoverColor,
@@ -277,14 +277,14 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     </div>
                 )}
 
-                <div className="upcart-internal-style__title-large" style={{ color: designSettings.textColor || "#6b7280", }}>
+                <div className="custom-cart-internal-style__title-large" style={{ color: designSettings.textColor || "#6b7280", }}>
                     <p dangerouslySetInnerHTML={{
                         __html: recommendationsSettings.productHeaderText
                     }} />
                 </div>
 
                 {recommendationsSettings.layout === "carousel" ? (
-                    <div className="upcart-slider-wrapper">
+                    <div className="custom-cart-slider-wrapper">
                         {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev">‹</div>)}
                         <Swiper
                             modules={[Navigation]}

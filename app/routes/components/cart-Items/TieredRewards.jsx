@@ -113,10 +113,10 @@ export default function TieredRewards({ rewardsSettings }) {
   };
 
   return (
-    <div className="tier-card upcart-rewards">
+    <div className="custom-cart-internal-rewards custom-cart-public-rewards tier-card upcart-rewards">
       <div className="tier-content">
         <p
-          className="tier-title upcart-rewards-message"
+          className="tier-title upcart-rewards-message custom-cart-public-rewards__message"
           dangerouslySetInnerHTML={{
             __html:
               totalValue >= maxAmount
@@ -132,7 +132,7 @@ export default function TieredRewards({ rewardsSettings }) {
 
         <div className="progress-wrapper">
           <div className="progress-track">
-            <div className="segments-flex">
+            <div className="segments-flex custom-cart-public-component-segmented-progress-bar__segments-container">
               {sortedTiers.map((tier, index) => {
                 const segStart = index === 0 ? 0 : getStepPosition(index - 1);
                 const segEnd = getStepPosition(index);
@@ -144,16 +144,16 @@ export default function TieredRewards({ rewardsSettings }) {
                 const reached = totalValue >= getTierValue(tier);
 
                 return (
-                  <div key={tier.id} className="tier-cell upcart-rewards-tier">
+                  <div key={tier.id} className="tier-cell upcart-rewards-tier custom-cart-public-component-segmented-progress-bar__segment">
                     <div
-                      className="cell-bar upcart-rewards-bar-background"
+                      className="cell-bar upcart-rewards-bar-background custom-cart-public-rewards__bar"
                       style={{
                         backgroundColor: rewardsSettings.backgroundColor,
                         height: `${rewardsSettings.barLength}px`,
                       }}
                     >
                       <div
-                        className="cell-fill upcart-rewards-bar-foreground"
+                        className="cell-fill upcart-rewards-bar-foreground custom-cart-public-component-segmented-progress-bar"
                         style={{
                           width: `${segFill}%`,
                           backgroundColor: rewardsSettings.textColor,
@@ -164,7 +164,7 @@ export default function TieredRewards({ rewardsSettings }) {
                       {tier.showIcon !== false && (
                         <>
                           <div
-                            className={`icon-circle upcart-rewards-tier-circle ${reached ? "active" : ""}`}
+                            className={`custom-cart-public-component-segmented-progress-bar__milestone--middle icon-circle upcart-rewards-tier-circle ${reached ? "active" : ""}`}
                             style={{
                               backgroundColor: reached
                                 ? rewardsSettings.textColor
@@ -174,11 +174,11 @@ export default function TieredRewards({ rewardsSettings }) {
                                 : rewardsSettings.incompleteIconColor,
                             }}
                           >
-                            <span className="upcart-rewards-tier-icon">
+                            <span className="upcart-rewards-tier-icon custom-cart-public-component-segmented-progress-bar__segment">
                               {getIcon(tier.type)}
                             </span>
                           </div>
-                          <p className="step-text upcart-rewards-tier-description">
+                          <p className="step-text upcart-rewards-tier-description custom-cart-public-component-segmented-progress-bar__milestone-label--align-center">
                             {tier.description}
                           </p>
                         </>
