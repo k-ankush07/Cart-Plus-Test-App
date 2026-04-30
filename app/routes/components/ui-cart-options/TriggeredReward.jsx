@@ -1,14 +1,48 @@
 import { useState } from "react";
 import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 import {
-  Card, Text, BlockStack, InlineStack, Button, TextField,
-  Badge, Modal, Checkbox, ButtonGroup, Icon,
+  Card, Text, BlockStack, InlineStack, Button, TextField, Thumbnail,
+  Badge, Modal, Checkbox, ButtonGroup, Icon, LegacyCard,
+  LegacyStack, RangeSlider, Box, Divider,
 } from "@shopify/polaris";
 import {
   DeleteIcon, EditIcon, RefreshIcon, CartIcon,
   CashDollarIcon, GiftCardIcon, PersonIcon,
-  ChevronUpIcon, ChevronDownIcon,
+  ChevronUpIcon, ChevronDownIcon, AutomationIcon, PlusIcon
 } from "@shopify/polaris-icons";
+
+const TriggerIcon = () => (
+  <svg viewBox="0 0 20 20" width="20" height="20" focusable="false" aria-hidden="true" fill="white">
+    <path d="M13 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"></path>
+    <path fillRule="evenodd" d="M11.276 3.5a3.75 3.75 0 0 0-2.701 1.149l-4.254 4.417a2.75 2.75 0 0 0 .036 3.852l2.898 2.898a2.5 2.5 0 0 0 3.502.033l4.747-4.571a3.25 3.25 0 0 0 .996-2.341v-2.187a3.25 3.25 0 0 0-3.25-3.25h-1.974Zm-1.62 2.19a2.25 2.25 0 0 1 1.62-.69h1.974c.966 0 1.75.784 1.75 1.75v2.187c0 .475-.194.93-.536 1.26l-4.747 4.572a1 1 0 0 1-1.401-.014l-2.898-2.898a1.25 1.25 0 0 1-.016-1.75l4.253-4.418Z"></path>
+  </svg>
+);
+
+const ArrowIcon = () => (
+  <svg viewBox="0 0 20 20" width="20" height="20" focusable="false" aria-hidden="true" fill="currentColor">
+    <path fillRule="evenodd" d="M3.5 10a.75.75 0 0 1 .75-.75h9.69l-2.72-2.72a.75.75 0 1 1 1.06-1.06l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 0 1-1.06-1.06l2.72-2.72h-9.69a.75.75 0 0 1-.75-.75Z"></path>
+  </svg>
+);
+
+const DiscountIcon = () => (
+  <svg viewBox="0 0 20 20" focusable="false" aria-hidden="true">
+    <path d="M13 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"></path>
+    <path fillRule="evenodd" d="M11.276 3.5a3.75 3.75 0 0 0-2.701 1.149l-4.254 4.417a2.75 2.75 0 0 0 .036 3.852l2.898 2.898a2.5 2.5 0 0 0 3.502.033l4.747-4.571a3.25 3.25 0 0 0 .996-2.341v-2.187a3.25 3.25 0 0 0-3.25-3.25h-1.974Zm-1.62 2.19a2.25 2.25 0 0 1 1.62-.69h1.974c.966 0 1.75.784 1.75 1.75v2.187c0 .475-.194.93-.536 1.26l-4.747 4.572a1 1 0 0 1-1.401-.014l-2.898-2.898a1.25 1.25 0 0 1-.016-1.75l4.253-4.418Z"></path>
+  </svg>
+);
+
+const RewardIcon = () => (
+  <svg viewBox="0 0 20 20" width="20" height="20" focusable="false" aria-hidden="true" fill="white">
+    <path d="M10.029 3.033a.75.75 0 0 1 .5.935l-.703 2.313a.75.75 0 0 1-1.436-.436l.703-2.313a.75.75 0 0 1 .936-.5Z"></path>
+    <path d="M16 3.75a.75.75 0 0 0-1.5 0v.25h-.25a.75.75 0 0 0 0 1.5h.25v.25a.75.75 0 0 0 1.5 0v-.25h.25a.75.75 0 0 0 0-1.5h-.25v-.25Z"></path>
+    <path fillRule="evenodd" d="M8.306 7.746a1.75 1.75 0 0 0-2.834.521l-2.093 4.669a2.75 2.75 0 0 0 .565 3.07l.051.05a2.75 2.75 0 0 0 3.07.565l4.668-2.093a1.75 1.75 0 0 0 .521-2.834l-3.948-3.948Zm-1.465 1.135a.25.25 0 0 1 .405-.074l3.948 3.947a.25.25 0 0 1-.075.405l-4.668 2.093a1.25 1.25 0 0 1-1.395-.257l-.051-.05a1.25 1.25 0 0 1-.257-1.396l2.093-4.668Z"></path>
+    <path d="M5.75 3a.75.75 0 0 1 .75.75v.25h.25a.75.75 0 1 1 0 1.5h-.25v.25a.75.75 0 0 1-1.5 0v-.25h-.25a.75.75 0 0 1 0-1.5h.25v-.25a.75.75 0 0 1 .75-.75Z"></path>
+    <path d="M16 13.25a.75.75 0 0 0-1.5 0v.25h-.25a.75.75 0 0 0 0 1.5h.25v.25a.75.75 0 0 0 1.5 0v-.25h.25a.75.75 0 0 0 0-1.5h-.25v-.25Z"></path>
+    <path d="M13.53 7.53a.75.75 0 0 0-1.06-1.06l-1 1a.75.75 0 0 0 1.06 1.06l1-1Z"></path>
+    <path d="M16.578 11.032a.75.75 0 1 0-.413-1.442l-2.343.672a.75.75 0 1 0 .413 1.442l2.343-.672Z"></path>
+  </svg>
+);
+
 import ProductItemCollections from "../ui/ProductItem-Collections";
 
 const TRIGGER_OPTIONS = [
@@ -41,7 +75,7 @@ const REWARD_ICON = {
   free_shipping: CartIcon,
 };
 
-const ICON_BG = "#9B2C8A";
+const ICON_BG = "#c20075";
 const emptyForm = { id: null, title: "", discountCode: "", description: "", triggers: [], reward: null, enabled: false };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -75,55 +109,127 @@ function TriggerSlot({ trigger, onRemove, onEdit }) {
   const meta = TRIGGER_OPTIONS.find((o) => o.type === trigger.type);
   const icon = TRIGGER_ICON[trigger.type] || CartIcon;
 
-  const titles = trigger.items?.titles || [];
+  const titles = trigger.type === "specific_collections"
+    ? (trigger.items?.titles || Object.values(trigger.items || {}).map(i => i.title).filter(Boolean))
+    : (trigger.items?.titles || []);
+
   const count = trigger.type === "specific_products"
-    ? (trigger.items?.products?.length || 0)
+    ? (trigger.items?.products?.length || trigger.items?.titles?.length || 0)
     : trigger.type === "specific_collections"
-      ? (trigger.items?.length || 0)
+      ? titles.length
       : null;
 
-  const titleLine = titles.length > 0 ? titles.join(", ") : meta?.description || "";
-  const label = count !== null ? `${meta?.label} (${count} selected)` : meta?.label || trigger.type;
+  const label = count !== null
+    ? `${meta?.label} (${count} selected)`
+    : meta?.label || trigger.type;
+
+  const titleLine = (() => {
+    switch (trigger.type) {
+      case "cart_total":
+        return `$${(trigger.minAmount || 0).toFixed(2)} or more`;
+      case "cart_quantity":
+        return `${trigger.minQuantity || 0} item(s) or more`;
+      case "specific_products":
+        return titles.length > 0 ? titles.join(", ") : "No products selected";
+      case "specific_collections":
+        return titles.length > 0 ? titles.join(", ") : "No collections selected";
+      default:
+        return meta?.description || "";
+    }
+  })();
 
   return (
-    <div style={{ border: "1px solid #e1e3e5", borderRadius: "8px", padding: "12px 16px" }}>
+    <Box padding="300">
       <InlineStack align="space-between" blockAlign="center">
         <InlineStack gap="300" blockAlign="center">
-          <div style={{ background: ICON_BG, borderRadius: "8px", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", flexShrink: 0 }}>
-            <div style={{ filter: "brightness(0) invert(1)" }}><Icon source={icon} /></div>
+          <div style={{
+            backgroundColor: ICON_BG,
+            borderRadius: "var(--p-border-radius-200)",
+            padding: "var(--p-space-200)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <div style={{ filter: "brightness(0) invert(1)" }}>
+              <Icon source={icon} tone="base" />
+            </div>
           </div>
           <BlockStack gap="0">
-            <Text variant="bodyMd" fontWeight="semibold">{label}</Text>
-            <Text variant="bodySm" tone="subdued">{titleLine}</Text>
+            <Text variant="headingSm">{label}</Text>
+            <div style={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: "300px",
+              color: "var(--p-color-text-subdued)"
+            }}>
+              {titleLine}
+            </div>
           </BlockStack>
         </InlineStack>
-        <InlineStack gap="100">
-          {onEdit && <Button variant="plain" icon={EditIcon} onClick={onEdit} accessibilityLabel="Edit trigger" />}
-          <Button variant="plain" tone="critical" icon={DeleteIcon} onClick={onRemove} accessibilityLabel="Remove trigger" />
-        </InlineStack>
+        <ButtonGroup>
+          {onEdit && (
+            <Button icon={EditIcon} accessibilityLabel="Edit" onClick={onEdit} />
+          )}
+          <Button icon={DeleteIcon} tone="critical" accessibilityLabel="Delete" onClick={onRemove} />
+        </ButtonGroup>
       </InlineStack>
-    </div>
+    </Box>
   );
 }
 
 function RewardSlot({ reward, onRemove }) {
   const meta = REWARD_OPTIONS.find((o) => o.type === reward.type);
   const icon = REWARD_ICON[reward.type] || CartIcon;
+
+  const descriptionLine = (() => {
+    switch (reward.type) {
+      case "cart_discount":
+        return reward.discountType === "fixed"
+          ? `$${reward.value || 0} off`
+          : `${reward.value || 0}% off`;
+      case "free_gift": {
+        const titles = reward.items?.titles || [];
+        return titles.length > 0 ? titles.join(", ") : "No product selected";
+      }
+      case "free_shipping":
+        return "Free shipping applied";
+      default:
+        return meta?.description || "";
+    }
+  })();
+
   return (
-    <div style={{ border: "1px solid #e1e3e5", borderRadius: "8px", padding: "12px 16px" }}>
+    <Box padding="300">
       <InlineStack align="space-between" blockAlign="center">
         <InlineStack gap="300" blockAlign="center">
-          <div style={{ background: ICON_BG, borderRadius: "8px", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", flexShrink: 0 }}>
-            <div style={{ filter: "brightness(0) invert(1)" }}><Icon source={icon} /></div>
+          <div style={{
+            backgroundColor: ICON_BG,
+            borderRadius: "var(--p-border-radius-200)",
+            padding: "var(--p-space-200)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <div style={{ filter: "brightness(0) invert(1)" }}>
+              <Icon source={icon} tone="base" />
+            </div>
           </div>
           <BlockStack gap="0">
-            <Text variant="bodyMd" fontWeight="semibold">{meta?.label || reward.type}</Text>
-            <Text variant="bodySm" tone="subdued">{meta?.description || ""}</Text>
+            <Text variant="headingSm">{meta?.label || reward.type}</Text>
+            <Text variant="bodyLg" truncate>{descriptionLine}</Text>
           </BlockStack>
         </InlineStack>
-        <Button variant="plain" tone="critical" icon={DeleteIcon} onClick={onRemove} accessibilityLabel="Remove reward" />
+        <Button
+          icon={DeleteIcon}
+          tone="critical"
+          accessibilityLabel="Delete"
+          onClick={onRemove}
+        />
       </InlineStack>
-    </div>
+    </Box>
   );
 }
 
@@ -249,7 +355,15 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
   };
 
   const confirmSpecificCollections = () => {
-    addTrigger({ type: "specific_collections", minItems: parseInt(pendingMinItems) || 1, items: pendingItems.items });
+    const ids = pendingItems.items || [];
+    const titles = pendingItems.titles || [];
+    const images = pendingItems.images || [];
+
+    addTrigger({
+      type: "specific_collections",
+      minItems: parseInt(pendingMinItems) || 1,
+      items: { ids, titles, images },
+    });
     setSpecificCollectionsOpen(false);
   };
 
@@ -363,179 +477,289 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
 
   return (
     <>
-      <BlockStack gap="400">
-        <Card>
-          <BlockStack gap="400">
-            <BlockStack gap="100">
-              <Text variant="headingMd">Triggered rewards</Text>
-              <Text variant="bodySm" tone="subdued">
-                Rewards that are shown if specific conditions (eg. products in cart, customer type) are met. You can create up to 10 rules.
-              </Text>
-            </BlockStack>
-
-            {!showForm && rewards.length < 10 && (
-              <div><Button onClick={() => { console.log("➕ [UI] Add rewards clicked"); setShowForm(true); }}>+ Add rewards</Button></div>
-            )}
-
-            {rewards.length === 0 && !showForm && (
-              <div style={{ textAlign: "center", padding: "32px 0" }}>
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-                  <div style={{ background: "#1a1a1a", borderRadius: "8px", padding: "10px 12px" }}><span style={{ fontSize: "18px" }}>🏷️</span></div>
-                  <span style={{ fontSize: "18px", color: "#637381" }}>→</span>
-                  <div style={{ background: "#e8e8e8", borderRadius: "8px", padding: "10px 12px" }}><span style={{ fontSize: "18px" }}>🔥</span></div>
-                </div>
-                <Text variant="bodyMd" fontWeight="semibold">No triggered rewards yet</Text>
-                <Text variant="bodySm" tone="subdued">Add a reward to see more here.</Text>
-              </div>
-            )}
-
-            {showForm && (
-              <div style={{ border: "1px solid #e1e3e5", borderRadius: "8px", padding: "16px" }}>
-                <BlockStack gap="300">
-                  <TextField label="Title" value={form.title} onChange={(v) => updateForm("title", v)} placeholder="e.g. Free shipping on orders over $50" requiredIndicator autoComplete="off" error={formErrors.title} />
-                  <TextField label="Discount Code" value={form.discountCode} onChange={(v) => updateForm("discountCode", v)} placeholder="e.g. FREESHIP50" requiredIndicator autoComplete="off" error={formErrors.discountCode} />
-                  <TextField label="Description" value={form.description} onChange={(v) => updateForm("description", v)} placeholder="e.g. Get free shipping when you spend $50 or more" requiredIndicator autoComplete="off" error={formErrors.description} />
-
-                  <BlockStack gap="200">
-                    <InlineStack gap="100" blockAlign="center">
-                      <Text variant="bodyMd" fontWeight="medium">Triggers</Text>
-                      <Text variant="bodyMd" tone="critical">*</Text>
-                      <Text variant="bodySm" tone="subdued">({form.triggers.length} of 2)</Text>
-                    </InlineStack>
-                    {form.triggers.map((t, i) => (
-                      <TriggerSlot key={i} trigger={t} onRemove={() => removeTrigger(i)} onEdit={["specific_products", "specific_collections", "cart_total", "cart_quantity"].includes(t.type) ? () => openEditTrigger(i) : null} />
-                    ))}
-                    {form.triggers.length < 2 && (
-                      <div style={slotBox}>
-                        <Button variant="plain" onClick={() => openTriggerList(form.triggers.length)}>+ Add trigger</Button>
-                      </div>
-                    )}
-                    {formErrors.triggers && <Text tone="critical" variant="bodySm">{formErrors.triggers}</Text>}
-                  </BlockStack>
-
-                  <BlockStack gap="200">
-                    <InlineStack gap="100" blockAlign="center">
-                      <Text variant="bodyMd" fontWeight="medium">Reward</Text>
-                      <Text variant="bodyMd" tone="critical">*</Text>
-                    </InlineStack>
-                    {form.reward ? (
-                      <RewardSlot reward={form.reward} onRemove={() => updateForm("reward", null)} />
-                    ) : (
-                      <div style={slotBox}>
-                        <Button variant="plain" onClick={() => setRewardListOpen(true)}>+ Add reward</Button>
-                      </div>
-                    )}
-                    {formErrors.reward && <Text tone="critical" variant="bodySm">{formErrors.reward}</Text>}
-                  </BlockStack>
-
-                  <InlineStack align="space-between" blockAlign="center">
-                    <InlineStack gap="200" blockAlign="center">
-                      <Badge tone={form.enabled ? "success" : "critical"}>{form.enabled ? "Enabled" : "Disabled"}</Badge>
-                      <Toggle value={form.enabled} onChange={(v) => updateForm("enabled", v)} />
-                    </InlineStack>
-                    <InlineStack gap="200">
-                      <Button onClick={handleCancel}>Cancel</Button>
-                      <Button variant="primary" onClick={handleSave}>Save</Button>
-                    </InlineStack>
-                  </InlineStack>
-                </BlockStack>
-              </div>
-            )}
-
-            {rewards.map((reward) => {
-              const isExpanded = !!expandedCards[reward.id];
-              const hasConditions = reward.triggers.some((t) =>
-                (t.type === "specific_products" && (t.items?.titles?.length > 0 || t.items?.products?.length > 0)) ||
-                (t.type === "specific_collections" && (t.items?.titles?.length > 0 || (Array.isArray(t.items) && t.items.length > 0)))
-              );
-              return (
-                <div key={reward.id} style={{ border: "1px solid #e1e3e5", borderRadius: "8px", padding: "16px" }}>
-                  <BlockStack gap="200">
-                    <InlineStack align="space-between" blockAlign="center">
-                      <InlineStack gap="200" blockAlign="center">
-                        <Text variant="bodyMd" fontWeight="semibold">{reward.title}</Text>
-                        {reward.discountCode && <Badge tone="info">🏷️ {reward.discountCode}</Badge>}
-                      </InlineStack>
-                      <InlineStack gap="200" blockAlign="center">
-                        <Badge tone={reward.enabled ? "success" : "critical"}>{reward.enabled ? "Enabled" : "Disabled"}</Badge>
-                        <Toggle value={reward.enabled} onChange={() => toggleReward(reward.id)} />
-                        <Button variant="plain" tone="critical" icon={DeleteIcon} onClick={() => deleteReward(reward.id)} accessibilityLabel="Delete" />
-                      </InlineStack>
-                    </InlineStack>
-                    {reward.description && <Text variant="bodySm" tone="subdued">{reward.description}</Text>}
-                    <InlineStack gap="200" blockAlign="center" wrap>
-                      <Text variant="bodySm" fontWeight="medium">Trigger type</Text>
-                      {reward.triggers.map((t, i) => <Badge key={i}>{triggerBadgeLabel(t)}</Badge>)}
-                      {hasConditions && (
-                        <button onClick={() => toggleCardExpand(reward.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "0", display: "flex", alignItems: "center" }}>
-                          <Icon source={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
-                        </button>
-                      )}
-                      <Text variant="bodySm" fontWeight="medium">Reward</Text>
-                      {reward.reward && <Badge>{rewardBadgeLabel(reward.reward)}</Badge>}
-                    </InlineStack>
-
-                    {isExpanded && hasConditions && (
-                      <div style={{ borderTop: "1px solid #e1e3e5", paddingTop: "12px", marginTop: "4px" }}>
-                        <BlockStack gap="200">
-                          <Text variant="bodySm" fontWeight="semibold">Trigger conditions</Text>
-                          {reward.triggers.map((t, i) => {
-                            if (t.type !== "specific_products" && t.type !== "specific_collections") return null;
-                            const titles = t.items?.titles || [];
-                            const images = t.items?.images || [];
-                            const minItems = t.minItems || 1;
-                            const label = t.type === "specific_products" ? "Products" : "Collections";
-                            return (
-                              <div key={i} style={{ border: "1px solid #e1e3e5", borderRadius: "8px", padding: "12px" }}>
-                                <BlockStack gap="150">
-                                  <InlineStack gap="200" blockAlign="center">
-                                    <Badge>🔷 {label}</Badge>
-                                    <Text variant="bodySm" tone="subdued">{minItems} item{minItems !== 1 ? "s" : ""} required</Text>
-                                  </InlineStack>
-                                  {titles.map((title, j) => (
-                                    <InlineStack key={j} gap="200" blockAlign="center">
-                                      {images[j] ? (
-                                        <img src={images[j]} alt={title} style={{ width: "32px", height: "32px", borderRadius: "4px", objectFit: "cover", flexShrink: 0 }} />
-                                      ) : (
-                                        <div style={{ width: "32px", height: "32px", borderRadius: "4px", background: "#f1f2f3", flexShrink: 0 }} />
-                                      )}
-                                      <Text variant="bodySm">{title}</Text>
-                                    </InlineStack>
-                                  ))}
-                                </BlockStack>
-                              </div>
-                            );
-                          })}
-                        </BlockStack>
-                      </div>
-                    )}
-                  </BlockStack>
-                </div>
-              );
-            })}
-          </BlockStack>
-        </Card>
-
-        <Card>
-          <BlockStack gap="300">
-            <Text variant="headingMd">Discount combinations</Text>
-            <Text variant="bodySm" tone="subdued">Allow stacking triggered rewards with...</Text>
-            <Checkbox label="Product discounts" helpText="Applies alongside other product-level discounts for different items; only the best discount applies if targeting the same product." checked={discountCombinations.productDiscounts} onChange={(v) => update("discountCombinations", { ...discountCombinations, productDiscounts: v })} />
-            <Checkbox label="Order discounts" helpText="Applies with order-level discounts; product discounts are applied first, then order-level discounts on the subtotal." checked={discountCombinations.orderDiscounts} onChange={(v) => update("discountCombinations", { ...discountCombinations, orderDiscounts: v })} />
-            <Checkbox label="Shipping discounts" helpText="Applies together with free shipping or shipping-level discounts to get the largest eligible shipping discount." checked={discountCombinations.shippingDiscounts} onChange={(v) => update("discountCombinations", { ...discountCombinations, shippingDiscounts: v })} />
-          </BlockStack>
-        </Card>
-
-        <Card>
-          <BlockStack gap="100">
-            <InlineStack gap="200" blockAlign="center">
-              <Text variant="bodyMd" fontWeight="medium">Custom template</Text>
-              <Badge tone="info">Advanced</Badge>
+      <Box paddingBlockEnd="400">
+        <BlockStack gap="400">
+          <InlineStack gap="300" align="space-between" blockAlign="center">
+            <InlineStack blockAlign="center" gap="100">
+              <Box>
+                <Icon source={AutomationIcon} />
+              </Box>
+              <InlineStack gap="200">
+                <Text variant="headingMd" as="h2">Triggered rewards</Text>
+              </InlineStack>
             </InlineStack>
-            <Text variant="bodySm" tone="subdued">Custom templates aren't enabled. Navigate to Settings &gt; Advanced Settings to enable.</Text>
+            <InlineStack gap="200" />
+          </InlineStack>
+        </BlockStack>
+      </Box>
+      <Box paddingBlockEnd="400">
+        <Text as="p" variant="bodySm">
+          Rewards that are shown if specific conditions (eg. products in cart, customer type) are met. You can create up to 10 rules.
+        </Text>
+      </Box>
+      <Divider />
+
+      {rewards.length === 0 && !showForm && (
+        <Box paddingBlockStart="1200" paddingBlockEnd="400">
+          <BlockStack align="center" inlineAlign="center" gap="200">
+            <InlineStack gap="200" blockAlign="center">
+              <div style={{ backgroundColor: "rgb(74, 74, 74)", borderRadius: "4px", padding: "10px", display: "flex" }}>
+                <TriggerIcon />
+              </div>
+              <ArrowIcon />
+              <div style={{ backgroundColor: "rgb(74, 74, 74)", borderRadius: "4px", padding: "10px", display: "flex" }}>
+                <RewardIcon />
+              </div>
+            </InlineStack>
+            <Text variant="headingXs" as="h6">No triggered rewards yet</Text>
+            <Text variant="bodySm" tone="subdued">Add a reward to see more here.</Text>
           </BlockStack>
-        </Card>
-      </BlockStack>
+        </Box>
+      )}
+
+      {!showForm && rewards.length < 10 && (
+        <Box paddingBlockEnd="200">
+          <InlineStack align="center">
+            <Button onClick={() => setShowForm(true)}>Add rewards</Button>
+          </InlineStack>
+        </Box>
+      )}
+
+      {showForm && (
+        <Box paddingBlockEnd="400">
+          <LegacyCard sectioned >
+            <BlockStack gap="300">
+              <TextField label="Title" value={form.title} onChange={(v) => updateForm("title", v)} placeholder="e.g. Free shipping on orders over $50" requiredIndicator autoComplete="off" error={formErrors.title} />
+              <TextField label="Discount Code" value={form.discountCode} onChange={(v) => updateForm("discountCode", v)} placeholder="e.g. FREESHIP50" requiredIndicator autoComplete="off" error={formErrors.discountCode} />
+              <TextField label="Description" value={form.description} onChange={(v) => updateForm("description", v)} placeholder="e.g. Get free shipping when you spend $50 or more" requiredIndicator autoComplete="off" error={formErrors.description} />
+
+              <BlockStack>
+                <InlineStack gap="100" blockAlign="center">
+                  <Text variant="bodyMd" fontWeight="medium">Triggers</Text>
+                  <Text variant="bodyMd" tone="critical">*</Text>
+                  <Text variant="bodySm" tone="subdued">({form.triggers.length} of 2)</Text>
+                </InlineStack>
+
+                <Box
+                  background="bg-surface"
+                  borderWidth="025"
+                  borderColor="border"
+                  borderRadius="200"
+                >
+                  {form.triggers.map((t, i) => (
+                    <Box key={i}>
+                      {i > 0 && <Divider />}
+                      <TriggerSlot
+                        trigger={t}
+                        onRemove={() => removeTrigger(i)}
+                        onEdit={
+                          ["specific_products", "specific_collections", "cart_total", "cart_quantity"].includes(t.type)
+                            ? () => openEditTrigger(i)
+                            : null
+                        }
+                      />
+                    </Box>
+                  ))}
+
+                  {Array.from({ length: 2 - form.triggers.length }).map((_, i) => (
+                    <Box key={i}>
+                      {(form.triggers.length + i) > 0 && <Divider />}
+                      <Box paddingBlock="500" paddingInline="400">
+                        <InlineStack align="center" blockAlign="center">
+                          <Button
+                            icon={PlusIcon}
+                            onClick={() => openTriggerList(form.triggers.length + i)}
+                          >
+                            Add trigger
+                          </Button>
+                        </InlineStack>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+
+                {formErrors.triggers && (
+                  <Text tone="critical" variant="bodySm">{formErrors.triggers}</Text>
+                )}
+              </BlockStack>
+
+              <BlockStack gap="200">
+                <InlineStack gap="100" blockAlign="center">
+                  <Text variant="bodyMd" fontWeight="medium">Reward</Text>
+                  <Text variant="bodyMd" tone="critical">*</Text>
+                </InlineStack>
+
+                <Box
+                  background="bg-surface"
+                  borderWidth="025"
+                  borderColor="border"
+                  borderRadius="200"
+                >
+                  {form.reward ? (
+                    <RewardSlot
+                      reward={form.reward}
+                      onRemove={() => updateForm("reward", null)}
+                    />
+                  ) : (
+                    <Box paddingBlock="500" paddingInline="400">
+                      <InlineStack align="center" blockAlign="center">
+                        <Button
+                          icon={PlusIcon}
+                          onClick={() => setRewardListOpen(true)}
+                        >
+                          Add reward
+                        </Button>
+                      </InlineStack>
+                    </Box>
+                  )}
+                </Box>
+
+                {formErrors.reward && (
+                  <Text tone="critical" variant="bodySm">{formErrors.reward}</Text>
+                )}
+              </BlockStack>
+
+              <InlineStack align="end" blockAlign="center">
+                <ButtonGroup>
+                  <Badge tone={form.enabled ? "success" : "critical"}>
+                    {form.enabled ? "Enabled" : "Disabled"}
+                  </Badge>
+                  <Toggle value={form.enabled} onChange={(v) => updateForm("enabled", v)} />
+                  <Button tone="critical" onClick={handleCancel}>Cancel</Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleSave}
+                    disabled={
+                      !form.title.trim() ||
+                      !form.discountCode.trim() ||
+                      !form.description.trim() ||
+                      form.triggers.length === 0 ||
+                      !form.reward
+                    }
+                  >
+                    Save
+                  </Button>
+                </ButtonGroup>
+              </InlineStack>
+            </BlockStack>
+          </LegacyCard>
+        </Box>
+      )}
+
+      {rewards.map((reward, index) => {
+        const isExpanded = !!expandedCards[reward.id];
+        const hasConditions = reward.triggers.some((t) =>
+          t.type === "specific_products" || t.type === "specific_collections"
+        );
+
+        return (
+          <Box key={reward.id} paddingBlockStart={index === 0 ? "0" : "400"}>
+            <Box
+              background="bg-surface"
+              borderWidth="025"
+              borderColor="border"
+              borderRadius="200"
+              padding="400"
+            >
+              <BlockStack gap="200">
+                <InlineStack align="space-between" blockAlign="center">
+                  <InlineStack gap="200" blockAlign="center">
+                    <Text variant="bodyMd" fontWeight="semibold">{reward.title}</Text>
+                    {reward.discountCode && (
+                      <Badge tone="info" icon={DiscountIcon}>
+                        {reward.discountCode}
+                      </Badge>
+                    )}
+
+                  </InlineStack>
+                  <InlineStack gap="200" blockAlign="center">
+                    <Badge tone={reward.enabled ? "success" : "critical"}>
+                      {reward.enabled ? "Enabled" : "Disabled"}
+                    </Badge>
+                    <Toggle value={reward.enabled} onChange={() => toggleReward(reward.id)} />
+                    <Button
+                      tone="critical"
+                      icon={DeleteIcon}
+                      onClick={() => deleteReward(reward.id)}
+                      accessibilityLabel="Delete"
+                    />
+                  </InlineStack>
+
+                </InlineStack>
+
+                {reward.description && (
+                  <Text variant="bodySm" tone="subdued">{reward.description}</Text>
+                )}
+
+                <InlineStack gap="200" blockAlign="center" wrap>
+                  <Text variant="bodySm" fontWeight="medium">Trigger type</Text>
+                  {reward.triggers.map((t, i) => (
+                    <Badge key={i}>{triggerBadgeLabel(t)}</Badge>
+                  ))}
+                  {hasConditions && (
+                    <button
+                      onClick={() => toggleCardExpand(reward.id)}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: "0", display: "flex", alignItems: "center" }}
+                    >
+                      <Icon source={isExpanded ? ChevronUpIcon : ChevronDownIcon} />
+                    </button>
+                  )}
+                  <Text variant="bodySm" fontWeight="medium">Reward</Text>
+                  {reward.reward && <Badge>{rewardBadgeLabel(reward.reward)}</Badge>}
+                </InlineStack>
+
+                {isExpanded && hasConditions && (
+                  <Box paddingBlockStart="300">
+                    <BlockStack gap="200">
+                      <Text variant="bodySm" fontWeight="semibold">Trigger conditions</Text>
+                      {reward.triggers.map((t, i) => {
+                        if (t.type !== "specific_products" && t.type !== "specific_collections") return null;
+                        const titles = t.items?.titles || [];
+                        const images = t.items?.images || [];
+                        const minItems = t.minItems || 1;
+                        const label = t.type === "specific_products" ? "Products" : "Collections";
+                        return (
+                          <BlockStack key={i} gap="150">
+                            <InlineStack gap="200" blockAlign="center">
+                              <Badge tone="info" icon={DiscountIcon}>
+                                {label}
+                              </Badge>
+                              <Text variant="bodySm" tone="subdued">{minItems} item{minItems !== 1 ? "s" : ""} required</Text>
+                            </InlineStack>
+                            {titles.map((title, j) => (
+                              <InlineStack key={j} gap="200" blockAlign="center">
+                                {images[j] ? (
+                                  <img src={images[j]} alt={title} style={{ width: "32px", height: "32px", borderRadius: "4px", objectFit: "cover", flexShrink: 0 }} />
+                                ) : (
+                                  <div style={{ width: "32px", height: "32px", borderRadius: "4px", background: "#f1f2f3", flexShrink: 0 }} />
+                                )}
+                                <Text variant="bodySm">{title}</Text>
+                              </InlineStack>
+                            ))}
+                          </BlockStack>
+                        );
+                      })}
+                    </BlockStack>
+                  </Box>
+                )}
+              </BlockStack>
+            </Box>
+          </Box>
+        );
+      })}
+
+      {rewards.length !== 0 && (
+        <Box paddingBlockStart="400">
+          <LegacyCard sectioned>
+            <BlockStack gap="300">
+              <Text variant="headingMd">Discount combinations</Text>
+              <Text variant="bodySm" tone="subdued">Allow stacking triggered rewards with...</Text>
+              <Checkbox label="Product discounts" helpText="Applies alongside other product-level discounts for different items; only the best discount applies if targeting the same product." checked={discountCombinations.productDiscounts} onChange={(v) => update("discountCombinations", { ...discountCombinations, productDiscounts: v })} />
+              <Checkbox label="Order discounts" helpText="Applies with order-level discounts; product discounts are applied first, then order-level discounts on the subtotal." checked={discountCombinations.orderDiscounts} onChange={(v) => update("discountCombinations", { ...discountCombinations, orderDiscounts: v })} />
+              <Checkbox label="Shipping discounts" helpText="Applies together with free shipping or shipping-level discounts to get the largest eligible shipping discount." checked={discountCombinations.shippingDiscounts} onChange={(v) => update("discountCombinations", { ...discountCombinations, shippingDiscounts: v })} />
+            </BlockStack>
+          </LegacyCard>
+        </Box>)}
 
       <Modal open={triggerListOpen} onClose={() => setTriggerListOpen(false)} title="Select a trigger condition">
         <Modal.Section flush>
@@ -570,7 +794,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
         <Modal.Section>
           <BlockStack gap="300">
             <TextField label="Minimum number of matching items" type="number" value={pendingMinItems} onChange={setPendingMinItems} autoComplete="off" />
-            <ProductItemCollections currency={currency} onSelect={setPendingItems} initialSelected={{ type: "collections", items: pendingItems.items }} showProducts={false} />
+            <ProductItemCollections currency={currency} onSelect={setPendingItems} multiSelectCollections={true} initialSelected={{ type: "collections", items: pendingItems.items }} showProducts={false} />
           </BlockStack>
         </Modal.Section>
       </Modal>
@@ -641,6 +865,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
           </BlockStack>
         </Modal.Section>
       </Modal>
+
     </>
   );
 }

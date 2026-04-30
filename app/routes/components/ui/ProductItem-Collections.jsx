@@ -20,7 +20,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 
-export default function ProductItemCollections({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null }) {
+export default function ProductItemCollections({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null, multiSelectCollections = false }) {
     const authenticatedFetch = useAuthenticatedFetch();
     const [cursorStack, setCursorStack] = useState([]);
     const [openProducts, setOpenProducts] = useState({});
@@ -271,17 +271,20 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
         setSelectedVariants([]);
 
         setSelectedCollections((prev) => {
-            const updated = prev.includes(id) ? [] : [id];
+            let updated;
+            if (multiSelectCollections) {
+                updated = prev.includes(id)
+                    ? prev.filter((i) => i !== id)
+                    : [...prev, id];
+            } else {
+                updated = prev.includes(id) ? [] : [id];
+            }
+
             const selected = collections.filter((c) => updated.includes(c.id));
             const titles = selected.map((c) => c.title);
             const images = selected.map((c) => c.image);
 
-            onSelect({
-                type: "collections",
-                items: updated,
-                titles,
-                images
-            });
+            onSelect({ type: "collections", items: updated, titles, images });
 
             return updated;
         });
