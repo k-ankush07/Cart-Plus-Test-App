@@ -311,6 +311,17 @@ window.hubCheckoutClick = function (e, blockId, btn) {
 
   const url = btn.getAttribute("href");
 
+  fetch(`${window.__HUB_API_URL__ || "http://localhost:9002"}/api/track-event`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      shop: window.__SHOPIFY_SHOP__?.domain,
+      sessionId: window._hubGetSessionId?.() || "",
+      eventType: "checkout_initiated",
+      userAgent: navigator.userAgent,
+    }),
+  }).catch(() => {});
+
   setTimeout(() => {
     window.location.href = url;
   }, 500);

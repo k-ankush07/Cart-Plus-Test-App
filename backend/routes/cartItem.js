@@ -4,7 +4,7 @@ import {
   stickyCartModel,
   shopConfigModel,
   shopPlanModel,
-  analyticsModel
+  analyticsModel,
 } from "../model/schema.js";
 import crypto from "crypto";
 
@@ -474,6 +474,39 @@ router.post("/cart-impression", async (req, res) => {
 
   } catch (error) {
     console.error("CART IMPRESSION ERROR:", error);
+    res.status(500).json({ success: false });
+  }
+});
+
+// ── Track checkout events (checkout_initiated / checkout_completed) ──────────
+router.post("/track-event", async (req, res) => {
+  try {
+    const { shop, sessionId, eventType, userAgent, meta } = req.body;
+
+    if (!shop || !sessionId || !eventType) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing shop, sessionId, or eventType",
+      });
+    }
+
+    const allowed = ["checkout_initiated", "checkout_completed"];
+    if (!allowed.includes(eventType)) {
+      return res.status(400).json({ success: false, message: "Invalid eventType" });
+    }
+
+    await analyticsModel.create({
+      shop,
+      sessionId,
+      userAgent: userAgent || "",
+      eventType,
+      meta: meta || {},
+      createdAt: new Date(),
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("TRACK EVENT ERROR:", error);
     res.status(500).json({ success: false });
   }
 });

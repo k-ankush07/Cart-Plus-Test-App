@@ -11,6 +11,9 @@ function getSessionId() {
   return sessionId;
 }
 
+window._hubGetSessionId = getSessionId;
+window.__HUB_API_URL__ = apiUrl;
+
 function trackCartImpressionUnique() {
   const key = "hub_cart_impression_tracked";
 

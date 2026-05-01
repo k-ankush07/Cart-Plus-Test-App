@@ -113,7 +113,7 @@ const analyticsSchema = new mongoose.Schema({
 
   eventType: {
     type: String,
-    enum: ["cart_impression"],
+    enum: ["cart_impression", "checkout_initiated", "checkout_completed"],
     required: true,
   },
 
@@ -135,4 +135,4 @@ const shopConfigModel = mongoose.model("shopConfig", shopConfigSchema);
 const shopPlanModel = mongoose.model("shopPlan", shopPlanSchema);
 const analyticsModel = mongoose.model("Analytics", analyticsSchema);
 
-export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel, analyticsModel };
+export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel, analyticsModel, };
