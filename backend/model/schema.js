@@ -108,9 +108,31 @@ const shopPlanSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+const analyticsSchema = new mongoose.Schema({
+  shop: { type: String, required: true },
+
+  eventType: {
+    type: String,
+    enum: ["cart_impression"],
+    required: true,
+  },
+
+  sessionId: { type: String, required: true },
+
+  userAgent: { type: String },
+
+  meta: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+
+  createdAt: { type: Date, default: Date.now },
+});
+
 const cartModels = mongoose.model("cartItems", cartSchema);
 const stickyCartModel = mongoose.model("stickyCart", stickyCartSchema);
 const shopConfigModel = mongoose.model("shopConfig", shopConfigSchema);
 const shopPlanModel = mongoose.model("shopPlan", shopPlanSchema);
+const analyticsModel = mongoose.model("Analytics", analyticsSchema);
 
-export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel };
+export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel, analyticsModel };

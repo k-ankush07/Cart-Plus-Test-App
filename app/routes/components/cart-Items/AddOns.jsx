@@ -28,6 +28,7 @@ const ShippingIcon = () => (
 const Toggle = ({ on, onChange }) => (
     <button
         type="button"
+        className="custom-cart-public-addons__toggle"
         onClick={() => onChange(!on)}
         style={{
             width: 40,
@@ -44,7 +45,8 @@ const Toggle = ({ on, onChange }) => (
             flexShrink: 0,
         }}
     >
-        <div style={{
+        <div className="custom-cart-public-addons__toggle-slider"
+        style={{
             width: 18,
             height: 18,
             borderRadius: "50%",
@@ -63,11 +65,11 @@ export default function AddOns({ addonsSettings, currency }) {
     const product = addonsSettings.selectedProduct;
 
     return (
-        <div className="cart-addon-tile upcart-addons upcart-public-addons">
+        <div className="cart-addon-tile upcart-addons custom-cart-public-addons">
             {isShipping ? (
                 <ShippingIcon />
             ) : (
-                <div className="upcart-addons-image-wrapper upcart-public-addons__image-wrapper" style={{
+                <div className="upcart-addons-image-wrapper custom-cart-public-addons__image-wrapper" style={{
                     width: 44,
                     height: 44,
                     borderRadius: 6,
@@ -86,12 +88,12 @@ export default function AddOns({ addonsSettings, currency }) {
             )}
 
             {/* INFO */}
-            <div className="cart-addon-tile__info">
-                <div className="cart-addon-tile__title-row">
-                    <span className="cart-addon-tile__title upcart-addons-title upcart-public-addons__content-title">
+            <div className="cart-addon-tile__info custom-cart-public-addons__content-wrapper">
+                <div className="cart-addon-tile__title-row custom-cart-public-addons__content-title-wrapper">
+                    <span className="cart-addon-tile__title upcart-addons-title custom-cart-public-addons__content-title">
                         {isShipping ? addonsSettings.title : product?.title || "Product add-on"}
                     </span>
-                    <span className="cart-addon-tile__price upcart-addons-price upcart-public-addons__price">
+                    <span className="cart-addon-tile__price upcart-addons-price upcart-public-addons__price custom-cart-public-addons__content-price">
                         {isShipping ? (
                             `$${addonsSettings.price}`
                         ) : (
@@ -112,7 +114,7 @@ export default function AddOns({ addonsSettings, currency }) {
             </div>
 
             {/* TOGGLE */}
-            <div className="upcart-addons-toggle upcart-public-addons__toggle-wrapper">
+            <div className="upcart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
                 <Toggle on={toggled} onChange={setToggled} />
             </div>
         </div>

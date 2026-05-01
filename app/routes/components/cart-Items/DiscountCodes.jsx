@@ -19,18 +19,18 @@ export default function DiscountCode({ discountCodesSettings }) {
     if (discountCodesSettings?.enabled) return null;
 
     return (
-        <div className="cart-discount-row upcart-discount-code-row upcart-discount-code-module upcart-public-discount-code">
-            <div className="upcart-discount-code-input-wrapper upcart-public-discount-code__input-wrapper">
+        <div className="cart-discount-row upcart-discount-code-row upcart-discount-code-module custom-cart-public-discount-code">
+            <div className="upcart-discount-code-input-wrapper custom-cart-public-discount-code__input-wrapper">
                 <input
                     type="text"
-                    className="cart-discount-row__input upcart-discount-code-input upcart-public-discount-code__input"
+                    className="cart-discount-row__input upcart-discount-code-input custom-cart-public-discount-code__input"
                     placeholder={discountCodesSettings?.placeholder || "Discount code"}
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                 />
                 <button
                     type="button"
-                    className="cart-discount-row__btn upcart-discount-code-button upcart-public-discount-code__button"
+                    className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button"
                     onClick={handlDiscount}
                 >
                     {loading ? (

@@ -1,5 +1,38 @@
 const apiUrl = "http://localhost:9002";
 
+function getSessionId() {
+  let sessionId = sessionStorage.getItem("hub_session_id");
+
+  if (!sessionId) {
+    sessionId = "sess_" + Math.random().toString(36).substr(2, 9);
+    sessionStorage.setItem("hub_session_id", sessionId);
+  }
+
+  return sessionId;
+}
+
+function trackCartImpressionUnique() {
+  const key = "hub_cart_impression_tracked";
+
+  if (localStorage.getItem(key)) {
+    return;
+  }
+
+  localStorage.setItem(key, "true");
+
+  fetch(`${apiUrl}/api/cart-impression`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      shop: window.__SHOPIFY_SHOP__?.domain,
+      sessionId: getSessionId(),
+      userAgent: navigator.userAgent,
+    }),
+  });
+}
+
 // Used by hubUtils.applyRatings() — same Express backend, no separate Remix URL needed
 
 window.__HUB_RATINGS_URL__ = apiUrl;
@@ -125,6 +158,8 @@ function initCartDrawerAfterData() {
       ensureDrawerReady(() => {
         drawer.classList.add(`hub-visible-${blockId}`);
         bg.classList.add(`hub-visible-${blockId}`);
+
+        trackCartImpressionUnique();
 
         document.body.classList.add("no-scroll", "overflow-hidden");
         document.documentElement.classList.add("overflow-hidden");
@@ -1334,4 +1369,88 @@ window.hubRemoveOfferCode = async function (code, blockId, btn) {
       return data;
     })
     .catch(() => null);
+})();
+
+(function () {
+  const originalFetch = window.fetch;
+
+  window.fetch = async function (...args) {
+    let [input, init] = args;
+    const url = typeof input === "string" ? input : input?.url || "";
+
+    if (url.includes("/cart/add")) {
+      try {
+        const body = JSON.parse(init?.body || "{}");
+
+        const isAlreadyTagged = (props = {}) =>
+          props.__upcartAddon ||
+          props.__upcartRecommendation ||
+          props._hub_reward ||
+          props._triggered_reward ||
+          props._hub_addon;
+
+        if (Array.isArray(body.items)) {
+          body.items = body.items.map((item) => {
+            const props = item.properties || {};
+            return {
+              ...item,
+              properties: isAlreadyTagged(props)
+                ? props
+                : {
+                    __upcartRewardProduct: String(item.id),
+                    __upcartTier: "",
+                    __upcartProductTier: "",
+                    ...props,
+                  },
+            };
+          });
+        } else if (body.id) {
+          const props = body.properties || {};
+          body.properties = isAlreadyTagged(props)
+            ? props
+            : {
+                __upcartRewardProduct: String(body.id),
+                __upcartTier: "",
+                __upcartProductTier: "",
+                ...props,
+              };
+        }
+
+        init = {
+          ...init,
+          body: JSON.stringify(body),
+          headers: {
+            "Content-Type": "application/json",
+            ...(init?.headers || {}),
+          },
+        };
+        args = [input, init];
+      } catch (e) {
+        console.warn("[hub] Could not inject properties:", e);
+      }
+    }
+
+    const response = await originalFetch.apply(this, args);
+
+    if (window._hubRewardUpdating) return response;
+
+    if (
+      url.includes("/cart/add") ||
+      url.includes("/cart/change") ||
+      url.includes("/cart/clear")
+    ) {
+      try {
+        const data = await response.clone().json();
+        document.dispatchEvent(
+          new CustomEvent("cart:updated", { detail: data }),
+        );
+      } catch (_) {
+        document.dispatchEvent(
+          new CustomEvent("cart:updated", { detail: null }),
+        );
+      }
+    }
+
+    return response;
+  };
 })();

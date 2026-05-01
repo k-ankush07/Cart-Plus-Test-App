@@ -103,12 +103,12 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
               Color: <strong>BLACK</strong>
             </div>
             <span className="custom-cart-public-component-product-tile__discount-codes"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: "4px",
-              background: "#e6f4ea", color: "#1e7e34",
-              fontSize: "11px", fontWeight: 600,
-              padding: "3px 8px", borderRadius: "20px", width: "fit-content",
-            }}>
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "4px",
+                background: "#e6f4ea", color: "#1e7e34",
+                fontSize: "11px", fontWeight: 600,
+                padding: "3px 8px", borderRadius: "20px", width: "fit-content",
+              }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                 <line x1="7" y1="7" x2="7.01" y2="7" />
@@ -127,11 +127,11 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
             </div>
             {cartSettings.showSavingsBelowPrices && (
               <div className="custom-cart-public-component-product-tile__savings"
-              style={{
-                background: "#e6f4ea", color: savingColor,
-                fontSize: "11px", fontWeight: 700,
-                padding: "2px 7px", borderRadius: "3px",
-              }}>
+                style={{
+                  background: "#e6f4ea", color: savingColor,
+                  fontSize: "11px", fontWeight: 700,
+                  padding: "2px 7px", borderRadius: "3px",
+                }}>
                 {cartSettings.savingsText} 50%
               </div>
             )}
@@ -156,7 +156,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
 
       {!subscriptionUpgradesSettings.enabled && (
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings}  designSettings={designSettings}/>
+          <Subscription subscriptionUpgradesSettings={subscriptionUpgradesSettings} designSettings={designSettings} />
         </div>
       )}
     </div>
@@ -202,7 +202,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
         </div>
 
         <div className="custom-cart-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-          <span  className="custom-cart-public-component-product-tile__price-group custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "14px" }}>$27.00</span>
+          <span className="custom-cart-public-component-product-tile__price-group custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "14px" }}>$27.00</span>
           {showStrikethrough && (
             <span style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$40.00</span>
           )}
@@ -238,11 +238,11 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
       <div style={{ position: "relative", flexShrink: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
         {cartSettings.showSavingsBelowPrices && (
           <span className="custom-cart-public-component-product-tile__savings"
-          style={{
-            background: "#e6f4ea", color: savingColor,
-            fontSize: "10px", fontWeight: 700,
-            padding: "2px 6px", borderRadius: "3px", width: "fit-content",
-          }}>{cartSettings.savingsText} 50%</span>
+            style={{
+              background: "#e6f4ea", color: savingColor,
+              fontSize: "10px", fontWeight: 700,
+              padding: "2px 6px", borderRadius: "3px", width: "fit-content",
+            }}>{cartSettings.savingsText} 50%</span>
         )}
         <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }} className="custom-cart-public-component-product-tile__image-wrapper">
           <img className="upcart-public-component-product-tile__image custom-cart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -293,16 +293,15 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
               </svg>
               MEGA20
             </span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
+              <QtyStepper
+                qty={qty}
+                loadingType={loadingType}
+                onDecrement={() => updateQty("dec")}
+                onIncrement={() => updateQty("inc")}
+              />
+            </div>
           </div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
-          <QtyStepper
-            qty={qty}
-            loadingType={loadingType}
-            onDecrement={() => updateQty("dec")}
-            onIncrement={() => updateQty("inc")}
-          />
         </div>
 
         {!subscriptionUpgradesSettings.enabled && (

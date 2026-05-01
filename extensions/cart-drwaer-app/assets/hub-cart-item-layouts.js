@@ -308,7 +308,7 @@ function modernItemHTML(ctx) {
             ${propertiesHtml}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-            ${isReward ? "" : _deleteBtn(item.key, item.product_title)}
+           ${_deleteBtn(item.key, item.product_title)}
             ${priceBlock}
             ${
               isReward

@@ -492,7 +492,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
           const addRes = await fetch("/cart/add.js", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: variantId, quantity: 1 }),
+            body: JSON.stringify({
+              id: variantId,
+              quantity: 1,
+              properties: {
+                __upcartRecommendation: String(variantId),
+              },
+            }),
           });
 
           if (!addRes.ok && addRes.status !== 409) {
@@ -757,9 +763,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
           compareAtPrice = 0;
         }
 
-      const btnColor = designSettings.buttonColor || "#000000";
-       const btnHoverColor = designSettings.buttonHoverColor || "#333333";
-       const textColor = designSettings.buttonTextColor || "#ffffff";
+        const btnColor = designSettings.buttonColor || "#000000";
+        const btnHoverColor = designSettings.buttonHoverColor || "#333333";
+        const textColor = designSettings.buttonTextColor || "#ffffff";
 
         const subscriptionSettings =
           window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;
@@ -1016,6 +1022,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
                     _hub_addon: isShipping
                       ? "shipping_protection"
                       : "product_addon",
+                    __upcartAddon: String(vid),
                   },
                 }),
               });

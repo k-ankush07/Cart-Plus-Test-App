@@ -4,6 +4,7 @@ import {
   stickyCartModel,
   shopConfigModel,
   shopPlanModel,
+  analyticsModel
 } from "../model/schema.js";
 import crypto from "crypto";
 
@@ -434,6 +435,46 @@ router.delete("/shop-plan", async (req, res) => {
   } catch (error) {
     console.error("DELETE SHOP PLAN ERROR:", error);
     return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.post("/cart-impression", async (req, res) => {
+  try {
+    const { shop, sessionId, userAgent } = req.body;
+
+    if (!shop || !sessionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing shop or sessionId",
+      });
+    }
+
+    const exists = await analyticsModel.findOne({
+      shop,
+      sessionId,
+      eventType: "cart_impression",
+    });
+
+    if (exists) {
+      return res.json({ success: true, duplicate: true });
+    }
+
+    await analyticsModel.create({
+      shop,
+      sessionId,
+      userAgent,
+      eventType: "cart_impression",
+      createdAt: new Date(),
+      meta: {
+        source: "cart_drawer",
+      },
+    });
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error("CART IMPRESSION ERROR:", error);
+    res.status(500).json({ success: false });
   }
 });
 

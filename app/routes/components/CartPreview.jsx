@@ -91,7 +91,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     {!rewardsSettings.enabled && (
                                         <TieredReward rewardsSettings={rewardsSettings} />)}
 
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "top" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} />}
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "top" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} />}
                                     <CartItem
                                         showStrikethrough={designSettings.showStrikethrough}
                                         textColor={designSettings.textColor}
@@ -120,7 +120,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     )}
                                     {/* between_line_items */}
                                     <CustomHtml cartSettings={cartSettings} position="between_line_items" />
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} />}
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency ={currency }/>}
 
                                     {/* below_cart_items */}
                                     <CustomHtml cartSettings={cartSettings} position="below_cart_items" />

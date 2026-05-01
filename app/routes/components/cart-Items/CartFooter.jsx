@@ -27,7 +27,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
 
     return (
         <div
-            className="cart-app__footer upcart-footer"
+            className="cart-app__footer custom-cart-footer"
             style={{
                 backgroundColor: designSettings.accentColor,
                 ...(disableFixedFooter ? { flexShrink: 1, position: "relative" } : {}),
@@ -76,7 +76,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 {/* below_checkout */}
                 <CustomHtml cartSettings={cartSettings} position="below_checkout" />
 
-                {designSettings.continueshopping && (<div className="styles_Footer__continueShopping__ upcart-continue-shopping "
+                {designSettings.continueshopping && (<div className="custom-cart-continue-shopping styles_Footer__continueShopping__ upcart-continue-shopping "
                     style={{ color: designSettings.textColor }}>
                     <p>{cartSettings.continueShoppingText}</p>
                 </div>)}
