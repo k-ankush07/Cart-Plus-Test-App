@@ -129,10 +129,24 @@ const analyticsSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+const orderRevenueSchema = new mongoose.Schema({
+  shop: { type: String, required: true },
+  orderId: { type: String, required: true, unique: true },
+  orderNumber: { type: Number },
+  currency: { type: String, default: "USD" },
+  totalRevenue: { type: Number, default: 0 },
+  baseRevenue: { type: Number, default: 0 },
+  upsellRevenue: { type: Number, default: 0 },
+  addonRevenue: { type: Number, default: 0 },
+  subscriptionRevenue: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+});
+
 const cartModels = mongoose.model("cartItems", cartSchema);
 const stickyCartModel = mongoose.model("stickyCart", stickyCartSchema);
 const shopConfigModel = mongoose.model("shopConfig", shopConfigSchema);
 const shopPlanModel = mongoose.model("shopPlan", shopPlanSchema);
 const analyticsModel = mongoose.model("Analytics", analyticsSchema);
+const orderRevenueModel = mongoose.model("OrderRevenue", orderRevenueSchema);
 
-export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel, analyticsModel, };
+export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel, analyticsModel, orderRevenueModel };

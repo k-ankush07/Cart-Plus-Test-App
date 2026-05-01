@@ -1,0 +1,16 @@
+api_version = "2026-01"
+uid = "2a29ea2b-f9da-cd3f-9f4b-9f837a083eeefeccf51e"
+
+[[extensions]]
+name = "Cart Drawer Revenue Pixel"
+handle = "cart-drawer-revenue-pixel"
+type = "web_pixel"
+runtime_context = "strict"
+
+[extensions.capabilities]
+analytics = true
+
+[extensions.settings]
+type = "object"
+
+[extensions.settings.fields]

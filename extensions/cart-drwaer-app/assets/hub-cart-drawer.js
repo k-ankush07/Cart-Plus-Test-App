@@ -652,15 +652,22 @@ document.addEventListener("change", async (e) => {
   const selling_plan = select.value;
 
   try {
+    // Read existing properties so we don't lose them
+    const cartRes = await fetch("/cart.js");
+    const cart = await cartRes.json();
+    const existingItem = cart.items.find((i) => i.key === key);
+    const existingProps = existingItem?.properties || {};
+
     await fetch("/cart/change.js", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id: key,
         quantity: 1,
-        selling_plan: selling_plan,
+        selling_plan: selling_plan || null,
+        properties: selling_plan
+          ? { ...existingProps, _hub_subscription: "true" }
+          : (({ _hub_subscription, ...rest }) => rest)(existingProps), // remove tag if plan cleared
       }),
     });
 

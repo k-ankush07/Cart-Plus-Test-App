@@ -5,6 +5,7 @@ import {
   shopConfigModel,
   shopPlanModel,
   analyticsModel,
+  orderRevenueModel,
 } from "../model/schema.js";
 import crypto from "crypto";
 
@@ -508,6 +509,114 @@ router.post("/track-event", async (req, res) => {
   } catch (error) {
     console.error("TRACK EVENT ERROR:", error);
     res.status(500).json({ success: false });
+  }
+});
+
+// ─── Order Revenue Tracking ───────────────────────────────────────────────────
+
+router.post("/order-revenue", async (req, res) => {
+  try {
+    const {
+      shop,
+      cartToken,
+      sessionId,
+      currency,
+      totalRevenue,
+      upsellRevenue,
+      addonRevenue,
+      subscriptionRevenue,
+      baseRevenue,
+    } = req.body;
+
+    if (!shop || !cartToken) {
+      return res.status(400).json({ success: false, message: "Missing shop or cartToken" });
+    }
+
+    // Only save if shop has app installed AND has an active published cart
+    const publishedCart = await cartModels.findOne({ shop, status: "published" });
+    if (!publishedCart) {
+      console.warn(`[order-revenue] Rejected: no published cart for shop: ${shop}`);
+      return res.status(403).json({ success: false, message: "No active cart for shop" });
+    }
+
+    await orderRevenueModel.findOneAndUpdate(
+      { orderId: cartToken },
+      {
+        shop,
+        orderId: cartToken,
+        sessionId: sessionId || "",
+        currency: currency || "USD",
+        totalRevenue: totalRevenue || 0,
+        upsellRevenue: upsellRevenue || 0,
+        addonRevenue: addonRevenue || 0,
+        subscriptionRevenue: subscriptionRevenue || 0,
+        baseRevenue: baseRevenue || 0,
+        createdAt: new Date(),
+      },
+      { upsert: true, new: true },
+    );
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("ORDER REVENUE ERROR:", error);
+    return res.status(500).json({ success: false });
+  }
+});
+
+router.get("/revenue-stats", async (req, res) => {
+  try {
+    const { shop } = req.query;
+    if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
+
+    const [totals] = await orderRevenueModel.aggregate([
+      { $match: { shop } },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$totalRevenue" },
+          upsellRevenue: { $sum: "$upsellRevenue" },
+          addonRevenue: { $sum: "$addonRevenue" },
+          subscriptionRevenue: { $sum: "$subscriptionRevenue" },
+          baseRevenue: { $sum: "$baseRevenue" },
+          orderCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Last 30 days daily breakdown
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const daily = await orderRevenueModel.aggregate([
+      { $match: { shop, createdAt: { $gte: thirtyDaysAgo } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          upsellRevenue: { $sum: "$upsellRevenue" },
+          addonRevenue: { $sum: "$addonRevenue" },
+          subscriptionRevenue: { $sum: "$subscriptionRevenue" },
+          baseRevenue: { $sum: "$baseRevenue" },
+          total: { $sum: "$totalRevenue" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    return res.json({
+      success: true,
+      data: {
+        totals: totals || {
+          totalRevenue: 0,
+          upsellRevenue: 0,
+          addonRevenue: 0,
+          subscriptionRevenue: 0,
+          baseRevenue: 0,
+          orderCount: 0,
+        },
+        daily,
+      },
+    });
+  } catch (error) {
+    console.error("REVENUE STATS ERROR:", error);
+    return res.status(500).json({ success: false });
   }
 });
 
