@@ -30,6 +30,7 @@ function trackCartImpressionUnique() {
     },
     body: JSON.stringify({
       shop: window.__SHOPIFY_SHOP__?.domain,
+      cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
       sessionId: getSessionId(),
       userAgent: navigator.userAgent,
     }),

@@ -441,7 +441,7 @@ router.delete("/shop-plan", async (req, res) => {
 
 router.post("/cart-impression", async (req, res) => {
   try {
-    const { shop, sessionId, userAgent } = req.body;
+    const { shop, cartId, sessionId, userAgent } = req.body;
 
     if (!shop || !sessionId) {
       return res.status(400).json({
@@ -462,13 +462,12 @@ router.post("/cart-impression", async (req, res) => {
 
     await analyticsModel.create({
       shop,
+      cartId: cartId || null,
       sessionId,
       userAgent,
       eventType: "cart_impression",
       createdAt: new Date(),
-      meta: {
-        source: "cart_drawer",
-      },
+      meta: { source: "cart_drawer" },
     });
 
     res.json({ success: true });
@@ -481,7 +480,7 @@ router.post("/cart-impression", async (req, res) => {
 // ── Track checkout events (checkout_initiated / checkout_completed) ──────────
 router.post("/track-event", async (req, res) => {
   try {
-    const { shop, sessionId, eventType, userAgent, meta } = req.body;
+    const { shop, cartId, sessionId, eventType, userAgent, meta } = req.body;
 
     if (!shop || !sessionId || !eventType) {
       return res.status(400).json({
@@ -499,6 +498,7 @@ router.post("/track-event", async (req, res) => {
 
     await analyticsModel.create({
       shop,
+      cartId: cartId || null,
       sessionId,
       userAgent: userAgent || "",
       eventType,
@@ -553,6 +553,7 @@ router.post("/order-revenue", async (req, res) => {
       { orderId: cartToken },
       {
         shop,
+        cartId: publishedCart.cartId,
         orderId: cartToken,
         sessionId: sessionId || "",
         currency: currency || "USD",
@@ -569,6 +570,52 @@ router.post("/order-revenue", async (req, res) => {
     return res.json({ success: true });
   } catch (error) {
     console.error("ORDER REVENUE ERROR:", error);
+    return res.status(500).json({ success: false });
+  }
+});
+
+router.get("/cart-stats", async (req, res) => {
+  try {
+    const { shop } = req.query;
+    if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
+
+    const cleanShop = shop.replace("https://", "").replace("http://", "").replace(/\/$/, "");
+
+    const [revenueByCart, analyticsByCart] = await Promise.all([
+      orderRevenueModel.aggregate([
+        { $match: { shop: cleanShop, cartId: { $exists: true, $nin: [null, ""] } } },
+        { $group: { _id: "$cartId", totalRevenue: { $sum: "$totalRevenue" } } },
+      ]),
+      analyticsModel.aggregate([
+        { $match: { shop: cleanShop, cartId: { $exists: true, $nin: [null, ""] } } },
+        { $group: { _id: { cartId: "$cartId", eventType: "$eventType" }, count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const stats = {};
+
+    revenueByCart.forEach(({ _id, totalRevenue }) => {
+      if (!stats[_id]) stats[_id] = { revenue: 0, impressions: 0, checkouts: 0 };
+      stats[_id].revenue = totalRevenue;
+    });
+
+    analyticsByCart.forEach(({ _id: { cartId, eventType }, count }) => {
+      if (!stats[cartId]) stats[cartId] = { revenue: 0, impressions: 0, checkouts: 0 };
+      if (eventType === "cart_impression") stats[cartId].impressions = count;
+      if (eventType === "checkout_initiated") stats[cartId].checkouts = count;
+    });
+
+    const result = {};
+    Object.entries(stats).forEach(([cartId, { revenue, impressions, checkouts }]) => {
+      result[cartId] = {
+        revenue,
+        conversionRate: impressions > 0 ? Math.min((checkouts / impressions) * 100, 100) : 0,
+      };
+    });
+
+    return res.json({ success: true, data: result });
+  } catch (error) {
+    console.error("CART STATS ERROR:", error);
     return res.status(500).json({ success: false });
   }
 });

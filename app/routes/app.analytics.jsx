@@ -228,7 +228,6 @@ export default function Analytics() {
   const daily = stats?.revenue?.daily ?? [];
   const analytics = stats?.analytics ?? {};
 
-  const totalRevenue = totals.totalRevenue ?? 0;
   const cartImpressions = analytics.cart_impression ?? 0;
   const checkouts = analytics.checkout_initiated ?? 0;
   const checkoutComplate = stats?.checkoutsCompleted ?? 0;
@@ -236,6 +235,11 @@ export default function Analytics() {
   const [filters, setFilters] = useState({ addons: true, upsells: true, subscriptions: true });
   const toggleFilter = (key) => setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
 
+    const totalRevenue =
+    (filters.upsells ? (totals.upsellRevenue ?? 0) : 0) +
+    (filters.addons ? (totals.addonRevenue ?? 0) : 0) +
+    (filters.subscriptions ? (totals.subscriptionRevenue ?? 0) : 0);
+    
   const labels = getLabelsFromRange(range.start, range.end);
   const dayMap = buildDailyMap(daily);
 

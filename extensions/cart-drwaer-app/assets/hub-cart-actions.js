@@ -318,6 +318,7 @@ window.hubCheckoutClick = function (e, blockId, btn) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       shop: window.__SHOPIFY_SHOP__?.domain,
+      cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
       sessionId: window._hubGetSessionId?.() || "",
       eventType: "checkout_initiated",
       userAgent: navigator.userAgent,

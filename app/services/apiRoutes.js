@@ -1,3 +1,10 @@
+export const getCartStats = async (apiUrl, shop) => {
+  const res = await fetch(`${apiUrl}/api/cart-stats?shop=${shop}`, {
+    credentials: "include",
+  });
+  return res.json();
+};
+
 export const getCart = async (apiUrl, cartId) => {
   const res = await fetch(`${apiUrl}/api/get-cart/${cartId}`, {
     credentials: "include",
