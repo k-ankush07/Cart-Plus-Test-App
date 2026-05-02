@@ -472,7 +472,6 @@ router.post("/cart-impression", async (req, res) => {
     });
 
     res.json({ success: true });
-
   } catch (error) {
     console.error("CART IMPRESSION ERROR:", error);
     res.status(500).json({ success: false });
@@ -493,7 +492,9 @@ router.post("/track-event", async (req, res) => {
 
     const allowed = ["checkout_initiated", "checkout_completed"];
     if (!allowed.includes(eventType)) {
-      return res.status(400).json({ success: false, message: "Invalid eventType" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid eventType" });
     }
 
     await analyticsModel.create({
@@ -529,14 +530,23 @@ router.post("/order-revenue", async (req, res) => {
     } = req.body;
 
     if (!shop || !cartToken) {
-      return res.status(400).json({ success: false, message: "Missing shop or cartToken" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing shop or cartToken" });
     }
 
     // Only save if shop has app installed AND has an active published cart
-    const publishedCart = await cartModels.findOne({ shop, status: "published" });
+    const publishedCart = await cartModels.findOne({
+      shop,
+      status: "published",
+    });
     if (!publishedCart) {
-      console.warn(`[order-revenue] Rejected: no published cart for shop: ${shop}`);
-      return res.status(403).json({ success: false, message: "No active cart for shop" });
+      console.warn(
+        `[order-revenue] Rejected: no published cart for shop: ${shop}`,
+      );
+      return res
+        .status(403)
+        .json({ success: false, message: "No active cart for shop" });
     }
 
     await orderRevenueModel.findOneAndUpdate(
@@ -566,10 +576,19 @@ router.post("/order-revenue", async (req, res) => {
 router.get("/revenue-stats", async (req, res) => {
   try {
     const { shop } = req.query;
-    if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
 
+    const cleanShop = shop
+      ?.replace("https://", "")
+      .replace("http://", "")
+      .replace(/\/$/, "");
+
+    if (!shop) {
+      return res.status(400).json({ success: false, message: "Missing shop" });
+    }
+
+    // ───── Revenue Totals ─────
     const [totals] = await orderRevenueModel.aggregate([
-      { $match: { shop } },
+      { $match: { shop: cleanShop } },
       {
         $group: {
           _id: null,
@@ -583,10 +602,11 @@ router.get("/revenue-stats", async (req, res) => {
       },
     ]);
 
-    // Last 30 days daily breakdown
+    // ───── Last 30 days revenue ─────
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const daily = await orderRevenueModel.aggregate([
-      { $match: { shop, createdAt: { $gte: thirtyDaysAgo } } },
+
+    const dailyRevenue = await orderRevenueModel.aggregate([
+      { $match: { shop: cleanShop, createdAt: { $gte: thirtyDaysAgo } } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -600,18 +620,44 @@ router.get("/revenue-stats", async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
+    // ───── Analytics Data (NEW) ─────
+    const analyticsStats = await analyticsModel.aggregate([
+      { $match: { shop: cleanShop } },
+      {
+        $group: {
+          _id: "$eventType",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Convert to object
+    const analyticsFormatted = {};
+    analyticsStats.forEach((item) => {
+      analyticsFormatted[item._id] = item.count;
+    });
+
+    const checkoutsCompleted = await orderRevenueModel.countDocuments({
+      shop: cleanShop,
+    });
+
+    // ───── FINAL RESPONSE ─────
     return res.json({
       success: true,
       data: {
-        totals: totals || {
-          totalRevenue: 0,
-          upsellRevenue: 0,
-          addonRevenue: 0,
-          subscriptionRevenue: 0,
-          baseRevenue: 0,
-          orderCount: 0,
+        revenue: {
+          totals: totals || {
+            totalRevenue: 0,
+            upsellRevenue: 0,
+            addonRevenue: 0,
+            subscriptionRevenue: 0,
+            baseRevenue: 0,
+            orderCount: 0,
+          },
+          daily: dailyRevenue,
         },
-        daily,
+        analytics: analyticsFormatted,
+        checkoutsCompleted,
       },
     });
   } catch (error) {
