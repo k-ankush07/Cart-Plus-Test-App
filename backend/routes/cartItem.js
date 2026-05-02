@@ -581,7 +581,7 @@ router.get("/cart-stats", async (req, res) => {
 
     const cleanShop = shop.replace("https://", "").replace("http://", "").replace(/\/$/, "");
 
-    const [revenueByCart, analyticsByCart] = await Promise.all([
+    const [revenueByCart, analyticsByCart, shopAnalytics, publishedCart] = await Promise.all([
       orderRevenueModel.aggregate([
         { $match: { shop: cleanShop, cartId: { $exists: true, $nin: [null, ""] } } },
         { $group: { _id: "$cartId", totalRevenue: { $sum: "$totalRevenue" } } },
@@ -590,6 +590,12 @@ router.get("/cart-stats", async (req, res) => {
         { $match: { shop: cleanShop, cartId: { $exists: true, $nin: [null, ""] } } },
         { $group: { _id: { cartId: "$cartId", eventType: "$eventType" }, count: { $sum: 1 } } },
       ]),
+      // Shop-level fallback: all events regardless of cartId
+      analyticsModel.aggregate([
+        { $match: { shop: cleanShop } },
+        { $group: { _id: "$eventType", count: { $sum: 1 } } },
+      ]),
+      cartModels.findOne({ shop: cleanShop, isPublished: true }).lean(),
     ]);
 
     const stats = {};
@@ -604,6 +610,22 @@ router.get("/cart-stats", async (req, res) => {
       if (eventType === "cart_impression") stats[cartId].impressions = count;
       if (eventType === "checkout_initiated") stats[cartId].checkouts = count;
     });
+
+    // If the published cart has no per-cart analytics, fall back to shop-level totals
+    if (publishedCart?.cartId) {
+      const pid = publishedCart.cartId;
+      const hasPerCartAnalytics =
+        stats[pid] && (stats[pid].impressions > 0 || stats[pid].checkouts > 0);
+
+      if (!hasPerCartAnalytics) {
+        const shopImpressions = shopAnalytics.find((e) => e._id === "cart_impression")?.count || 0;
+        const shopCheckouts = shopAnalytics.find((e) => e._id === "checkout_initiated")?.count || 0;
+
+        if (!stats[pid]) stats[pid] = { revenue: 0, impressions: 0, checkouts: 0 };
+        stats[pid].impressions = shopImpressions;
+        stats[pid].checkouts = shopCheckouts;
+      }
+    }
 
     const result = {};
     Object.entries(stats).forEach(([cartId, { revenue, impressions, checkouts }]) => {

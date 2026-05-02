@@ -55,7 +55,7 @@ export const action = async ({ request }) => {
       return new Response();
     }
 
-    const totalRevenue = upsellRevenue + addonRevenue + subscriptionRevenue + baseRevenue;
+    const totalRevenue = upsellRevenue + addonRevenue + subscriptionRevenue;
 
     const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
 

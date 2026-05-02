@@ -336,7 +336,7 @@ window.hubUtils = {
       if (!data) return;
 
       const input = document.querySelector('input[name="country_code"]');
-      const countryCode = input?.value || window.__SHOPIFY_CURRENCY__?.code;
+      const countryCode = input?.value || window.__SHOPIFY_COUNTRY_CODE__ || window.__SHOPIFY_SHOP__?.locale?.split("-")[1];
       if (!countryCode) return;
 
       const countryData = (data.countries || []).find(

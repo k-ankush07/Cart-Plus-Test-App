@@ -61,7 +61,6 @@ export const loader = async ({ request }) => {
 
 export default function AppCarts() {
     const { shop, apiUrl, carts: initialCarts, cartStats } = useLoaderData();
-    console.log(initialCarts, cartStats)
     const navigate = useNavigate();
     const [deleteModal, setDeleteModal] = useState(false);
     const [selectedCart, setSelectedCart] = useState(null);

@@ -13,6 +13,8 @@
     format: "{{ shop.money_format }}"
   };
 
+  window.__SHOPIFY_COUNTRY_CODE__ = "{{ localization.country.iso_code }}";
+
   window.__SHOPIFY_SHOP__ = {
     name: {{ shop.name | json }},
     domain: {{ shop.domain | json }},
