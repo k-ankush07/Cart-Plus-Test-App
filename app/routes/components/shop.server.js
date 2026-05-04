@@ -32,6 +32,7 @@ export const shopLoader = async (request) => {
       currency: shopData?.data?.shop?.currencyCode || "",
       apiUrl: process.env.PUBLIC_REACT_APP_API_URL,
       accessToken,
+      admin,
     };
   } catch (error) {
     console.error("Shop Loader Error:", error);

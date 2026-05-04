@@ -1,8 +1,12 @@
-export const getCartStats = async (apiUrl, shop) => {
-  const res = await fetch(`${apiUrl}/api/cart-stats?shop=${shop}`, {
-    credentials: "include",
-  });
-  return res.json();
+export const getCartStats = async (apiUrl, shop, startDate, endDate) => {
+    const params = new URLSearchParams({ shop });
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+    
+    const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
+        credentials: "include",
+    });
+    return res.json();
 };
 
 export const getCart = async (apiUrl, cartId) => {

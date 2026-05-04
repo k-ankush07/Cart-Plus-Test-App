@@ -10,7 +10,7 @@ import {
 import crypto from "crypto";
 
 const generateNewCartId = () => {
-  return "cart_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+  return "cart_" + Date.now() + "_" + Math.random().toString(36).slice(2, 11);
 };
 
 const router = express.Router();
@@ -77,7 +77,7 @@ router.get("/get-cart/:cartId", async (req, res) => {
 
 router.post("/create-cart", async (req, res) => {
   try {
-    const { shop, shopEmail, storeOwner } = req.body;
+    const { shop, shopEmail, storeOwner, cartId: clientCartId } = req.body;
 
     if (!shop || !shopEmail || !storeOwner) {
       return res.status(400).json({
@@ -90,7 +90,7 @@ router.post("/create-cart", async (req, res) => {
 
     const cartName = `Untitled cart ${count + 1}`;
 
-    const cartId = crypto.randomUUID();
+    const cartId = clientCartId || crypto.randomUUID();
 
     const newCart = await cartModels.create({
       shop,
@@ -575,71 +575,122 @@ router.post("/order-revenue", async (req, res) => {
 });
 
 router.get("/cart-stats", async (req, res) => {
-  try {
-    const { shop } = req.query;
-    if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
+    try {
+        const { shop, startDate, endDate } = req.query;
+        if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
 
-    const cleanShop = shop.replace("https://", "").replace("http://", "").replace(/\/$/, "");
+        const cleanShop = shop.replace("https://", "").replace("http://", "").replace(/\/$/, "");
 
-    const [revenueByCart, analyticsByCart, shopAnalytics, publishedCart] = await Promise.all([
-      orderRevenueModel.aggregate([
-        { $match: { shop: cleanShop, cartId: { $exists: true, $nin: [null, ""] } } },
-        { $group: { _id: "$cartId", totalRevenue: { $sum: "$totalRevenue" } } },
-      ]),
-      analyticsModel.aggregate([
-        { $match: { shop: cleanShop, cartId: { $exists: true, $nin: [null, ""] } } },
-        { $group: { _id: { cartId: "$cartId", eventType: "$eventType" }, count: { $sum: 1 } } },
-      ]),
-      // Shop-level fallback: all events regardless of cartId
-      analyticsModel.aggregate([
-        { $match: { shop: cleanShop } },
-        { $group: { _id: "$eventType", count: { $sum: 1 } } },
-      ]),
-      cartModels.findOne({ shop: cleanShop, isPublished: true }).lean(),
-    ]);
+        // Build date filter
+        const dateFilter = {};
+        if (startDate) dateFilter.$gte = new Date(startDate);
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999); // include full end day
+            dateFilter.$lte = end;
+        }
+        const hasDateFilter = Object.keys(dateFilter).length > 0;
 
-    const stats = {};
+        const revenueMatch = {
+            shop: cleanShop,
+            cartId: { $exists: true, $nin: [null, ""] },
+            ...(hasDateFilter && { createdAt: dateFilter }),
+        };
 
-    revenueByCart.forEach(({ _id, totalRevenue }) => {
-      if (!stats[_id]) stats[_id] = { revenue: 0, impressions: 0, checkouts: 0 };
-      stats[_id].revenue = totalRevenue;
-    });
+        const analyticsMatch = {
+            shop: cleanShop,
+            cartId: { $exists: true, $nin: [null, ""] },
+            ...(hasDateFilter && { createdAt: dateFilter }),
+        };
 
-    analyticsByCart.forEach(({ _id: { cartId, eventType }, count }) => {
-      if (!stats[cartId]) stats[cartId] = { revenue: 0, impressions: 0, checkouts: 0 };
-      if (eventType === "cart_impression") stats[cartId].impressions = count;
-      if (eventType === "checkout_initiated") stats[cartId].checkouts = count;
-    });
+        const shopAnalyticsMatch = {
+            shop: cleanShop,
+            ...(hasDateFilter && { createdAt: dateFilter }),
+        };
 
-    // If the published cart has no per-cart analytics, fall back to shop-level totals
-    if (publishedCart?.cartId) {
-      const pid = publishedCart.cartId;
-      const hasPerCartAnalytics =
-        stats[pid] && (stats[pid].impressions > 0 || stats[pid].checkouts > 0);
+        const shopRevenueMatch = {
+            shop: cleanShop,
+            ...(hasDateFilter && { createdAt: dateFilter }),
+        };
 
-      if (!hasPerCartAnalytics) {
-        const shopImpressions = shopAnalytics.find((e) => e._id === "cart_impression")?.count || 0;
-        const shopCheckouts = shopAnalytics.find((e) => e._id === "checkout_initiated")?.count || 0;
+        const [revenueByCart, analyticsByCart, shopAnalytics, publishedCart, shopRevenueBreakdown] = await Promise.all([
+            orderRevenueModel.aggregate([
+                { $match: revenueMatch },
+                { $group: { _id: "$cartId", totalRevenue: { $sum: "$totalRevenue" } } },
+            ]),
+            analyticsModel.aggregate([
+                { $match: analyticsMatch },
+                { $group: { _id: { cartId: "$cartId", eventType: "$eventType" }, count: { $sum: 1 } } },
+            ]),
+            analyticsModel.aggregate([
+                { $match: shopAnalyticsMatch },
+                { $group: { _id: "$eventType", count: { $sum: 1 } } },
+            ]),
+            cartModels.findOne({ shop: cleanShop, isPublished: true }).lean(),
+            orderRevenueModel.aggregate([
+                { $match: shopRevenueMatch },
+                {
+                    $group: {
+                        _id: null,
+                        addonRevenue: { $sum: "$addonRevenue" },
+                        upsellRevenue: { $sum: "$upsellRevenue" },
+                        subscriptionRevenue: { $sum: "$subscriptionRevenue" },
+                    },
+                },
+            ]),
+        ]);
 
-        if (!stats[pid]) stats[pid] = { revenue: 0, impressions: 0, checkouts: 0 };
-        stats[pid].impressions = shopImpressions;
-        stats[pid].checkouts = shopCheckouts;
-      }
+        const stats = {};
+
+        revenueByCart.forEach(({ _id, totalRevenue }) => {
+            if (!stats[_id]) stats[_id] = { revenue: 0, impressions: 0, checkouts: 0 };
+            stats[_id].revenue = totalRevenue;
+        });
+
+        analyticsByCart.forEach(({ _id: { cartId, eventType }, count }) => {
+            if (!stats[cartId]) stats[cartId] = { revenue: 0, impressions: 0, checkouts: 0 };
+            if (eventType === "cart_impression") stats[cartId].impressions = count;
+            if (eventType === "checkout_initiated") stats[cartId].checkouts = count;
+        });
+
+        if (publishedCart?.cartId) {
+            const pid = publishedCart.cartId;
+            const hasPerCartAnalytics =
+                stats[pid] && (stats[pid].impressions > 0 || stats[pid].checkouts > 0);
+
+            if (!hasPerCartAnalytics) {
+                const shopImpressions = shopAnalytics.find((e) => e._id === "cart_impression")?.count || 0;
+                const shopCheckouts = shopAnalytics.find((e) => e._id === "checkout_initiated")?.count || 0;
+
+                if (!stats[pid]) stats[pid] = { revenue: 0, impressions: 0, checkouts: 0 };
+                stats[pid].impressions = shopImpressions;
+                stats[pid].checkouts = shopCheckouts;
+            }
+        }
+
+        const result = {};
+        Object.entries(stats).forEach(([cartId, { revenue, impressions, checkouts }]) => {
+            result[cartId] = {
+                revenue,
+                conversionRate: impressions > 0 ? Math.min((checkouts / impressions) * 100, 100) : 0,
+            };
+        });
+
+        const breakdown = shopRevenueBreakdown[0] || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 };
+
+        return res.json({
+            success: true,
+            data: result,
+            shopRevenue: {
+                addonRevenue: breakdown.addonRevenue || 0,
+                upsellRevenue: breakdown.upsellRevenue || 0,
+                subscriptionRevenue: breakdown.subscriptionRevenue || 0,
+            },
+        });
+    } catch (error) {
+        console.error("CART STATS ERROR:", error);
+        return res.status(500).json({ success: false });
     }
-
-    const result = {};
-    Object.entries(stats).forEach(([cartId, { revenue, impressions, checkouts }]) => {
-      result[cartId] = {
-        revenue,
-        conversionRate: impressions > 0 ? Math.min((checkouts / impressions) * 100, 100) : 0,
-      };
-    });
-
-    return res.json({ success: true, data: result });
-  } catch (error) {
-    console.error("CART STATS ERROR:", error);
-    return res.status(500).json({ success: false });
-  }
 });
 
 router.get("/revenue-stats", async (req, res) => {

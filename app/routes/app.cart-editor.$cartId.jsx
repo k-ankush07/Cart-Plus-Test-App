@@ -6,7 +6,7 @@ import CartPreview from "./components/CartPreview";
 import MainContent from "./components/MainContent";
 import CartLayout from "./components/CartLayout";
 import { shopLoader } from "./components/shop.server";
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, useSearchParams } from "react-router-dom";
 import { getCart, updateCart } from "../services/apiRoutes";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -50,7 +50,28 @@ export const loader = async ({ request, params }) => {
 export default function CartEditor() {
   const { shop, apiUrl, cart, accessToken, currency } = useLoaderData();
 
-  const [activeTab, setActiveTab] = useState("Design");
+  const [searchParams] = useSearchParams();
+
+  const MODULE_TAB_MAP = {
+    recommendations: "Recommendations",
+    rewards: "Tiered rewards",
+    "triggered-rewards": "Triggered rewards",
+    upsells: "Upsells",
+    addons: "Add-ons",
+    announcements: "Announcements",
+    "subscription-upgrades": "Subscription upgrades",
+    "additional-notes": "Additional notes",
+    "discount-codes": "Discount codes",
+    "express-payments": "Express payments",
+    "trust-badges": "Trust badges",
+    header: "Header",
+    design: "Design",
+    settings: "Settings",
+  };
+
+  const [activeTab, setActiveTab] = useState(
+    () => MODULE_TAB_MAP[searchParams.get("module")] || "Design"
+  );
 
   const [designSettings, setDesignSettings] = useState(
     cart?.designSettings || defaultSettings
