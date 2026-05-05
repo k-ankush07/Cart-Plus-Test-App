@@ -174,23 +174,39 @@ const convOpts = {
 
 // ─── SmallCard ────────────────────────────────────────────────────────────────
 
-function SmallCard({ title, value, tooltip, valueTooltip }) {
+function SmallCard({ title, value, tooltip, valueTooltip, icon }) {
   return (
     <Card>
-      <Box minHeight="40px">
-        <BlockStack gap="100">
-          <InlineStack>
+      <Box
+        paddingBlockStart="100"
+        paddingBlockEnd="100"
+        paddingInlineStart="300"
+        paddingInlineEnd="300">
+        <InlineStack align="space-between" blockAlign="center" wrap={false}>
+
+          {/* Left: title + value */}
+          <BlockStack gap="100">
             <Tooltip content={valueTooltip} hasUnderline activatorWrapper="span">
               <Text variant="bodyMd" tone="subdued" as="span">{title}</Text>
             </Tooltip>
-          </InlineStack>
-          <InlineStack gap="200" blockAlign="center">
-            <Text variant="headingLg" as="h5">{value}</Text>
-            <Tooltip content={tooltip} hasUnderline activatorWrapper="span">
-              <FlatIcon />
-            </Tooltip>
-          </InlineStack>
-        </BlockStack>
+            <InlineStack align="left" gap="200" blockAlign="center">
+              <Text variant="headingLg" as="h5">{value}</Text>
+              <Tooltip content={tooltip} hasUnderline activatorWrapper="span">
+                <FlatIcon />
+              </Tooltip>
+            </InlineStack>
+          </BlockStack>
+
+          {/* Right: icon */}
+          {icon && (
+            <img
+              src={icon}
+              alt=""
+              style={{ height: "50px", width: "50px", objectFit: "contain" }}
+            />
+          )}
+
+        </InlineStack>
       </Box>
     </Card>
   );
@@ -235,11 +251,11 @@ export default function Analytics() {
   const [filters, setFilters] = useState({ addons: true, upsells: true, subscriptions: true });
   const toggleFilter = (key) => setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
 
-    const totalRevenue =
+  const totalRevenue =
     (filters.upsells ? (totals.upsellRevenue ?? 0) : 0) +
     (filters.addons ? (totals.addonRevenue ?? 0) : 0) +
     (filters.subscriptions ? (totals.subscriptionRevenue ?? 0) : 0);
-    
+
   const labels = getLabelsFromRange(range.start, range.end);
   const dayMap = buildDailyMap(daily);
 
@@ -422,24 +438,27 @@ export default function Analytics() {
                 <SmallCard
                   title="Cart impressions"
                   value={cartImpressions}
+                  icon="https://hubsyntax.com/cart-images/Layer_1.png"
                   valueTooltip="An impression is a unique time a customer has seen the cart."
                   tooltip="Change in cart impressions compared to previous period. Previous cart impressions: 0"
                 />
                 <SmallCard
                   title="Checkouts completed"
                   value={checkoutComplate}
+                  icon="https://hubsyntax.com/cart-images/Layer_1%20(1).png"
                   valueTooltip="This is the number of items orders completed."
                   tooltip="Change in checkouts compared to previous period. Previous checkouts: 0"
                 />
-                <SmallCard
+                {/* <SmallCard
                   title="Abandoned cart"
                   value={abandonedCart}
                   valueTooltip="Number of carts that were opened but did not proceed to checkout."
                   tooltip="Change in abandoned carts compared to previous period. Previous abandoned carts: 0"
-                />
+                /> */}
                 <SmallCard
                   title="Cart Checkout"
                   value={checkouts}
+                  icon="https://hubsyntax.com/cart-images/Group%201707479976.png"
                   valueTooltip="Number of times a customer initiated the checkout process."
                   tooltip="Change in cart checkouts compared to previous period. Previous cart checkouts: 0"
                 />
@@ -460,7 +479,7 @@ export default function Analytics() {
                     <Button icon={DownloadIcon} size="slim" onClick={() => downloadCSV(convChartData, "conversion.csv", true)}
                       accessibilityLabel="Download conversion data" />
                   </InlineStack>
-                  <Box style={{ height: 270 }}>
+                  <Box style={{ height: 203}}>
                     <Line data={convChartData} options={convOpts} />
                   </Box>
                 </BlockStack>
