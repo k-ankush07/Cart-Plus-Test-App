@@ -9,8 +9,9 @@ body,
     background: #fff !important;
     color: #303030 !important;
     border: 1px solid #c9cccf !important;
-    box-shadow: 0 1px 0 rgba(0,0,0,.05) !important;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .05) !important;
 }
+
 .Polaris-Page-Header__PrimaryActionWrapper .Polaris-Button--primary:hover {
     background: #f6f6f7 !important;
 }
@@ -295,7 +296,7 @@ body,
 }
 
 .subscription-upgrade-btn:hover {
-     color: var(--btn-hover-text);
+    color: var(--btn-hover-text);
 }
 
 .cart-app__checkout:hover {
@@ -347,7 +348,7 @@ body,
 .tier-title {
     font-size: 14px;
     font-weight: 500;
-    margin-bottom: 5px;
+    margin-bottom: 15px;
     text-align: center;
 }
 
@@ -412,13 +413,14 @@ body,
 
 .step-text {
     font-size: 10px;
-    margin-top: 4px;
-    color: #555;
+    margin-top: 6px;
+    color: #2D2D2D;
     text-align: center;
     line-height: 1.2;
     white-space: nowrap;
     position: absolute;
     top: 100%;
+    font-weight: 600;
 }
 
 .tier-cell:last-child .step-text {
@@ -446,21 +448,27 @@ body,
     display: flex;
     flex-direction: column;
     scrollbar-width: none;
-    height: 90.7%;
+    height:100%;
     overflow: hidden;
     overflow-y: auto;
 }
 
 .cart_CartPreview__empty__ h3 {
-    font-size: 20px;
+    font-size: 32px;
     font-weight: 600;
-    margin-bottom: 8px;
+    line-height: 16px;
+}
+
+.styles_CartPreview__empty__ {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
 }
 
 .custom-cart-internal-upsell__header {
     text-align: center;
-    padding: 28px;
-    font-size: 18px;
+    font-size: 14px;
 }
 
 .upcart-internal-upsell__shop-now-button {
@@ -630,16 +638,14 @@ body,
 
 .custom-cart-internal-style__title-large_button {
     box-sizing: border-box;
-    margin: 20px 30px;
-    padding: 8px;
+    padding: 10px;
     text-align: center;
     text-decoration: none;
     width: calc(100% - 60px);
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
+    font-weight: 700;
     background: black;
     color: white;
+    font-size: 18px;
 }
 
 .custom-cart-internal-style__title-large_button a {
@@ -1165,10 +1171,10 @@ span.icon.color-base.tone-auto.size-base {
 }
 
 .Polaris-ProgressBar__Indicator {
-  background-color: #1a1a1a !important;
+    background-color: #1a1a1a !important;
 }
 
-span.upcart-rewards-tier-icon{
+span.upcart-rewards-tier-icon {
     display: flex;
 }
 
@@ -1188,48 +1194,50 @@ span.upcart-rewards-tier-icon{
 
 /* Live Status Dot */
 .carts_liveStatusDot__XROK5 {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
 .carts_liveStatusPulse___dT4L {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background-color: rgba(58, 124, 82, 0.45);
-  border-radius: 3px;
-  animation: liveStatusPulse 3s ease-out 0s infinite;
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: rgba(58, 124, 82, 0.45);
+    border-radius: 3px;
+    animation: liveStatusPulse 3s ease-out 0s infinite;
 }
 
 .carts_liveStatusCore__wJ4K1 {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 8px;
-  height: 8px;
-  background-color: rgb(58, 124, 82);
-  border-radius: 3px;
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 8px;
+    height: 8px;
+    background-color: rgb(58, 124, 82);
+    border-radius: 3px;
 }
 
 /* Pulse keyframe animation */
 @keyframes liveStatusPulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(2.5);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
 }
 
 .compact-cart-table .Polaris-IndexTable__TableHeading {

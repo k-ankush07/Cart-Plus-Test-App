@@ -251,32 +251,31 @@ export default function Recommendation({ recommendationsSettings, currency, cart
         <div className="cart_CartPreview__empty__body custom-cart-recommendation-module">
 
             <div className="cart_CartPreview__empty__">
-                <h3>{cartSettings.emptyCartMessage}</h3>
-            </div>
+                <div className="styles_CartPreview__empty__">
+                    <h3>{cartSettings.emptyCartMessage}</h3>
+                    {/* HEADER */}
+                    <div className="custom-cart-internal-upsell__header upcart-recommendations-title" style={{ color: designSettings.textColor || "#6b7280", }}>
+                        <p dangerouslySetInnerHTML={{
+                            __html: recommendationsSettings.headerText
+                        }} />
+                    </div>
 
-            <div className="custom-cart-internal-upsell custom-cart-public-upsell">
-
-                {/* HEADER */}
-                <div className="custom-cart-internal-upsell__header upcart-recommendations-title" style={{ color: designSettings.textColor || "#6b7280", }}>
-                    <p dangerouslySetInnerHTML={{
-                        __html: recommendationsSettings.headerText
-                    }} />
-                </div>
-
-                {/* BUTTON */}
-                {recommendationsSettings.showShopNowButton && (
-                    <div className="custom-cart-internal-style__title-large_button" style={{
+                    {/* BUTTON */}
+                    {recommendationsSettings.showShopNowButton && (
+                        <div className="custom-cart-internal-style__title-large_button" style={{
                             borderRadius: `${designSettings.buttonRadius}px`,
                             backgroundColor: designSettings.buttonColor,
                             "--btn-hover-text": designSettings.buttonHoverColor,
                             "--btn-text": designSettings.buttonTextColor,
                         }}>
-                        <a href={recommendationsSettings.buttonUrl} className="upcart-recommendations-shop-now-button">
-                            {recommendationsSettings.buttonText}
-                        </a>
-                    </div>
-                )}
-
+                            <a href={recommendationsSettings.buttonUrl} className="upcart-recommendations-shop-now-button">
+                                {recommendationsSettings.buttonText}
+                            </a>
+                        </div>
+                    )}
+                </div>
+            </div>
+            <div className="custom-cart-internal-upsell custom-cart-public-upsell">
                 <div className="custom-cart-internal-style__title-large" style={{ color: designSettings.textColor || "#6b7280", }}>
                     <p dangerouslySetInnerHTML={{
                         __html: recommendationsSettings.productHeaderText

@@ -1950,10 +1950,11 @@ span.upsell-text.suggestion-product {
   width: 100%;
   text-align: center;
   padding: 10px;
-  font-weight: 400;
+  font-weight: 700;
   text-decoration: none;
   background: var(--btn-bg);
   color: var(--btn-text);
+  font-size: 18px;
 }
 
 .hub-public-upsell__shop-now-button:hover {
