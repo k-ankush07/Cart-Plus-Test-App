@@ -2,26 +2,7 @@ import { useState } from "react";
 
 const ShippingIcon = () => (
     <div style={{ position: "relative", width: "44px", height: "44px", flexShrink: 0 }}>
-        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-            <rect width="44" height="44" rx="8" fill="#f0f0f0" />
-            <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fontSize="22">📦</text>
-        </svg>
-        <div style={{
-            position: "absolute",
-            bottom: -2,
-            right: -2,
-            width: 18,
-            height: 18,
-            borderRadius: "50%",
-            background: "#1a73e8",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-        }}>
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-        </div>
+        <img src="https://cdn.shopify.com/s/files/1/0733/2531/4260/files/shipping-protection.png" alt="" style={{ width: '100%' }} />
     </div>
 );
 
@@ -34,7 +15,7 @@ const Toggle = ({ on, onChange }) => (
             width: 40,
             height: 22,
             borderRadius: 11,
-            background: on ? "#00a651" : "#c4c4c4",
+            background: on ? "#000" : "#c4c4c4",
             border: "none",
             padding: 2,
             cursor: "pointer",
@@ -46,13 +27,13 @@ const Toggle = ({ on, onChange }) => (
         }}
     >
         <div className="custom-cart-public-addons__toggle-slider"
-        style={{
-            width: 18,
-            height: 18,
-            borderRadius: "50%",
-            background: "#fff",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-        }} />
+            style={{
+                width: 18,
+                height: 18,
+                borderRadius: "50%",
+                background: "#fff",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            }} />
     </button>
 );
 
@@ -95,7 +76,7 @@ export default function AddOns({ addonsSettings, currency }) {
                     </span>
                     <span className="cart-addon-tile__price upcart-addons-price upcart-public-addons__price custom-cart-public-addons__content-price">
                         {isShipping ? (
-                            `$${addonsSettings.price}`
+                            ``
                         ) : (
                             <>
                                 {product?.compareAtPrice && (
@@ -112,6 +93,7 @@ export default function AddOns({ addonsSettings, currency }) {
                         : product?.description || ""}
                 </p>
             </div>
+            {isShipping && (<span className="cart-addon-tile__price">{addonsSettings.price} {currency}</span>)}
 
             {/* TOGGLE */}
             <div className="upcart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
