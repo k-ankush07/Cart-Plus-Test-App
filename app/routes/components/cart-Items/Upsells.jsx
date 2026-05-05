@@ -155,30 +155,6 @@ export default function Upsells({ upsellsSettings, designSettings, currency }) {
                             </h3>
                         </a>
 
-                        <p className="price custom-cart-public-component-upsell-tile__price-row" style={{ color: designSettings.textColor || "#6b7280", }}>
-
-                            {selectedVariant.compareAtPrice &&
-                                parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
-                                    <span className="compare-price custom-cart-public-component-upsell-tile__price-compare-at" style={{ color: designSettings.textColor || "#6b7280", }}>
-                                        {selectedVariant.compareAtPrice} {currency}
-                                    </span>
-                                )}
-
-                            <span className="sale-price custom-cart-public-component-upsell-tile__price" style={{ color: designSettings.textColor || "#6b7280", }}>
-                                {selectedVariant.price} {currency}
-                            </span>
-
-                        </p>
-
-                        <div className="upcart-upsell-item-price-row">
-                            {selectedVariant.compareAtPrice &&
-                                parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
-                                    <span className="compare-price upcart-upsell-item-compare-price" >
-                                        {selectedVariant.compareAtPrice}
-                                    </span>
-                                )}
-                        </div>
-
                         {showReviews && (
                             <div className="rating custom-cart-public-component-upsell-tile__rating-row">
                                 <span className="stars custom-cart-public-component-upsell-tile__stars">
@@ -190,32 +166,47 @@ export default function Upsells({ upsellsSettings, designSettings, currency }) {
                             </div>
                         )}
 
-                        <div className="upcart-internal-component-upsell-tile__variant-row custom-cart-public-component-upsell-tile__variant-row" style={{ color: designSettings.textColor || "#6b7280", }}>
-                            <select
-                                className="upcart-upsell-item-variant-selector"
-                                value={selectedVariant.id}
-                                onChange={(e) => handleVariantChange(product.id, e.target.value)}
-                                style={{ color: designSettings.textColor || "#6b7280", }}
-                            >
-                                {product.variants.map((variant) => (
-                                    <option key={variant.id} value={variant.id}>
-                                        {variant.title}
-                                    </option>
-                                ))}
-                            </select>
+                        <p className="price custom-cart-public-component-upsell-tile__price-row" style={{ color: designSettings.textColor || "#6b7280", }}>
 
-                            <button type="button" className="upcart-internal-component__button custom-cart-public-component__button"
-                                style={{
-                                    borderRadius: `${designSettings.buttonRadius}px`,
-                                    backgroundColor: designSettings.buttonColor,
-                                    "--btn-hover-text": designSettings.buttonHoverColor,
-                                    "--btn-text": designSettings.buttonTextColor,
-                                }}
-                                onClick={hanldeAddProduct}>
-                                {loading ? (<span className="loader"></span>) : (buttonText)}
-                            </button>
-                        </div>
+                            <span className="sale-price custom-cart-public-component-upsell-tile__price" style={{ color: designSettings.textColor || "#6b7280", }}>
+                                {selectedVariant.price} {currency}
+                            </span>
+
+                            {selectedVariant.compareAtPrice &&
+                                parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
+                                    <span className="compare-price custom-cart-public-component-upsell-tile__price-compare-at" style={{ color: designSettings.textColor || "#6b7280", }}>
+                                        {selectedVariant.compareAtPrice} {currency}
+                                    </span>
+                                )}
+                        </p>
+
                     </div>
+
+                </div>
+                <div className="upcart-internal-component-upsell-tile__variant-row custom-cart-public-component-upsell-tile__variant-row" style={{ color: designSettings.textColor || "#6b7280", }}>
+                    <select
+                        className="upcart-upsell-item-variant-selector"
+                        value={selectedVariant.id}
+                        onChange={(e) => handleVariantChange(product.id, e.target.value)}
+                        style={{ color: designSettings.textColor || "#6b7280", }}
+                    >
+                        {product.variants.map((variant) => (
+                            <option key={variant.id} value={variant.id}>
+                                {variant.title}
+                            </option>
+                        ))}
+                    </select>
+
+                    <button type="button" className="upcart-internal-component__button custom-cart-public-component__button"
+                        style={{
+                            borderRadius: `${designSettings.buttonRadius}px`,
+                            backgroundColor: designSettings.buttonColor,
+                            "--btn-hover-text": designSettings.buttonHoverColor,
+                            "--btn-text": designSettings.buttonTextColor,
+                        }}
+                        onClick={hanldeAddProduct}>
+                        {loading ? (<span className="loader"></span>) : (buttonText)}
+                    </button>
                 </div>
             </div>
         );
@@ -255,14 +246,14 @@ export default function Upsells({ upsellsSettings, designSettings, currency }) {
 
     return (
         <div
-            className={`upcart-internal-upsell 
+            className={`custom-cart-internal-upsell upcart-internal-upsell 
   upcart-public-upsell 
   upcart-upsells 
   upcart-upsells-module 
-  ${upsellsSettings?.position === "bottom" ? "hub-upsell-product" : ""}`}
+  ${upsellsSettings?.position === "bottom" ? "hub-upsell-product" : "custom-upsell-top"}`}
         >
             {title && (
-                <div className="upcart-internal-style__title-large upcart-upsells-title">
+                <div className="upcart-internal-style__title-large upcart-upsells-title custom-cart-internal-style__title-large" style={{ color: designSettings.textColor || "#6b7280", }}>
                     <p dangerouslySetInnerHTML={{ __html: title }} />
                 </div>
             )}
@@ -284,7 +275,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency }) {
                             updateProgress(swiper);
                         }}
                         spaceBetween={12}
-                        slidesPerView={products.length <= 1 ? 1 : 1.5}
+                        slidesPerView={products.length <= 1 ? 1 : 1.2}
                     >
                         {products.map((product) => (
                             <SwiperSlide key={product.id}>

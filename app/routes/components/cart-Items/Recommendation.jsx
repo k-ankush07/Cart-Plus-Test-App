@@ -128,21 +128,6 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                             </h3>
                         </a>
 
-                        <p className="price custom-cart-public-component-upsell-tile__price-row" style={{ color: designSettings.textColor || "#6b7280", }}>
-
-                            {selectedVariant.compareAtPrice &&
-                                parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
-                                    <span className="compare-price custom-cart-public-component-upsell-tile__price-compare-at" style={{ color: designSettings.textColor || "#6b7280", }}>
-                                        {selectedVariant.compareAtPrice} {currency}
-                                    </span>
-                                )}
-
-                            <span className="sale-price custom-cart-public-component-upsell-tile__price" style={{ color: designSettings.textColor || "#6b7280", }}>
-                                {selectedVariant.price} {currency}
-                            </span>
-
-                        </p>
-
                         {recommendationsSettings.showReviews && (
                             <div className="rating custom-cart-public-component-upsell-tile__rating-row">
                                 <span className="stars custom-cart-public-component-upsell-tile__stars">
@@ -154,37 +139,52 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                             </div>
                         )}
 
-                        <div className="upcart-internal-component-upsell-tile__variant-row custom-cart-public-component-upsell-tile__variant-row" style={{ color: designSettings.textColor || "#6b7280", }}>
-                            <select
-                                value={selectedVariant.id}
-                                onChange={(e) =>
-                                    handleVariantChange(product.id, e.target.value)
-                                }
-                                style={{ color: designSettings.textColor || "#6b7280", }}
-                            >
-                                {product.variants.map(variant => (
-                                    <option key={variant.id} value={variant.id} style={{ color: designSettings.textColor || "#6b7280", }}>
-                                        {variant.title}
-                                    </option>
-                                ))}
-                            </select>
+                        <p className="price custom-cart-public-component-upsell-tile__price-row" style={{ color: designSettings.textColor || "#6b7280", }}>
 
-                            <button
-                                type="button"
-                                className="upcart-internal-component__button custom-cart-public-component__button"
-                                onClick={hanldeAddProduct}
-                                style={{
-                                    borderRadius: `${designSettings.buttonRadius}px`,
-                                    backgroundColor: designSettings.buttonColor,
-                                    "--btn-hover-text": designSettings.buttonHoverColor,
-                                    "--btn-text": designSettings.buttonTextColor,
-                                }}
-                            >
-                                {loading ? (<span className="loader"></span>) : (upsellsSettings.buttonText)}
-                            </button>
-                        </div>
 
+                            <span className="sale-price custom-cart-public-component-upsell-tile__price" style={{ color: designSettings.textColor || "#6b7280", }}>
+                                {selectedVariant.price} {currency}
+                            </span>
+
+                            {selectedVariant.compareAtPrice &&
+                                parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
+                                    <span className="compare-price custom-cart-public-component-upsell-tile__price-compare-at" style={{ color: designSettings.textColor || "#6b7280", }}>
+                                        {selectedVariant.compareAtPrice} {currency}
+                                    </span>
+                                )}
+
+                        </p>
                     </div>
+
+                </div>
+                <div className="upcart-internal-component-upsell-tile__variant-row custom-cart-public-component-upsell-tile__variant-row" style={{ color: designSettings.textColor || "#6b7280", }}>
+                    <select
+                        value={selectedVariant.id}
+                        onChange={(e) =>
+                            handleVariantChange(product.id, e.target.value)
+                        }
+                        style={{ color: designSettings.textColor || "#6b7280", }}
+                    >
+                        {product.variants.map(variant => (
+                            <option key={variant.id} value={variant.id} style={{ color: designSettings.textColor || "#6b7280", }}>
+                                {variant.title}
+                            </option>
+                        ))}
+                    </select>
+
+                    <button
+                        type="button"
+                        className="upcart-internal-component__button custom-cart-public-component__button"
+                        onClick={hanldeAddProduct}
+                        style={{
+                            borderRadius: `${designSettings.buttonRadius}px`,
+                            backgroundColor: designSettings.buttonColor,
+                            "--btn-hover-text": designSettings.buttonHoverColor,
+                            "--btn-text": designSettings.buttonTextColor,
+                        }}
+                    >
+                        {loading ? (<span className="loader"></span>) : (upsellsSettings.buttonText)}
+                    </button>
                 </div>
             </div>
         );
@@ -284,7 +284,9 @@ export default function Recommendation({ recommendationsSettings, currency, cart
 
                 {recommendationsSettings.layout === "carousel" ? (
                     <div className="custom-cart-slider-wrapper">
-                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev">‹</div>)}
+                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 18l-6-6 6-6"></path>
+                        </svg></div>)}
                         <Swiper
                             modules={[Navigation]}
                             navigation={{
@@ -310,12 +312,14 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                                 updateProgress(swiper);
                             }}
                             spaceBetween={12}
-                            slidesPerView={products.length <= 1 ? 1 : 1.5}
+                            slidesPerView={products.length <= 1 ? 1 : 1.2}
                         >
                             {renderProducts()}
                         </Swiper>
 
-                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next">›</div>)}
+                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 6l6 6-6 6"></path>
+                        </svg></div>)}
                         {indicator === "progressBar" && (
                             <div className="upsell-progress-bar">
                                 <div ref={fillRef} className="upsell-progress-fill"></div>

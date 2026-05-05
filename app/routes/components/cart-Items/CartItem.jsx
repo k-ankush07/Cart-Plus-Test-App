@@ -11,6 +11,13 @@ const TrashIcon = () => (
   </svg>
 );
 
+function hexToRGBA(hex, opacity) {
+  const r = parseInt(hex.substring(1, 3), 16);
+  const g = parseInt(hex.substring(3, 5), 16);
+  const b = parseInt(hex.substring(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
 // ─── Undo Toast ───────────────────────────────────────────────────────────────
 function UndoToast({ message, onUndo, onDismiss }) {
   return (
@@ -83,24 +90,24 @@ function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
 function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile" style={{ flexDirection: "column" }}>
-      <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+      <div style={{ display: "flex", gap: "10px", width: "100%" }}>
         <div className="cart-app-item__image upcart-product-image-wrapper custom-cart-public-component-product-tile__image-wrapper">
           <img className="upcart-public-component-product-tile__image custom-cart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" />
         </div>
 
-        <div className="custom-cart-public-component-product-tile__info" style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", minWidth: 0 }}>
+        <div className="custom-cart-public-component-product-tile__info" style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", minWidth: 0 }}>
 
           {/* Left */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
             <div className="cart-app-item__title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, wordBreak: "break-word", overflowWrap: "break-word" }}>
               {productName}
             </div>
-            <div style={{ fontSize: "12px", color: textColor }}>Premium Global Brands</div>
-            <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "12px" }}>
-              Size: <strong>STANDARD</strong>
+            <div style={{ fontSize: "10px", lineHeight: '8px', color: textColor }}>Premium Global Brands</div>
+            <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
+              Size: STANDARD
             </div>
-            <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "12px" }}>
-              Color: <strong>BLACK</strong>
+            <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
+              Color: BLACK
             </div>
             <span className="custom-cart-public-component-product-tile__discount-codes"
               style={{
@@ -118,20 +125,25 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
           </div>
 
           {/* Right */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", flexShrink: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "5px", flexShrink: 0, lineHeight: '12px' }}>
             <div className="custom-cart-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span className="custom-cart-public-component-product-tile__price-group custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "14px" }}>$200.00</span>
+              <span className="custom-cart-public-component-product-tile__price-group custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$200.00</span>
               {showStrikethrough && (
-                <span className="" style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$400.00</span>
+                <span className="" style={{ color: "#999", textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
               )}
             </div>
             {cartSettings.showSavingsBelowPrices && (
-              <div className="custom-cart-public-component-product-tile__savings"
+              <div
+                className="custom-cart-public-component-product-tile__savings"
                 style={{
-                  background: "#e6f4ea", color: savingColor,
-                  fontSize: "11px", fontWeight: 700,
-                  padding: "2px 7px", borderRadius: "3px",
-                }}>
+                  background: hexToRGBA(savingColor, 0.1),
+                  color: savingColor,
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  padding: "5px 7px",
+                  borderRadius: "14px",
+                }}
+              >
                 {cartSettings.savingsText} 50%
               </div>
             )}
@@ -177,11 +189,11 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
             <div className="cart-app-item__title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
               {productName}
             </div>
-            <div className="custom-cart-public-component-product-tile__variant" style={{ fontSize: "12px", color: textColor }}>Premium Global Brands</div>
-            <div className="custom-cart-public-component-product-tile__variant" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: textColor }}>
-              <span>Qty: <strong style={{ color: textColor }}>100ml</strong></span>
+            <div className="custom-cart-public-component-product-tile__variant" style={{ fontSize: "10px", color: textColor, }}>Premium Global Brands</div>
+            <div className="custom-cart-public-component-product-tile__variant" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "10px", color: textColor }}>
+              <span style={{ color: textColor }}>Qty: 100ml</span>
               <span style={{ color: "#ccc" }}>|</span>
-              <span>Bottles: <strong style={{ color: textColor }}>1</strong></span>
+              <span style={{ color: textColor }}>Bottles: 1</span>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
@@ -191,7 +203,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
             >
               <TrashIcon />
             </button>
-            <span className="custom-cart-public-component-product-tile__discount-codes" style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "12px", fontWeight: 600 }}>
+            <span className="custom-cart-public-component-product-tile__discount-codes" style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "10px", fontWeight: 700 }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                 <line x1="7" y1="7" x2="7.01" y2="7" />
@@ -202,18 +214,18 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
         </div>
 
         <div className="custom-cart-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-          <span className="custom-cart-public-component-product-tile__price-group custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "14px" }}>$27.00</span>
+          <span className="custom-cart-public-component-product-tile__price-group custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$27.00</span>
           {showStrikethrough && (
-            <span style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$40.00</span>
+            <span style={{ color: "#999", textDecoration: "line-through", fontSize: "9px" }}>$40.00</span>
           )}
           {cartSettings.showSavingsBelowPrices && (
-            <span className="custom-cart-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "3px" }}>
+            <span className="custom-cart-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "14px", lineHeight:'18px' }}>
               {cartSettings.savingsText} 10%
             </span>
           )}
         </div>
 
-        <div style={{ marginTop: "4px" }}>
+        <div>
           <QtyStepper
             qty={qty}
             loadingType={loadingType}
@@ -238,20 +250,16 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
       <div style={{ position: "relative", flexShrink: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
         {cartSettings.showSavingsBelowPrices && (
           <span className="custom-cart-public-component-product-tile__savings"
-            style={{
-              background: "#e6f4ea", color: savingColor,
-              fontSize: "10px", fontWeight: 700,
-              padding: "2px 6px", borderRadius: "3px", width: "fit-content",
-            }}>{cartSettings.savingsText} 50%</span>
+            style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "14px", lineHeight:'18px' }}>{cartSettings.savingsText} 50%</span>
         )}
-        <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }} className="custom-cart-public-component-product-tile__image-wrapper">
+        <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }} className="cart-app-item__image custom-cart-public-component-product-tile__image-wrapper">
           <img className="upcart-public-component-product-tile__image custom-cart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
       </div>
 
       <div className="custom-cart-public-component-product-tile__info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", minWidth: 0 }}>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", lineHeight: '8px', }}>
           <div>
             <div className="cart-app-item__title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
               <span dangerouslySetInnerHTML={{ __html: productName }} />
@@ -275,7 +283,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
               </button>
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
             <button
               className="cart-app-item__remove"
               onClick={onRemoveClick}
@@ -283,10 +291,10 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
               <TrashIcon />
             </button>
             {showStrikethrough && (
-              <span className="custom-cart-public-component-product-tile__product-pricing" style={{ color: "#999", textDecoration: "line-through", fontSize: "12px" }}>$400.00</span>
+              <span className="custom-cart-public-component-product-tile__product-pricing" style={{ color: "#999", textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
             )}
-            <span className="custom-cart-public-component-product-tile__price-group custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "15px" }}>$200.00</span>
-            <span className="custom-cart-public-component-product-tile__discount-codes" style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "12px", fontWeight: 600 }}>
+            <span className="custom-cart-public-component-product-tile__price-group custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$200.00</span>
+            <span className="custom-cart-public-component-product-tile__discount-codes" style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "10px", fontWeight: 600 }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                 <line x1="7" y1="7" x2="7.01" y2="7" />
