@@ -1,13 +1,10 @@
-import { Outlet, useLoaderData, useRouteError } from "react-router";
+import { Outlet, useLoaderData, useRouteError, useNavigation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
 import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css";
 import { authenticate, sessionStorage } from "../shopify.server";
 
-// Module-level cache: tracks the last access token sent per shop.
-// Persists for the lifetime of the server process — API is only
-// called when the token is new or has changed.
 const _lastSentToken = new Map();
 
 export const loader = async ({ request }) => {
@@ -37,6 +34,8 @@ export const loader = async ({ request }) => {
 
 export default function App() {
   const { apiKey } = useLoaderData();
+  const navigation = useNavigation();
+  const isNavigating = navigation.state === "loading" && navigation.location != null;
 
   const i18n = {
     Polaris: {
@@ -50,10 +49,41 @@ export default function App() {
   return (
     <ShopifyAppProvider embedded apiKey={apiKey}>
       <PolarisAppProvider i18n={i18n}>
+        {isNavigating && (
+          <div style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 99999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#f1f1f1",
+          }}>
+            <div style={{
+              width: 200,
+              height: 5,
+              background: "#e1e3e5",
+              borderRadius: 4,
+              overflow: "hidden",
+            }}>
+              <div style={{
+                height: "100%",
+                width: "40%",
+                background: "#111111",
+                borderRadius: 4,
+                animation: "upcart-slide 1.2s ease-in-out infinite",
+              }} />
+            </div>
+            <style>{`
+              @keyframes upcart-slide {
+                0%   { transform: translateX(-150%); }
+                100% { transform: translateX(400%); }
+              }
+            `}</style>
+          </div>
+        )}
         <s-app-nav>
-          <s-link href="/app" rel="home">
-            Home
-          </s-link>
+          <s-link href="/app" rel="home">Home</s-link>
           <s-link href="/app/carts">Carts</s-link>
           <s-link href="/app/sticky-cart">Sticky Cart</s-link>
           <s-link href="/app/pricing">Pricing</s-link>

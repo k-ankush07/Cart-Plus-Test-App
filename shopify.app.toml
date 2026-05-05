@@ -2,7 +2,7 @@
 
 client_id = "0741db22a559208f286f8afcfb6dcc65"
 name = "Cart Drawer"
-application_url = "https://elephant-archived-answers-campaign.trycloudflare.com"
+application_url = "ttps://images-boost-conditions-remaining.trycloudflare.com"
 embedded = true
 
 [build]
@@ -24,7 +24,7 @@ api_version = "2026-01"
   uri = "/webhooks/orders/paid"
 
 [app_proxy]
-url = "https://elephant-archived-answers-campaign.trycloudflare.com/api/proxy-order-track"
+url = "ttps://images-boost-conditions-remaining.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"
 
@@ -33,4 +33,4 @@ prefix = "apps"
 scopes = "read_customers,read_discounts,read_orders,write_orders,read_products,read_publications,read_themes,write_app_proxy,write_discounts,write_files,write_products,write_publications,write_themes,read_pixels"
 
 [auth]
-redirect_urls = [ "https://elephant-archived-answers-campaign.trycloudflare.com/api/auth" ]
+redirect_urls = [ "ttps://images-boost-conditions-remaining.trycloudflare.com/api/auth" ]
