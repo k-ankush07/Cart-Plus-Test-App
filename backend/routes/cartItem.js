@@ -712,6 +712,7 @@ router.get("/revenue-stats", async (req, res) => {
       {
         $group: {
           _id: null,
+          currency: { $first: "$currency" },
           totalRevenue: { $sum: "$totalRevenue" },
           upsellRevenue: { $sum: "$upsellRevenue" },
           addonRevenue: { $sum: "$addonRevenue" },

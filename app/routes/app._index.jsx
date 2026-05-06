@@ -221,10 +221,10 @@ function getDefaultRange() {
 
 const DEFAULT_RANGE = getDefaultRange();
 
-const fmt = (n) =>
+const fmt = (n, currency = "USD") =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency,
     minimumFractionDigits: 2,
   }).format(Number(n ?? 0));
 
@@ -308,17 +308,17 @@ function Sparkline({ type = "flat", value = 0 }) {
 
   return (
     <svg width="72" height="36" viewBox="0 0 72 40" fill="none">
-      <path ref={areaRef} d={p.area} fill="#C20075" fillOpacity="0.12" />
+      <path ref={areaRef} d={p.area} fill="#1271A3" fillOpacity="0.12" />
       <path
         ref={lineRef}
         d={p.line}
-        stroke="#C20075"
+        stroke="#1271A3"
         strokeWidth="1.5"
         fill="none"
         strokeLinejoin="round"
         strokeLinecap="round"
       />
-      <circle ref={dotRef} cx="70" cy={p.cy} r="2" fill="#C20075" />
+      <circle ref={dotRef} cx="70" cy={p.cy} r="2" fill="#1271A3" />
     </svg>
   );
 }
@@ -404,6 +404,7 @@ export default function Dashboard() {
     mainThemeId,
     appEmbedInstalled,
     appEmbedStarted,
+    currency
   } = useLoaderData();
 
   const navigate = useNavigate();
@@ -510,7 +511,7 @@ export default function Dashboard() {
             <div style={{ display: "flex" }}>
               <StatTile
                 label="Add-ons revenue"
-                value={`$${(shopRevenue.addonRevenue ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                value={fmt(shopRevenue.addonRevenue ?? 0, currency)}
                 rawValue={shopRevenue.addonRevenue ?? 0}
                 sparklineType="spike"
                 onClick={() => navigate("/app/analytics")}
@@ -518,7 +519,7 @@ export default function Dashboard() {
               <div style={{ width: "1px", background: "#e1e3e5", flexShrink: 0, margin: "12px 0" }} />
               <StatTile
                 label="Upsell revenue"
-                value={`$${(shopRevenue.upsellRevenue ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                value={fmt(shopRevenue.upsellRevenue ?? 0, currency)}
                 rawValue={shopRevenue.upsellRevenue ?? 0}
                 sparklineType="peak"
                 onClick={() => navigate("/app/analytics")}
@@ -526,7 +527,7 @@ export default function Dashboard() {
               <div style={{ width: "1px", background: "#e1e3e5", flexShrink: 0, margin: "12px 0" }} />
               <StatTile
                 label="Subscriptions revenue"
-                value={`$${(shopRevenue.subscriptionRevenue ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                value={fmt(shopRevenue.subscriptionRevenue ?? 0, currency)}
                 rawValue={shopRevenue.subscriptionRevenue ?? 0}
                 sparklineType="flat"
                 onClick={() => navigate("/app/analytics")}
@@ -534,7 +535,12 @@ export default function Dashboard() {
               <div style={{ width: "1px", background: "#e1e3e5", flexShrink: 0, margin: "12px 0" }} />
               <StatTile
                 label="Total revenue"
-                value={`$${((shopRevenue.addonRevenue ?? 0) + (shopRevenue.upsellRevenue ?? 0) + (shopRevenue.subscriptionRevenue ?? 0)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                value={fmt(
+                  (shopRevenue.addonRevenue ?? 0) +
+                  (shopRevenue.upsellRevenue ?? 0) +
+                  (shopRevenue.subscriptionRevenue ?? 0),
+                  currency
+                )}
                 rawValue={(shopRevenue.addonRevenue ?? 0) + (shopRevenue.upsellRevenue ?? 0) + (shopRevenue.subscriptionRevenue ?? 0)}
                 sparklineType="peak"
                 onClick={() => navigate("/app/analytics")}
@@ -620,7 +626,7 @@ export default function Dashboard() {
 
                     <IndexTable.Cell>
                       {cartStats?.[cart.cartId]?.revenue != null
-                        ? fmt(cartStats[cart.cartId].revenue)
+                        ? fmt(cartStats[cart.cartId].revenue, currency)
                         : "—"}
                     </IndexTable.Cell>
 

@@ -53,24 +53,24 @@ export default function CartEditor() {
   const [searchParams] = useSearchParams();
 
   const MODULE_TAB_MAP = {
-    recommendations: "Recommendations",
-    rewards: "Tiered rewards",
-    "triggered-rewards": "Triggered rewards",
-    upsells: "Upsells",
-    addons: "Add-ons",
-    announcements: "Announcements",
-    "subscription-upgrades": "Subscription upgrades",
-    "additional-notes": "Additional notes",
-    "discount-codes": "Discount codes",
-    "express-payments": "Express payments",
-    "trust-badges": "Trust badges",
-    header: "Header",
-    design: "Design",
-    settings: "Settings",
+    recommendations: "Suggested Products",
+    rewards: "Tiered Offers",
+    "triggered-rewards": "Smart Offers",
+    upsells: "Upgrade Offers",
+    addons: "Extras",
+    announcements: "Notices",
+    "subscription-upgrades": "Subscription Options",
+    "additional-notes": "Order Notes",
+    "discount-codes": "Promo Codes",
+    "express-payments": "Quick Checkout",
+    "trust-badges": "Security Badges",
+    header: "Top Section",
+    design: "Appearance",
+    settings: "Preferences",
   };
 
   const [activeTab, setActiveTab] = useState(
-    () => MODULE_TAB_MAP[searchParams.get("module")] || "Design"
+    () => MODULE_TAB_MAP[searchParams.get("module")] || "Appearance"
   );
 
   const [designSettings, setDesignSettings] = useState(

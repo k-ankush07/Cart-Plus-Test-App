@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import { authenticate } from "../shopify.server";
 import {
   Page, Card, Text, InlineStack, BlockStack,
@@ -16,9 +16,9 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, 
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-function fmt(n) {
+function fmt(n, currency = "USD") {
   return new Intl.NumberFormat("en-US", {
-    style: "currency", currency: "USD",
+    style: "currency", currency: currency,
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   }).format(Number(n ?? 0));
 }
@@ -79,58 +79,62 @@ function FilterPill({ type, label, active, onToggle }) {
 
 // ─── chart options ────────────────────────────────────────────────────────────
 
-const chartOpts = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      mode: "index",
-      intersect: false,
-      position: "nearest",
-      backgroundColor: "#ffffff",
-      titleColor: "#202223",
-      bodyColor: "#202223",
-      borderColor: "#e1e3e5",
-      borderWidth: 1,
-      padding: 10,
-      boxPadding: 4,
-      usePointStyle: true,
-      filter: (item) => item.dataset.label !== "Previous Period",
-      callbacks: {
-        title: (items) => items[0]?.label ?? "",
-        label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`,
-      },
-    },
-  },
-  interaction: { mode: "index", intersect: false },
-  scales: {
-    x: {
-      ticks: {
-        color: "#70707b",
-        font: { size: 12 },
-        maxTicksLimit: 6,
+function getChartOpts(currency = "USD") {
+  const currencySymbol = new Intl.NumberFormat("en-US", { style: "currency", currency })
+    .formatToParts(0)
+    .find((p) => p.type === "currency")?.value ?? "$";
+
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        mode: "index",
+        intersect: false,
+        position: "nearest",
+        backgroundColor: "#ffffff",
+        titleColor: "#202223",
+        bodyColor: "#202223",
+        borderColor: "#e1e3e5",
+        borderWidth: 1,
         padding: 10,
-        callback: function (val) {
-          return this.getLabelForValue(val);
+        boxPadding: 4,
+        usePointStyle: true,
+        filter: (item) => item.dataset.label !== "Previous Period",
+        callbacks: {
+          title: (items) => items[0]?.label ?? "",
+          label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y, currency)}`,  // ✅ dynamic currency
         },
       },
-      grid: { display: false },
-      border: { display: false },
     },
-    y: {
-      beginAtZero: true,
-      ticks: {
-        color: "#70707b",
-        font: { size: 12 },
-        stepSize: 500,
-        callback: (v) => "$" + Number(v).toLocaleString(),
+    interaction: { mode: "index", intersect: false },
+    scales: {
+      x: {
+        ticks: {
+          color: "#70707b",
+          font: { size: 12 },
+          maxTicksLimit: 6,
+          padding: 10,
+          callback: function (val) { return this.getLabelForValue(val); },
+        },
+        grid: { display: false },
+        border: { display: false },
       },
-      grid: { color: "#eeeeef" },
-      border: { display: false },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: "#70707b",
+          font: { size: 12 },
+          stepSize: 500,
+          callback: (v) => currencySymbol + Number(v).toLocaleString(),
+        },
+        grid: { color: "#eeeeef" },
+        border: { display: false },
+      },
     },
-  },
-};
+  };
+}
 
 const convOpts = {
   responsive: true,
@@ -229,8 +233,12 @@ export const loader = async ({ request }) => {
 
 export default function Analytics() {
   const { stats } = useLoaderData();
+  const navigate = useNavigate();
 
   const today = new Date();
+
+  const currency = stats?.revenue?.totals?.currency ?? "USD";
+  const chartOpts = getChartOpts(currency);
 
   const defaultStart = new Date();
   defaultStart.setDate(today.getDate() - 29);
@@ -338,7 +346,7 @@ export default function Analytics() {
   };
 
   const tableRows = (stats?.topProducts ?? []).map((p) => [
-    p.name, p.quantity, fmt(p.revenue), p.module,
+    p.name, p.quantity, fmt(p.revenue, currency), p.module,
   ]);
 
   // ─── Download helper ──────────────────────────────────────────────────────────
@@ -366,7 +374,7 @@ export default function Analytics() {
   return (
     <>
       <Page
-        backAction={{ url: "#" }}
+        backAction={{ onAction: () => navigate("/app") }}
         title="Analytics"
         primaryAction={
           <InlineStack gap="200">
@@ -406,9 +414,9 @@ export default function Analytics() {
                         </Tooltip>
                       </InlineStack>
                       <InlineStack gap="100" blockAlign="center">
-                        <Text variant="headingLg" as="h4">{fmt(totalRevenue)}</Text>
+                        <Text variant="headingLg" as="h4">{fmt(totalRevenue, currency)}</Text>
                         <Tooltip
-                          content={`Change in revenue compared to previous period. Previous revenue: ${fmt(0)}`}
+                          content={`Change in revenue compared to previous period. Previous revenue: ${fmt(0, currency)}`}
                           hasUnderline
                           activatorWrapper="span"
                         >
@@ -479,7 +487,7 @@ export default function Analytics() {
                     <Button icon={DownloadIcon} size="slim" onClick={() => downloadCSV(convChartData, "conversion.csv", true)}
                       accessibilityLabel="Download conversion data" />
                   </InlineStack>
-                  <Box style={{ height: 203}}>
+                  <Box style={{ height: 203 }}>
                     <Line data={convChartData} options={convOpts} />
                   </Box>
                 </BlockStack>

@@ -67,7 +67,7 @@ export const loader = async ({ request }) => {
 };
 
 export default function AppCarts() {
-    const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats } = useLoaderData();
+    const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency } = useLoaderData();
     const navigate = useNavigate();
 
     const [deleteModal, setDeleteModal] = useState(false);
@@ -210,7 +210,7 @@ export default function AppCarts() {
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const fmt = (n) =>
-        new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(Number(n ?? 0));
+        new Intl.NumberFormat("en-US", { style: "currency", currency: currency ?? "USD", minimumFractionDigits: 2 }).format(Number(n ?? 0));
 
     const CartTable = ({ carts, emptyText, isDraft, stats }) => (
         <div style={{ paddingTop: 12 }}>
@@ -366,7 +366,7 @@ export default function AppCarts() {
 
     return (
         <Page
-            backAction={{ url: "#" }}
+            backAction={{ onAction: () => navigate("/app") }}
             title="All Carts"
             primaryAction={
                 <InlineStack gap="300">
