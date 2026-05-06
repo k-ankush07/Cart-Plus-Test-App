@@ -317,14 +317,14 @@ window.injectCartHTML = function (blockId, root) {
             </div>
           </div>
         </div>
-        <!-- NOTES (position: before) -->
-        <div id="hub-notes-below-${blockId}"></div>
-
         <!-- SUGGESTED PRODUCT -->
         <div id="hub-suggested-product-${blockId}" class="hub-suggested-product" style="display:none;"></div>
 
         <!-- UPSELLS (position: bottom of cart) -->
         <div id="hub-upsell-bottom-${blockId}" class="hub-upsell"></div>
+
+         <!-- NOTES (position: before) -->
+        <div id="hub-notes-below-${blockId}"></div>
 
         <!-- ANNOUNCEMENT (position: after) -->
         <div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>
@@ -350,11 +350,12 @@ window.injectCartHTML = function (blockId, root) {
         <div class="hub-discount-input-row">
         <div id="hub-discount-status-${blockId}" class="hub-discount-status-code"></div>
          <div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}">
-           <img 
-            src="https://hubsyntax.com/cart-images/Group%20(1).svg" 
-            alt="discount-code" 
-            class="discount-code-img"
-            />
+            <svg viewBox="0 0 20 20" style="fill: #111;">
+          <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
+         <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+         <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
+         <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
+         </svg>
             
           <input type="text" id="discount-code-input-${blockId}" placeholder="Discount code" class="hub-discount-input" />
           <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn">Apply</button>
@@ -362,11 +363,9 @@ window.injectCartHTML = function (blockId, root) {
           <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
          ${showOfferBox ? ` <div class="discount-offer-btn" onclick="hubOpenOffersPanel('${blockId}')">
           <button class="hub-view-offers-btn">View all offers</button>
-          <img 
-            src="https://hubsyntax.com/cart-images/Vector%20(4).svg" 
-            alt="discount-code" 
-            class="discount-code-img"
-            />
+          <svg viewBox="0 0 20 20" style="width: 20px; height: 20px; fill: #111;">
+                   <path fill-rule="evenodd" d="M7.72 14.53a.75.75 0 0 1 0-1.06l3.47-3.47-3.47-3.47a.75.75 0 0 1 1.06-1.06l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 0 1-1.06 0Z"/>
+          </svg>
           </div>   ` : ""}
         </div>
         </div>
@@ -441,18 +440,15 @@ window.injectCartHTML = function (blockId, root) {
       <div id="hub-coupon-success-${blockId}" class="hub-coupon-success-overlay" style="display:none;">
         <div class="hub-coupon-success-card">
           <button class="hub-coupon-success-close" onclick="hubCloseCouponSuccess('${blockId}')">
-            <img 
-            src="https://www.hubsyntax.com/cart-images/Vector%20(6).svg" 
-            alt="discount-code" 
-            class="discount-code-img"
-            />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <div class="hub-coupon-success-icon">
-         <img 
-            src="https://www.hubsyntax.com/cart-images/Group%201707479978.svg" 
-            alt="discount-code" 
-            class="discount-code-img"
-            />
+          <svg viewBox="0 0 20 20" style="fill: #111;">
+          <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
+         <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+         <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
+         <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
+         </svg>
           </div>
           <p class="hub-coupon-success-applied" id="hub-coupon-success-applied-${blockId}"></p>
           <p class="hub-coupon-success-headline" id="hub-coupon-success-headline-${blockId}" style="color:${designSettings.textColor}"></p>
@@ -477,11 +473,7 @@ window.injectCartHTML = function (blockId, root) {
         <div class="hub-offers-header">
           <div class="hub-offers-title-group">
            <button class="hub-offers-back" onclick="hubCloseOffersPanel('${blockId}')">
-          <img 
-            src=" https://www.hubsyntax.com/cart-images/Vector%20(1)%20(1).svg" 
-            alt="right-arrow" 
-            class="right-img"
-            />
+           <svg viewBox="0 0 20 20" class="Icon_Icon__uZZKy" style="width: 20px; height: 20px;"><path fill-rule="evenodd" d="M16.5 10a.75.75 0 0 1-.75.75h-9.69l2.72 2.72a.75.75 0 0 1-1.06 1.06l-4-4a.75.75 0 0 1 0-1.06l4-4a.75.75 0 1 1 1.06 1.06l-2.72 2.72h9.69a.75.75 0 0 1 .75.75Z"></path></svg>
           </button>
            <div class="hub-offers-title-subtitle">
             <span class="hub-offers-title">Apply Coupon</span>
@@ -493,11 +485,12 @@ window.injectCartHTML = function (blockId, root) {
          <div class="hub-offers-input-row">
           <div class="hub-offers-input-wrap">
            <div class="hub-offers-input">
-           <img 
-            src="https://hubsyntax.com/cart-images/Group%20(1).svg" 
-            alt="discount-code" 
-            class="discount-code-img"
-            />
+            <svg viewBox="0 0 20 20" style="fill: #111;">
+          <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
+         <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+         <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
+         <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
+         </svg>
             <input type="text" id="hub-offers-input-${blockId}" placeholder="Enter Coupon Code" class="hub-offers-code-input" />
           </div>
            <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn">APPLY</button>

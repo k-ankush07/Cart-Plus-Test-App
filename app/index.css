@@ -633,6 +633,7 @@ body,
     align-items: center;
     gap: 10px;
     flex: 0 0 auto;
+    justify-content: right;
 }
 
 .upcart-internal-component-upsell-tile__variant-row select {
@@ -835,7 +836,7 @@ body,
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 20px;
+    padding: 20px 20px 5px;
 }
 
 .cart-addon-tile__info {
@@ -1421,7 +1422,7 @@ span.upcart-rewards-tier-icon {
 }
 
 .hub-total-final {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     color: #2D2D2D;
     font-weight: 700;

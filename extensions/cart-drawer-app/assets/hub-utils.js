@@ -250,7 +250,9 @@ window.hubUtils = {
             </span>
             ${comparePriceHTML}
           </div>
-           <div class="upcart-internal-component-upsell-tile__variant-row">
+        </div>
+      </div>
+      <div class="upcart-internal-component-upsell-tile__variant-row">
            ${
              hasMultipleVariants
                ? `<select class="hub-variant-select" style="color:${designSettings.textColor};">
@@ -268,8 +270,6 @@ window.hubUtils = {
             ${upsellSettings.buttonText || "Add"}
           </button>
         </div>
-        </div>
-      </div>
     </div>
   `;
   },
@@ -784,10 +784,12 @@ window.hubUtils = {
         <div class="hub-discount-left">
           
           <div class="hub-discount-image">
-            <img 
-              src="https://hubsyntax.com/cart-images/Group%20(1).svg" 
-              class="discount-icon"
-            />
+            <svg viewBox="0 0 20 20" style="fill: #111;">
+          <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
+         <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+         <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
+         <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
+         </svg>
           </div>
 
           <div class="hub-discount-chip">
@@ -798,10 +800,7 @@ window.hubUtils = {
               ${
                 isManual
                   ? `<button onclick="removeDiscountCode(this, '${blockId}')" class="remove-btn">
-                      <img 
-                        src="https://hubsyntax.com/cart-images/Vector%20(5).svg" 
-                        class="hub-remove-icon"
-                      />
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>`
                   : ""
               }

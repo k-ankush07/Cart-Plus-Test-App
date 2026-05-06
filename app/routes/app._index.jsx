@@ -480,7 +480,7 @@ export default function Dashboard() {
 
   return (
     <Page
-      title="Welcome to Upcart 🎉"
+      title="Welcome to Custom Cart 🎉"
       primaryAction={
         <InlineStack align="end" gap="300">
           <DateRangePicker value={range} onChange={setRange} />

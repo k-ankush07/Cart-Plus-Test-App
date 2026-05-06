@@ -147,7 +147,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
                 {cartSettings.savingsText} 50%
               </div>
             )}
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }} className="custom-cart-public-component-product-tile__controls">
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }} className="custom-cart-public-component-product-tile__controls">
               <QtyStepper
                 qty={qty}
                 loadingType={loadingType}

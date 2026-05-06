@@ -57,7 +57,7 @@ function _discountBadgesHtml(item) {
       (d) => `
     <span class="hub-item-discount-badge">
       <img 
-        src="https://www.hubsyntax.com/cart-images/Mask%20group.svg" 
+        src="https://hubsyntax.com/cart-images/Group%201707479954.png" 
         alt="discount-code" 
         class="discount-code-img"
       />
@@ -134,7 +134,7 @@ function classicItemHTML(ctx) {
         }
       </div>
       ${saveHtml}
-      <div class="hub-item-actions" style="justify-content:flex-end;margin-top:5px">
+      <div class="hub-item-actions" style="justify-content:flex-end;">
         ${_qtyControl(item.key, item.quantity)}
         ${_deleteBtn(item.key, item.product_title)}
       </div>`;
@@ -196,14 +196,14 @@ function subscriptionItemHTML(ctx) {
 
   const priceRow = isReward
     ? `<p class="hub-price hub-price-free">Free</p>
-       <div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">
+       <div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
          <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
            ${hubUtils.formatMoney(lineTotal)}
          </span>
          ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price">${hubUtils.formatMoney(compareTotal)}</span>` : ""}
          ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(totalSave)}</span>` : ""}
        </div>`
-    : `<div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px">
+    : `<div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
          <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
            ${hubUtils.formatMoney(lineTotal)}
          </span>
@@ -233,7 +233,7 @@ function subscriptionItemHTML(ctx) {
         ${
           isReward
             ? ""
-            : `<div class="hub-item-actions" style="flex-direction:column;align-items:flex-start;gap:8px;margin-top:5px">
+            : `<div class="hub-item-actions" style="flex-direction:column;align-items:flex-start;gap:8px;">
                  ${_qtyControl(item.key, item.quantity)}
                </div>`
         }
@@ -278,7 +278,7 @@ function modernItemHTML(ctx) {
   const saveBadge = hasCompare ? `${saveHtml}` : "";
 
   const priceBlock = `
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
       ${isReward ? `<span class="hub-price hub-price-free">FREE</span>` : ""}
       ${
         hasCompare && showStrikethrough
@@ -301,19 +301,19 @@ function modernItemHTML(ctx) {
       </div>
       <div class="hub-item-info">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-          <div>
+          <div class="hub-cart-item--modern-title">
             <a href="/products/${item.handle}" class="hub-item-title" style="color:${colorItems}">${item.product_title || item.title}</a>
             ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
             ${variantHtml}
             ${propertiesHtml}
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
            ${_deleteBtn(item.key, item.product_title)}
             ${priceBlock}
             ${
               isReward
                 ? ""
-                : `<div class="hub-item-actions" style="justify-content:space-between;margin-top:5px">
+                : `<div class="hub-item-actions" style="justify-content:space-between;">
                      <div></div>
                      ${_qtyControl(item.key, item.quantity)}
                    </div>`

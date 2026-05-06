@@ -289,7 +289,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency }) {
                     </div>)}
                 </div>
             ) : (
-                <div className="upcart-internal-upsell__vertical-layout-wrapper">
+                <div className="upcart-internal-upsell__vertical-layout-wrapper block">
                     {products.map((product) => (
                         <ProductCard key={product.id} product={product} />
                     ))}

@@ -202,7 +202,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     <ProductCard product={product} />
                 </SwiperSlide>
             ) : (
-                <div key={product.id} className="upcart-internal-component-upsell-tile">
+                <div key={product.id} className="upcart-internal-component-upsell-tile-new">
                     <ProductCard product={product} />
                 </div>
             );
@@ -331,7 +331,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     </div>
 
                 ) : (
-                    <div className="upcart-internal-upsell__vertical-layout-wrapper">
+                    <div className="upcart-internal-upsell__vertical-layout-wrapper block">
                         {renderProducts()}
                     </div>)}
             </div>)}
