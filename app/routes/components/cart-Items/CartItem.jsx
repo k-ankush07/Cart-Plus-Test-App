@@ -102,7 +102,6 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
             <div className="cart-app-item__title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, wordBreak: "break-word", overflowWrap: "break-word" }}>
               {productName}
             </div>
-            <div style={{ fontSize: "10px", lineHeight: '8px', color: textColor }}>Premium Global Brands</div>
             <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
               Size: STANDARD
             </div>
@@ -189,7 +188,6 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
             <div className="cart-app-item__title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
               {productName}
             </div>
-            <div className="custom-cart-public-component-product-tile__variant" style={{ fontSize: "10px", color: textColor, }}>Premium Global Brands</div>
             <div className="custom-cart-public-component-product-tile__variant" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "10px", color: textColor }}>
               <span style={{ color: textColor }}>Qty: 100ml</span>
               <span style={{ color: "#ccc" }}>|</span>
@@ -264,23 +262,13 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
             <div className="cart-app-item__title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
               <span dangerouslySetInnerHTML={{ __html: productName }} />
             </div>
-            <div className="custom-cart-public-component-product-tile__variant" style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
-              <button style={{
-                display: "inline-flex", alignItems: "center", gap: "4px",
-                background: "none", border: "1px solid #ccc",
-                borderRadius: "4px", fontSize: "12px", fontWeight: 500,
-                padding: "3px 8px", cursor: "pointer", color: textColor || "inherit",
-              }}>
-                L <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-              </button>
-              <button style={{
-                display: "inline-flex", alignItems: "center", gap: "4px",
-                background: "none", border: "1px solid #ccc",
-                borderRadius: "4px", fontSize: "12px", fontWeight: 500,
-                padding: "3px 8px", cursor: "pointer", color: textColor || "inherit",
-              }}>
-                TEAL <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-              </button>
+            <div className="custom-cart-public-component-product-tile__variant" style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+             <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
+              Size: STANDARD
+            </div>
+            <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
+              Color: BLACK
+            </div>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>

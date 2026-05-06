@@ -21,7 +21,7 @@ import {
 import { DeliveryIcon, ProductIcon, AppsIcon } from "@shopify/polaris-icons";
 import Products from "../ui/Products";
 
-export default function AddOnsSettings({ addonsSettings, handleChange, currency, }) {
+export default function Extras({ addonsSettings, handleChange, currency, }) {
     const authenticatedFetch = useAuthenticatedFetch();
 
     const [productModalOpen, setProductModalOpen] = useState(false);
@@ -135,7 +135,7 @@ export default function AddOnsSettings({ addonsSettings, handleChange, currency,
                                 <Icon source={AppsIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Add-ons</Text>
+                                <Text variant="headingMd" as="h2">Extras</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={addonsSettings.enabled ? "critical" : "success"}>

@@ -44,16 +44,16 @@ export default function Sidebar({
 
   const isItemEnabled = (label) => {
     const map = {
-      Announcements: announcementSettings?.enabled,
-      "Tiered rewards": rewardsSettings?.enabled,
-      Recommendations: recommendationsSettings?.enabled,
-      "Subscription upgrades": subscriptionUpgradesSettings?.enabled,
-      Upsells: upsellsSettings?.enabled,
-      "Additional notes": additionalNotesSettings?.enabled,
-      "Add-ons": addonsSettings?.enabled,
-      "Discount codes": discountCodesSettings?.enabled,
-      "Express payments": expressPaymentsSettings?.enabled,
-      "Trust badges": trustBadgesSettings?.enabled,
+      Notices: announcementSettings?.enabled,
+      "Tiered Offers": rewardsSettings?.enabled,
+      "Suggested Products": recommendationsSettings?.enabled,
+      "Subscription Options": subscriptionUpgradesSettings?.enabled,
+      "Upgrade Offers": upsellsSettings?.enabled,
+      "Order Notes": additionalNotesSettings?.enabled,
+      "Extras": addonsSettings?.enabled,
+      "Promo Codess": discountCodesSettings?.enabled,
+      "Quick Checkout": expressPaymentsSettings?.enabled,
+      "Security Badges": trustBadgesSettings?.enabled,
     };
     return map[label] !== undefined ? map[label] : true;
   };
@@ -91,35 +91,35 @@ export default function Sidebar({
             {
               title: "General",
               items: [
-                clickable("Design", PaintBrushFlatIcon),
-                clickable("Header", LayoutHeaderIcon),
+                clickable("Appearance", PaintBrushFlatIcon),
+                clickable("Top Section", LayoutHeaderIcon),
               ],
             },
             {
               title: "Body",
               items: [
-                item("Announcements", MegaphoneIcon),
-                item("Tiered rewards", GiftCardIcon),
-                item("Triggered rewards", AutomationIcon, false),
-                item("Recommendations", StarIcon),
-                item("Cart items", CartIcon, false),
-                item("Subscription upgrades", RefreshIcon),
-                item("Upsells", PlusCircleIcon),
-                item("Additional notes", NoteIcon),
+                item("Notices", MegaphoneIcon),
+                item("Tiered Offers", GiftCardIcon),
+                item("Smart Offers", AutomationIcon, false),
+                item("Suggested Products", StarIcon),
+                item("Items in Cart", CartIcon, false),
+                item("Subscription Options", RefreshIcon),
+                item("Upgrade Offers", PlusCircleIcon),
+                item("Order Notes", NoteIcon),
               ],
             },
             {
               title: "Footer",
               items: [
-                item("Add-ons", AppsIcon),
-                item("Discount codes", DiscountIcon),
-                item("Cart summary", ReceiptIcon, false),
-                item("Express payments", CreditCardIcon),
-                item("Trust badges", ShieldCheckMarkIcon),
+                item("Extras", AppsIcon),
+                item("Promo Codes", DiscountIcon),
+                item("Order Summary", ReceiptIcon, false),
+                item("Quick Checkout", CreditCardIcon),
+                item("Security Badges", ShieldCheckMarkIcon),
               ],
             },
             {
-              items: [clickable("Settings", SettingsIcon)],
+              items: [clickable("Preferences", SettingsIcon)],
             },
           ]}
         />

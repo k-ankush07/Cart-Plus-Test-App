@@ -26,7 +26,7 @@ const PRESET_OPTIONS = [
     { label: "Payment icons", value: "https://cdn.shopify.com/s/files/1/0875/3679/5938/files/Frame_2121451254_1.svg" },
 ];
 
-export default function Trustbadges({ trustBadgesSettings, handleChange, accessToken, shop, apiUrl }) {
+export default function SecurityBadges({ trustBadgesSettings, handleChange, accessToken, shop, apiUrl }) {
     const fileInputRef = useRef(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -74,7 +74,7 @@ export default function Trustbadges({ trustBadgesSettings, handleChange, accessT
                                 <Icon source={ShieldCheckMarkIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Trust badges</Text>
+                                <Text variant="headingMd" as="h2">Security Badges</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={trustBadgesSettings.enabled ? "critical" : "success"}>

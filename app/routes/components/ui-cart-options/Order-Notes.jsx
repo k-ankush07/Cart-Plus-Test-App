@@ -18,7 +18,7 @@ import {
 
 import RichTextEditor from "../ui/RichTextEditor";
 
-export default function AdditionalNotes({ additionalNotesSettings, handleChange }) {
+export default function OrderNotes({ additionalNotesSettings, handleChange }) {
     const update = (key, value) => {
         handleChange("additionalNotesSettings", (prev) => ({
             ...prev,
@@ -37,7 +37,7 @@ export default function AdditionalNotes({ additionalNotesSettings, handleChange 
                                 <Icon source={NoteIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Additional notes</Text>
+                                <Text variant="headingMd" as="h2">Order Notes</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={additionalNotesSettings.enabled ? "critical" : "success"}>

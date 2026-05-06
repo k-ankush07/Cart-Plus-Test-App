@@ -76,7 +76,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                         />
                     ) : (
                         <>
-                            {!emptyCart && activeTab !== "Recommendations" && (
+                            {!emptyCart && activeTab !== "Suggested Products" && (
                                 <>
                                     {/* above_announcements */}
                                     <CustomHtml cartSettings={cartSettings} position="above_announcements" />
@@ -138,7 +138,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                 </>
                             )}
 
-                            {activeTab === "Recommendations" && (
+                            {activeTab === "Suggested Products" && (
                                 <Recommendation
                                     recommendationsSettings={recommendationsSettings}
                                     currency={currency}
@@ -152,11 +152,11 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 </div>
 
                 {/* above_footer */}
-                {!emptyCart && activeTab !== "Recommendations" && (
+                {!emptyCart && activeTab !== "Suggested Products" && (
                     <CustomHtml cartSettings={cartSettings} position="above_footer" />
                 )}
 
-                {!emptyCart && activeTab !== "Recommendations" && (
+                {!emptyCart && activeTab !== "Suggested Products" && (
                     <CartFooter
                         designSettings={designSettings}
                         additionalNotesSettings={additionalNotesSettings}

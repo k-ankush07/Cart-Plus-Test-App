@@ -18,7 +18,7 @@ import {
     DiscountIcon,             // Discount codes
 } from "@shopify/polaris-icons";
 
-export default function DiscountCodes({ discountCodesSettings, handleChange }) {
+export default function PromoCodes({ discountCodesSettings, handleChange }) {
     const [showLimitations, setShowLimitations] = useState(false);
 
     const update = (key, value) => {
@@ -39,7 +39,7 @@ export default function DiscountCodes({ discountCodesSettings, handleChange }) {
                                 <Icon source={DiscountIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Discount codes</Text>
+                                <Text variant="headingMd" as="h2">Promo Codes</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={discountCodesSettings.enabled ? "critical" : "success"}>

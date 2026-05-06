@@ -246,7 +246,7 @@ const modalRow = { padding: "12px 16px", cursor: "pointer", borderBottom: "1px s
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function TriggeredReward({ triggeredRewardsSettings, handleChange, currency }) {
+export default function SmartOffers({ triggeredRewardsSettings, handleChange, currency }) {
   const authenticatedFetch = useAuthenticatedFetch();
   const update = (key, value) =>
     handleChange("triggeredRewards", (prev) => ({ ...prev, [key]: value }));
@@ -485,7 +485,7 @@ export default function TriggeredReward({ triggeredRewardsSettings, handleChange
                 <Icon source={AutomationIcon} />
               </Box>
               <InlineStack gap="200">
-                <Text variant="headingMd" as="h2">Triggered rewards</Text>
+                <Text variant="headingMd" as="h2">Smart Offers</Text>
               </InlineStack>
             </InlineStack>
             <InlineStack gap="200" />

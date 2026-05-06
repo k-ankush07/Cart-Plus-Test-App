@@ -31,7 +31,7 @@ import ProductItemCollections from "../ui/ProductItem-Collections";
 import RichTextEditor from "../ui/RichTextEditor";
 import { useState, useEffect } from "react";
 
-export default function Recommendations({ recommendationsSettings, handleChange, currency }) {
+export default function SuggestedProducts({ recommendationsSettings, handleChange, currency }) {
 
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState({
@@ -64,7 +64,7 @@ export default function Recommendations({ recommendationsSettings, handleChange,
                                 <Icon source={StarIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Recommendations</Text>
+                                <Text variant="headingMd" as="h2">Suggested Products</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={recommendationsSettings.enabled ? "critical" : "success"}>

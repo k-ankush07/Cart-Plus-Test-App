@@ -45,7 +45,7 @@ export default function SubscriptionUpgrades({ subscriptionUpgradesSettings, han
                                 <Icon source={RefreshIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Subscription upgrades</Text>
+                                <Text variant="headingMd" as="h2">Subscription Options</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={subscriptionUpgradesSettings.enabled ? "critical" : "success"}>

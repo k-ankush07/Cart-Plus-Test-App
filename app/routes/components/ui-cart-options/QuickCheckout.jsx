@@ -26,7 +26,7 @@ const SNIPPET = `{% if additional_checkout_buttons %}
 </div>
 {% endif %}`;
 
-export default function Expresspayments({ expressPaymentsSettings, handleChange }) {
+export default function QuickCheckout({ expressPaymentsSettings, handleChange }) {
     const [guideOpen, setGuideOpen] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -54,7 +54,7 @@ export default function Expresspayments({ expressPaymentsSettings, handleChange 
                                 <Icon source={CreditCardIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Express payments</Text>
+                                <Text variant="headingMd" as="h2">Quick Checkout</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={expressPaymentsSettings.enabled ? "critical" : "success"}>

@@ -15,7 +15,7 @@ import { PaintBrushFlatIcon } from "@shopify/polaris-icons";
 import ColorInput from "../ui/ColorInput";
 import "../../../index.css";
 
-export default function DesignSettings({ designSettings, setDesignSettings }) {
+export default function Appearance({ designSettings, setDesignSettings }) {
 
     const handleChange = (key, value) => {
         setDesignSettings((prev) => ({
@@ -36,7 +36,7 @@ export default function DesignSettings({ designSettings, setDesignSettings }) {
                                 <Icon source={PaintBrushFlatIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Design</Text>
+                                <Text variant="headingMd" as="h2">Appearance</Text>
                             </InlineStack>
                         </InlineStack>
                         <InlineStack gap="200" />

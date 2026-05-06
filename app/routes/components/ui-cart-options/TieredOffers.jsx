@@ -20,7 +20,7 @@ import ColorInput from "../ui/ColorInput";
 import RichTextEditor from "../ui/RichTextEditor";
 import RewardsCalculation from "../ui/Rewards-calculation";
 
-export default function TieredRewards({ handleChange, rewardsSettings, currency }) {
+export default function TieredOffers({ handleChange, rewardsSettings, currency }) {
 
     const update = (key, value) => {
         handleChange("rewardsSettings", (prev) => ({
@@ -40,7 +40,7 @@ export default function TieredRewards({ handleChange, rewardsSettings, currency 
                                 <Icon source={GiftCardIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Tiered rewards</Text>
+                                <Text variant="headingMd" as="h2">Tiered Offers</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={rewardsSettings.enabled ? "critical" : "success"}>

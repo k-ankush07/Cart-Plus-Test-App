@@ -26,7 +26,7 @@ import {
 import RichTextEditor from "../ui/RichTextEditor";
 import ColorInput from "../ui/ColorInput";
 
-export default function AnnouncementsSettings({
+export default function Notices({
   handleChange,
   announcementSettings,
 }) {
@@ -48,7 +48,7 @@ export default function AnnouncementsSettings({
                 <Icon source={MegaphoneIcon} />
               </Box>
               <InlineStack gap="200">
-                <Text variant="headingMd" as="h2">Announcements</Text>
+                <Text variant="headingMd" as="h2">Notices </Text>
               </InlineStack>
               <Box paddingInlineStart="200">
                 <Badge tone={announcementSettings.enabled ? "critical" : "success"}>

@@ -1,18 +1,18 @@
 import { Card, Text } from "@shopify/polaris";
-import HeaderSettings from "./ui-cart-options/HeaderSettings";
-import AnnouncementsSettings from "./ui-cart-options/AnnouncementsSettings";
-import DesignSettings from "./ui-cart-options/DesignSettings";
-import TieredRewards from "./ui-cart-options/TieredRewardSetting";
-import TriggeredReward from "./ui-cart-options/TriggeredReward";
-import Recommendations from "./ui-cart-options/Recommendations";
+import TopSection from "./ui-cart-options/Top-Section";
+import Notices from "./ui-cart-options/Notices";
+import Appearance from "./ui-cart-options/Appearance";
+import TieredOffers from "./ui-cart-options/TieredOffers";
+import SmartOffers from "./ui-cart-options/SmartOffers";
+import SuggestedProducts from "./ui-cart-options/SuggestedProducts";
 import SubscriptionUpgrades from "./ui-cart-options/SubscriptionUpgrades";
 import UpsellsSettings from "./ui-cart-options/UpsellsSettings";
-import AdditionalNotes from "./ui-cart-options/AdditionalNotes";
-import AddonsSettings from "./ui-cart-options/Add-onsSettings";
-import DiscountCodes from "./ui-cart-options/DiscountCodes";
-import Expresspayments from "./ui-cart-options/Express-payments";
-import Trustbadges from "./ui-cart-options/Trustbadges";
-import CartSettings from "./ui-cart-options/CartSettings";
+import OrderNotes from "./ui-cart-options/Order-Notes";
+import Extras from "./ui-cart-options/Extras";
+import PromoCodes from "./ui-cart-options/PromoCodes";
+import QuickCheckout from "./ui-cart-options/QuickCheckout";
+import SecurityBadges from "./ui-cart-options/SecurityBadges";
+import Preferences from "./ui-cart-options/Preferences";
 import CartItem from "./ui-cart-options/CartItems";
 import CartSummary from "./ui-cart-options/CartSummary";
 import "../../index.css";
@@ -24,66 +24,66 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
 }) {
 
     const COMPONENT_MAP = {
-        Design: (
-            <DesignSettings
+        Appearance: (
+            <Appearance
                 designSettings={designSettings}
                 setDesignSettings={(updater) =>
                     handleChange("design", updater)
                 }
             />
         ),
-        Header: <HeaderSettings
+        "Top Section": <TopSection
             headerSettings={headerSettings}
             handleChange={handleChange}
             shop={shop}
             accessToken={accessToken}
             apiUrl={apiUrl}
         />,
-        Announcements: <AnnouncementsSettings
+        Notices: <Notices
             announcementSettings={announcementSettings}
             handleChange={handleChange}
         />,
-        "Tiered rewards": (
-            <TieredRewards
+        "Tiered Offers": (
+            <TieredOffers
                 rewardsSettings={rewardsSettings}
                 handleChange={handleChange}
                 currency={currency}
             />
         ),
-        "Triggered rewards": (
-            <TriggeredReward
+        "Smart Offers": (
+            <SmartOffers
                 triggeredRewardsSettings={triggeredRewardsSettings}
                 handleChange={handleChange}
             />
         ),
-        Recommendations: (
-            <Recommendations
+        "Suggested Products": (
+            <SuggestedProducts
                 recommendationsSettings={recommendationsSettings}
                 handleChange={handleChange}
                 currency={currency}
             />
         ),
-        "Subscription upgrades": (
+        "Subscription Options": (
             <SubscriptionUpgrades
                 subscriptionUpgradesSettings={subscriptionUpgradesSettings}
                 handleChange={handleChange}
             />
         ),
-        "Upsells": (
+        "Upgrade Offers": (
             <UpsellsSettings
                 upsellsSettings={upsellsSettings}
                 handleChange={handleChange}
                 currency={currency}
             />
         ),
-        "Additional notes": (
-            <AdditionalNotes
+        "Order Notes": (
+            <OrderNotes
                 additionalNotesSettings={additionalNotesSettings}
                 handleChange={handleChange}
             />
         ),
-        "Add-ons": (
-            <AddonsSettings
+        "Extras": (
+            <Extras
                 addonsSettings={addonsSettings}
                 handleChange={handleChange}
                 currency={currency}
@@ -92,20 +92,20 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 apiUrl={apiUrl}
             />
         ),
-        "Discount codes": (
-            <DiscountCodes
+        "Promo Codes": (
+            <PromoCodes
                 discountCodesSettings={discountCodesSettings}
                 handleChange={handleChange}
             />
         ),
-        "Express payments": (
-            <Expresspayments
+        "Quick Checkout": (
+            <QuickCheckout
                 expressPaymentsSettings={expressPaymentsSettings}
                 handleChange={handleChange}
             />
         ),
-        "Trust badges": (
-            <Trustbadges
+        "Security Badges": (
+            <SecurityBadges
                 trustBadgesSettings={trustBadgesSettings}
                 handleChange={handleChange}
                 shop={shop}
@@ -113,19 +113,19 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 apiUrl={apiUrl}
             />
         ),
-        "Settings": (
-            <CartSettings
+        "Preferences": (
+            <Preferences
                 cartSettings={cartSettings}
                 handleChange={handleChange}
             />
         ),
-        "Cart items": (
+        "Items in Cart": (
             <CartItem
                 handleChange={handleChange}
                 cartSettings={cartSettings}
             />
         ),
-        "Cart summary": (
+        "Order Summary": (
             <CartSummary />
         )
     };
