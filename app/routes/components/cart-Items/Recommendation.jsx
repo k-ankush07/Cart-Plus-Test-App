@@ -254,14 +254,17 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                 <div className="styles_CartPreview__empty__">
                     <h3>{cartSettings.emptyCartMessage}</h3>
                     {/* HEADER */}
-                    <div className="custom-cart-internal-upsell__header upcart-recommendations-title" style={{ color: designSettings.textColor || "#6b7280", }}>
-                        <p dangerouslySetInnerHTML={{
-                            __html: recommendationsSettings.headerText
-                        }} />
-                    </div>
+                    {!recommendationsSettings.enabled && (
+                        <div
+                            className="custom-cart-internal-upsell__header upcart-recommendations-title"
+                            style={{ color: designSettings.textColor || "#6b7280" }}
+                        >
+                            <p dangerouslySetInnerHTML={{ __html: recommendationsSettings.headerText }} />
+                        </div>
+                    )}
 
                     {/* BUTTON */}
-                    {recommendationsSettings.showShopNowButton && (
+                    {!recommendationsSettings.enabled && recommendationsSettings.showShopNowButton && (
                         <div className="custom-cart-internal-style__title-large_button" style={{
                             borderRadius: `${designSettings.buttonRadius}px`,
                             backgroundColor: designSettings.buttonColor,
@@ -275,7 +278,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     )}
                 </div>
             </div>
-            <div className="custom-cart-internal-upsell custom-cart-public-upsell">
+            {!recommendationsSettings.enabled && (<div className="custom-cart-internal-upsell custom-cart-public-upsell">
                 <div className="custom-cart-internal-style__title-large" style={{ color: designSettings.textColor || "#6b7280", }}>
                     <p dangerouslySetInnerHTML={{
                         __html: recommendationsSettings.productHeaderText
@@ -331,7 +334,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     <div className="upcart-internal-upsell__vertical-layout-wrapper">
                         {renderProducts()}
                     </div>)}
-            </div>
+            </div>)}
         </div>
     );
 }

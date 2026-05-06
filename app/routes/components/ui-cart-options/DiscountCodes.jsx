@@ -5,14 +5,13 @@ import {
     BlockStack,
     Button,
     Card,
+    Checkbox,
     Collapsible,
-    Divider,
     InlineStack,
-    Link,
     Text,
     TextField,
     Box,
-    Icon 
+    Icon,
 } from "@shopify/polaris";
 
 import {
@@ -74,6 +73,13 @@ export default function DiscountCodes({ discountCodesSettings, handleChange }) {
                             value={discountCodesSettings.buttonText}
                             onChange={(val) => update("buttonText", val)}
                             autoComplete="off"
+                        />
+
+                        {/* Checkbox — Show Offer Box */}
+                        <Checkbox
+                            label="Show All Discount code"
+                            checked={discountCodesSettings.showOfferBox ?? false}
+                            onChange={(val) => update("showOfferBox", val)}
                         />
 
                         <Banner tone="warning">

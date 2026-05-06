@@ -146,6 +146,7 @@ export const defaultDiscountCodesSettings = {
   placeholder: "Discount code",
   buttonText: "Apply",
   customTemplate: "",
+  showViewAllOffers :false
 };
 
 export const defaultExpressPaymentsSettings = {

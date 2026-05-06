@@ -39,7 +39,7 @@ export const action = async ({ request }) => {
       } else if (props.__upcartRecommendation) {
         upsellRevenue += lineTotal;
         hubTouched = true;
-      } else if (props._hub_subscription || item.selling_plan_allocation) {
+      } else if (props._hub_subscription) {
         subscriptionRevenue += lineTotal;
         hubTouched = true;
       } else if (props._hub_reward || props._triggered_reward) {

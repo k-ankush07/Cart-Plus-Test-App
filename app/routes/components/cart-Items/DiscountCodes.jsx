@@ -50,10 +50,10 @@ export default function DiscountCode({ discountCodesSettings }) {
                             )}
                         </button>
                     </div>
-                    <div className="discount-offer-btn">
+                    {discountCodesSettings.showOfferBox && (<div className="discount-offer-btn">
                         <button class="hub-view-offers-btn">View all offers</button>
                         <img src="https://hubsyntax.com/cart-images/Vector%20(4).svg" alt="discount-code" class="discount-code-img"></img>
-                    </div>
+                    </div>)}
                 </div>
             </div>
             <div className="upcart-discount-code-badge" style={{ display: "none" }}>

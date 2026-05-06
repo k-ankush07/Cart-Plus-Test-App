@@ -52,6 +52,8 @@ window.injectCartHTML = function (blockId, root) {
   const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
   const headerSettings = window.__HUB_ACTIVE_CART__?.headerSettings || {};
   const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
+  const discountCodesSettings = window.__HUB_ACTIVE_CART__?.discountCodesSettings || {};
+  const showOfferBox = discountCodesSettings.showOfferBox ?? false;
 
   const cartCount =
     window.__HUB_ACTIVE_CART__?.cart?.item_count ??
@@ -186,7 +188,7 @@ window.injectCartHTML = function (blockId, root) {
     cartSettings.checkoutButtonText || "Proceed to checkout";
   const continueShoppingText =
     cartSettings.continueShoppingText || "Or continue shopping";
-
+  
   const btnColor = designSettings.buttonColor || "#000000";
   const btnHoverColor = designSettings.buttonHoverColor || "#333333";
   const textColor = designSettings.buttonTextColor || "#000";
@@ -254,10 +256,13 @@ window.injectCartHTML = function (blockId, root) {
     `
     <div id="hub-cart-bg-${blockId}" class="hub-cart-bg"></div>
 
-    <div id="hub-cart-drawer-${blockId}" class="hub-cart-drawer cart-app upcart-cart 
-    ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"}"
-     style="background-color:${designSettings.backgroundColor || ""};
-     width:${designSettings.desktopWidth === "wide" ? "500px" : "440px"};">
+   <div id="hub-cart-drawer-${blockId}" 
+  class="hub-cart-drawer cart-app upcart-cart ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"}"
+  style="background-color:${designSettings.backgroundColor || ""};
+  width:${designSettings.desktopWidth === "wide" ? "500px" : "440px"};
+  overflow-y:${disableFixedFooter ? 'auto' : 'unset'};
+  scrollbar-width:none;
+  -ms-overflow-style:none;">
 
       <!-- HEADER -->
       <div
@@ -280,7 +285,7 @@ window.injectCartHTML = function (blockId, root) {
       <div>${renderCustomHTML(customHtmlBlocks.below_header)}</div>
 
       <!-- ITEMS (scrollable) -->
-      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview">
+      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview ${disableFixedFooter ? 'scroll-auto' : 'scroll-unset'}">
         <!-- ANNOUNCEMENT (position: before) -->
         <div>${renderCustomHTML(customHtmlBlocks.above_announcements)}</div>
         <div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>
@@ -355,14 +360,14 @@ window.injectCartHTML = function (blockId, root) {
           <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn">Apply</button>
           </div>
           <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
-           <div class="discount-offer-btn" onclick="hubOpenOffersPanel('${blockId}')">
+         ${showOfferBox ? ` <div class="discount-offer-btn" onclick="hubOpenOffersPanel('${blockId}')">
           <button class="hub-view-offers-btn">View all offers</button>
           <img 
             src="https://hubsyntax.com/cart-images/Vector%20(4).svg" 
             alt="discount-code" 
             class="discount-code-img"
             />
-          </div>
+          </div>   ` : ""}
         </div>
         </div>
 

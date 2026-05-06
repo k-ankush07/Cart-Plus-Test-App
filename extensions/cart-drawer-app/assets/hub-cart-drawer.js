@@ -1112,33 +1112,32 @@ function hubRenderOffersPanel(
 }
 
 window.hubOpenOffersPanel = function (blockId) {
-  document
-    .getElementById(`hub-offers-panel-${blockId}`)
-    ?.classList.add("hub-offers-open");
-  document
-    .getElementById(`hub-offers-backdrop-${blockId}`)
-    ?.classList.add("hub-offers-open");
-  document
-    .getElementById(`hub-offers-close-${blockId}`)
-    ?.classList.add("hub-offers-open");
-  document
-    .querySelector(`.hub-cart-block-${blockId}`)
-    ?.classList.add("hub-offers-open-body");
+  const panel = document.getElementById(`hub-offers-panel-${blockId}`);
+  if (!panel) return;
+
+  panel.style.display = "flex";        
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      panel.classList.add("hub-offers-open");  
+      document.getElementById(`hub-offers-backdrop-${blockId}`)?.classList.add("hub-offers-open");
+      document.getElementById(`hub-offers-close-${blockId}`)?.classList.add("hub-offers-open");
+      document.querySelector(`.hub-cart-block-${blockId}`)?.classList.add("hub-offers-open-body");
+    });
+  });
 };
 
 window.hubCloseOffersPanel = function (blockId) {
-  document
-    .getElementById(`hub-offers-panel-${blockId}`)
-    ?.classList.remove("hub-offers-open");
-  document
-    .getElementById(`hub-offers-backdrop-${blockId}`)
-    ?.classList.remove("hub-offers-open");
-  document
-    .getElementById(`hub-offers-close-${blockId}`)
-    ?.classList.remove("hub-offers-open");
-  document
-    .querySelector(`.hub-cart-block-${blockId}`)
-    ?.classList.remove("hub-offers-open-body");
+  const panel = document.getElementById(`hub-offers-panel-${blockId}`);
+  if (!panel) return;
+
+  panel.classList.remove("hub-offers-open");
+  document.getElementById(`hub-offers-backdrop-${blockId}`)?.classList.remove("hub-offers-open");
+  document.getElementById(`hub-offers-close-${blockId}`)?.classList.remove("hub-offers-open");
+  document.querySelector(`.hub-cart-block-${blockId}`)?.classList.remove("hub-offers-open-body");
+
+  setTimeout(() => {
+    panel.style.display = "none";             
+  }, 280);                                    
 };
 
 function showMessage(el, text, color = "black") {

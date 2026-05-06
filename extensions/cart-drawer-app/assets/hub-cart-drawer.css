@@ -250,9 +250,9 @@
   align-items: center;
   transition: color 0.15s;
   border: 1px solid #E8E8E8;
-  height: 28px;
+  height: 26px;
   border-radius: 5px;
-  width: 28px;
+  width: 26px;
   display: flex;
   justify-content: center;
 }
@@ -386,18 +386,20 @@
   height: 70%;
   background: #fff;
   z-index: 10;
-  display: flex;
+  display: none;
   flex-direction: column;
   border-radius: 5px 5px 0 0;
   transform: translateY(100%);
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.28s ease;
+  opacity: 0;
   overflow: hidden;
 }
 
 .hub-offers-panel.hub-offers-open {
   transform: translateY(0);
+  opacity: 1;
   z-index: 999;
-  background: #eeeeee;
 }
 
 .hub-offers-header {
@@ -405,7 +407,6 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 16px 14px;
-  border-bottom: 1px solid #eee;
   flex-shrink: 0;
 }
 
@@ -506,12 +507,12 @@ span.hub-offers-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #eee;
   flex-shrink: 0;
   background: white;
   padding: 20px;
   border-radius: 5px;
   flex-wrap: wrap;
+  border: 1px solid #E8E8E8
 }
 
 .hub-offers-input-wrap {
@@ -578,6 +579,7 @@ span.hub-offers-title {
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+      height: 78%;
 }
 
 .hub-offers-list::-webkit-scrollbar {
@@ -1594,6 +1596,15 @@ h3.styles_CartPreview__empty__ {
   -ms-overflow-style: none;
 }
 
+.hub-cart-items-CartPreview.scroll-auto {
+    min-height: unset !important;
+    overflow: visible !important;
+}
+
+.hub-offers-open-body .hub-cart-items-CartPreview {
+  overflow: hidden !important;
+}
+
 #hub-upcart-cart-body::-webkit-scrollbar {
   display: none;
 }
@@ -2261,4 +2272,23 @@ span.hub-item-discount-badge {
 .hub-offers-back img.right-img {
   width: 100%;
   height: 100%;
+}
+
+.hub-offers-panel {
+  display: none;
+}
+
+.hub-offers-panel.hub-offers-open {
+  display: block;
+}
+
+.hub-offers-backdrop {
+  display: none;
+}
+.hub-offers-backdrop.hub-offers-open {
+  display: block;
+}
+
+.hub-offers-close {
+  display: none;
 }

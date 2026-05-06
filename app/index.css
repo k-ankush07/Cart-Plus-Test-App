@@ -124,6 +124,15 @@ body,
     display: none;
 }
 
+.cart-app {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.cart-app::-webkit-scrollbar {
+    display: none;
+}
+
 .cart-app__items {
     padding: 20px;
     border-bottom: 1px solid #E8E8E8;
@@ -941,7 +950,7 @@ body,
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 12px 16px;
+    padding: 10px 20px 0;
 }
 
 .cart-trust-badges__img {
@@ -1323,7 +1332,7 @@ span.upcart-rewards-tier-icon {
     background: white;
     align-items: center;
     margin-bottom: 15px;
-    padding: 20px 20px 0;
+    padding: 15px 20px 0;
     border-radius: 5px;
 }
 

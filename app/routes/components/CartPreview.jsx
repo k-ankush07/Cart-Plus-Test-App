@@ -43,6 +43,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 backgroundColor: designSettings.backgroundColor,
                 maxWidth: designSettings.desktopWidth === "wide" ? "500px" : "440px",
                 width: "100%",
+                overflowY: cartSettings?.disableFixedFooter ? "auto" : "unset",
             }}
         >
             {cartSettings?.customCss && (
@@ -62,19 +63,20 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 {/* below_header */}
                 <CustomHtml cartSettings={cartSettings} position="below_header" />
 
-                <div className="cart-app__body custom-cart-body">
-                    {(emptyCart && activeTab !== "Recommendations") || (activeTab === "Recommendations" && recommendationsSettings.enabled) ? (
-                        <div className="cart-app__empty" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px", gap: "12px" }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke={designSettings.textColor || "#9ca3af"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                                <line x1="3" y1="6" x2="21" y2="6" />
-                                <path d="M16 10a4 4 0 0 1-8 0" />
-                            </svg>
-                            <p style={{ color: designSettings.textColor || "#6b7280", fontSize: "16px", fontWeight: "500", margin: 0 }}>{cartSettings.emptyCartMessage}</p>
-                        </div>
+                <div className="cart-app__body custom-cart-body" style={{
+                    overflowY: cartSettings?.disableFixedFooter ? "unset" : "auto",
+                }}>
+                    {emptyCart ? (
+                        <Recommendation
+                            recommendationsSettings={recommendationsSettings}
+                            currency={currency}
+                            cartSettings={cartSettings}
+                            upsellsSettings={upsellsSettings}
+                            designSettings={designSettings}
+                        />
                     ) : (
                         <>
-                            {activeTab !== "Recommendations" && (
+                            {!emptyCart && activeTab !== "Recommendations" && (
                                 <>
                                     {/* above_announcements */}
                                     <CustomHtml cartSettings={cartSettings} position="above_announcements" />
@@ -120,7 +122,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     )}
                                     {/* between_line_items */}
                                     <CustomHtml cartSettings={cartSettings} position="between_line_items" />
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency ={currency }/>}
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} />}
 
                                     {/* below_cart_items */}
                                     <CustomHtml cartSettings={cartSettings} position="below_cart_items" />
@@ -136,7 +138,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                 </>
                             )}
 
-                            {!recommendationsSettings.enabled && activeTab === "Recommendations" && (
+                            {activeTab === "Recommendations" && (
                                 <Recommendation
                                     recommendationsSettings={recommendationsSettings}
                                     currency={currency}
@@ -168,7 +170,9 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 )}
 
                 {/* bottom_of_cart */}
-                <CustomHtml cartSettings={cartSettings} position="bottom_of_cart" />
+                {!emptyCart && (
+                    <CustomHtml cartSettings={cartSettings} position="bottom_of_cart" />
+                )}
             </div>
         </div>
     );
