@@ -1,3 +1,4 @@
+// === Scope helper (unchanged) ===
 function applyStickyCustomCSS(blockId, css) {
   if (!css) return;
 
@@ -56,56 +57,55 @@ function scopeCss(css, scope) {
         .filter((i) => !i.properties?._triggered_reward)
         .reduce((sum, i) => sum + i.quantity, 0);
 
-      const badge = document.getElementById("hub-sticky-badge");
-      if (!badge) return;
+      // ── Uses new class instead of id ──
+      const badgeText = document.querySelector(
+        ".custom-cart-sticky-cart-quantity-icon-text",
+      );
+      const badgeWrapper = document.querySelector(
+        ".custom-cart-sticky-cart-quantity-icon",
+      );
+      if (!badgeText || !badgeWrapper) return;
 
-      badge.textContent = count > 99 ? "99+" : count;
-      badge.style.display = count > 0 ? "flex" : "none";
+      badgeText.textContent = count > 99 ? "99+" : count;
+      badgeWrapper.style.display = count > 0 ? "flex" : "none";
     } catch (_) {}
   }
 
   window.renderStickyCart = function () {
     const data = window.__HUB_STICKY_CART__;
     const blockId = window.HUB_CART_BLOCK_ID;
-
     if (!data || !data.enabled) return;
 
     applyStickyCustomCSS(blockId, data.customCss);
 
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    const isDesktop = !isMobile;
-
-    const existingBtn = document.getElementById("hub-sticky-cart-btn");
-
     if (
       (data.device === "mobile" && !isMobile) ||
-      (data.device === "desktop" && !isDesktop)
+      (data.device === "desktop" && isMobile)
     ) {
-      if (existingBtn) existingBtn.remove();
+      const existing = document.querySelector(".custom-cart-sticky-widget");
+      if (existing) existing.remove();
       return;
     }
 
-    // ── Always update badge count even if button already exists ──
     updateStickyBadge();
 
-    // ── Only bind the listener once ──
     if (!_badgeListenerBound) {
       _badgeListenerBound = true;
-
       document.addEventListener("cart:updated", () => {
         updateStickyBadge();
-
         setTimeout(updateStickyBadge, 300);
       });
     }
 
-    // ── Only build the button DOM once ──
-    if (document.getElementById("hub-sticky-cart-btn")) return;
+    if (document.querySelector(".custom-cart-sticky-widget")) return;
 
+    // ── Root button ──
     const btn = document.createElement("div");
-    btn.id = "hub-sticky-cart-btn";
-
-    btn.classList.add(`hub-sticky-scope-${blockId}`);
+    btn.classList.add(
+      "custom-cart-sticky-widget",
+      `hub-sticky-scope-${blockId}`,
+    );
 
     const pos = {
       "bottom-right": { bottom: "20px", right: "20px" },
@@ -124,8 +124,6 @@ function scopeCss(css, scope) {
       "top-left": { top: "20px", left: "20px" },
     };
 
-    const style = pos[data.position] || pos["bottom-right"];
-
     Object.assign(btn.style, {
       position: "fixed",
       zIndex: 2147483638,
@@ -139,13 +137,13 @@ function scopeCss(css, scope) {
       justifyContent: "center",
       cursor: "pointer",
       boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-      ...style,
+      ...(pos[data.position] || pos["bottom-right"]),
     });
 
-    // ── Badge ──
-    const badge = document.createElement("div");
-    badge.id = "hub-sticky-badge";
-    Object.assign(badge.style, {
+    // ── Badge wrapper ──
+    const badgeWrapper = document.createElement("div");
+    badgeWrapper.classList.add("custom-cart-sticky-cart-quantity-icon");
+    Object.assign(badgeWrapper.style, {
       position: "absolute",
       top: "5px",
       left: "60px",
@@ -153,36 +151,44 @@ function scopeCss(css, scope) {
       height: "25px",
       borderRadius: "100%",
       background: data.qBgColor || "#e03e2d",
-      color: data.qTextColor || "#fff",
-      fontSize: "14px",
-      fontWeight: "600",
       display: "none",
       alignItems: "center",
       justifyContent: "center",
-      lineHeight: "1",
       padding: "0 4px",
       boxSizing: "border-box",
       pointerEvents: "none",
       zIndex: "1",
-      fontFamily: "sans-serif",
     });
 
-    btn.appendChild(badge);
-    btn.innerHTML += getStickyIcon(data.selectedIcon);
+    // ── Badge text ──
+    const badgeText = document.createElement("span");
+    badgeText.classList.add("custom-cart-sticky-cart-quantity-icon-text");
+    Object.assign(badgeText.style, {
+      color: data.qTextColor || "#fff",
+      fontSize: "14px",
+      fontWeight: "600",
+      lineHeight: "1",
+      fontFamily: "sans-serif",
+    });
+    badgeWrapper.appendChild(badgeText);
+    btn.appendChild(badgeWrapper);
 
+    // ── Icon wrapper ──
+    const iconWrapper = document.createElement("div");
+    iconWrapper.classList.add("custom-cart-sticky-cart-icon");
+    iconWrapper.innerHTML = getStickyIcon(data.selectedIcon);
+    btn.appendChild(iconWrapper);
+
+    // ── Click → open drawer ──
     btn.addEventListener("click", () => {
       const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
       const bg = document.getElementById(`hub-cart-bg-${blockId}`);
-
       if (drawer && bg) {
         drawer.classList.add(`hub-visible-${blockId}`);
         bg.classList.add(`hub-visible-${blockId}`);
-
-        // ── Same scroll lock as openDrawer() ──
         document.body.classList.add("no-scroll", "overflow-hidden");
         document.documentElement.classList.add("overflow-hidden");
         document.body.style.overflow = "hidden";
-
         if (window.hubCartRender) {
           window.hubCartRender(drawer, { showSkeleton: true });
         }

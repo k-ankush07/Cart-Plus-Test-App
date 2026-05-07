@@ -51,7 +51,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                     headerSettings.height === "slim"
                         ? "15px 25px"
                         : "30px 30px",
-                background: headerSettings.backgroundColor
+                background: headerSettings.backgroundColor || designSettings.backgroundColor || '',
             }}
         >
             <div

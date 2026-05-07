@@ -51,7 +51,7 @@ export default function Sidebar({
       "Upgrade Offers": upsellsSettings?.enabled,
       "Order Notes": additionalNotesSettings?.enabled,
       "Extras": addonsSettings?.enabled,
-      "Promo Codess": discountCodesSettings?.enabled,
+      "Promo Codes": discountCodesSettings?.enabled,
       "Quick Checkout": expressPaymentsSettings?.enabled,
       "Security Badges": trustBadgesSettings?.enabled,
     };

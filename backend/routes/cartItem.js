@@ -77,42 +77,46 @@ router.get("/get-cart/:cartId", async (req, res) => {
 
 router.post("/create-cart", async (req, res) => {
   try {
-    const { shop, shopEmail, storeOwner, cartId: clientCartId } = req.body;
+    const {
+      shop, shopEmail, storeOwner, cartId: clientCartId,
+      designSettings, headerSettings, announcementSettings,
+      rewardsSettings, recommendationsSettings, subscriptionUpgradesSettings,
+      upsellsSettings, additionalNotesSettings, addonsSettings,
+      discountCodesSettings, expressPaymentsSettings, trustBadgesSettings,
+      cartSettings, triggeredRewardsSettings,
+    } = req.body;
 
     if (!shop || !shopEmail || !storeOwner) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing required fields",
-      });
+      return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
     const count = await cartModels.countDocuments({ shop });
-
     const cartName = `Untitled cart ${count + 1}`;
-
     const cartId = clientCartId || crypto.randomUUID();
 
     const newCart = await cartModels.create({
-      shop,
-      shopEmail,
-      storeOwner,
-      cartId,
-      cartName,
+      shop, shopEmail, storeOwner, cartId, cartName,
       status: "unpublished",
+      designSettings,
+      headerSettings,
+      announcementSettings,
+      rewardsSettings,
+      recommendationsSettings,
+      subscriptionUpgradesSettings,
+      upsellsSettings,
+      additionalNotesSettings,
+      addonsSettings,
+      discountCodesSettings,
+      expressPaymentsSettings,
+      trustBadgesSettings,
+      cartSettings,
+      triggeredRewardsSettings,
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Cart created successfully",
-      data: newCart,
-    });
+    return res.status(201).json({ success: true, message: "Cart created successfully", data: newCart });
   } catch (error) {
     console.error("CREATE CART ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 

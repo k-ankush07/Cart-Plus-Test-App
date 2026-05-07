@@ -618,7 +618,7 @@ span.hub-offers-title {
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
-  background: #123348;
+  background: #2271b4;
   color: #fff;
   font-size: 20px;
   font-weight: 700;
@@ -817,9 +817,6 @@ h3.styles_CartPreview__empty__ {
 }
 
 /* ── Total Summary ── */
-.hub-total-summary {
-  margin-bottom: 14px;
-}
 
 .hub-total-header {
   display: flex;
@@ -925,10 +922,13 @@ h3.styles_CartPreview__empty__ {
   font-size: 12px;
   color: #2D2D2D;
   padding: 5px 0;
-  line-height: 24px;
+  line-height: 18px;
   font-weight: 500;
 }
 
+span.hub-total-arrow svg {
+    color: black;
+}
 .hub-breakdown-discount span:last-child {
   color: #10812F;
   font-weight: 500;
@@ -962,7 +962,7 @@ h3.styles_CartPreview__empty__ {
   transition: 0.3s ease;
   line-height: 20px;
   width: calc(100% - 40px);
-  margin: 0 20px !important;
+  margin: 10px 20px !important;
 }
 
 .hub-cart-checkout-btn:hover {
@@ -1156,7 +1156,7 @@ h3.styles_CartPreview__empty__ {
   cursor: pointer;
   font-weight: 700;
   line-height: 20px;
-  padding: 15px 0 0;
+  padding: 10px 0 0;
   width: calc(100% - 40px);
   margin: 0 20px !important;
 }
@@ -1805,7 +1805,7 @@ h3.styles_CartPreview__empty__ {
   border-radius: 10px;
   padding: 14px;
   background: #f9f9f9;
-  margin: 8px 16px;
+      margin: 15px 20px;
 }
 
 .upsell-checkbox-wrapper {
@@ -1872,7 +1872,7 @@ span.upsell-text.suggestion-product {
   text-align: center;
   position: relative;
   width: 100%;
-  max-width: 370px;
+  max-width: 350px;
 }
 
 .hub-coupon-success-close {
@@ -1914,13 +1914,13 @@ span.upsell-text.suggestion-product {
 }
 
 .hub-coupon-success-headline {
-  font-size: 26px;
+  font-size: 18px;
   font-weight: 700;
   color: #1e2d4a;
   line-height: 1.2;
   text-transform: uppercase;
   border-bottom: 1px solid #EEEEEE;
-  padding: 20px 0;
+  padding: 15px 0;
 }
 
 .hub-coupon-success-desc {
@@ -1928,7 +1928,7 @@ span.upsell-text.suggestion-product {
   color: #2D2D2D;
   margin: 0 0 24px;
   font-weight: 500;
-  padding: 20px 0;
+  padding: 15px 0;
 }
 
 .hub-coupon-success-yay {
@@ -2054,7 +2054,7 @@ span.upsell-text.suggestion-product {
 }
 
 .upsell-inner {
-  padding: 10px 20px;
+  padding: 20px;
 }
 
 .upsell-inner h3.upsell-heading {
@@ -2100,7 +2100,7 @@ span.upsell-text.suggestion-product {
 }
 
 .hub-additional-notes.top_of_footer {
-  padding: 20px 20px 10px;
+  padding: 15px 20px 10px;
 }
 
 .hub-additional-notes span.drop-icon {
@@ -2184,8 +2184,8 @@ span.upsell-text.suggestion-product {
 
 .hub-discount-input-row-items {
   flex-wrap: wrap;
-  padding: 0 20px;
-  padding-top: 15px;
+  padding: 15px 20px;
+  padding-bottom: 10px;
 }
 
 .hub-discount-heading {
@@ -2252,17 +2252,17 @@ span.upsell-text.suggestion-product {
 }
 
 button.remove-btn {
-     border: 0;
-    background: #000;
-    border-radius: 50%;
-    height: 14px;
-    width: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 2px;
-    color: white;
+  border: 0;
+  background: #000;
+  border-radius: 50%;
+  height: 14px;
+  width: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 2px;
+  color: white;
 }
 
 .hub-discount-right {
@@ -2278,11 +2278,11 @@ button.remove-btn {
 }
 
 .hub-discount-input-btn svg {
-    width: 20px;
+  width: 20px;
 }
 
 .hub-offers-input svg {
-    width: 20px;
+  width: 20px;
 }
 
 .hub-discount-title-btn {
@@ -2343,4 +2343,10 @@ span.hub-item-discount-badge img.discount-code-img {
 
 .upcart-internal-upsell__vertical-layout-wrapper.block {
   padding: 0;
+}
+
+.custom-cart-sticky-cart-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

@@ -1,7 +1,7 @@
 export const defaultSettings = {
   inheritFonts: true,
   showStrikethrough: true,
-  enableSubtotal: false,
+  enableSubtotal: true,
   desktopWidth: "default",
   mobileWidth: "full",
   backgroundColor: "#FFFFFF",
@@ -19,7 +19,7 @@ export const defaultSettings = {
 export const defaultHeaderSettings = {
   height: "tall",
   border: "thin",
-  backgroundColor: "#ffffff",
+  backgroundColor: "#ffffff00",
   titleType: "inherit",
   titleText: "Cart • {{cart_quantity}}",
   alignment: "side",

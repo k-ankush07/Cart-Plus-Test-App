@@ -108,10 +108,10 @@ const ICON_SVGS = {
 };
 
 const CSS_CLASSES = [
-  "upcart-sticky-widget",
-  "upcart-sticky-cart-quantity-icon",
-  "upcart-sticky-cart-quantity-icon-text",
-  "upcart-sticky-cart-icon",
+  "custom-cart-sticky-widget",
+  "custom-cart-sticky-cart-quantity-icon",
+  "custom-cart-sticky-cart-quantity-icon-text",
+  "custom-cart-sticky-cart-icon",
 ];
 
 const POSITION_OPTIONS = [

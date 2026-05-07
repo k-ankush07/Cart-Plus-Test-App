@@ -54,6 +54,8 @@ window.injectCartHTML = function (blockId, root) {
   const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
   const discountCodesSettings = window.__HUB_ACTIVE_CART__?.discountCodesSettings || {};
   const showOfferBox = discountCodesSettings.showOfferBox ?? false;
+  const enableSubtotal = designSettings.enableSubtotal ?? false;
+  const subtotalColor = designSettings.subtotalColor || '';
 
   const cartCount =
     window.__HUB_ACTIVE_CART__?.cart?.item_count ??
@@ -371,11 +373,11 @@ window.injectCartHTML = function (blockId, root) {
         </div>
 
         <!-- TOTAL SUMMARY -->
-        <div class="hub-total-summary">
+       ${enableSubtotal ? ` <div class="hub-total-summary">
           <div class="hub-total-header"
            onclick="hubToggleTotalBreakdown(this, '${blockId}')">
             <div class="hub-total-header-left">
-              <span class="hub-total-label">Estimated Total</span>
+              <span class="hub-total-label" style="color:${subtotalColor}">Estimated Total</span>
               <span class="hub-total-arrow">
              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -384,7 +386,7 @@ window.injectCartHTML = function (blockId, root) {
             </div>
             <div class="hub-total-header-right">
               <span class="hub-total-original" id="hub-total-original-${blockId}"></span>
-              <span class="hub-total-final" id="hub-cart-total-${blockId}"></span>
+              <span class="hub-total-final" id="hub-cart-total-${blockId}" style="color:${subtotalColor}"></span>
             </div>
           </div>
           <p class="hub-total-saved" id="hub-total-saved-${blockId}"></p>
@@ -411,7 +413,7 @@ window.injectCartHTML = function (blockId, root) {
               <span id="hub-grand-total-${blockId}"></span>
             </div>
           </div>
-        </div>
+        </div> ` : ""}
 
         <div id="hub-express-payments-${blockId}" class="hub-express-payments"></div>
 

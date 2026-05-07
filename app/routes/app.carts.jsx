@@ -12,6 +12,22 @@ import {
     Box,
     SkeletonBodyText
 } from "@shopify/polaris";
+import {
+    defaultSettings,
+    defaultHeaderSettings,
+    defaultAnnouncementSettings,
+    defaultRewardsSettings,
+    defaultRecommendationsSettings,
+    defaultSubscriptionUpgradesSettings,
+    defaultUpsellsSettings,
+    defaultAdditionalNotesSettings,
+    defaultAddonsSettings,
+    defaultDiscountCodesSettings,
+    defaultExpressPaymentsSettings,
+    defaultTrustBadgesSettings,
+    defaultCartSettings,
+    defaultTriggeredRewardsSettings,
+} from "../routes/components/constants/cartDefaults";
 
 import {
     EditIcon,
@@ -148,10 +164,24 @@ export default function AppCarts() {
                 shopEmail: shop.email,
                 storeOwner: shop.name,
                 cartId: tempCartId,
+                designSettings: defaultSettings,
+                headerSettings: defaultHeaderSettings,
+                announcementSettings: defaultAnnouncementSettings,
+                rewardsSettings: defaultRewardsSettings,
+                recommendationsSettings: defaultRecommendationsSettings,
+                subscriptionUpgradesSettings: defaultSubscriptionUpgradesSettings,
+                upsellsSettings: defaultUpsellsSettings,
+                additionalNotesSettings: defaultAdditionalNotesSettings,
+                addonsSettings: defaultAddonsSettings,
+                discountCodesSettings: defaultDiscountCodesSettings,
+                expressPaymentsSettings: defaultExpressPaymentsSettings,
+                trustBadgesSettings: defaultTrustBadgesSettings,
+                cartSettings: defaultCartSettings,
+                triggeredRewardsSettings: defaultTriggeredRewardsSettings,
             }).then((data) => {
                 if (data.success) shopify.toast.show("Cart created successfully");
             }).catch(() => { });
-        }, 80);
+        }, 200);
     };
 
     const confirmDeleteCart = async () => {

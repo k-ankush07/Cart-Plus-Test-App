@@ -58,7 +58,7 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                         onChange={(value) => handleChange("showStrikethrough", value)}
                     />
                     <Checkbox
-                        label="Enable subtotal line"
+                        label="Enable Estimated line"
                         checked={designSettings.enableSubtotal}
                         onChange={(value) => handleChange("enableSubtotal", value)}
                     />
@@ -111,7 +111,7 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                         onChange={(val) => handleChange("savingsColor", val)}
                     />
                     <ColorInput
-                        label="Subtotal text color"
+                        label="Estimated text color"
                         value={designSettings.subtotalColor}
                         onChange={(val) => handleChange("subtotalColor", val)}
                     />

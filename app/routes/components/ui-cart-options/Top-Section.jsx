@@ -132,7 +132,7 @@ export default function TopSection({ handleChange, headerSettings, accessToken, 
             </ButtonGroup>
             <ColorInput
               label="Background color"
-              value={headerSettings.backgroundColor}
+              value={headerSettings.backgroundColor || ""}
               onChange={(val) => updateHeader("backgroundColor", val)}
             />
           </BlockStack>
