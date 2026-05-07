@@ -76,11 +76,13 @@ export default function PromoCodes({ discountCodesSettings, handleChange }) {
                         />
 
                         {/* Checkbox — Show Offer Box */}
-                        <Checkbox
-                            label="Show All Discount code"
-                            checked={discountCodesSettings.showOfferBox ?? false}
-                            onChange={(val) => update("showOfferBox", val)}
-                        />
+                        <InlineStack>
+                            <Checkbox
+                                label="Show All Discount code"
+                                checked={discountCodesSettings.showOfferBox ?? false}
+                                onChange={(val) => update("showOfferBox", val)}
+                            />
+                        </InlineStack>
 
                         <Banner tone="warning">
                             <BlockStack gap="200">

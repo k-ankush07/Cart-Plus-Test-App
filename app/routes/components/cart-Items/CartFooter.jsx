@@ -12,7 +12,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
     const [loading, setLoading] = useState(false);
     const [breakdownOpen, setBreakdownOpen] = useState(false);
 
-    const totalPrice = 200.00;
+    const totalPrice = 210.00;
 
     const checkoutText = cartSettings.checkoutButtonText?.replace(
         "{{total_price}}",
@@ -63,16 +63,21 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 <div className={`hub-total-breakdown ${breakdownOpen ? "hub-breakdown-open" : ""}`}>
                     <div class="hub-breakdown-row">
                         <span>Total MRP</span>
-                        <span>$600.00</span>
+                        <span>$200.00</span>
                     </div>
                     <div class="hub-breakdown-row">
                         <span style={{ color: designSettings.textColor }}>{cartSettings.discountsSavingsText}</span>
                         <span style={{ color: '#10812F' }}>MEGA20</span>
                     </div>
 
+                    <div class="hub-breakdown-row">
+                        <span>Shipping</span>
+                        <span style={{ color: '#10812F' }}>$10</span>
+                    </div>
+
                     <div class="hub-breakdown-row hub-breakdown-grand">
                         <span>Grand Total</span>
-                        <span>$200.00</span>
+                        <span>$210.00</span>
                     </div>
 
                     {/* {designSettings.enableSubtotal && (
