@@ -290,59 +290,198 @@ router.post("/discounts", async (req, res, next) => {
   }
 });
 
-// ─── Shipping Zones ───────────────────────────────────────────────────────────
+// ─── Shipping Zones (GraphQL) ───────────────────────────────────────────────
 
 router.get("/shipping-zones", async (req, res, next) => {
   try {
     const { shop } = req.query;
 
     if (!shop) {
-      return res.status(400).json({ error: "shop is required" });
+      return res.status(400).json({
+        error: "shop is required",
+      });
     }
 
-    // Fetch in parallel — both are independent REST calls
-    const [shippingZonesData, countriesData] = await Promise.all([
-      makeShopifyREST(shop, "shipping_zones.json"),
-      makeShopifyREST(shop, "countries.json"),
-    ]);
+    // ─── GraphQL Query ──────────────────────────────────────────────────────
 
-    const shippingZones = shippingZonesData.shipping_zones ?? [];
-    const countries = countriesData.countries ?? [];
+    const query = `
+      {
+        deliveryProfiles(first: 10) {
+          edges {
+            node {
+              id
+              name
 
-    const shippingZonesWithProvinces = shippingZones.map((zone) => ({
-      ...zone,
-      countries: (zone.countries ?? []).map((country) => {
-        const fullCountry = countries.find((c) => c.code === country.code);
-        return {
-          name: country.name,
-          code: country.code,
-          provinces: fullCountry?.provinces ?? [],
-          price_based_shipping_rates: zone.price_based_shipping_rates ?? [],
-          weight_based_shipping_rates: zone.weight_based_shipping_rates ?? [],
-        };
-      }),
-    }));
+              profileLocationGroups {
+                locationGroup {
+                  locations(first: 10) {
+                    edges {
+                      node {
+                        id
+                        name
+                      }
+                    }
+                  }
+                }
 
-    // Deduplicated flat country list
-    const allCountries = shippingZonesWithProvinces.flatMap((zone) =>
-      zone.countries.map((country) => ({
-        name: country.name,
-        code: country.code,
-        provinces: country.provinces,
-        price_based_shipping_rates: country.price_based_shipping_rates,
-        weight_based_shipping_rates: country.weight_based_shipping_rates,
-      }))
-    );
+                locationGroupZones(first: 20) {
+                  edges {
+                    node {
+                      zone {
+                        id
+                        name
 
-    const uniqueCountries = Array.from(
-      new Map(allCountries.map((c) => [c.code, c])).values()
-    );
+                        countries {
+                          code {
+                            countryCode
+                          }
+                          name
+                        }
+                      }
+
+                      methodDefinitions(first: 20) {
+                        edges {
+                          node {
+                            id
+                            name
+                            active
+
+                            rateProvider {
+                              ... on DeliveryRateDefinition {
+                                price {
+                                  amount
+                                  currencyCode
+                                }
+                              }
+                            }
+
+                            methodConditions {
+                              field
+                              operator
+
+                              conditionCriteria {
+                                ... on MoneyV2 {
+                                  amount
+                                  currencyCode
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    // ─── Shopify GraphQL Request ───────────────────────────────────────────
+
+    const graphqlData = await makeShopifyGraphQL(shop, query);
+
+    const profiles =
+      graphqlData?.data?.deliveryProfiles?.edges ?? [];
+
+    const shipping = profiles.map((profileEdge) => {
+      const profile = profileEdge.node;
+
+      const locations =
+        profile.profileLocationGroups?.flatMap((group) =>
+          group.locationGroup?.locations?.edges?.map((loc) => ({
+            id: loc.node.id,
+            name: loc.node.name,
+          })) || []
+        ) || [];
+
+      const zones =
+        profile.profileLocationGroups?.flatMap((group) =>
+          group.locationGroupZones?.edges?.map((zoneEdge) => {
+            const zoneNode = zoneEdge.node;
+
+            const countries =
+              zoneNode.zone.countries?.map((country) => ({
+                name: country.name,
+                code: country.code.countryCode,
+              })) || [];
+
+            const shipping_rates =
+              zoneNode.methodDefinitions?.edges?.map((method) => {
+                const node = method.node;
+
+                return {
+                  id: node.id,
+                  name: node.name,
+                  active: node.active,
+
+                  price:
+                    node.rateProvider?.price?.amount || "0",
+
+                  currency:
+                    node.rateProvider?.price?.currencyCode ||
+                    "INR",
+
+                  conditions:
+                    node.methodConditions?.map((condition) => ({
+                      field: condition.field,
+                      operator: condition.operator,
+
+                      amount:
+                        condition.conditionCriteria?.amount ||
+                        null,
+
+                      currency:
+                        condition.conditionCriteria
+                          ?.currencyCode || null,
+                    })) || [],
+                };
+              }) || [];
+
+            // ─── Check India or International ─────────────────────────────
+
+            const isIndia = countries.some(
+              (country) => country.code === "IN"
+            );
+
+            // ─── Console Logs ────────────────────────────────────────────
+
+            shipping_rates.forEach((rate) => {
+
+              // ─── Conditions ─────────────────────────────────────────
+
+              if (rate.conditions.length > 0) {
+                rate.conditions.forEach((condition) => {
+                });
+              } else {
+              }
+            });
+
+            return {
+              zone_id: zoneNode.zone.id,
+              zone_name: zoneNode.zone.name,
+              countries,
+              shipping_rates,
+            };
+          }) || []
+        ) || [];
+
+      return {
+        profile_id: profile.id,
+        profile_name: profile.name,
+        locations,
+        zones,
+      };
+    });
 
     return res.json({
-      shipping: shippingZonesWithProvinces,
-      countries: uniqueCountries,
+      success: true,
+      shipping,
     });
   } catch (err) {
+    console.error("Error in /shipping-zones:", err);
     next(err);
   }
 });

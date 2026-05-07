@@ -129,7 +129,7 @@ function buildSetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appE
 export const loader = async ({ request }) => {
   const { shop, apiUrl, accessToken, currency, admin } = await shopLoader(request);
 
-  const appEmbedId = process.env.SHOPIFY_APP_EMBED_ID || "019deb5e-87a9-7ac4-962f-f7a372a87192";
+  const appEmbedId = process.env.SHOPIFY_API_KEY || "019deb5e-87a9-7ac4-962f-f7a372a87192";
 
   const today = new Date();
   const defaultStart = new Date();

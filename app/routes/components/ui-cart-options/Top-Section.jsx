@@ -330,6 +330,9 @@ export default function TopSection({ handleChange, headerSettings, accessToken, 
                 min={14}
                 max={48}
                 step={1}
+                prefix={<Text>14px</Text>}
+                suffix={<Text>48px</Text>}
+                output
               />
 
             </BlockStack>
@@ -389,6 +392,7 @@ export default function TopSection({ handleChange, headerSettings, accessToken, 
                 step={1}
                 prefix="14px"
                 suffix="48px"
+                output
               />
             </BlockStack>
           )}

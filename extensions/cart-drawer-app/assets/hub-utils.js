@@ -309,91 +309,174 @@ window.hubUtils = {
   async shipping_Charges(container, cartTotalCents) {
     const ratingsUrl = window.__HUB_RATINGS_URL__;
     const shop = window.__SHOPIFY_SHOP__?.domain;
+
     if (!ratingsUrl || !shop) return;
 
     const blockId = window.HUB_CART_BLOCK_ID;
+
     const shippingRow = document.getElementById(`hub-shipping-row-${blockId}`);
+
     const shippingCostEl = document.getElementById(
       `hub-shipping-cost-${blockId}`,
     );
+
     if (!shippingRow || !shippingCostEl) return;
 
     try {
-      // Use prefetch promise if cache not ready yet — avoids duplicate requests
+      // ─── Fetch Shipping Zones ─────────────────────────────
+
       if (!window._hubShippingZonesCache) {
         if (window._hubShippingZonesPromise) {
           await window._hubShippingZonesPromise;
         } else {
           const url = `${ratingsUrl}/api/shipping-zones?shop=${shop}`;
+
           const res = await fetch(url, {
-            headers: { "ngrok-skip-browser-warning": "true" },
+            headers: {
+              "ngrok-skip-browser-warning": "true",
+            },
           });
+
           if (!res.ok) return;
+
           window._hubShippingZonesCache = await res.json();
         }
       }
+
       const data = window._hubShippingZonesCache;
-      if (!data) return;
+
+      if (!data?.shipping) return;
+
+      // ─── Country Code ────────────────────────────────────
 
       const input = document.querySelector('input[name="country_code"]');
-      const countryCode = input?.value || window.__SHOPIFY_COUNTRY_CODE__ || window.__SHOPIFY_SHOP__?.locale?.split("-")[1];
+
+      const countryCode =
+        input?.value ||
+        window.__SHOPIFY_COUNTRY_CODE__ ||
+        window.__SHOPIFY_SHOP__?.locale?.split("-")[1];
+
       if (!countryCode) return;
 
-      const countryData = (data.countries || []).find(
-        (c) => c.code === countryCode,
-      );
-      if (!countryData) return;
+      // ─── Cart Total ──────────────────────────────────────
 
-      const cartTotalDollars = (cartTotalCents || 0) / 100;
-      const rates = countryData.price_based_shipping_rates || [];
-      let applicableRate = null;
-      for (const rate of rates) {
-        const min = parseFloat(rate.min_order_subtotal ?? 0);
-        const max =
-          rate.max_order_subtotal != null
-            ? parseFloat(rate.max_order_subtotal)
-            : Infinity;
-        if (cartTotalDollars >= min && cartTotalDollars <= max) {
-          applicableRate = rate;
-          break;
-        }
-      }
+      const cartTotal = (cartTotalCents || 0) / 100;
 
-      if (!applicableRate) return;
+      let matchedRate = null;
 
-      const price = parseFloat(applicableRate.price ?? 0);
+      // ─── Find Matching Zone ──────────────────────────────
+
+      data.shipping.forEach((profile) => {
+        profile.zones.forEach((zone) => {
+          const hasCountry = zone.countries.some(
+            (country) => country.code === countryCode,
+          );
+
+          if (!hasCountry) return;
+
+          zone.shipping_rates.forEach((rate) => {
+            let isApplicable = true;
+
+            // ─── Check Conditions ────────────────────────
+
+            if (rate.conditions?.length) {
+              rate.conditions.forEach((condition) => {
+                const amount = parseFloat(condition.amount || 0);
+
+                // Minimum Cart Condition
+
+                if (
+                  condition.field === "TOTAL_PRICE" &&
+                  condition.operator === "GREATER_THAN_OR_EQUAL_TO"
+                ) {
+                  if (cartTotal < amount) {
+                    isApplicable = false;
+                  }
+                }
+
+                // Maximum Cart Condition
+
+                if (
+                  condition.field === "TOTAL_PRICE" &&
+                  condition.operator === "LESS_THAN_OR_EQUAL_TO"
+                ) {
+                  if (cartTotal > amount) {
+                    isApplicable = false;
+                  }
+                }
+              });
+            }
+
+            // ─── Pick Best Shipping Method ───────────────
+
+            if (isApplicable) {
+              // Prefer Free Shipping
+              if (parseFloat(rate.price || 0) === 0) {
+                matchedRate = rate;
+                return;
+              }
+
+              // Fallback Paid Shipping
+              if (!matchedRate) {
+                matchedRate = rate;
+              }
+            }
+          });
+        });
+      });
+
+      if (!matchedRate) return;
+
+      // ─── Shipping Price ──────────────────────────────────
+
+      const price = parseFloat(matchedRate.price || 0);
+
       const shippingCents = price * 100;
+
       window._hubShippingPriceCents = shippingCents;
 
+      // ─── Update UI ──────────────────────────────────────
+
       shippingRow.style.display = "";
+
       shippingCostEl.textContent =
         price === 0 ? "Free" : hubUtils.formatMoney(shippingCents);
 
-      // Patch grand total and checkout button now that shipping is resolved
+      // ─── Grand Total ────────────────────────────────────
+
       const finalTotal = window._hubCartFinalTotal || 0;
+
       const grandTotal = finalTotal + shippingCents;
+
       const fmt = hubUtils.formatMoney;
 
       const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
-      if (grandEl) grandEl.textContent = fmt(grandTotal);
+
+      if (grandEl) {
+        grandEl.textContent = fmt(grandTotal);
+      }
+
+      // ─── Checkout Button ────────────────────────────────
 
       const checkoutBtn = document.getElementById(
         `hub-checkout-btn-${blockId}`,
       );
+
       if (checkoutBtn) {
         const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+
         const rawText =
           cartSettings.checkoutButtonText || "Proceed to checkout";
+
         checkoutBtn.textContent = rawText.replace(
           "{{total_price}}",
           fmt(grandTotal),
         );
       }
     } catch (err) {
-      // silent fail
+      console.error("Shipping Calculation Error:", err);
     }
   },
-
   async maybeUpdateRewardProducts(cart, rewards) {
     // FIX: was `rewards?.enabled` — inverted logic, ran when rewards were OFF
     if (rewards?.enabled || !rewards?.tiers?.length) return false;

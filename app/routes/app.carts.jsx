@@ -292,8 +292,16 @@ export default function AppCarts() {
                                         <Tooltip content="Edit cart">
                                             <Button icon={EditIcon} onClick={() => navigate(`/app/cart-editor/${cart.cartId}`)} />
                                         </Tooltip>
-                                        <Tooltip content="Preview cart">
-                                            <Button icon={ViewIcon} />
+                                        <Tooltip content={cart.status === "published" ? "Preview cart" : "Only available for live carts"}>
+                                            <Button
+                                                icon={ViewIcon}
+                                                disabled={cart.status !== "published"}
+                                                onClick={() => {
+                                                    if (cart.status === "published") {
+                                                        window.open(`https://${shop.myshopifyDomain}`, "_blank");
+                                                    }
+                                                }}
+                                            />
                                         </Tooltip>
                                         <Tooltip content="Duplicate cart">
                                             <Button icon={DuplicateIcon} onClick={() => handleDuplicateCart(cart)} />
@@ -301,7 +309,6 @@ export default function AppCarts() {
                                         <Tooltip content={cart.status === "published" ? "Unpublish cart" : "Publish cart"}>
                                             <Button
                                                 size="slim"
-                                                tone={cart.status === "published" ? "critical" : "success"}
                                                 onClick={() =>
                                                     cart.status === "published"
                                                         ? handleUnpublishClick(cart.cartId)

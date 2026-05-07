@@ -169,7 +169,7 @@ export const defaultTrustBadgesSettings = {
 
 export const defaultCartSettings = {
   // Cart settings
-  cartPosition: "slide_from_left",
+  cartPosition: "slide_from_right",
   trafficAllocationPercent: 20,
   disableFixedFooter: false,
   openOnAddToCart: true,

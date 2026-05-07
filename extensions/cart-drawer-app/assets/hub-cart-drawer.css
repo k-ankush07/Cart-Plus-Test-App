@@ -770,7 +770,6 @@ h3.styles_CartPreview__empty__ {
 .hub-cart-recommendations {
   margin: 20px;
   /* border-top: 1px solid #e5e5e5; */
-  background: #f6f6f6;
   border-radius: 5px;
   padding: 15px;
   max-height: 60vh;
@@ -1164,12 +1163,12 @@ h3.styles_CartPreview__empty__ {
 
 
 .upcart-internal-component-upsell-tile {
-  background: #fff;
   border-radius: 5px;
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #E8E8E8;
   padding: 15px;
+  background: #f6f6f7;
 }
 
 .upcart-internal-upsell__vertical-layout-wrapper {
@@ -1446,7 +1445,7 @@ h3.styles_CartPreview__empty__ {
 .hub-progress-bar-fill {
   height: 100%;
   width: 0%;
-  background: #123348;
+  background: #000000;
   border-radius: 2px;
   transition: width 0.3s ease;
   display: block !important;
@@ -1701,9 +1700,9 @@ h3.styles_CartPreview__empty__ {
 .hub-undo-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: #7ec8f4;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;

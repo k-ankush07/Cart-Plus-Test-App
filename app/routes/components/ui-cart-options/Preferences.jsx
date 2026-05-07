@@ -27,7 +27,6 @@ import {
 const CART_POSITION_OPTIONS = [
     { label: "Slide from left", value: "slide_from_left" },
     { label: "Slide from right", value: "slide_from_right" },
-    { label: "Modal (center)", value: "modal_center" },
 ];
 
 const SELECTOR_OPTIONS = [
