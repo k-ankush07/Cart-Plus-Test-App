@@ -84,12 +84,12 @@ window.injectCartHTML = function (blockId, root) {
   const closeButtonHTML = `
     <button
       id="hub-close-${blockId}"
-      class="hub-cart-close cart-app__close custom-close-btn upcart-header-close-button"
+      class="hub-cart-close cart-app__close custom-close-btn upcart-header-close-button custom-close-btn custom-cart-public-header__close-button custom-cart-header-close-button"
       aria-label="Close cart"
       style="flex-shrink:0;${closeBtnVars};"
     >
       <svg
-        class="upcart-header-close-button-icon"
+        class="upcart-header-close-button-icon custom-cart-public-header__close-button-icon"
         width="${iconSizePx}" height="${iconSizePx}"
         viewBox="0 0 24 24" fill="none"
         stroke="currentColor"
@@ -254,7 +254,7 @@ window.injectCartHTML = function (blockId, root) {
   root.insertAdjacentHTML(
     "beforeend",
     `
-    <div id="hub-cart-bg-${blockId}" class="hub-cart-bg"></div>
+    <div id="hub-cart-bg-${blockId}" class="hub-cart-bg custom-cart"></div>
 
    <div id="hub-cart-drawer-${blockId}" 
   class="hub-cart-drawer cart-app upcart-cart ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"}"
@@ -266,7 +266,7 @@ window.injectCartHTML = function (blockId, root) {
 
       <!-- HEADER -->
       <div
-        class="cart-app__header-top upcart-header hub-cart-header"
+        class="cart-app__header-top upcart-header hub-cart-header custom-cart-public-header"
         style="padding:${headerPadding}; background:${headerSettings.backgroundColor};"
       >
         <div
@@ -285,7 +285,7 @@ window.injectCartHTML = function (blockId, root) {
       <div>${renderCustomHTML(customHtmlBlocks.below_header)}</div>
 
       <!-- ITEMS (scrollable) -->
-      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview ${disableFixedFooter ? 'scroll-auto' : 'scroll-unset'}">
+      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview ${disableFixedFooter ? 'scroll-auto' : 'scroll-unset'} custom-cart-body">
         <!-- ANNOUNCEMENT (position: before) -->
         <div>${renderCustomHTML(customHtmlBlocks.above_announcements)}</div>
         <div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>

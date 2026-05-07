@@ -133,7 +133,11 @@ function initCartDrawerAfterData() {
       try {
         const res = await fetch("/cart.js");
         const cart = await res.json();
-        const count = cart.item_count || 0;
+
+        const count = cart.items
+          .filter((i) => !i.properties?._triggered_reward)
+          .reduce((sum, i) => sum + i.quantity, 0);
+
         const label = count === 1 ? "1 item" : `${count} items`;
 
         document.querySelectorAll(".cart-count-bubble").forEach((bubble) => {
@@ -234,14 +238,33 @@ function initCartDrawerAfterData() {
         if (window._hubRewardUpdating) return;
         clearTimeout(_cartUpdateTimer);
         _cartUpdateTimer = setTimeout(() => openDrawer(true), 300);
+        window.updateCartCount();
       });
     }
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initCart);
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".cart-count-bubble").forEach((el) => {
+        el.style.visibility = "hidden";
+      });
+      initCart();
+      window.updateCartCount?.().finally?.(() => {
+        document.querySelectorAll(".cart-count-bubble").forEach((el) => {
+          el.style.visibility = "";
+        });
+      });
+    });
   } else {
+    document.querySelectorAll(".cart-count-bubble").forEach((el) => {
+      el.style.visibility = "hidden";
+    });
     initCart();
+    window.updateCartCount?.().finally?.(() => {
+      document.querySelectorAll(".cart-count-bubble").forEach((el) => {
+        el.style.visibility = "";
+      });
+    });
   }
 })();
 
@@ -825,13 +848,17 @@ window.handleTriggeredRewards = async function handleTriggeredRewards(cart) {
 
   if (!enabledRewards.length) return changed;
 
-  // Exclude triggered-reward gift items from the trigger check — otherwise
-  // the gift product itself can keep qualifying the trigger it was added by.
+  // ── Exclude ALL free gift items from trigger evaluation ──
+  // Free gifts must never count toward their own trigger conditions.
   const nonGiftItems = cart.items.filter(
     (i) => !i.properties?._triggered_reward,
   );
 
-  const cartTotal = cart.total_price / 100;
+  //  Cart total calculated from non-gift items only (sum of final_line_price)
+  const cartTotal =
+    nonGiftItems.reduce((sum, i) => sum + i.final_line_price, 0) / 100;
+
+  //  Product/variant sets built from non-gift items only
   const cartProductIds = new Set(
     nonGiftItems.map((i) => `gid://shopify/Product/${i.product_id}`),
   );
@@ -845,7 +872,9 @@ window.handleTriggeredRewards = async function handleTriggeredRewards(cart) {
       cartProductIds,
       cartVariantIds,
       cart,
+      nonGiftItems, //  passed so cart_quantity trigger ignores gift items
     });
+
     const giftItems = reward.reward?.items || {};
     const giftVariantIds = giftItems.variants || [];
     const giftProductIds = new Set(giftItems.products || []);
@@ -862,7 +891,6 @@ window.handleTriggeredRewards = async function handleTriggeredRewards(cart) {
     );
 
     if (qualifies && !giftInCart && giftVariantIds.length > 0) {
-      // Add first variant of the gift product
       const variantGid = giftVariantIds[0];
       const variantId = variantGid.replace("gid://shopify/ProductVariant/", "");
 
@@ -925,7 +953,7 @@ window.handleTriggeredRewards = async function handleTriggeredRewards(cart) {
 
 async function checkTriggers(
   triggers,
-  { cartTotal, cartProductIds, cartVariantIds, cart },
+  { cartTotal, cartProductIds, cartVariantIds, cart, nonGiftItems },
 ) {
   if (!triggers || triggers.length === 0) return true;
   for (const t of triggers) {
@@ -934,6 +962,7 @@ async function checkTriggers(
       cartProductIds,
       cartVariantIds,
       cart,
+      nonGiftItems,
     });
     if (!result) return false;
   }
@@ -942,14 +971,17 @@ async function checkTriggers(
 
 async function checkTrigger(
   trigger,
-  { cartTotal, cartProductIds, cartVariantIds, cart },
+  { cartTotal, cartProductIds, cartVariantIds, cart, nonGiftItems },
 ) {
   switch (trigger.type) {
     case "cart_total":
       return cartTotal >= Number(trigger.minAmount || 0);
 
     case "cart_quantity": {
-      const qty = cart.items.reduce((s, i) => s + i.quantity, 0);
+      const items =
+        nonGiftItems ??
+        cart.items.filter((i) => !i.properties?._triggered_reward);
+      const qty = items.reduce((s, i) => s + i.quantity, 0);
       return qty >= Number(trigger.minQuantity || 0);
     }
 
@@ -963,11 +995,14 @@ async function checkTrigger(
     }
 
     case "specific_collections": {
-      // trigger.items is a flat array of collection GIDs e.g. ["gid://shopify/Collection/123"]
-      const collectionGids = Array.isArray(trigger.items) ? trigger.items : [];
+
+      const collectionGids = Array.isArray(trigger.items)
+        ? trigger.items
+        : Array.isArray(trigger.items?.ids)
+          ? trigger.items.ids
+          : [];
       if (!collectionGids.length) return false;
 
-      // Shopify storefront requires handle (not numeric ID) for /collections/{handle}/products.json
       // Build a one-time ID→handle map from /collections.json
       if (!window._hubCollHandleMap) {
         try {
@@ -1015,6 +1050,7 @@ async function checkTrigger(
             );
             window._hubCollCache[collId] = collProductIds;
           }
+          //  cartProductIds already excludes gift items
           for (const pid of cartProductIds) {
             if (collProductIds.has(pid)) return true;
           }
@@ -1115,13 +1151,19 @@ window.hubOpenOffersPanel = function (blockId) {
   const panel = document.getElementById(`hub-offers-panel-${blockId}`);
   if (!panel) return;
 
-  panel.style.display = "flex";        
+  panel.style.display = "flex";
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      panel.classList.add("hub-offers-open");  
-      document.getElementById(`hub-offers-backdrop-${blockId}`)?.classList.add("hub-offers-open");
-      document.getElementById(`hub-offers-close-${blockId}`)?.classList.add("hub-offers-open");
-      document.querySelector(`.hub-cart-block-${blockId}`)?.classList.add("hub-offers-open-body");
+      panel.classList.add("hub-offers-open");
+      document
+        .getElementById(`hub-offers-backdrop-${blockId}`)
+        ?.classList.add("hub-offers-open");
+      document
+        .getElementById(`hub-offers-close-${blockId}`)
+        ?.classList.add("hub-offers-open");
+      document
+        .querySelector(`.hub-cart-block-${blockId}`)
+        ?.classList.add("hub-offers-open-body");
     });
   });
 };
@@ -1131,13 +1173,19 @@ window.hubCloseOffersPanel = function (blockId) {
   if (!panel) return;
 
   panel.classList.remove("hub-offers-open");
-  document.getElementById(`hub-offers-backdrop-${blockId}`)?.classList.remove("hub-offers-open");
-  document.getElementById(`hub-offers-close-${blockId}`)?.classList.remove("hub-offers-open");
-  document.querySelector(`.hub-cart-block-${blockId}`)?.classList.remove("hub-offers-open-body");
+  document
+    .getElementById(`hub-offers-backdrop-${blockId}`)
+    ?.classList.remove("hub-offers-open");
+  document
+    .getElementById(`hub-offers-close-${blockId}`)
+    ?.classList.remove("hub-offers-open");
+  document
+    .querySelector(`.hub-cart-block-${blockId}`)
+    ?.classList.remove("hub-offers-open-body");
 
   setTimeout(() => {
-    panel.style.display = "none";             
-  }, 280);                                    
+    panel.style.display = "none";
+  }, 280);
 };
 
 function showMessage(el, text, color = "black") {
@@ -1390,7 +1438,9 @@ window.hubRemoveOfferCode = async function (code, blockId, btn) {
 
     if (url.includes("/cart/add")) {
       try {
-        const body = JSON.parse(init?.body || "{}");
+        if (!init?.body || typeof init.body !== "string")
+          throw new Error("skip");
+        const body = JSON.parse(init.body);
 
         const isAlreadyTagged = (props = {}) =>
           props.__upcartAddon ||

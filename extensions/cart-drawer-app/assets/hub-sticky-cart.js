@@ -51,7 +51,10 @@ function scopeCss(css, scope) {
     try {
       const res = await fetch("/cart.js");
       const cart = await res.json();
-      const count = cart.item_count || 0;
+
+      const count = cart.items
+        .filter((i) => !i.properties?._triggered_reward)
+        .reduce((sum, i) => sum + i.quantity, 0);
 
       const badge = document.getElementById("hub-sticky-badge");
       if (!badge) return;

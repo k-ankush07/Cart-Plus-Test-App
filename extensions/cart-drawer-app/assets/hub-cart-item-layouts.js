@@ -55,7 +55,7 @@ function _discountBadgesHtml(item) {
   return item.discounts
     .map(
       (d) => `
-    <span class="hub-item-discount-badge">
+    <span class="hub-item-discount-badge custom-cart-public-component-product-tile__discount-codes">
      <svg viewBox="0 0 20 20" class="Icon_Icon__uZZKy" style="width: 15px; fill:#10812f "><path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z"></path><path fill-rule="evenodd" d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"></path></svg>
       ${d.title}
     </span>`,
@@ -65,7 +65,7 @@ function _discountBadgesHtml(item) {
 
 function _wrapper(key, inner, sellingPlanHtml, customHtmlBlocks) {
   return `
-    <div class="hub-cart-for-item" data-item-key="${key}" style="position:relative">
+    <div class="hub-cart-for-item custom-cart-public-cart-item" data-item-key="${key}" style="position:relative">
       ${inner}
       <div>${hubUtils.renderCustomHTML(customHtmlBlocks.between_line_items)}</div>
     </div>
@@ -119,7 +119,7 @@ function classicItemHTML(ctx) {
           }
         </div>
       </div>`
-    : `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+    : `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end" class="custom-cart-public-component-product-tile__product-pricing">
         <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
           ${hubUtils.formatMoney(lineTotal)}
         </span>
@@ -136,12 +136,12 @@ function classicItemHTML(ctx) {
       </div>`;
 
   const inner = `
-    <div class="hub-cart-item" style="color:${colorItems};flex-wrap:wrap">
-      <div class="hub-item-img-wrap">
-        <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
+    <div class="hub-cart-item custom-cart-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">
+      <div class="hub-item-img-wrap custom-cart-public-component-product-tile__image-wrapper">
+        <img src="${item.image}" alt="${item.product_title}" class="hub-item-img custom-cart-public-component-product-tile__image" />
       </div>
-      <div class="hub-item-info">
-        <a href="/products/${item.handle}" class="hub-item-title" style="color:${colorItems}">${item.product_title || item.title}</a>
+      <div class="hub-item-info custom-cart-public-component-product-tile__info">
+        <a href="/products/${item.handle}" class="hub-item-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
         ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
         ${variantHtml}
         ${propertiesHtml}
@@ -209,13 +209,13 @@ function subscriptionItemHTML(ctx) {
        ${saveHtml}`;
 
   const inner = `
-    <div class="hub-cart-item hub-cart-item--subscription" style="color:${colorItems};flex-wrap:wrap">
-      <div class="hub-item-img-wrap hub-item-img-wrap--sm">
-        <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
+    <div class="hub-cart-item hub-cart-item--subscription custom-cart-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">
+      <div class="hub-item-img-wrap hub-item-img-wrap--sm custom-cart-public-component-product-tile__image-wrapper">
+        <img src="${item.image}" alt="${item.product_title}" class="hub-item-img custom-cart-public-component-product-tile__image" />
       </div>
-      <div class="hub-item-info">
+      <div class="hub-item-info custom-cart-public-component-product-tile__info">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <a href="/products/${item.handle}" class="hub-item-title" style="color:${colorItems}">${item.product_title || item.title}</a>
+          <a href="/products/${item.handle}" class="hub-item-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
             ${_deleteBtn(item.key, item.product_title)}
             ${discountBadges}
@@ -288,17 +288,17 @@ function modernItemHTML(ctx) {
     </div>`;
 
   const inner = `
-    <div class="hub-cart-item hub-cart-item--modern" style="color:${colorItems};flex-wrap:wrap">
+    <div class="hub-cart-item hub-cart-item--modern custom-cart-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">
       <div style="display:flex;flex-direction:column;flex-shrink:0;">
         ${saveBadge}
-        <div class="hub-item-img-wrap" style="margin-top:5px;">
-          <img src="${item.image}" alt="${item.product_title}" class="hub-item-img" />
+        <div class="hub-item-img-wrap custom-cart-public-component-product-tile__image-wrapper" style="margin-top:5px;">
+          <img src="${item.image}" alt="${item.product_title}" class="hub-item-img custom-cart-public-component-product-tile__image" />
         </div>
       </div>
-      <div class="hub-item-info">
+      <div class="hub-item-info custom-cart-public-component-product-tile__info">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
           <div class="hub-cart-item--modern-title">
-            <a href="/products/${item.handle}" class="hub-item-title" style="color:${colorItems}">${item.product_title || item.title}</a>
+            <a href="/products/${item.handle}" class="hub-item-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
             ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
             ${variantHtml}
             ${propertiesHtml}

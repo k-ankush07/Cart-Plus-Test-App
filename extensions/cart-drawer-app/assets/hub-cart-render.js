@@ -57,9 +57,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (headerEl) {
       const headerSettings = window.__HUB_ACTIVE_CART__?.headerSettings || {};
 
+      const nonGiftQty = cart.items
+        .filter((i) => !i.properties?._triggered_reward)
+        .reduce((sum, i) => sum + i.quantity, 0);
+
       headerEl.innerText = (
         headerSettings.titleText || "Cart • {{cart_quantity}}"
-      ).replace("{{cart_quantity}}", cart.item_count || 0);
+      ).replace("{{cart_quantity}}", nonGiftQty);
     }
 
     const notesSettings = window.__HUB_ACTIVE_CART__?.additionalNotesSettings;
@@ -872,7 +876,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
             ? item.options_with_values
                 .map(
                   (opt) =>
-                    `<p class="hub-item-variant" style="color:${colorItems}"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`,
+                    `<p class="hub-item-variant custom-cart-public-component-product-tile__variant" style="color:${colorItems}"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`,
                 )
                 .join("")
             : "";

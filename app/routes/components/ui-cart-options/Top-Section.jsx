@@ -221,9 +221,25 @@ export default function TopSection({ handleChange, headerSettings, accessToken, 
           {headerSettings.titleType === "logo" && (
             <BlockStack gap="200">
 
+              <InlineStack align="space-between" blockAlign="center">
+                <Text variant="bodyMd" fontWeight="medium">
+                  Logo
+                </Text>
+
+                {headerSettings.logo && (<Button
+                  variant="plain"
+                  tone="critical"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateHeader("logo", null);
+                  }}
+                >
+                  Remove
+                </Button>)}
+              </InlineStack>
+
               {isUploading ? (
                 <DropZone
-                  label="Logo"
                   accept="image/*"
                   type="image"
                   disabled
@@ -240,7 +256,6 @@ export default function TopSection({ handleChange, headerSettings, accessToken, 
                 </DropZone>
               ) : headerSettings.logo ? (
                 <DropZone
-                  label="Logo"
                   accept="image/*"
                   type="image"
                   onDrop={(_, acceptedFiles) => {
@@ -250,32 +265,6 @@ export default function TopSection({ handleChange, headerSettings, accessToken, 
                   }}
                 >
                   <div style={{ position: "relative", width: "100%", height: "100%" }}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateHeader("logo", null);
-                      }}
-                      style={{
-                        position: "absolute",
-                        top: "8px",
-                        right: "8px",
-                        background: "rgba(0,0,0,0.5)",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "24px",
-                        height: "24px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        color: "#fff",
-                        fontSize: "14px",
-                        lineHeight: 1,
-                        zIndex: 10,
-                      }}
-                    >
-                      ✕
-                    </button>
 
                     <Box padding="500">
                       <img
@@ -290,7 +279,6 @@ export default function TopSection({ handleChange, headerSettings, accessToken, 
                 </DropZone>
               ) : (
                 <DropZone
-                  label="Logo"
                   accept="image/*"
                   type="image"
                   onDrop={(_, acceptedFiles) => {
