@@ -37,37 +37,55 @@ import {
 import "../index.css";
 
 export const loader = async ({ request }) => {
-    const { shop, apiUrl, accessToken, currency } = await shopLoader(request);
+    const { shop, apiUrl, accessToken, currency, admin } = await shopLoader(request);
+    // ... date setup unchanged ...
 
     const today = new Date();
     const defaultStart = new Date();
     defaultStart.setDate(today.getDate() - 29);
 
-    let carts = [];
-    let cartStats = {};
-    try {
-        const cartsData = await getCarts(apiUrl, shop.myshopifyDomain);
-        carts = cartsData.data || [];
-    } catch (err) {
-        console.error("GET CARTS ERROR:", err);
-    }
-    try {
-        const statsData = await getCartStats(
-            apiUrl,
-            shop.myshopifyDomain,
-            defaultStart.toISOString(),
-            today.toISOString()
-        );
-        cartStats = statsData.data || {};
-    } catch (err) {
-        console.error("GET CART STATS ERROR:", err);
+    const [themeResult, cartsResult, statsResult] = await Promise.allSettled([
+        admin.graphql(`{ themes(first: 5, roles: [MAIN]) { nodes { id } } }`),
+        getCarts(apiUrl, shop.myshopifyDomain),
+        getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString()),
+    ]);
+
+    let mainThemeId = "current";
+    if (themeResult.status === "fulfilled") {
+        try {
+            const themeData = await themeResult.value.json();
+            const rawId = themeData?.data?.themes?.nodes?.[0]?.id || "";
+            mainThemeId = rawId.split("/").pop() || "current";
+        } catch (_) { }
     }
 
-    return Response.json({ shop, apiUrl, accessToken, currency, carts, cartStats });
+    let appEmbedInstalled = false;
+    try {
+        const assetRes = await fetch(
+            `https://${shop.myshopifyDomain}/admin/api/2025-10/themes/${mainThemeId}/assets.json?asset[key]=config/settings_data.json`,
+            { headers: { "X-Shopify-Access-Token": accessToken, "Content-Type": "application/json" } }
+        );
+        const assetData = await assetRes.json();
+        const settings = JSON.parse(assetData.asset.value);
+        const blocks = settings?.current?.blocks || {};
+        for (const key in blocks) {
+            const block = blocks[key];
+            if (block?.type?.includes("shopify://apps/cart-drawer/")) {
+                if (!block?.disabled) appEmbedInstalled = true;
+                break;
+            }
+        }
+    } catch (_) { }
+
+    const carts = cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [];
+    const cartStats = statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {};
+
+    return Response.json({ shop, apiUrl, accessToken, currency, carts, cartStats, appEmbedInstalled });
 };
 
 export default function AppCarts() {
-    const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency } = useLoaderData();
+    const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency, appEmbedInstalled } = useLoaderData();
+
     const navigate = useNavigate();
 
     const [deleteModal, setDeleteModal] = useState(false);
@@ -404,7 +422,7 @@ export default function AppCarts() {
                         <EmptyState
                             title="No live cart configured"
                             subtitle="Publish your cart to see it live, and start earning with your cart."
-                            tag={{ label: "App embed off", tone: "warning" }}
+                            tag={!appEmbedInstalled ? { label: "App embed off", tone: "warning" } : null}
                         />
                     ) : (
                         <CartTable carts={liveCarts} emptyText="No live cart configured" stats={cartStats} />
