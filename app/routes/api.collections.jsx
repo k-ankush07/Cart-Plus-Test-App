@@ -7,7 +7,7 @@ export const loader = async ({ request }) => {
 
     let hasNextPage = true;
     let cursor = null;
-    let allCollections = [];
+   
 
     while (hasNextPage) {
         const query = `
