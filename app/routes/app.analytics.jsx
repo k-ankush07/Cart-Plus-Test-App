@@ -450,14 +450,14 @@ export default function Analytics() {
                   value={cartImpressions}
                   icon="https://hubsyntax.com/cart-images/Layer_1.png"
                   valueTooltip="An impression is a unique time a customer has seen the cart."
-                  tooltip="Change in cart impressions compared to previous period. Previous cart impressions: 0"
+                  tooltip={`Change in cart impressions compared to previous period. Previous cart impressions: ${cartImpressions}`}
                 />
                 <SmallCard
                   title="Checkouts completed"
                   value={checkoutComplate}
                   icon="https://hubsyntax.com/cart-images/Layer_1%20(1).png"
                   valueTooltip="This is the number of items orders completed."
-                  tooltip="Change in checkouts compared to previous period. Previous checkouts: 0"
+                  tooltip={`Change in checkouts compared to previous period. Previous checkouts: ${checkoutComplate}`}
                 />
                 {/* <SmallCard
                   title="Abandoned cart"
@@ -470,7 +470,7 @@ export default function Analytics() {
                   value={checkouts}
                   icon="https://hubsyntax.com/cart-images/Group%201707479976.png"
                   valueTooltip="Number of times a customer initiated the checkout process."
-                  tooltip="Change in cart checkouts compared to previous period. Previous cart checkouts: 0"
+                  tooltip={`Change in cart checkouts compared to previous period. Previous cart checkouts: ${checkouts}`}
                 />
               </BlockStack>
             </Layout.Section>

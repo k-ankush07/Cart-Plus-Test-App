@@ -1207,6 +1207,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         }
       });
     });
+    
   } catch (err) {
     console.error("Cart render error:", err);
   } finally {

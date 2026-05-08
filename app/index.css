@@ -110,6 +110,7 @@ body,
 
 .hub-upsell-product {
     margin-top: auto;
+    padding-top: 20px;
 }
 
 .announcement-after {
@@ -1297,7 +1298,6 @@ span.upcart-rewards-tier-icon {
 }
 
 .custom-cart-internal-upsell {
-    margin: 20px;
     border-radius: 5px;
     position: relative;
 }
