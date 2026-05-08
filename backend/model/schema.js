@@ -105,11 +105,22 @@ const orderRevenueSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+const cartOrderCountSchema = new mongoose.Schema({
+  shop: { type: String, required: true },
+  cartId: { type: String, required: true },
+  totalOrders: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
+cartOrderCountSchema.index({ shop: 1, cartId: 1 }, { unique: true });
+
 const cartModels = mongoose.model("cartItems", cartSchema);
 const stickyCartModel = mongoose.model("stickyCart", stickyCartSchema);
 const shopConfigModel = mongoose.model("shopConfig", shopConfigSchema);
 const shopPlanModel = mongoose.model("shopPlan", shopPlanSchema);
 const analyticsModel = mongoose.model("Analytics", analyticsSchema);
 const orderRevenueModel = mongoose.model("OrderRevenue", orderRevenueSchema);
+const cartOrderCountModel = mongoose.model("CartOrderCount", cartOrderCountSchema);
 
-export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel, analyticsModel, orderRevenueModel };
+export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel, analyticsModel, orderRevenueModel, cartOrderCountModel };

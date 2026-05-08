@@ -2,12 +2,13 @@ import { authenticate } from "../shopify.server";
 
 export const action = async ({ request }) => {
 
-  let shop, payload;
+  let shop, payload, session;
 
   try {
     const result = await authenticate.webhook(request);
     shop = result.shop;
     payload = result.payload;
+    session = result.session;
   } catch (err) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -17,13 +18,117 @@ export const action = async ({ request }) => {
   }
 
   try {
+    const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
+
+    // 1) Check that the cart-drawer app embed is enabled in the live theme.
+    let appEmbedInstalled = false;
+    try {
+      const accessToken = session?.accessToken;
+      console.log(
+        `[orders/paid] embed-check: session=${!!session} token=${!!accessToken}`,
+      );
+      if (!accessToken) {
+        throw new Error("missing access token in webhook session");
+      }
+
+      const restHeaders = {
+        "X-Shopify-Access-Token": accessToken,
+        "Content-Type": "application/json",
+      };
+
+      // Find the main (live) theme via REST.
+      const themesRes = await fetch(
+        `https://${shop}/admin/api/2025-10/themes.json?role=main`,
+        { headers: restHeaders },
+      );
+      if (!themesRes.ok) {
+        throw new Error(
+          `themes.json failed status=${themesRes.status} body=${(await themesRes.text())?.slice(0, 200)}`,
+        );
+      }
+      const themesData = await themesRes.json();
+      const mainThemeId =
+        themesData?.themes?.find((t) => t.role === "main")?.id ||
+        themesData?.themes?.[0]?.id;
+      if (!mainThemeId) {
+        throw new Error("no main theme found");
+      }
+
+      const assetRes = await fetch(
+        `https://${shop}/admin/api/2025-10/themes/${mainThemeId}/assets.json?asset[key]=config/settings_data.json`,
+        { headers: restHeaders },
+      );
+      if (!assetRes.ok) {
+        throw new Error(
+          `assets.json failed status=${assetRes.status} body=${(await assetRes.text())?.slice(0, 200)}`,
+        );
+      }
+      const assetData = await assetRes.json();
+      if (!assetData?.asset?.value) {
+        throw new Error(
+          `theme asset missing — body=${JSON.stringify(assetData)?.slice(0, 200)}`,
+        );
+      }
+      const settings = JSON.parse(assetData.asset.value);
+      const blocks = settings?.current?.blocks || {};
+      for (const key in blocks) {
+        const block = blocks[key];
+        if (block?.type?.includes("shopify://apps/cart-drawer/")) {
+          if (!block?.disabled) appEmbedInstalled = true;
+          break;
+        }
+      }
+    } catch (e) {
+      let detail = e?.message;
+      // If a Response was thrown, read its body for context.
+      if (e instanceof Response) {
+        try {
+          detail = `Response status=${e.status} body=${(await e.text())?.slice(0, 300)}`;
+        } catch {
+          detail = `Response status=${e.status}`;
+        }
+      }
+      console.error(
+        "[orders/paid] app-embed check failed:",
+        detail || e?.toString?.() || JSON.stringify(e),
+      );
+    }
+
+    if (!appEmbedInstalled) {
+      console.log(
+        `[orders/paid] #${payload.order_number} skipped — app embed not enabled for ${shop}`,
+      );
+      return new Response();
+    }
+
+    // 2) Check that the shop has at least one published cart.
+    let hasPublishedCart = false;
+    try {
+      const statusRes = await fetch(
+        `${apiUrl}/api/get-carts?shop=${encodeURIComponent(shop)}`,
+      );
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        const carts = statusData?.data || [];
+        hasPublishedCart = carts.some((c) => c.status === "published");
+      }
+    } catch (e) {
+      console.error("[orders/paid] published-cart check failed:", e.message);
+    }
+
+    if (!hasPublishedCart) {
+      console.log(
+        `[orders/paid] #${payload.order_number} skipped — no published cart for ${shop}`,
+      );
+      return new Response();
+    }
+
     const lineItems = payload.line_items || [];
 
     let upsellRevenue = 0;
     let addonRevenue = 0;
     let subscriptionRevenue = 0;
     let baseRevenue = 0;
-    let hubTouched = false;
 
     for (const item of lineItems) {
       const lineTotal = parseFloat(item.price || 0) * (item.quantity || 1);
@@ -35,29 +140,18 @@ export const action = async ({ request }) => {
 
       if (props._hub_addon || props.__upcartAddon) {
         addonRevenue += lineTotal;
-        hubTouched = true;
       } else if (props.__upcartRecommendation) {
         upsellRevenue += lineTotal;
-        hubTouched = true;
       } else if (props._hub_subscription) {
         subscriptionRevenue += lineTotal;
-        hubTouched = true;
       } else if (props._hub_reward || props._triggered_reward) {
-        hubTouched = true;
+        // tracked but contributes no revenue
       } else {
         baseRevenue += lineTotal;
       }
     }
 
-    // Skip orders where the cart drawer was not involved at all
-    if (!hubTouched) {
-      console.log(`[orders/paid] #${payload.order_number} skipped — no cart drawer items`);
-      return new Response();
-    }
-
     const totalRevenue = upsellRevenue + addonRevenue + subscriptionRevenue;
-
-    const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
 
     const res = await fetch(`${apiUrl}/api/order-revenue`, {
       method: "POST",

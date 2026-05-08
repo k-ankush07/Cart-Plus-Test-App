@@ -6,6 +6,7 @@ import {
   shopPlanModel,
   analyticsModel,
   orderRevenueModel,
+  cartOrderCountModel,
 } from "../model/schema.js";
 import crypto from "crypto";
 
@@ -553,6 +554,25 @@ router.post("/order-revenue", async (req, res) => {
         .json({ success: false, message: "No active cart for shop" });
     }
 
+    // Always count the order against the published cart when the app is enabled.
+    await cartOrderCountModel.findOneAndUpdate(
+      { shop, cartId: publishedCart.cartId },
+      { $inc: { totalOrders: 1 }, $set: { updatedAt: new Date() } },
+      { upsert: true, new: true },
+    );
+
+    // Only persist a revenue record when the cart drawer actually contributed
+    // upsell / addon / subscription revenue. Pure base-revenue orders are
+    // counted above but skipped here.
+    const hasHubRevenue =
+      Number(upsellRevenue) > 0 ||
+      Number(addonRevenue) > 0 ||
+      Number(subscriptionRevenue) > 0;
+
+    if (!hasHubRevenue) {
+      return res.json({ success: true, counted: true, revenueSaved: false });
+    }
+
     await orderRevenueModel.findOneAndUpdate(
       { orderId: cartToken },
       {
@@ -571,7 +591,7 @@ router.post("/order-revenue", async (req, res) => {
       { upsert: true, new: true },
     );
 
-    return res.json({ success: true });
+    return res.json({ success: true, counted: true, revenueSaved: true });
   } catch (error) {
     console.error("ORDER REVENUE ERROR:", error);
     return res.status(500).json({ success: false });
