@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 
-
 // ─── OUTSIDE AppCarts ────────────────────────────────────────────
 
 export default function CartHoverCard({ cart, children }) {
@@ -9,6 +8,8 @@ export default function CartHoverCard({ cart, children }) {
     const [pos, setPos] = useState({ top: 0, left: 0 });
     const ref = useRef();
     const hideTimer = useRef(null);
+
+    console.log(cart)
 
     const cancelHide = () => {
         if (hideTimer.current) {
@@ -30,17 +31,35 @@ export default function CartHoverCard({ cart, children }) {
         setShow(true);
     };
 
-    const disabledModules = [];
-    if (cart.announcementSettings?.enabled === false) disabledModules.push("Announcement");
-    if (cart.rewardsSettings?.enabled === false) disabledModules.push("Rewards");
-    if (cart.recommendationsSettings?.enabled === false) disabledModules.push("Recommendations");
-    if (cart.upsellsSettings?.enabled === false) disabledModules.push("Upsells");
-    if (cart.additionalNotesSettings?.enabled === false) disabledModules.push("Order notes");
-    if (cart.addonsSettings?.enabled === false) disabledModules.push("Add-ons");
-    if (cart.discountCodesSettings?.enabled === false) disabledModules.push("Discount code");
-    if (cart.expressPaymentsSettings?.enabled === false) disabledModules.push("Express payments");
-    if (cart.trustBadgesSettings?.enabled === false) disabledModules.push("Badge");
-    if (cart.subscriptionUpgradesSettings?.enabled === false) disabledModules.push("Subscription upgrades");
+    const MODULE_LABELS = [
+        { key: "announcementSettings", label: "Notices" },
+        { key: "rewardsSettings", label: "Tiered Offers" },
+        { key: "triggeredRewardsSettings", label: "Smart Offers" },
+        { key: "recommendationsSettings", label: "Suggested Products" },
+        { key: "upsellsSettings", label: "Upgrade Offers" },
+        { key: "additionalNotesSettings", label: "Order Notes" },
+        { key: "addonsSettings", label: "Extras" },
+        { key: "discountCodesSettings", label: "Promo Codes" },
+        { key: "expressPaymentsSettings", label: "Quick Checkout" },
+        { key: "trustBadgesSettings", label: "Security Badges" },
+        { key: "subscriptionUpgradesSettings", label: "Subscription Options" },
+    ];
+
+    const enabledModules = MODULE_LABELS
+        .filter(({ key }) => {
+            if (key === "triggeredRewardsSettings") {
+                return (cart.triggeredRewardsSettings?.rewards?.length || 0) > 0;
+            }
+
+            return cart[key]?.enabled === false;
+        })
+        .map(({ label, key }) => {
+            if (key === "triggeredRewardsSettings") {
+                return `Smart Offers (${cart.triggeredRewardsSettings?.rewards?.length || 0})`;
+            }
+
+            return label;
+        });
 
     const fmtDate = (iso) => iso
         ? new Date(iso).toLocaleDateString("en-GB", {
@@ -110,13 +129,13 @@ export default function CartHoverCard({ cart, children }) {
                         </div>
 
                         {/* Disabled modules */}
-                        {disabledModules.length > 0 && (
+                        {enabledModules.length > 0 && (
                             <div>
                                 <p style={{ margin: "0 0 6px 0", fontSize: "12px", color: "var(--p-color-text-secondary)", fontFamily: "var(--p-font-family-sans)" }}>
                                     Modules enabled
                                 </p>
                                 <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                                    {disabledModules.map((mod) => (
+                                    {enabledModules.map((mod) => (
                                         <span key={mod} style={{
                                             background: "var(--p-color-bg-surface-secondary)",
                                             color: "var(--p-color-text)",

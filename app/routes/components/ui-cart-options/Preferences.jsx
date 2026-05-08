@@ -164,11 +164,11 @@ export default function Preferences({ handleChange, cartSettings }) {
                                         checked={cartSettings.showSavingsBelowPrices}
                                         onChange={(v) => update("showSavingsBelowPrices", v)}
                                     />
-                                    <Checkbox
+                                    {/* <Checkbox
                                         label="Enable loading preview for cart"
                                         checked={cartSettings.enableLoadingPreview}
                                         onChange={(v) => update("enableLoadingPreview", v)}
-                                    />
+                                    /> */}
                                     {/* <BlockStack inlineAlign="start">
                                         <Button
                                             variant="plain"
@@ -347,7 +347,7 @@ export default function Preferences({ handleChange, cartSettings }) {
                                 </BlockStack>
                             </BlockStack>
                         </Card>
-                        <Card>
+                        {/* <Card>
                             <BlockStack gap="400">
                                 <Text variant="headingMd">Bundles</Text>
                                 <TextField label="Show bundle items text (singular)" value={cartSettings.showBundleSingular} onChange={(v) => update("showBundleSingular", v)} />
@@ -361,7 +361,7 @@ export default function Preferences({ handleChange, cartSettings }) {
                                     <Text variant="bodyMd" tone="subdued">Use {"{NUMBER_OF_ITEMS}"} for the item count</Text>
                                 </BlockStack>
                             </BlockStack>
-                        </Card>
+                        </Card> */}
                     </BlockStack>
                 )}
 

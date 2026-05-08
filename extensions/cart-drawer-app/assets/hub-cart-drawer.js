@@ -237,7 +237,11 @@ function initCartDrawerAfterData() {
       document.addEventListener("cart:updated", function () {
         if (window._hubRewardUpdating) return;
         clearTimeout(_cartUpdateTimer);
-        _cartUpdateTimer = setTimeout(() => openDrawer(true), 300);
+        const shouldOpen =
+          window.__HUB_ACTIVE_CART__?.cartSettings?.openOnAddToCart !== false;
+        if (shouldOpen) {
+          _cartUpdateTimer = setTimeout(() => openDrawer(true), 300);
+        }
         window.updateCartCount();
       });
     }
@@ -995,7 +999,6 @@ async function checkTrigger(
     }
 
     case "specific_collections": {
-
       const collectionGids = Array.isArray(trigger.items)
         ? trigger.items
         : Array.isArray(trigger.items?.ids)
