@@ -144,7 +144,6 @@ body,
     border-top: 1px solid #e5e5e5;
     display: flex;
     flex-direction: column;
-    gap: 12px;
     background: white;
     box-shadow: 0px -5px 10px 0px #0000001A;
     border-radius: 5px;
@@ -711,7 +710,7 @@ body,
 .sale-price {
     color: #000;
     font-weight: 600;
-    font-size: 11px;
+    font-size: 12px;
     display: flex;
     align-items: center;
     gap: 5px;
@@ -1112,7 +1111,7 @@ button.show-icon-toggleCartVisibility span.Polaris-Icon {
 }
 
 .custom-checkbox {
-    width: 18px;
+    width: 25px;
     height: 18px;
     border: 2px solid #ccc;
     border-radius: 4px;
@@ -1300,6 +1299,7 @@ span.upcart-rewards-tier-icon {
 .custom-cart-internal-upsell {
     border-radius: 5px;
     position: relative;
+    padding: 20px;
 }
 
 .custom-upsell-top {

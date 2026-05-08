@@ -217,9 +217,12 @@ window.hubUtils = {
     const savePct = hasDiscount
       ? Math.round((1 - salePrice / comparePrice) * 100)
       : 0;
+      
     const comparePriceHTML = hasDiscount
       ? `<span class="hub-compare-price">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
-         <span class="hub-save-badge">SAVE ${savePct}%</span>`
+     <span class="hub-item-save" style="background: ${hexToRGBA(designSettings?.savingsColor, 0.1)}; color: ${designSettings.savingsColor};">
+       ${hubUtils.formatMoney(Math.round((comparePrice - salePrice) * 100))} 
+     </span>`
       : "";
 
     const hasMultipleVariants = variants.length > 1;
@@ -379,7 +382,7 @@ window.hubUtils = {
       // cartTotal is in presentment; conditions are in base — divide by rate
       // so the comparison happens in a single currency.
 
-      const cartTotalBase = ((cartTotalCents || 0) / 100) / rate;
+      const cartTotalBase = (cartTotalCents || 0) / 100 / rate;
 
       let matchedRate = null;
 

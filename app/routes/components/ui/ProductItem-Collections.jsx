@@ -381,10 +381,10 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
                                         borderBottom: "1px solid #e1e3e5"
                                     }}>
 
-                                        <InlineStack align="space-between" wrap={false}>
+                                        <InlineStack align="space-between" wrap={false} gap="500">
 
                                             {/* LEFT */}
-                                            <InlineStack gap="200" wrap={false}>
+                                            <InlineStack gap="200" align="start" blockAlign="start" wrap={false}>
 
                                                 <Checkbox
                                                     checked={isProductSelected(product)}
@@ -413,10 +413,23 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
 
                                             </InlineStack>
 
-                                            <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end", minWidth: "140px" }}>
-                                                {product.variants.every((v) => !v.available) && (
-                                                    <Badge tone="warning">Out of stock</Badge>
-                                                )}
+                                            <div style={{
+                                                display: "flex", gap: "8px", justifyContent: "flex-end", minWidth: product.variants.every((v) => !v.available)
+                                                    ? "165px"
+                                                    : "80px",
+                                            }}>
+                                                <div
+                                                    style={{
+                                                        lineHeight: 1,
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        height: "25px",
+                                                    }}
+                                                >
+                                                    {product.variants.every((v) => !v.available) && (
+                                                        <Badge tone="warning">Out of stock</Badge>
+                                                    )}
+                                                </div>
                                                 <Text alignment="end">{product.price} {currency}</Text>
                                             </div>
 

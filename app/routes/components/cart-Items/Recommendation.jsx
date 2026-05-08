@@ -4,6 +4,28 @@ import "swiper/css";
 import { Navigation } from "swiper/modules";
 import "swiper/css/navigation";
 
+function hexToRGBA(hex = "#16a34a", opacity = 1) {
+    if (!hex || typeof hex !== "string") {
+        hex = "#16a34a";
+    }
+
+    if (hex.startsWith("rgb")) {
+        return hex.replace("rgb", "rgba").replace(")", `, ${opacity})`);
+    }
+
+    const validHex = hex.replace("#", "");
+
+    if (validHex.length !== 6) {
+        return `rgba(22, 163, 74, ${opacity})`;
+    }
+
+    const r = parseInt(validHex.substring(0, 2), 16);
+    const g = parseInt(validHex.substring(2, 4), 16);
+    const b = parseInt(validHex.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
 const DEFAULT_PRODUCT = {
     id: "default-product",
     title: "Recommended Product",
@@ -147,10 +169,36 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                             </span>
 
                             {selectedVariant.compareAtPrice &&
-                                parseFloat(selectedVariant.compareAtPrice) > parseFloat(selectedVariant.price) && (
-                                    <span className="compare-price custom-cart-public-component-upsell-tile__price-compare-at" style={{ color: designSettings.textColor || "#6b7280", }}>
-                                        {selectedVariant.compareAtPrice} {currency}
-                                    </span>
+                                parseFloat(selectedVariant.compareAtPrice) >
+                                parseFloat(selectedVariant.price) && (
+                                    <>
+                                        <span
+                                            className="compare-price custom-cart-public-component-upsell-tile__price-compare-at"
+                                            style={{ color: designSettings.textColor || "#6b7280" }}
+                                        >
+                                            {selectedVariant.compareAtPrice} {currency}
+                                        </span>
+
+                                        <span
+                                            className="upsell-save-price"
+                                            style={{
+                                                background: hexToRGBA(designSettings?.savingsColor, 0.1),
+                                                color: designSettings.savingsColor,
+                                                fontSize: "10px",
+                                                fontWeight: 700,
+                                                padding: "5px 7px",
+                                                borderRadius: "14px",
+                                                lineHeight: 1,
+                                            }}
+                                        >
+                                            {cartSettings.savingsText} {""}
+                                            {(
+                                                parseFloat(selectedVariant.compareAtPrice) -
+                                                parseFloat(selectedVariant.price)
+                                            ).toFixed(2)}{" "}
+                                            {currency}
+                                        </span>
+                                    </>
                                 )}
 
                         </p>

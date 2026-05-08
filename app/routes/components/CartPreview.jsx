@@ -93,7 +93,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     {!rewardsSettings.enabled && (
                                         <TieredReward rewardsSettings={rewardsSettings} />)}
 
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "top" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} />}
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "top" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings}/>}
                                     <CartItem
                                         showStrikethrough={designSettings.showStrikethrough}
                                         textColor={designSettings.textColor}
@@ -115,14 +115,14 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                                 <span className="custom-checkbox"></span>
 
                                                 <span className="upsell-text">
-                                                    Add The Impulse | Crossbody Sling for only $150
+                                                    {upsellsSettings?.suggestedProduct?.items?.titles?.[0]}
                                                 </span>
                                             </label>
                                         </div>
                                     )}
                                     {/* between_line_items */}
                                     <CustomHtml cartSettings={cartSettings} position="between_line_items" />
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} />}
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings} />}
 
                                     {/* below_cart_items */}
                                     <CustomHtml cartSettings={cartSettings} position="below_cart_items" />
