@@ -358,9 +358,28 @@ window.hubUtils = {
 
       if (!countryCode) return;
 
-      // ─── Cart Total ──────────────────────────────────────
+      // ─── Currency Conversion Rate ────────────────────────
+      // shipping_zones returns prices in shop base currency.
+      // _hubCartFinalTotal & cartTotalCents come from /cart.js → presentment currency.
+      // Apply a rate so the shipping value matches whatever currency the customer sees.
 
-      const cartTotal = (cartTotalCents || 0) / 100;
+      const shopCurrency = window.__SHOPIFY_SHOP__?.currency;
+      const activeCurrency = window.__SHOPIFY_CURRENCY__?.code;
+      const sameCurrency =
+        !shopCurrency || !activeCurrency || shopCurrency === activeCurrency;
+      const rate = sameCurrency
+        ? 1
+        : parseFloat(
+            window.__SHOPIFY_CURRENCY_RATE__ ||
+              window.Shopify?.currency?.rate ||
+              1,
+          ) || 1;
+
+      // ─── Cart Total ──────────────────────────────────────
+      // cartTotal is in presentment; conditions are in base — divide by rate
+      // so the comparison happens in a single currency.
+
+      const cartTotalBase = ((cartTotalCents || 0) / 100) / rate;
 
       let matchedRate = null;
 
@@ -389,7 +408,7 @@ window.hubUtils = {
                   condition.field === "TOTAL_PRICE" &&
                   condition.operator === "GREATER_THAN_OR_EQUAL_TO"
                 ) {
-                  if (cartTotal < amount) {
+                  if (cartTotalBase < amount) {
                     isApplicable = false;
                   }
                 }
@@ -400,7 +419,7 @@ window.hubUtils = {
                   condition.field === "TOTAL_PRICE" &&
                   condition.operator === "LESS_THAN_OR_EQUAL_TO"
                 ) {
-                  if (cartTotal > amount) {
+                  if (cartTotalBase > amount) {
                     isApplicable = false;
                   }
                 }
@@ -427,11 +446,11 @@ window.hubUtils = {
 
       if (!matchedRate) return;
 
-      // ─── Shipping Price ──────────────────────────────────
+      // ─── Shipping Price (converted to presentment) ───────
 
-      const price = parseFloat(matchedRate.price || 0);
-
-      const shippingCents = price * 100;
+      const basePrice = parseFloat(matchedRate.price || 0);
+      const price = basePrice * rate;
+      const shippingCents = Math.round(price * 100);
 
       window._hubShippingPriceCents = shippingCents;
 
@@ -477,6 +496,7 @@ window.hubUtils = {
       console.error("Shipping Calculation Error:", err);
     }
   },
+
   async maybeUpdateRewardProducts(cart, rewards) {
     // FIX: was `rewards?.enabled` — inverted logic, ran when rewards were OFF
     if (rewards?.enabled || !rewards?.tiers?.length) return false;

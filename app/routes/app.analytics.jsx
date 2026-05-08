@@ -256,6 +256,8 @@ export default function Analytics() {
   const checkouts = analytics.checkout_initiated ?? 0;
   const checkoutComplate = stats?.checkoutsCompleted ?? 0;
 
+  console.log(checkoutComplate, stats)
+
   const [filters, setFilters] = useState({ addons: true, upsells: true, subscriptions: true });
   const toggleFilter = (key) => setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
 

@@ -783,9 +783,8 @@ router.get("/revenue-stats", async (req, res) => {
       analyticsFormatted[item._id] = item.count;
     });
 
-    const checkoutsCompleted = await orderRevenueModel.countDocuments({
-      shop: cleanShop,
-    });
+   const cartOrderCounts = await cartOrderCountModel.find({ shop: cleanShop }).lean();
+   const checkoutsCompleted = cartOrderCounts.reduce((sum, doc) => sum + (doc.totalOrders || 0), 0);
 
     // ───── FINAL RESPONSE ─────
     return res.json({
