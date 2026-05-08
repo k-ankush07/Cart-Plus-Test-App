@@ -487,7 +487,7 @@ export default function Analytics() {
                     <Button icon={DownloadIcon} size="slim" onClick={() => downloadCSV(convChartData, "conversion.csv", true)}
                       accessibilityLabel="Download conversion data" />
                   </InlineStack>
-                  <Box style={{ height: 203 }}>
+                  <Box style={{ height: 202 }}>
                     <Line data={convChartData} options={convOpts} />
                   </Box>
                 </BlockStack>

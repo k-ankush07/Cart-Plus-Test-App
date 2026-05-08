@@ -63,6 +63,8 @@ function UndoToast({ message, onUndo, onDismiss }) {
           marginLeft: "auto",
           flexShrink: 0,
           padding: 0,
+          textDecoration: "underline",
+          textUnderlineOffset: "2px"
         }}
       >
         Undo
@@ -119,7 +121,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                 <line x1="7" y1="7" x2="7.01" y2="7" />
               </svg>
-             MEGA20
+              MEGA20
             </span>
           </div>
 
@@ -217,7 +219,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
             <span style={{ color: "#999", textDecoration: "line-through", fontSize: "9px" }}>$40.00</span>
           )}
           {cartSettings.showSavingsBelowPrices && (
-            <span className="custom-cart-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "14px", lineHeight:'18px' }}>
+            <span className="custom-cart-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>
               {cartSettings.savingsText} 10%
             </span>
           )}
@@ -248,7 +250,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
       <div style={{ position: "relative", flexShrink: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
         {cartSettings.showSavingsBelowPrices && (
           <span className="custom-cart-public-component-product-tile__savings"
-            style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "14px", lineHeight:'18px' }}>{cartSettings.savingsText} 50%</span>
+            style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>{cartSettings.savingsText} 50%</span>
         )}
         <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }} className="cart-app-item__image custom-cart-public-component-product-tile__image-wrapper">
           <img className="upcart-public-component-product-tile__image custom-cart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -263,12 +265,12 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
               <span dangerouslySetInnerHTML={{ __html: productName }} />
             </div>
             <div className="custom-cart-public-component-product-tile__variant" style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
-             <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
-              Size: STANDARD
-            </div>
-            <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
-              Color: BLACK
-            </div>
+              <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
+                Size: STANDARD
+              </div>
+              <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
+                Color: BLACK
+              </div>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
@@ -331,13 +333,25 @@ export default function CartItem({
 
   const updateQty = async (type) => {
     if (loadingType) return;
+
     setLoadingType(type);
+
     await new Promise((res) => setTimeout(res, 800));
+
     setQty((prev) => {
-      if (type === "inc") return prev + 1;
-      if (type === "dec" && prev > 1) return prev - 1;
-      return prev;
+      let newQty = prev;
+
+      if (type === "inc") {
+        newQty = prev;
+      }
+
+      if (type === "dec") {
+        newQty = Math.max(1, prev);
+      }
+
+      return parseInt(newQty, 10);
     });
+
     setLoadingType(null);
   };
 

@@ -9,8 +9,6 @@ export default function CartHoverCard({ cart, children }) {
     const ref = useRef();
     const hideTimer = useRef(null);
 
-    console.log(cart)
-
     const cancelHide = () => {
         if (hideTimer.current) {
             clearTimeout(hideTimer.current);

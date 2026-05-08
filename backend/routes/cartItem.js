@@ -8,6 +8,7 @@ import {
   orderRevenueModel,
   cartOrderCountModel,
 } from "../model/schema.js";
+
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -808,6 +809,47 @@ router.get("/revenue-stats", async (req, res) => {
   } catch (error) {
     console.error("REVENUE STATS ERROR:", error);
     return res.status(500).json({ success: false });
+  }
+});
+
+// ─── Cart Order Count ─────────────────────────────────────────────────────────
+
+router.get("/cart-order-count", async (req, res) => {
+  try {
+    const { shop, cartId } = req.query;
+
+    if (!shop) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required field: shop",
+      });
+    }
+
+    const filter = { shop };
+    if (cartId) filter.cartId = cartId;
+
+    const orderCounts = await cartOrderCountModel.find(filter).lean();
+
+    if (!orderCounts || orderCounts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No order count data found",
+      });
+    }
+
+    // Aggregate total across all carts if no specific cartId given
+    const totalOrders = orderCounts.reduce((sum, doc) => sum + (doc.totalOrders || 0), 0);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        breakdown: orderCounts,   
+        totalOrders,              
+      },
+    });
+  } catch (error) {
+    console.error("CART ORDER COUNT ERROR:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
