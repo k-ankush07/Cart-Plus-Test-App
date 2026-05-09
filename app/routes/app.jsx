@@ -60,8 +60,8 @@ export default function App() {
             background: "#f1f1f1",
           }}>
             <div style={{
-              width: 200,
-              height: 5,
+              width: 300,
+              height: 8,
               background: "#e1e3e5",
               borderRadius: 4,
               overflow: "hidden",

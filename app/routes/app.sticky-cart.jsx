@@ -397,8 +397,8 @@ export default function StickyCart() {
                             height: 44,
                             borderRadius: 8,
                             border: selectedIcon === icon.id
-                              ? "1.5px solid #2c7be5"
-                              : "1px solid #e1e3e5",
+                              ? "2px solid #2c7be5"
+                              : "1.5px solid #e1e3e5",
                             background: selectedIcon === icon.id
                               ? "rgba(44,123,229,0.06)"
                               : "#fff",

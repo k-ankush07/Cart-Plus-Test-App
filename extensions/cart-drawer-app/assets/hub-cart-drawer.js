@@ -740,13 +740,21 @@ window.getUpsellProducts = async function (settings, productId) {
       const res = await fetch(url);
       const data = await res.json();
 
-      products = data.products || [];
+      products = (data.products || []).map((product) => ({
+        ...product,
+        variants: (product.variants || []).map((v) => ({
+          ...v,
+          price: v.price ? (Number(v.price) / 100).toFixed(2) : "0.00",
+          compare_at_price: v.compare_at_price
+            ? (Number(v.compare_at_price) / 100).toFixed(2)
+            : null,
+        })),
+      }));
     } else if (sourceType === "products") {
       const ids =
         selectedItems.products?.map((gid) => gid.split("/").pop()) || [];
 
       if (ids.length) {
-        // Fetch pages in parallel batches of 3 instead of one-by-one
         let allProducts = [];
         let page = 1;
         let done = false;
@@ -794,11 +802,42 @@ window.getUpsellProducts = async function (settings, productId) {
       }
     }
 
-    if (!settings.showIfAlreadyInCart && window._hubCartProductIds?.size) {
-      products = products.filter(
-        (p) => !window._hubCartProductIds.has(String(p.id)),
-      );
+    // ✅ Always fetch fresh cart — cache-busted
+    if (!settings.showIfAlreadyInCart) {
+      try {
+        const cartRes = await fetch(`/cart.js?_=${Date.now()}`);
+        const cart = await cartRes.json();
+
+        const cartProductIds = new Set(
+          cart.items.map((i) => String(i.product_id)),
+        );
+        const cartHandles = new Set(cart.items.map((i) => i.handle));
+
+        // Keep globals in sync
+        window._hubCartProductIds = cartProductIds;
+        window._hubCartHandles = cartHandles;
+
+        products = products.filter((p) => {
+          const byId = cartProductIds.has(String(p.id));
+          const byHandle = p.handle && cartHandles.has(p.handle);
+          return !byId && !byHandle;
+        });
+      } catch (_) {
+        if (window._hubCartProductIds?.size) {
+          products = products.filter(
+            (p) => !window._hubCartProductIds.has(String(p.id)),
+          );
+        }
+      }
     }
+
+    // Filter out unavailable products
+    products = products.filter((p) => {
+      const variants = p.variants || [];
+      return (
+        p.available !== false && variants.some((v) => v.available !== false)
+      );
+    });
 
     if (settings.limitUpsellsInCart) {
       products = products.slice(0, settings.maxUpsellsInCart);
@@ -806,6 +845,7 @@ window.getUpsellProducts = async function (settings, productId) {
 
     return products;
   } catch (err) {
+    console.error("[hub] getUpsellProducts error:", err);
     return [];
   }
 };

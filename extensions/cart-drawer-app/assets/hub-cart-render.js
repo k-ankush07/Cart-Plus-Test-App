@@ -399,7 +399,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
       // Pre-render, filtering out any product already in cart
       const rendered = products
-        .map((p) => ({ p, html: hubUtils.getProductCardHTML(p, settings) }))
+        .map((p) => ({
+          p,
+          html: hubUtils.getProductCardHTML(p, {
+            ...settings,
+            showIfAlreadyInCart: true,
+          }),
+        }))
         .filter(({ html }) => html !== "");
 
       if (rendered.length === 0) {
@@ -510,16 +516,26 @@ window.hubCartRender = async function (drawer, opts = {}) {
           }
 
           if (!settings.showIfAlreadyInCart) {
-            (swipeSlide || parent).remove();
+            if (layout === "carousel") {
+              (swipeSlide || parent).remove();
 
-            const remaining =
-              container.querySelectorAll(".swiper-slide").length;
+              const remaining =
+                container.querySelectorAll(".swiper-slide").length;
 
-            if (remaining === 0) {
-              container.style.display = "none";
-            } else if (swiperInstance) {
-              swiperInstance.params.slidesPerView = remaining === 1 ? 1 : 1.5;
-              swiperInstance.update();
+              if (remaining === 0) {
+                container.style.display = "none";
+              } else if (swiperInstance) {
+                swiperInstance.params.slidesPerView = remaining === 1 ? 1 : 1.2;
+                swiperInstance.update();
+              }
+            } else {
+              parent.remove();
+
+              const remaining =
+                container.querySelectorAll(".hub-rec-product").length;
+              if (remaining === 0) {
+                container.style.display = "none";
+              }
             }
           }
 
@@ -1207,7 +1223,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
         }
       });
     });
-    
   } catch (err) {
     console.error("Cart render error:", err);
   } finally {

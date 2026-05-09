@@ -53,7 +53,7 @@ function QtyStepper() {
         >
             <button style={{ padding: "4px 10px", border: "none", background: "none", cursor: "pointer" }}>−</button>
             <span style={{ padding: "4px 10px" }}>
-                2
+              1
             </span>
             <button style={{ padding: "4px 10px", border: "none", background: "none", cursor: "pointer" }}>+</button>
         </div>
@@ -251,7 +251,7 @@ export default function CartItems({ handleChange, cartSettings }) {
                     </LayoutWrapper>
                 </Box>
 
-                <Box paddingBlockEnd="400">
+                <Box >
                     {/* ── Layout 3: Modern ── */}
                     <LayoutWrapper value="modern" selected={selected === "modern"} onSelect={onSelect}>
                         <Card>
