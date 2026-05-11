@@ -1,4 +1,4 @@
-const apiUrl = "https://hubsyntax.online";
+const apiUrl = "http://localhost:9002";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");
