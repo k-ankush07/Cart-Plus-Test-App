@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { type } from "os";
 
 const cartSchema = new mongoose.Schema(
   {
@@ -57,6 +58,7 @@ const stickyCartSchema = new mongoose.Schema({
 const shopConfigSchema = new mongoose.Schema({
   shop: { type: String, required: true, unique: true },
   accessToken: { type: String, required: true },
+  email:{type:String},
   updatedAt: { type: Date, default: Date.now },
 });
 

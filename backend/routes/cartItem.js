@@ -8,7 +8,7 @@ import {
   orderRevenueModel,
   cartOrderCountModel,
 } from "../model/schema.js";
-
+import { sendEmail } from "./sendEmail.js";
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -80,16 +80,30 @@ router.get("/get-cart/:cartId", async (req, res) => {
 router.post("/create-cart", async (req, res) => {
   try {
     const {
-      shop, shopEmail, storeOwner, cartId: clientCartId,
-      designSettings, headerSettings, announcementSettings,
-      rewardsSettings, recommendationsSettings, subscriptionUpgradesSettings,
-      upsellsSettings, additionalNotesSettings, addonsSettings,
-      discountCodesSettings, expressPaymentsSettings, trustBadgesSettings,
-      cartSettings, triggeredRewardsSettings,
+      shop,
+      shopEmail,
+      storeOwner,
+      cartId: clientCartId,
+      designSettings,
+      headerSettings,
+      announcementSettings,
+      rewardsSettings,
+      recommendationsSettings,
+      subscriptionUpgradesSettings,
+      upsellsSettings,
+      additionalNotesSettings,
+      addonsSettings,
+      discountCodesSettings,
+      expressPaymentsSettings,
+      trustBadgesSettings,
+      cartSettings,
+      triggeredRewardsSettings,
     } = req.body;
 
     if (!shop || !shopEmail || !storeOwner) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
     const count = await cartModels.countDocuments({ shop });
@@ -97,7 +111,11 @@ router.post("/create-cart", async (req, res) => {
     const cartId = clientCartId || crypto.randomUUID();
 
     const newCart = await cartModels.create({
-      shop, shopEmail, storeOwner, cartId, cartName,
+      shop,
+      shopEmail,
+      storeOwner,
+      cartId,
+      cartName,
       status: "unpublished",
       designSettings,
       headerSettings,
@@ -115,7 +133,13 @@ router.post("/create-cart", async (req, res) => {
       triggeredRewardsSettings,
     });
 
-    return res.status(201).json({ success: true, message: "Cart created successfully", data: newCart });
+    return res
+      .status(201)
+      .json({
+        success: true,
+        message: "Cart created successfully",
+        data: newCart,
+      });
   } catch (error) {
     console.error("CREATE CART ERROR:", error);
     return res.status(500).json({ success: false, message: "Server error" });
@@ -203,14 +227,17 @@ router.post("/toggle-publish", async (req, res) => {
     const { cartId } = req.body;
 
     const cart = await cartModels.findOne({ cartId });
-    if (!cart) return res.status(404).json({ success: false, message: "Cart not found" });
+    if (!cart)
+      return res
+        .status(404)
+        .json({ success: false, message: "Cart not found" });
 
     const isPublishing = cart.status !== "published";
 
     if (isPublishing) {
       await cartModels.updateMany(
         { shop: cart.shop, status: "published" },
-        { $set: { status: "unpublished" } }
+        { $set: { status: "unpublished" } },
       );
     }
 
@@ -222,13 +249,15 @@ router.post("/toggle-publish", async (req, res) => {
     const updatedCart = await cartModels.findOneAndUpdate(
       { cartId },
       { $set: updateData },
-      { new: true }
+      { new: true },
     );
 
     return res.json({
       success: true,
       data: updatedCart,
-      message: isPublishing ? "Cart published successfully" : "Cart unpublished successfully",
+      message: isPublishing
+        ? "Cart published successfully"
+        : "Cart unpublished successfully",
     });
   } catch (error) {
     console.error("TOGGLE PUBLISH ERROR:", error);
@@ -344,30 +373,95 @@ router.get("/get-sticky-cart/:shop", async (req, res) => {
 
 // Called by the Remix app after OAuth to persist the offline Admin token.
 // Only updates the DB if the token has changed.
+
 router.post("/save-shop-token", async (req, res) => {
   try {
-    const { shop, accessToken } = req.body;
+    const { shop, accessToken, email } = req.body;
+
     if (!shop || !accessToken) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing shop or accessToken" });
+      return res.status(400).json({
+        success: false,
+        message: "Missing shop or accessToken",
+      });
     }
 
     const existing = await shopConfigModel.findOne({ shop });
 
-    if (existing?.accessToken === accessToken) {
-      return res.json({ success: true, updated: false });
+    const isNewStore = !existing;
+    const tokenChanged = existing?.accessToken !== accessToken;
+    const emailChanged = existing?.email !== email;
+
+    // No updates
+    if (!isNewStore && !tokenChanged && !emailChanged) {
+      return res.json({
+        success: true,
+        updated: false,
+      });
     }
 
+    // Save / update shop data
     await shopConfigModel.findOneAndUpdate(
       { shop },
-      { accessToken, updatedAt: new Date() },
-      { upsert: true, new: true },
+      {
+        accessToken,
+        email,
+        updatedAt: new Date(),
+      },
+      {
+        upsert: true,
+        new: true,
+      }
     );
-    return res.json({ success: true, updated: true });
+
+    // Send emails after first install or update
+    try {
+      const subject = isNewStore
+        ? "New Shopify Store Connected"
+        : "Shopify Store Updated";
+
+      const html = `
+        <div style="font-family: Arial, sans-serif;">
+          <h2>${subject}</h2>
+
+          <p><strong>Shop:</strong> ${shop}</p>
+          <p><strong>Email:</strong> ${email || "N/A"}</p>
+
+          <p>
+            ${
+              isNewStore
+                ? "A new Shopify store connected your app."
+                : "Store token or email has been updated."
+            }
+          </p>
+
+          <hr />
+          <p>HubSyntax App Notification</p>
+        </div>
+      `;
+
+      // 1. Send to store owner
+      if (email) {
+        await sendEmail(email, subject, html);
+      }
+
+      // 2. Send to app owner
+      await sendEmail("sahil@hubsyntax.com", subject, html);
+
+      console.log("[hub] Notification emails sent");
+    } catch (emailError) {
+      console.error("[hub] Email error:", emailError);
+    }
+
+    return res.json({
+      success: true,
+      updated: true,
+    });
   } catch (error) {
     console.error("SAVE SHOP TOKEN ERROR:", error);
-    return res.status(500).json({ success: false });
+
+    return res.status(500).json({
+      success: false,
+    });
   }
 });
 
@@ -585,122 +679,151 @@ router.post("/order-revenue", async (req, res) => {
 });
 
 router.get("/cart-stats", async (req, res) => {
-    try {
-        const { shop, startDate, endDate } = req.query;
-        if (!shop) return res.status(400).json({ success: false, message: "Missing shop" });
+  try {
+    const { shop, startDate, endDate } = req.query;
+    if (!shop)
+      return res.status(400).json({ success: false, message: "Missing shop" });
 
-        const cleanShop = shop.replace("https://", "").replace("http://", "").replace(/\/$/, "");
+    const cleanShop = shop
+      .replace("https://", "")
+      .replace("http://", "")
+      .replace(/\/$/, "");
 
-        // Build date filter
-        const dateFilter = {};
-        if (startDate) dateFilter.$gte = new Date(startDate);
-        if (endDate) {
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999); // include full end day
-            dateFilter.$lte = end;
-        }
-        const hasDateFilter = Object.keys(dateFilter).length > 0;
-
-        const revenueMatch = {
-            shop: cleanShop,
-            cartId: { $exists: true, $nin: [null, ""] },
-            ...(hasDateFilter && { createdAt: dateFilter }),
-        };
-
-        const analyticsMatch = {
-            shop: cleanShop,
-            cartId: { $exists: true, $nin: [null, ""] },
-            ...(hasDateFilter && { createdAt: dateFilter }),
-        };
-
-        const shopAnalyticsMatch = {
-            shop: cleanShop,
-            ...(hasDateFilter && { createdAt: dateFilter }),
-        };
-
-        const shopRevenueMatch = {
-            shop: cleanShop,
-            ...(hasDateFilter && { createdAt: dateFilter }),
-        };
-
-        const [revenueByCart, analyticsByCart, shopAnalytics, publishedCart, shopRevenueBreakdown] = await Promise.all([
-            orderRevenueModel.aggregate([
-                { $match: revenueMatch },
-                { $group: { _id: "$cartId", totalRevenue: { $sum: "$totalRevenue" } } },
-            ]),
-            analyticsModel.aggregate([
-                { $match: analyticsMatch },
-                { $group: { _id: { cartId: "$cartId", eventType: "$eventType" }, count: { $sum: 1 } } },
-            ]),
-            analyticsModel.aggregate([
-                { $match: shopAnalyticsMatch },
-                { $group: { _id: "$eventType", count: { $sum: 1 } } },
-            ]),
-            cartModels.findOne({ shop: cleanShop, isPublished: true }).lean(),
-            orderRevenueModel.aggregate([
-                { $match: shopRevenueMatch },
-                {
-                    $group: {
-                        _id: null,
-                        addonRevenue: { $sum: "$addonRevenue" },
-                        upsellRevenue: { $sum: "$upsellRevenue" },
-                        subscriptionRevenue: { $sum: "$subscriptionRevenue" },
-                    },
-                },
-            ]),
-        ]);
-
-        const stats = {};
-
-        revenueByCart.forEach(({ _id, totalRevenue }) => {
-            if (!stats[_id]) stats[_id] = { revenue: 0, impressions: 0, checkouts: 0 };
-            stats[_id].revenue = totalRevenue;
-        });
-
-        analyticsByCart.forEach(({ _id: { cartId, eventType }, count }) => {
-            if (!stats[cartId]) stats[cartId] = { revenue: 0, impressions: 0, checkouts: 0 };
-            if (eventType === "cart_impression") stats[cartId].impressions = count;
-            if (eventType === "checkout_initiated") stats[cartId].checkouts = count;
-        });
-
-        if (publishedCart?.cartId) {
-            const pid = publishedCart.cartId;
-            const hasPerCartAnalytics =
-                stats[pid] && (stats[pid].impressions > 0 || stats[pid].checkouts > 0);
-
-            if (!hasPerCartAnalytics) {
-                const shopImpressions = shopAnalytics.find((e) => e._id === "cart_impression")?.count || 0;
-                const shopCheckouts = shopAnalytics.find((e) => e._id === "checkout_initiated")?.count || 0;
-
-                if (!stats[pid]) stats[pid] = { revenue: 0, impressions: 0, checkouts: 0 };
-                stats[pid].impressions = shopImpressions;
-                stats[pid].checkouts = shopCheckouts;
-            }
-        }
-
-        const result = {};
-        Object.entries(stats).forEach(([cartId, { revenue, impressions, checkouts }]) => {
-            result[cartId] = {
-                revenue,
-                conversionRate: impressions > 0 ? Math.min((checkouts / impressions) * 100, 100) : 0,
-            };
-        });
-
-        const breakdown = shopRevenueBreakdown[0] || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 };
-
-        return res.json({
-            success: true,
-            data: result,
-            shopRevenue: {
-                addonRevenue: breakdown.addonRevenue || 0,
-                upsellRevenue: breakdown.upsellRevenue || 0,
-                subscriptionRevenue: breakdown.subscriptionRevenue || 0,
-            },
-        });
-    } catch (error) {
-        console.error("CART STATS ERROR:", error);
-        return res.status(500).json({ success: false });
+    // Build date filter
+    const dateFilter = {};
+    if (startDate) dateFilter.$gte = new Date(startDate);
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); // include full end day
+      dateFilter.$lte = end;
     }
+    const hasDateFilter = Object.keys(dateFilter).length > 0;
+
+    const revenueMatch = {
+      shop: cleanShop,
+      cartId: { $exists: true, $nin: [null, ""] },
+      ...(hasDateFilter && { createdAt: dateFilter }),
+    };
+
+    const analyticsMatch = {
+      shop: cleanShop,
+      cartId: { $exists: true, $nin: [null, ""] },
+      ...(hasDateFilter && { createdAt: dateFilter }),
+    };
+
+    const shopAnalyticsMatch = {
+      shop: cleanShop,
+      ...(hasDateFilter && { createdAt: dateFilter }),
+    };
+
+    const shopRevenueMatch = {
+      shop: cleanShop,
+      ...(hasDateFilter && { createdAt: dateFilter }),
+    };
+
+    const [
+      revenueByCart,
+      analyticsByCart,
+      shopAnalytics,
+      publishedCart,
+      shopRevenueBreakdown,
+    ] = await Promise.all([
+      orderRevenueModel.aggregate([
+        { $match: revenueMatch },
+        { $group: { _id: "$cartId", totalRevenue: { $sum: "$totalRevenue" } } },
+      ]),
+      analyticsModel.aggregate([
+        { $match: analyticsMatch },
+        {
+          $group: {
+            _id: { cartId: "$cartId", eventType: "$eventType" },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+      analyticsModel.aggregate([
+        { $match: shopAnalyticsMatch },
+        { $group: { _id: "$eventType", count: { $sum: 1 } } },
+      ]),
+      cartModels.findOne({ shop: cleanShop, isPublished: true }).lean(),
+      orderRevenueModel.aggregate([
+        { $match: shopRevenueMatch },
+        {
+          $group: {
+            _id: null,
+            addonRevenue: { $sum: "$addonRevenue" },
+            upsellRevenue: { $sum: "$upsellRevenue" },
+            subscriptionRevenue: { $sum: "$subscriptionRevenue" },
+          },
+        },
+      ]),
+    ]);
+
+    const stats = {};
+
+    revenueByCart.forEach(({ _id, totalRevenue }) => {
+      if (!stats[_id])
+        stats[_id] = { revenue: 0, impressions: 0, checkouts: 0 };
+      stats[_id].revenue = totalRevenue;
+    });
+
+    analyticsByCart.forEach(({ _id: { cartId, eventType }, count }) => {
+      if (!stats[cartId])
+        stats[cartId] = { revenue: 0, impressions: 0, checkouts: 0 };
+      if (eventType === "cart_impression") stats[cartId].impressions = count;
+      if (eventType === "checkout_initiated") stats[cartId].checkouts = count;
+    });
+
+    if (publishedCart?.cartId) {
+      const pid = publishedCart.cartId;
+      const hasPerCartAnalytics =
+        stats[pid] && (stats[pid].impressions > 0 || stats[pid].checkouts > 0);
+
+      if (!hasPerCartAnalytics) {
+        const shopImpressions =
+          shopAnalytics.find((e) => e._id === "cart_impression")?.count || 0;
+        const shopCheckouts =
+          shopAnalytics.find((e) => e._id === "checkout_initiated")?.count || 0;
+
+        if (!stats[pid])
+          stats[pid] = { revenue: 0, impressions: 0, checkouts: 0 };
+        stats[pid].impressions = shopImpressions;
+        stats[pid].checkouts = shopCheckouts;
+      }
+    }
+
+    const result = {};
+    Object.entries(stats).forEach(
+      ([cartId, { revenue, impressions, checkouts }]) => {
+        result[cartId] = {
+          revenue,
+          conversionRate:
+            impressions > 0
+              ? Math.min((checkouts / impressions) * 100, 100)
+              : 0,
+        };
+      },
+    );
+
+    const breakdown = shopRevenueBreakdown[0] || {
+      addonRevenue: 0,
+      upsellRevenue: 0,
+      subscriptionRevenue: 0,
+    };
+
+    return res.json({
+      success: true,
+      data: result,
+      shopRevenue: {
+        addonRevenue: breakdown.addonRevenue || 0,
+        upsellRevenue: breakdown.upsellRevenue || 0,
+        subscriptionRevenue: breakdown.subscriptionRevenue || 0,
+      },
+    });
+  } catch (error) {
+    console.error("CART STATS ERROR:", error);
+    return res.status(500).json({ success: false });
+  }
 });
 
 router.get("/revenue-stats", async (req, res) => {
@@ -768,8 +891,13 @@ router.get("/revenue-stats", async (req, res) => {
       analyticsFormatted[item._id] = item.count;
     });
 
-   const cartOrderCounts = await cartOrderCountModel.find({ shop: cleanShop }).lean();
-   const checkoutsCompleted = cartOrderCounts.reduce((sum, doc) => sum + (doc.totalOrders || 0), 0);
+    const cartOrderCounts = await cartOrderCountModel
+      .find({ shop: cleanShop })
+      .lean();
+    const checkoutsCompleted = cartOrderCounts.reduce(
+      (sum, doc) => sum + (doc.totalOrders || 0),
+      0,
+    );
 
     // ───── FINAL RESPONSE ─────
     return res.json({
@@ -822,13 +950,16 @@ router.get("/cart-order-count", async (req, res) => {
     }
 
     // Aggregate total across all carts if no specific cartId given
-    const totalOrders = orderCounts.reduce((sum, doc) => sum + (doc.totalOrders || 0), 0);
+    const totalOrders = orderCounts.reduce(
+      (sum, doc) => sum + (doc.totalOrders || 0),
+      0,
+    );
 
     return res.status(200).json({
       success: true,
       data: {
-        breakdown: orderCounts,   
-        totalOrders,              
+        breakdown: orderCounts,
+        totalOrders,
       },
     });
   } catch (error) {
