@@ -1952,7 +1952,7 @@ span.upsell-text.suggestion-product {
 .loader {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(170, 170, 170, 0.15);
   border-top: 2px solid #000;
   border-radius: 50%;
   animation: spin 1s linear infinite;

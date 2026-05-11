@@ -15,14 +15,14 @@ import { sendEmail } from "../../backend/routes/sendEmail.js";
 const CLEANUP_DELAY_MS = 24 * 60 * 60 * 1000;
 
 const buildUninstallEmail = (shop) => ({
-  subject: "You uninstalled CustomCart — your data will be deleted in 1 minute",
+  subject: "You uninstalled CustomCart — your data will be deleted in 24 hours",
   html: `
     <div style="font-family:Arial,sans-serif;font-size:14px;color:#222">
       <p>Hi,</p>
       <p>We noticed that the <strong>CustomCart</strong> app was uninstalled from <strong>${shop}</strong>.</p>
       <p>All data associated with your store (carts, sticky cart, plan, analytics and revenue records) will be
-      <strong>permanently deleted in 1 minute</strong>.</p>
-      <p>If this was a mistake, simply reinstall the app within the next minute and your data will be preserved.</p>
+      <strong>permanently deleted in 24 hours</strong>.</p>
+      <p>If this was a mistake, simply reinstall the app within the next 24 hours and your data will be preserved.</p>
       <p>— The CustomCart Team</p>
     </div>
   `,

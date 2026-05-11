@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { type } from "os";
 
 const cartSchema = new mongoose.Schema(
   {
@@ -118,12 +117,12 @@ const cartOrderCountSchema = new mongoose.Schema({
 
 cartOrderCountSchema.index({ shop: 1, cartId: 1 }, { unique: true });
 
-const cartModels = mongoose.model("cartItems", cartSchema);
-const stickyCartModel = mongoose.model("stickyCart", stickyCartSchema);
-const shopConfigModel = mongoose.model("shopConfig", shopConfigSchema);
-const shopPlanModel = mongoose.model("shopPlan", shopPlanSchema);
-const analyticsModel = mongoose.model("Analytics", analyticsSchema);
-const orderRevenueModel = mongoose.model("OrderRevenue", orderRevenueSchema);
-const cartOrderCountModel = mongoose.model("CartOrderCount", cartOrderCountSchema);
+const cartModels        = mongoose.models.cartItems      || mongoose.model("cartItems", cartSchema);
+const stickyCartModel   = mongoose.models.stickyCart     || mongoose.model("stickyCart", stickyCartSchema);
+const shopConfigModel   = mongoose.models.shopConfig     || mongoose.model("shopConfig", shopConfigSchema);
+const shopPlanModel     = mongoose.models.shopPlan       || mongoose.model("shopPlan", shopPlanSchema);
+const analyticsModel    = mongoose.models.Analytics      || mongoose.model("Analytics", analyticsSchema);
+const orderRevenueModel = mongoose.models.OrderRevenue   || mongoose.model("OrderRevenue", orderRevenueSchema);
+const cartOrderCountModel = mongoose.models.CartOrderCount || mongoose.model("CartOrderCount", cartOrderCountSchema);
 
 export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel, analyticsModel, orderRevenueModel, cartOrderCountModel };

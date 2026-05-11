@@ -88,7 +88,7 @@ export default function App() {
           <div style={{
             position: "fixed",
             inset: 0,
-            zIndex: 99999,
+            zIndex: 21474836479,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
