@@ -10,6 +10,7 @@ import {
     Modal,
     BlockStack,
     Box,
+    Icon,
     SkeletonBodyText
 } from "@shopify/polaris";
 import {
@@ -35,6 +36,7 @@ import {
     DuplicateIcon,
     DeleteIcon,
     PlusIcon,
+    ExternalIcon
 } from "@shopify/polaris-icons";
 
 import DateRangePicker from "./components/ui/DateRangePicker";
@@ -56,6 +58,8 @@ import "../index.css";
 export const loader = async ({ request }) => {
     const { shop, apiUrl, accessToken, currency, admin } = await shopLoader(request);
     // ... date setup unchanged ...
+
+    const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 
     const today = new Date();
     const defaultStart = new Date();
@@ -97,11 +101,11 @@ export const loader = async ({ request }) => {
     const carts = cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [];
     const cartStats = statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {};
 
-    return Response.json({ shop, apiUrl, accessToken, currency, carts, cartStats, appEmbedInstalled });
+    return Response.json({ shop, apiUrl, accessToken, currency, carts, cartStats, appEmbedInstalled, mainThemeId, appEmbedId });
 };
 
 export default function AppCarts() {
-    const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency, appEmbedInstalled } = useLoaderData();
+    const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency, appEmbedInstalled, mainThemeId, appEmbedId } = useLoaderData();
 
     const navigate = useNavigate();
 
@@ -261,6 +265,26 @@ export default function AppCarts() {
     const fmt = (n) =>
         new Intl.NumberFormat("en-US", { style: "currency", currency: currency ?? "USD", minimumFractionDigits: 2 }).format(Number(n ?? 0));
 
+    const AppEmbedLink = () => (
+        <Tooltip content="Enable the app embed to start showing this cart on your storefront. Click to enable in your theme editor.">
+            <span>
+                <a
+                    href={`https://${shop.myshopifyDomain}/admin/themes/${mainThemeId}/editor?context=apps&activateAppId=${appEmbedId}/app-embed`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: "inline-flex", alignItems: "center", gap: "2px", textDecoration: "none" }}
+                    onMouseEnter={(e) => { e.currentTarget.querySelector(".embed-icon").style.opacity = "1"; }}
+                    onMouseLeave={(e) => { e.currentTarget.querySelector(".embed-icon").style.opacity = "0"; }}
+                >
+                    <Badge tone="warning">App embed off</Badge>
+                    <span className="embed-icon" style={{ opacity: 0, transition: "opacity 0.15s" }}>
+                        <Icon source={ExternalIcon} tone="subdued" />
+                    </span>
+                </a>
+            </span>
+        </Tooltip>
+    );
+
     const CartTable = ({ carts, emptyText, isDraft, stats }) => (
         <div style={{ paddingTop: 12 }}>
             {carts.length === 0 ? (
@@ -318,10 +342,15 @@ export default function AppCarts() {
                                         </div>
                                     </CartHoverCard>
                                 </IndexTable.Cell>
-
                                 {!isDraft && (
                                     <IndexTable.Cell>
-                                        <Badge tone="success">Live</Badge>
+                                        <InlineStack gap="200" blockAlign="center">
+                                            {appEmbedInstalled ? (
+                                                <Badge tone="success">Live</Badge>
+                                            ) : (
+                                                <AppEmbedLink />
+                                            )}
+                                        </InlineStack>
                                     </IndexTable.Cell>
                                 )}
 

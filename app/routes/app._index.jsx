@@ -443,6 +443,26 @@ export default function Dashboard() {
     fetchStats();
   }, [range.start, range.end, apiUrl, shop.myshopifyDomain]);
 
+  const AppEmbedLink = () => (
+    <Tooltip content="Enable the app embed to start showing this cart on your storefront. Click to enable in your theme editor.">
+      <span>
+        <a
+          href={`https://${shop.myshopifyDomain}/admin/themes/${mainThemeId}/editor?context=apps&activateAppId=${appEmbedId}/app-embed`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "inline-flex", alignItems: "center", gap: "2px", textDecoration: "none" }}
+          onMouseEnter={(e) => { e.currentTarget.querySelector(".embed-icon").style.opacity = "1"; }}
+          onMouseLeave={(e) => { e.currentTarget.querySelector(".embed-icon").style.opacity = "0"; }}
+        >
+          <Badge tone="warning">App embed off</Badge>
+          <span className="embed-icon" style={{ opacity: 0, transition: "opacity 0.15s" }}>
+            <Icon source={ExternalIcon} tone="subdued" />
+          </span>
+        </a>
+      </span>
+    </Tooltip>
+  );
+
   return (
     <Page
       title="Welcome to Custom Cart 🎉"
@@ -579,7 +599,13 @@ export default function Dashboard() {
                     </IndexTable.Cell>
 
                     <IndexTable.Cell>
-                      <Badge tone="success">Live</Badge>
+                      <InlineStack gap="200" blockAlign="center">
+                        {appEmbedInstalled ? (
+                          <Badge tone="success">Live</Badge>
+                        ) : (
+                          <AppEmbedLink />
+                        )}
+                      </InlineStack>
                     </IndexTable.Cell>
 
                     <IndexTable.Cell>
