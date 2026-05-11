@@ -12,6 +12,7 @@ const cartSchema = new mongoose.Schema(
       enum: ["unpublished", "published"],
       default: "unpublished",
     },
+     lastLiveDate: { type: Date, default: null },
     designSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     headerSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     announcementSettings: { type: mongoose.Schema.Types.Mixed, default: {} },

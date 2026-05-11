@@ -202,52 +202,37 @@ router.post("/toggle-publish", async (req, res) => {
   try {
     const { cartId } = req.body;
 
-    if (!cartId) {
-      return res.status(400).json({
-        success: false,
-        message: "cartId required",
-      });
-    }
+    const cart = await cartModels.findOne({ cartId });
+    if (!cart) return res.status(404).json({ success: false, message: "Cart not found" });
 
-    // current cart find karo
-    const currentCart = await cartModels.findOne({ cartId });
+    const isPublishing = cart.status !== "published";
 
-    if (!currentCart) {
-      return res.status(404).json({
-        success: false,
-        message: "Cart not found",
-      });
-    }
-
-    if (currentCart.status === "published") {
-      await cartModels.updateOne(
-        { cartId },
-        { $set: { status: "unpublished" } },
+    if (isPublishing) {
+      await cartModels.updateMany(
+        { shop: cart.shop, status: "published" },
+        { $set: { status: "unpublished" } }
       );
-
-      return res.json({
-        success: true,
-        message: "Cart unpublished",
-      });
     }
 
-    await cartModels.updateMany(
-      { shop: currentCart.shop, status: "published" },
-      { $set: { status: "unpublished" } },
-    );
+    const updateData = {
+      status: isPublishing ? "published" : "unpublished",
+      ...(isPublishing && { lastLiveDate: new Date() }),
+    };
 
-    await cartModels.updateOne({ cartId }, { $set: { status: "published" } });
+    const updatedCart = await cartModels.findOneAndUpdate(
+      { cartId },
+      { $set: updateData },
+      { new: true }
+    );
 
     return res.json({
       success: true,
-      message: "Cart published",
+      data: updatedCart,
+      message: isPublishing ? "Cart published successfully" : "Cart unpublished successfully",
     });
   } catch (error) {
     console.error("TOGGLE PUBLISH ERROR:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
