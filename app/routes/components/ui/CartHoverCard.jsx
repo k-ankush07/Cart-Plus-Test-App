@@ -122,7 +122,7 @@ export default function CartHoverCard({ cart, children }) {
                                 Last live
                             </p>
                             <p style={{ margin: 0, fontSize: "13px", color: "var(--p-color-text)", fontFamily: "var(--p-font-family-sans)" }}>
-                                {fmtDate(cart.lastLiveDate)}
+                                {fmtDate(cart.createdAt)}
                             </p>
                         </div>
 
