@@ -447,7 +447,6 @@ router.post("/save-shop-token", async (req, res) => {
       // 2. Send to app owner
       await sendEmail("sahil@hubsyntax.com", subject, html);
 
-      console.log("[hub] Notification emails sent");
     } catch (emailError) {
       console.error("[hub] Email error:", emailError);
     }
