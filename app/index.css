@@ -1240,54 +1240,6 @@ span.upcart-rewards-tier-icon {
     gap: 10px;
 }
 
-/* Live Status Dot */
-.carts_liveStatusDot__XROK5 {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-}
-
-.carts_liveStatusPulse___dT4L {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background-color: rgba(58, 124, 82, 0.45);
-    border-radius: 3px;
-    animation: liveStatusPulse 3s ease-out 0s infinite;
-}
-
-.carts_liveStatusCore__wJ4K1 {
-    position: relative;
-    z-index: 1;
-    display: block;
-    width: 8px;
-    height: 8px;
-    background-color: rgb(58, 124, 82);
-    border-radius: 3px;
-}
-
-/* Pulse keyframe animation */
-@keyframes liveStatusPulse {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: scale(2.5);
-        opacity: 0;
-    }
-
-    100% {
-        transform: scale(1);
-        opacity: 0;
-    }
-}
-
 .compact-cart-table .Polaris-IndexTable__TableHeading {
     padding: 6px 12px !important;
 }

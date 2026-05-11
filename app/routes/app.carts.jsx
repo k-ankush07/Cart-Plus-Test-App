@@ -41,7 +41,7 @@ import DateRangePicker from "./components/ui/DateRangePicker";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import CartHoverCard from "./components/ui/CartHoverCard"
-
+import LiveDot from "./components/ui/LiveDot";
 import { shopLoader } from "./components/shop.server";
 import {
     createCart,
@@ -442,10 +442,7 @@ export default function AppCarts() {
                 {/* Live Cart Section */}
                 <Layout.Section>
                     <div className="carts_liveStatusHeader___LUes" style={{ marginTop: 16 }}>
-                        <span className="carts_liveStatusDot__XROK5">
-                            <span className="carts_liveStatusPulse___dT4L"></span>
-                            <span className="carts_liveStatusCore__wJ4K1"></span>
-                        </span>
+                        <LiveDot />
                         <Text variant="headingMd" as="h3">Live cart</Text>
                     </div>
 
