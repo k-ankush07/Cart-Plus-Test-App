@@ -1424,3 +1424,7 @@ span.hub-total-arrow svg {
 .hub-breakdown-row.hub-breakdown-grand {
     padding-bottom: 15px;
 }
+
+.icon-selector:hover {
+  background-color: rgba(77, 166, 166, .15);
+}

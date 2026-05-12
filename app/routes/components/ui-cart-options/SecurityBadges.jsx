@@ -44,13 +44,18 @@ export default function SecurityBadges({ trustBadgesSettings, handleChange, acce
 
         try {
             setIsUploading(true);
-            setUploadProgress(30); 
+            setUploadProgress(40);
             const data = await uploadImage(apiUrl, file, shop, accessToken);
-            setUploadProgress(100); 
+
             if (!data.imageUrl) {
                 console.warn("imageUrl missing in backend response!");
                 return;
             }
+
+            // Hit 100% first, then wait 1s before showing image
+            setUploadProgress(100);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
             update("customImage", data.imageUrl);
             update("presetImage", "");
         } catch (err) {

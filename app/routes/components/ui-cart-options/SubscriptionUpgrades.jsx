@@ -141,14 +141,14 @@ export default function SubscriptionUpgrades({ subscriptionUpgradesSettings, han
                             </BlockStack>
                         </>
                     )}
-                    <BlockStack gap="100">
+                    {/* <BlockStack gap="100">
                         <Checkbox
                             label="Prevent downgrades"
                             helpText="If enabled, customers will not be allowed to downgrade from a subscription to one-time purchase. Caution: May increase cart abandonment."
                             checked={subscriptionUpgradesSettings.preventDowngrades}
                             onChange={(val) => update("preventDowngrades", val)}
                         />
-                    </BlockStack>
+                    </BlockStack> */}
                 </LegacyStack>
             </LegacyCard>
         </div>
