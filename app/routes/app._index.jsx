@@ -589,7 +589,12 @@ export default function Dashboard() {
                 selectable={false}
               >
                 {liveCarts.map((cart, i) => (
-                  <IndexTable.Row key={cart.cartId} id={cart.cartId} position={i}>
+                  
+                  <IndexTable.Row
+                    key={cart.cartId || cart._id || `row-${i}`}
+                    id={cart.cartId || cart._id || `row-${i}`}
+                    position={i}
+                  >
                     <IndexTable.Cell>
                       <CartHoverCard cart={cart}>
                         {/* ── Use Link for instant prefetch on hover ── */}
