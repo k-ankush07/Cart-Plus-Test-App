@@ -112,7 +112,7 @@ function buildSetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appE
       onAction: () =>
         window.open(
           `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
-          "_blank"
+          "_top"
         ),
     },
     {
@@ -589,7 +589,7 @@ export default function Dashboard() {
                 selectable={false}
               >
                 {liveCarts.map((cart, i) => (
-                  
+
                   <IndexTable.Row
                     key={cart.cartId || cart._id || `row-${i}`}
                     id={cart.cartId || cart._id || `row-${i}`}
