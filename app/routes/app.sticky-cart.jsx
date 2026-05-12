@@ -250,10 +250,14 @@ export default function StickyCart() {
     }
   }, [isDirty]);
 
-
   const handleSave = async () => {
+    const saveBtn = document.getElementById("save-btn");
+
     try {
       setLoading(true);
+
+      saveBtn.setAttribute("loading", "");
+
       const payload = {
         shop: Storeshop,
         enabled,
@@ -267,11 +271,25 @@ export default function StickyCart() {
         customCss: cartSettings.customCss,
       };
 
-      const res = await createStickyCart(apiUrl, payload);
+      const [res] = await Promise.all([
+        createStickyCart(apiUrl, payload),
+
+        // spinner minimum 1 second
+        new Promise((resolve) => setTimeout(resolve, 1000)),
+      ]);
 
       if (res?.success) {
-        initialSettingsRef.current = res.data;
-
+        initialSettingsRef.current = {
+          enabled,
+          selectedIcon,
+          bgColor,
+          iconColor,
+          qBgColor,
+          qTextColor,
+          position,
+          device,
+          customCss: cartSettings.customCss,
+        };
         setIsDirty(false);
         setSaved(true);
 
@@ -280,8 +298,11 @@ export default function StickyCart() {
 
     } catch (error) {
       console.error("Save error:", error);
+
     } finally {
       setLoading(false);
+
+      saveBtn.removeAttribute("loading");
     }
   };
 
@@ -317,7 +338,7 @@ export default function StickyCart() {
   return (
     <AppProvider>
       <ui-save-bar id="my-save-bar">
-        <button variant="primary" onClick={handleSave}>
+        <button variant="primary" id="save-btn" onClick={handleSave}>
           Save
         </button>
         <button onClick={handleDiscard}>Discard</button>
@@ -359,14 +380,13 @@ export default function StickyCart() {
               </div>
             </InlineStack>
             <Button
-              variant={isDirty ? "primary" : "secondary"}
+              variant="secondary"
               onClick={handleSave}
-              tone={saved ? "success" : undefined}
               loading={loading}
               disabled={loading}
               className={isDirty ? "black-btn" : ""}
             >
-              {saved ? "Saved!" : "Save"}
+              Save
             </Button>
           </InlineStack>
         }

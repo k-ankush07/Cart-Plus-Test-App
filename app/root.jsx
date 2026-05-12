@@ -21,6 +21,7 @@ export default function App() {
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
         />
+         <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
         <Meta />
         <Links />
       </head>

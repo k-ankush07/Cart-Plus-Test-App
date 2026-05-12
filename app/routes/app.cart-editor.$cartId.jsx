@@ -1,4 +1,4 @@
-import { AppProvider, Page } from "@shopify/polaris";
+import { AppProvider, Page, Spinner } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css";
 import "../index.css";
 import Sidebar from "./components/Sidebar";
@@ -233,14 +233,24 @@ export default function CartEditor() {
     setIsDirty(false);
   }, [cart?.cartId]);
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleSave = async () => {
+    const saveBtn = document.getElementById("save-btn");
+
     try {
+      setIsSaving(true);
+
+      saveBtn.setAttribute("loading", "");
+
       const cartId = window.location.pathname.split("/").pop();
 
-      // Sync all triggered rewards into ONE Shopify discount
       const rewards = triggeredRewardsSettings?.rewards || [];
-      const discountCombinations = triggeredRewardsSettings?.discountCombinations || {};
-      const existingDiscountId = triggeredRewardsSettings?.shopifyDiscountId || null;
+      const discountCombinations =
+        triggeredRewardsSettings?.discountCombinations || {};
+
+      const existingDiscountId =
+        triggeredRewardsSettings?.shopifyDiscountId || null;
 
       let shopifyDiscountId = existingDiscountId;
 
@@ -248,9 +258,15 @@ export default function CartEditor() {
         const syncRes = await fetch("/api/create-discount", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ rewards, discountCombinations, existingDiscountId }),
+          body: JSON.stringify({
+            rewards,
+            discountCombinations,
+            existingDiscountId,
+          }),
         });
+
         const syncData = await syncRes.json();
+
         if (syncData.discountId) {
           shopifyDiscountId = syncData.discountId;
         }
@@ -261,10 +277,33 @@ export default function CartEditor() {
         shopifyDiscountId,
       };
 
-      await updateCart(apiUrl, cartId, {
-        designSettings,
-        headerSettings,
-        announcementSettings,
+      await Promise.all([
+        updateCart(apiUrl, cartId, {
+          designSettings,
+          headerSettings,
+          announcementSettings,
+          rewardsSettings,
+          recommendationsSettings,
+          subscriptionUpgradesSettings,
+          upsellsSettings,
+          additionalNotesSettings,
+          addonsSettings,
+          discountCodesSettings,
+          expressPaymentsSettings,
+          trustBadgesSettings,
+          cartSettings,
+          triggeredRewardsSettings: updatedTriggeredRewardsSettings,
+        }),
+
+        new Promise((resolve) => setTimeout(resolve, 1000)),
+      ]);
+
+      setTriggeredRewardsSettings(updatedTriggeredRewardsSettings);
+
+      initialSettingsRef.current = {
+        design: designSettings,
+        header: headerSettings,
+        announcement: announcementSettings,
         rewardsSettings,
         recommendationsSettings,
         subscriptionUpgradesSettings,
@@ -275,32 +314,15 @@ export default function CartEditor() {
         expressPaymentsSettings,
         trustBadgesSettings,
         cartSettings,
-        triggeredRewardsSettings: updatedTriggeredRewardsSettings,
-      });
-
-      setTriggeredRewardsSettings(updatedTriggeredRewardsSettings);
-
-      initialSettingsRef.current = {
-        design: designSettings,
-        header: headerSettings,
-        announcement: announcementSettings,
-        rewardsSettings: rewardsSettings,
-        recommendationsSettings: recommendationsSettings,
-        subscriptionUpgradesSettings: subscriptionUpgradesSettings,
-        upsellsSettings: upsellsSettings,
-        additionalNotesSettings: additionalNotesSettings,
-        addonsSettings: addonsSettings,
-        discountCodesSettings: discountCodesSettings,
-        expressPaymentsSettings: expressPaymentsSettings,
-        trustBadgesSettings: trustBadgesSettings,
-        cartSettings: cartSettings,
         triggeredRewards: updatedTriggeredRewardsSettings,
       };
-      setIsDirty(false);
 
-      console.log("Saved successfully");
+      setIsDirty(false);
     } catch (error) {
       console.error("Save error:", error);
+    } finally {
+      setIsSaving(false);
+      saveBtn.removeAttribute("loading");
     }
   };
 
@@ -325,10 +347,13 @@ export default function CartEditor() {
   return (
     <AppProvider>
       <ui-save-bar id="my-save-bar">
-        <button variant="primary" onClick={handleSave}>
+        <button variant="primary" id="save-btn" onClick={handleSave}>
           Save
         </button>
-        <button onClick={handleDiscard}>Discard</button>
+
+        <button onClick={handleDiscard}>
+          Discard
+        </button>
       </ui-save-bar>
 
       <CartLayout

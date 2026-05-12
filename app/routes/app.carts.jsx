@@ -117,6 +117,7 @@ export default function AppCarts() {
     const [modalLoading, setModalLoading] = useState(false);
     const [unpublishModal, setUnpublishModal] = useState(false);
     const [cartToUnpublish, setCartToUnpublish] = useState(null);
+    const [duplicatingCartId, setDuplicatingCartId] = useState(null);
 
     const today = new Date();
     const defaultStart = new Date();
@@ -247,11 +248,13 @@ export default function AppCarts() {
     };
 
     const handleDuplicateCart = async (cart) => {
+        setDuplicatingCartId(cart.cartId);
         const data = await duplicateCart(apiUrl, cart.cartId);
         if (data.success) {
             setCarts((prev) => [data.data, ...prev]);
             shopify.toast.show("Cart duplicated successfully");
         }
+        setDuplicatingCartId(null);
     };
 
     const liveCarts = carts
@@ -400,7 +403,12 @@ export default function AppCarts() {
                                             />
                                         </Tooltip>
                                         <Tooltip content="Duplicate cart">
-                                            <Button icon={DuplicateIcon} onClick={() => handleDuplicateCart(cart)} />
+                                            <Button
+                                                icon={DuplicateIcon}
+                                                loading={duplicatingCartId === cart.cartId}
+                                                disabled={duplicatingCartId !== null}
+                                                onClick={() => handleDuplicateCart(cart)}
+                                            />
                                         </Tooltip>
                                         <Tooltip content={cart.status === "published" ? "Unpublish cart" : "Publish cart"}>
                                             <Button
