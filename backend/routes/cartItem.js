@@ -133,13 +133,11 @@ router.post("/create-cart", async (req, res) => {
       triggeredRewardsSettings,
     });
 
-    return res
-      .status(201)
-      .json({
-        success: true,
-        message: "Cart created successfully",
-        data: newCart,
-      });
+    return res.status(201).json({
+      success: true,
+      message: "Cart created successfully",
+      data: newCart,
+    });
   } catch (error) {
     console.error("CREATE CART ERROR:", error);
     return res.status(500).json({ success: false, message: "Server error" });
@@ -410,7 +408,7 @@ router.post("/save-shop-token", async (req, res) => {
       {
         upsert: true,
         new: true,
-      }
+      },
     );
 
     // Send emails after first install or update
@@ -446,7 +444,6 @@ router.post("/save-shop-token", async (req, res) => {
 
       // 2. Send to app owner
       await sendEmail("sahil@hubsyntax.com", subject, html);
-
     } catch (emailError) {
       console.error("[hub] Email error:", emailError);
     }
@@ -710,6 +707,19 @@ router.get("/cart-stats", async (req, res) => {
       ...(hasDateFilter && { createdAt: dateFilter }),
     };
 
+    // cartOrderCountModel stores `date` as "YYYY-MM-DD" strings (not Date),
+    // so filter on that field separately when a range is provided.
+    const toDateStr = (d) => new Date(d).toISOString().slice(0, 10);
+    const orderCountDateFilter = {};
+    if (startDate) orderCountDateFilter.$gte = toDateStr(startDate);
+    if (endDate) orderCountDateFilter.$lte = toDateStr(endDate);
+    const orderCountMatch = {
+      shop: cleanShop,
+      ...(Object.keys(orderCountDateFilter).length && {
+        date: orderCountDateFilter,
+      }),
+    };
+
     const analyticsMatch = {
       shop: cleanShop,
       cartId: { $exists: true, $nin: [null, ""] },
@@ -732,6 +742,7 @@ router.get("/cart-stats", async (req, res) => {
       shopAnalytics,
       publishedCart,
       shopRevenueBreakdown,
+      ordersByCartByDate,
     ] = await Promise.all([
       orderRevenueModel.aggregate([
         { $match: revenueMatch },
@@ -762,21 +773,44 @@ router.get("/cart-stats", async (req, res) => {
           },
         },
       ]),
+      cartOrderCountModel.aggregate([
+        { $match: orderCountMatch },
+        {
+          $group: {
+            _id: { cartId: "$cartId", date: "$date" },
+            totalOrders: { $sum: "$totalOrders" },
+          },
+        },
+        { $sort: { "_id.date": 1 } },
+      ]),
     ]);
+
+    const emptyStat = () => ({
+      revenue: 0,
+      impressions: 0,
+      checkouts: 0,
+      completedOrders: 0,
+      ordersByDate: {},
+    });
 
     const stats = {};
 
     revenueByCart.forEach(({ _id, totalRevenue }) => {
-      if (!stats[_id])
-        stats[_id] = { revenue: 0, impressions: 0, checkouts: 0 };
+      if (!stats[_id]) stats[_id] = emptyStat();
       stats[_id].revenue = totalRevenue;
     });
 
     analyticsByCart.forEach(({ _id: { cartId, eventType }, count }) => {
-      if (!stats[cartId])
-        stats[cartId] = { revenue: 0, impressions: 0, checkouts: 0 };
+      if (!stats[cartId]) stats[cartId] = emptyStat();
       if (eventType === "cart_impression") stats[cartId].impressions = count;
       if (eventType === "checkout_initiated") stats[cartId].checkouts = count;
+    });
+
+    ordersByCartByDate.forEach(({ _id: { cartId, date }, totalOrders }) => {
+      if (!stats[cartId]) stats[cartId] = emptyStat();
+      stats[cartId].completedOrders += totalOrders;
+      stats[cartId].ordersByDate[date] =
+        (stats[cartId].ordersByDate[date] || 0) + totalOrders;
     });
 
     if (publishedCart?.cartId) {
@@ -799,13 +833,25 @@ router.get("/cart-stats", async (req, res) => {
 
     const result = {};
     Object.entries(stats).forEach(
-      ([cartId, { revenue, impressions, checkouts }]) => {
+      ([
+        cartId,
+        { revenue, impressions, checkouts, completedOrders, ordersByDate },
+      ]) => {
+        // Prefer completed orders for conversion rate; fall back to
+        // checkout_initiated when no order-count data exists for the range.
+        const numerator = completedOrders > 0 ? completedOrders : checkouts;
+        const ordersByDateArr = Object.entries(ordersByDate)
+          .map(([date, count]) => ({ date, totalOrders: count }))
+          .sort((a, b) => (a.date < b.date ? 1 : -1));
+
         result[cartId] = {
           revenue,
           conversionRate:
             impressions > 0
-              ? Math.min((checkouts / impressions) * 100, 100)
+              ? Math.min((numerator / impressions) * 100, 100)
               : 0,
+          completedOrders,
+          ordersByDate: ordersByDateArr,
         };
       },
     );

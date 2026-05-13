@@ -9,7 +9,7 @@ import enTranslations from "@shopify/polaris/locales/en.json";
 const _lastSentToken = new Map();
 
 export const loader = async ({ request }) => {
-  
+
   const { session, admin } = await authenticate.admin(request);
 
   try {
@@ -74,7 +74,7 @@ export default function App() {
   const isNavigating = navigation.state === "loading" && navigation.location != null;
 
   return (
-    <ShopifyAppProvider embedded apiKey={apiKey}>
+    <ShopifyAppProvider isEmbeddedApp apiKey={apiKey}>
       <PolarisAppProvider i18n={enTranslations}>
         {isNavigating && (
           <div style={{

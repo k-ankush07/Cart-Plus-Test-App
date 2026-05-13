@@ -176,7 +176,7 @@ export default function CartLayout({
 
   return (
     <>
-      <Page fullWidth>
+    <Page fullWidth className="custom-page">
         {/* ── Top bar ── */}
         <div className={`header-wrapper ${isPreviewVisible ? 'preview-visible' : ''} ${designSettings?.desktopWidth === "wide" ? 'wide' : 'normal'}`}>
 

@@ -287,7 +287,7 @@ export default function AppCarts() {
             </span>
         </Tooltip>
     );
-
+    
     const CartTable = ({ carts, emptyText, isDraft, stats }) => (
         <div style={{ paddingTop: 12 }}>
             {carts.length === 0 ? (
