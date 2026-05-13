@@ -60,9 +60,10 @@ export const loader = async ({ request }) => {
     // ... date setup unchanged ...
 
     const appEmbedId = process.env.SHOPIFY_API_KEY || "";
-
+   
     const today = new Date();
     const defaultStart = new Date();
+
     defaultStart.setDate(today.getDate() - 29);
 
     const [themeResult, cartsResult, statsResult] = await Promise.allSettled([
@@ -287,7 +288,7 @@ export default function AppCarts() {
             </span>
         </Tooltip>
     );
-    
+
     const CartTable = ({ carts, emptyText, isDraft, stats }) => (
         <div style={{ paddingTop: 12 }}>
             {carts.length === 0 ? (
