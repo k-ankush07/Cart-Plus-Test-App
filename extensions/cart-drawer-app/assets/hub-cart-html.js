@@ -339,12 +339,11 @@ window.injectCartHTML = function (blockId, root) {
 
       <div class="hub-cart-footer" style="background-color:${designSettings.accentColor || ""};">
 
-        <!-- ADD-ONS -->
-        <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
-
-        <!-- NOTES (position: top of footer) -->
+         <!-- NOTES (position: top of footer) -->
         <div id="hub-notes-footer-${blockId}"></div>
 
+        <!-- ADD-ONS -->
+        <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
         <!-- DISCOUNT -->
         
         <div class="hub-discount-input-row-items"id="hub-discount-row-${blockId}">
@@ -436,7 +435,7 @@ window.injectCartHTML = function (blockId, root) {
         <div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges" style="display:none;"></div>
       </div>
 
-      <div>${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>
+     <div class="hub-bottom-of-cart">${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>
 
       <!-- COUPON SUCCESS MODAL -->
       <div id="hub-coupon-success-${blockId}" class="hub-coupon-success-overlay" style="display:none;">

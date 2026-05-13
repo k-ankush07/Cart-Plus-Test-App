@@ -1,15 +1,21 @@
-import { Outlet, useLoaderData, useRouteError, useNavigation } from "react-router";
+import {
+  Outlet,
+  useLoaderData,
+  useRouteError,
+  useNavigation,
+} from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
-import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
+import {
+  AppProvider as ShopifyAppProvider,
+} from "@shopify/shopify-app-react-router/react";
+import { AppProvider } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css";
-import { authenticate, sessionStorage } from "../shopify.server";
 import enTranslations from "@shopify/polaris/locales/en.json";
+import { authenticate, sessionStorage } from "../shopify.server";
 
 const _lastSentToken = new Map();
 
 export const loader = async ({ request }) => {
-
   const { session, admin } = await authenticate.admin(request);
 
   try {
@@ -19,7 +25,6 @@ export const loader = async ({ request }) => {
 
     const token = offlineSession?.accessToken;
 
-    // Get shop details including email
     const response = await admin.graphql(`
       query {
         shop {
@@ -37,7 +42,7 @@ export const loader = async ({ request }) => {
     if (token && _lastSentToken.get(session.shop) !== token) {
       const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
 
-      const res = await fetch(`${apiUrl}/api/save-shop-token`, {
+      await fetch(`${apiUrl}/api/save-shop-token`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,14 +53,6 @@ export const loader = async ({ request }) => {
           email: storeEmail,
         }),
       });
-
-      const data = await res.json();
-
-      console.log(
-        data.updated
-          ? `[hub] Token saved for ${session.shop}`
-          : `[hub] Token already up-to-date for ${session.shop}`
-      );
 
       _lastSentToken.set(session.shop, token);
     }
@@ -74,33 +71,40 @@ export default function App() {
   const isNavigating = navigation.state !== "idle";
 
   return (
-    <ShopifyAppProvider embedded apiKey={apiKey}>
-      <PolarisAppProvider i18n={enTranslations}>
+    <AppProvider i18n={enTranslations}>
+      <ShopifyAppProvider embedded apiKey={apiKey}>
         {isNavigating && (
-          <div style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 21474836479,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#f1f1f1",
-          }}>
-            <div style={{
-              width: 300,
-              height: 8,
-              background: "#e1e3e5",
-              borderRadius: 4,
-              overflow: "hidden",
-            }}>
-              <div style={{
-                height: "100%",
-                width: "40%",
-                background: "#111111",
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 21474836479,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#f1f1f1",
+            }}
+          >
+            <div
+              style={{
+                width: 300,
+                height: 8,
+                background: "#e1e3e5",
                 borderRadius: 4,
-                animation: "upcart-slide 1.2s ease-in-out infinite",
-              }} />
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: "40%",
+                  background: "#111111",
+                  borderRadius: 4,
+                  animation: "upcart-slide 1.2s ease-in-out infinite",
+                }}
+              />
             </div>
+
             <style>{`
               @keyframes upcart-slide {
                 0%   { transform: translateX(-150%); }
@@ -109,6 +113,7 @@ export default function App() {
             `}</style>
           </div>
         )}
+
         <s-app-nav>
           <s-link href="/app" rel="home">Home</s-link>
           <s-link href="/app/carts">Carts</s-link>
@@ -116,9 +121,10 @@ export default function App() {
           <s-link href="/app/pricing">Pricing</s-link>
           <s-link href="/app/analytics">Analytics</s-link>
         </s-app-nav>
+
         <Outlet />
-      </PolarisAppProvider>
-    </ShopifyAppProvider>
+      </ShopifyAppProvider>
+    </AppProvider >
   );
 }
 
@@ -126,4 +132,5 @@ export function ErrorBoundary() {
   return boundary.error(useRouteError());
 }
 
-export const headers = (headersArgs) => boundary.headers(headersArgs);
+export const headers = (headersArgs) =>
+  boundary.headers(headersArgs);

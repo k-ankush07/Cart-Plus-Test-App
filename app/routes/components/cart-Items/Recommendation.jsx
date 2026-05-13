@@ -3,6 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { Navigation } from "swiper/modules";
 import "swiper/css/navigation";
+import CustomHtml from "./CustomHtml";
 
 function hexToRGBA(hex = "#16a34a", opacity = 1) {
     if (!hex || typeof hex !== "string") {
@@ -297,9 +298,11 @@ export default function Recommendation({ recommendationsSettings, currency, cart
 
     return (
         <div className="cart_CartPreview__empty__body custom-cart-recommendation-module">
-
             <div className="cart_CartPreview__empty__">
+
                 <div className="styles_CartPreview__empty__">
+                    <div className="empty-cart-custom-text"> <CustomHtml cartSettings={cartSettings} position="empty_cart" /></div>
+
                     <h3>{cartSettings.emptyCartMessage}</h3>
                     {/* HEADER */}
                     {!recommendationsSettings.enabled && (
@@ -324,6 +327,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                             </a>
                         </div>
                     )}
+
                 </div>
             </div>
             {!recommendationsSettings.enabled && (<div className="custom-cart-internal-upsell custom-cart-public-upsell">

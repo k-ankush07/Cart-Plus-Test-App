@@ -487,6 +487,8 @@ body,
     font-size: 32px;
     font-weight: 600;
     line-height: 16px;
+    text-align: center;
+    width: 100%;
 }
 
 .styles_CartPreview__empty__ {
@@ -837,7 +839,7 @@ body,
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 20px 20px 5px;
+    padding: 10px 20px 5px;
 }
 
 .cart-addon-tile__info {
@@ -914,6 +916,8 @@ body,
 
 .cart-additional-notes__body--open {
     max-height: 200px;
+    width: 100%;
+    display: inline-flex;
 }
 
 .cart-additional-notes__textarea {

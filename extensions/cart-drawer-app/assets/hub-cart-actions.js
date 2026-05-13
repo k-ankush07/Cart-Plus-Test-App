@@ -23,14 +23,13 @@ async function updateQty(key, qty, btn = null) {
       return;
     }
 
-    const res = await fetch("/cart/change.js", {
+    await fetch("/cart/change.js", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: key, quantity: qty }),
     });
 
-    const cart = await res.json(); 
-    await renderCart(cart);      
+    await window.hubCartRender(getDrawer());
 
   } catch (err) {
     console.error("Qty update error:", err);
