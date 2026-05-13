@@ -434,7 +434,7 @@ export default function CartLayout({
               borderRadius: "8px",
               marginTop: "12px",
             }}>
-              <span aria-hidden="true" class="icon color-base tone-auto size-base"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a.75.75 0 0 1-.75-.75v-3.5a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.75.75"></path><path d="M7 5a1 1 0 1 1 2 0 1 1 0 0 1-2 0"></path><path fill-rule="evenodd" d="M15 8a7 7 0 1 1-14 0 7 7 0 0 1 14 0m-1.5 0a5.5 5.5 0 1 1-11 0 5.5 5.5 0 1 1 11 0"></path></svg></span>
+              <span aria-hidden="true" className="icon color-base tone-auto size-base"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a.75.75 0 0 1-.75-.75v-3.5a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.75.75"></path><path d="M7 5a1 1 0 1 1 2 0 1 1 0 0 1-2 0"></path><path fillRule="evenodd" d="M15 8a7 7 0 1 1-14 0 7 7 0 0 1 14 0m-1.5 0a5.5 5.5 0 1 1-11 0 5.5 5.5 0 1 1 11 0"></path></svg></span>
               <div>
                 <p style={{ fontWeight: 600, color: "#003a5a", marginBottom: "4px" }}>
                   Your cart has triggered rewards

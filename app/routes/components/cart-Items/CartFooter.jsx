@@ -48,7 +48,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                             <span className="hub-total-label" style={{ color: designSettings.subtotalColor }}>Estimated Total</span>
                             <span className="hub-total-arrow" style={{ transform: breakdownOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>
                                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                                 </svg>
                             </span>
                         </div>
@@ -61,21 +61,21 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 </div>)}
 
                 <div className={`hub-total-breakdown ${breakdownOpen ? "hub-breakdown-open" : ""}`}>
-                    <div class="hub-breakdown-row">
+                    <div className="hub-breakdown-row">
                         <span>Total MRP</span>
                         <span>$200.00</span>
                     </div>
-                    <div class="hub-breakdown-row">
+                    <div className="hub-breakdown-row">
                         <span style={{ color: designSettings.textColor }}>{cartSettings.discountsSavingsText}</span>
                         <span style={{ color: '#10812F' }}>MEGA20</span>
                     </div>
 
-                    <div class="hub-breakdown-row">
+                    <div className="hub-breakdown-row">
                         <span>Shipping</span>
                         <span style={{ color: '#10812F' }}>Free</span>
                     </div>
 
-                    <div class="hub-breakdown-row hub-breakdown-grand">
+                    <div className="hub-breakdown-row hub-breakdown-grand">
                         <span>Grand Total</span>
                         <span>$200.00</span>
                     </div>
