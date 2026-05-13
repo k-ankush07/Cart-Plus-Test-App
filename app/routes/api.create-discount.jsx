@@ -19,7 +19,7 @@ const FUNCTION_ID = "019d8ce8-2244-7ae7-9d4c-00b3e18b8d52";
 // ══════════════════════════════════════════════════════════════════
 
 export const action = async ({ request }) => {
-    console.log("🚀 [sync-discount] ACTION CALLED");
+    console.log(" [sync-discount] ACTION CALLED");
 
     const { admin } = await authenticate.admin(request);
 

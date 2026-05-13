@@ -34,7 +34,10 @@ function getLabelsFromRange(start, end) {
   const current = new Date(start);
 
   while (current <= end) {
-    labels.push(current.toISOString().slice(0, 10));
+    labels.push(
+      `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`
+    );
+
     current.setDate(current.getDate() + 1);
   }
 
