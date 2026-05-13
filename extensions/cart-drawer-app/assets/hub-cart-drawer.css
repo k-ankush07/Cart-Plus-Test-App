@@ -2350,3 +2350,7 @@ span.hub-item-discount-badge img.discount-code-img {
     align-items: center;
     justify-content: center;
 }
+
+button.hub-qty-btn span.svg-wrapper {
+    width: 1rem;
+}

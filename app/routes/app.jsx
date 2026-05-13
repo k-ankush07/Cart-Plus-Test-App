@@ -4,6 +4,7 @@ import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-ro
 import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css";
 import { authenticate, sessionStorage } from "../shopify.server";
+import enTranslations from "@shopify/polaris/locales/en.json";
 
 const _lastSentToken = new Map();
 
@@ -72,18 +73,9 @@ export default function App() {
   const navigation = useNavigation();
   const isNavigating = navigation.state === "loading" && navigation.location != null;
 
-  const i18n = {
-    Polaris: {
-      Common: {
-        checkbox: "checkbox",
-        select: "select",
-      },
-    },
-  };
-
   return (
     <ShopifyAppProvider embedded apiKey={apiKey}>
-      <PolarisAppProvider i18n={i18n}>
+      <PolarisAppProvider i18n={enTranslations}>
         {isNavigating && (
           <div style={{
             position: "fixed",

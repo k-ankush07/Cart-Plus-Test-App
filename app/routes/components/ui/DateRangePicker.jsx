@@ -9,7 +9,7 @@ import {
     Text,
     Icon,
 } from "@shopify/polaris";
-import { CalendarIcon } from "@shopify/polaris-icons";
+import { CalendarIcon, ArrowRightIcon } from "@shopify/polaris-icons";
 import { useState, useRef, useEffect } from "react";
 
 const CalendarPrefix = () => (
@@ -38,7 +38,13 @@ export default function DateRangePicker({ value, onChange }) {
     const [range, setRange] = useState(
         value || { start: today, end: today }
     );
+    const [appliedRange, setAppliedRange] = useState(
+        value || { start: today, end: today }
+    );
+
     const [preset, setPreset] = useState("30");
+    const [appliedPreset, setAppliedPreset] = useState("30");
+
     const [startInput, setStartInput] = useState(() =>
         (value?.start || today).toISOString().slice(0, 10)
     );
@@ -76,15 +82,17 @@ export default function DateRangePicker({ value, onChange }) {
     };
 
     const buttonLabel =
-        PRESETS.find((p) => p.value === preset)?.label ||
-        `${formatDate(range.start)} – ${formatDate(range.end)}`;
+        PRESETS.find((p) => p.value === appliedPreset)?.label ||
+        `${formatDate(appliedRange.start)} – ${formatDate(
+            appliedRange.end
+        )}`;
 
     const handlePreset = (vals) => {
         const days = parseInt(vals[0]);
         const end = new Date();
         const start = new Date();
         start.setDate(end.getDate() - days);
-        setRange({ start, end });
+
         setStartInput(formatDate(start));
         setEndInput(formatDate(end));
         setPreset(vals[0]);
@@ -98,53 +106,96 @@ export default function DateRangePicker({ value, onChange }) {
     };
 
     const handleSave = () => {
+        setAppliedRange(range);
+        setAppliedPreset(preset);
+
         onChange && onChange(range);
+
+        setOpen(false);
+    };
+
+    const handleCancel = () => {
+        setRange(appliedRange);
+        setPreset(appliedPreset);
+
+        setStartInput(formatDate(appliedRange.start));
+        setEndInput(formatDate(appliedRange.end));
+
         setOpen(false);
     };
 
     useEffect(() => {
         const handleClick = (e) => {
-            if (panelRef.current && !panelRef.current.contains(e.target)) {
-                setOpen(false);
+            if (
+                panelRef.current &&
+                !panelRef.current.contains(e.target)
+            ) {
+                handleCancel();
             }
         };
+
         document.addEventListener("mousedown", handleClick);
-        return () => document.removeEventListener("mousedown", handleClick);
-    }, []);
+
+        return () =>
+            document.removeEventListener(
+                "mousedown",
+                handleClick
+            );
+    }, [appliedRange, appliedPreset]);
 
     return (
         <div>
             <Button icon={CalendarIcon} disclosure onClick={toggle}>
-              {buttonLabel}
+                {buttonLabel}
             </Button>
 
-            {open && (
-                <div
-                    ref={panelRef}
+            <div
+                ref={panelRef}
+                style={{
+                    position: "absolute",
+                    top: "45px",
+                    right: 0,
+                    zIndex: 999,
+                    background: "#fff",
+                    borderRadius: "12px",
+                    boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
+                    padding: "4px",
+                    width: "100%",
+                    maxWidth: "700px",
+                    marginTop: "15px",
+                    border: "1px solid #dfe3e8",
+                    opacity: open ? 1 : 0,
+                    transform: open
+                        ? "translateY(0px) scale(1)"
+                        : "translateY(-10px) scale(0.98)",
+                    transition: "all 250ms ease",
+                    pointerEvents: open ? "auto" : "none",
+
+                    transformOrigin: "top right",
+                }}
+            >
+                <Box
                     style={{
-                        position: "absolute",
-                        top: "50px",
-                        right: 0,
-                        zIndex: 999,
-                        background: "#fff",
-                        borderRadius: "12px",
-                        boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
-                        padding: "16px",
-                        width: "800px",
-                        marginTop:'15px'
+                        borderBottom: "0.5px solid #dfe3e8",
                     }}
                 >
-                    <InlineStack gap="400" align="start" wrap={false}>
+                    <InlineStack gap="100" align="start" wrap={false}>
 
                         {/* LEFT — Presets */}
                         <Box
-                            minWidth="200px"
-                            borderInlineEndWidth="1"
-                            borderColor="border-subdued"
+                            minWidth="400px"
                             paddingInlineEnd="300"
+                            style={{
+                                minWidth: "180px",
+                                borderRight: "0.5px solid #dfe3e8",
+                            }}
                         >
-                            <BlockStack gap="200">
-                                <Text variant="bodySm" tone="subdued">Presets</Text>
+                            <BlockStack gap="50">
+                                <Box paddingBlockStart="200" paddingInlineStart="300">
+                                    <Text variant="bodyMd" fontWeight="semibold">
+                                        Presets
+                                    </Text>
+                                </Box>
                                 <OptionList
                                     options={PRESETS}
                                     selected={preset ? [preset] : []}
@@ -154,43 +205,52 @@ export default function DateRangePicker({ value, onChange }) {
                         </Box>
 
                         {/* RIGHT — Calendar */}
-                        <BlockStack gap="200">
-                            <InlineStack gap="200" blockAlign="center">
-                                <TextField
-                                    value={startInput}
-                                    onChange={handleStartInput}
-                                    placeholder="YYYY-MM-DD"
-                                    autoComplete="off"
+                        <Box padding="200">
+                            <BlockStack gap="200">
+                                <InlineStack gap="100" blockAlign="center" align="space-around">
+                                    <TextField
+                                        label="Start Date"
+                                        labelHidden
+                                        value={startInput}
+                                        onChange={handleStartInput}
+                                        placeholder="YYYY-MM-DD"
+                                        autoComplete="off"
+                                    />
+                                    <InlineStack> <Icon source={ArrowRightIcon} tone="subdued" /></InlineStack>
+                                    <TextField
+                                        label="End Date"
+                                        labelHidden
+                                        value={endInput}
+                                        onChange={handleEndInput}
+                                        placeholder="YYYY-MM-DD"
+                                        autoComplete="off"
+                                    />
+                                </InlineStack>
+
+                                <DatePicker
+                                    month={month}
+                                    year={year}
+                                    selected={range}
+                                    onChange={handleCalendarChange}
+                                    onMonthChange={(m, y) => setDate({ month: m, year: y })}
+                                    allowRange
+                                    multiMonth
+                                    disableDatesAfter={today}
                                 />
-                                <Text as="span">→</Text>
-                                <TextField
-                                    value={endInput}
-                                    onChange={handleEndInput}
-                                    placeholder="YYYY-MM-DD"
-                                    autoComplete="off"
-                                />
-                            </InlineStack>
-
-                            <DatePicker
-                                month={month}
-                                year={year}
-                                selected={range}
-                                onChange={handleCalendarChange}
-                                onMonthChange={(m, y) => setDate({ month: m, year: y })}
-                                allowRange
-                                multiMonth
-                                disableDatesAfter={today}
-                            />
-
-                            <InlineStack align="end" gap="200">
-                                <Button onClick={() => setOpen(false)}>Cancel</Button>
-                                <Button variant="primary" onClick={handleSave}>Save</Button>
-                            </InlineStack>
-                        </BlockStack>
-
+                            </BlockStack>
+                        </Box>
                     </InlineStack>
-                </div>
-            )}
+                </Box>
+                <Box padding="200">
+                    <InlineStack align="end" gap="200">
+                        <Button onClick={handleCancel}>Cancel</Button>
+
+                        <Button variant="primary" onClick={handleSave}>
+                            Save
+                        </Button>
+                    </InlineStack>
+                </Box>
+            </div>
         </div>
     );
 }

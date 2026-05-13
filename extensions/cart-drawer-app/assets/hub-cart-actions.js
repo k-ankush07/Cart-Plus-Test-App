@@ -3,6 +3,11 @@ function getDrawer() {
   return document.getElementById(`hub-cart-drawer-${blockId}`) || document;
 }
 
+const ICONS = {
+  plus: `<span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"></path></svg></span>`,
+  minus: `<span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"></path></svg></span>`,
+};
+
 async function updateQty(key, qty, btn = null) {
   if (btn && btn.classList.contains("loading")) return;
 
@@ -18,23 +23,21 @@ async function updateQty(key, qty, btn = null) {
       return;
     }
 
-    await fetch("/cart/change.js", {
+    const res = await fetch("/cart/change.js", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: key,
-        quantity: qty,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: key, quantity: qty }),
     });
+
+    const cart = await res.json(); 
+    await renderCart(cart);      
+
   } catch (err) {
     console.error("Qty update error:", err);
-  } finally {
     if (btn) {
       btn.classList.remove("loading");
       btn.disabled = false;
-      btn.innerHTML = btn.dataset.type === "plus" ? "+" : "−";
+      btn.innerHTML = ICONS[btn.dataset.type];
     }
   }
 }

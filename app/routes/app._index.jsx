@@ -548,9 +548,10 @@ export default function Dashboard() {
                 resourceName={{ singular: "cart", plural: "carts" }}
                 itemCount={liveCarts.length}
                 headings={[
-                  { title: "Cart name" },
-                  { title: "Status" },
+                  { title: "Cart name", id: "cart-name" },
+                  { title: "Status", id: "status" },
                   {
+                    id: "conversion-rate",
                     title: (
                       <Tooltip hasUnderline activatorWrapper="span" content={
                         <BlockStack gap="200">
@@ -568,6 +569,7 @@ export default function Dashboard() {
                     ),
                   },
                   {
+                    id: "added-revenue",
                     title: (
                       <Tooltip hasUnderline activatorWrapper="span" content={
                         <BlockStack gap="200">
@@ -584,85 +586,91 @@ export default function Dashboard() {
                       </Tooltip>
                     ),
                   },
-                  { title: "" },
+                  { title: "", id: "actions" },
                 ]}
                 selectable={false}
               >
-                {liveCarts.map((cart, i) => (
+                {liveCarts.map((cart, i) => {
+                  const safeId =
+                    (cart.cartId && cart.cartId.trim() !== "" && cart.cartId.trim()) ||
+                    (cart._id && cart._id.toString().trim() !== "" && cart._id.toString().trim()) ||
+                    `row-${i}`;
 
-                  <IndexTable.Row
-                    key={cart.cartId || cart._id || `row-${i}`}
-                    id={cart.cartId || cart._id || `row-${i}`}
-                    position={i}
-                  >
-                    <IndexTable.Cell>
-                      <CartHoverCard cart={cart}>
-                        {/* ── Use Link for instant prefetch on hover ── */}
-                        <Link
-                          to={`/app/cart-editor/${cart.cartId}`}
-                          prefetch="intent"
-                          style={{ textDecoration: "none", color: "inherit" }}
-                        >
-                          <div style={{ maxWidth: "150px", cursor: "pointer" }}>
-                            <Text truncate as="span">
-                              {cart.cartName || "Untitled cart"}
-                            </Text>
-                            <Text as="span" tone="subdued" variant="bodySm">
-                              {cart.updatedAt
-                                ? `Last edited: ${new Date(cart.updatedAt)
-                                  .toLocaleDateString("en-GB")
-                                  .replace(/\//g, "-")}`
-                                : ""}
-                            </Text>
-                          </div>
-                        </Link>
-                      </CartHoverCard>
-                    </IndexTable.Cell>
+                  return (
+                    <IndexTable.Row
+                      key={safeId}
+                      id={safeId}
+                      position={i}
+                    >
+                      <IndexTable.Cell>
+                        <CartHoverCard cart={cart}>
+                          {/* ── Use Link for instant prefetch on hover ── */}
+                          <Link
+                            to={`/app/cart-editor/${cart.cartId}`}
+                            prefetch="intent"
+                            style={{ textDecoration: "none", color: "inherit" }}
+                          >
+                            <div style={{ maxWidth: "150px", cursor: "pointer" }}>
+                              <Text truncate as="span">
+                                {cart.cartName || "Untitled cart"}
+                              </Text>
+                              <Text as="span" tone="subdued" variant="bodySm">
+                                {cart.updatedAt
+                                  ? `Last edited: ${new Date(cart.updatedAt)
+                                    .toLocaleDateString("en-GB")
+                                    .replace(/\//g, "-")}`
+                                  : ""}
+                              </Text>
+                            </div>
+                          </Link>
+                        </CartHoverCard>
+                      </IndexTable.Cell>
 
-                    <IndexTable.Cell>
-                      <InlineStack gap="200" blockAlign="center">
-                        {appEmbedInstalled ? (
-                          <Badge tone="success">Live</Badge>
-                        ) : (
-                          <AppEmbedLink />
-                        )}
-                      </InlineStack>
-                    </IndexTable.Cell>
+                      <IndexTable.Cell>
+                        <InlineStack gap="200" blockAlign="center">
+                          {appEmbedInstalled ? (
+                            <Badge tone="success">Live</Badge>
+                          ) : (
+                            <AppEmbedLink />
+                          )}
+                        </InlineStack>
+                      </IndexTable.Cell>
 
-                    <IndexTable.Cell>
-                      {cartStats?.[cart.cartId]?.conversionRate != null
-                        ? cartStats[cart.cartId].conversionRate.toFixed(2) + "%"
-                        : "—"}
-                    </IndexTable.Cell>
+                      <IndexTable.Cell>
+                        {cartStats?.[cart.cartId]?.conversionRate != null
+                          ? cartStats[cart.cartId].conversionRate.toFixed(2) + "%"
+                          : "—"}
+                      </IndexTable.Cell>
 
-                    <IndexTable.Cell>
-                      {cartStats?.[cart.cartId]?.revenue != null
-                        ? fmt(cartStats[cart.cartId].revenue, currency)
-                        : "—"}
-                    </IndexTable.Cell>
+                      <IndexTable.Cell>
+                        {cartStats?.[cart.cartId]?.revenue != null
+                          ? fmt(cartStats[cart.cartId].revenue, currency)
+                          : "—"}
+                      </IndexTable.Cell>
 
-                    <IndexTable.Cell>
-                      <InlineStack gap="200" align="end">
-                        {/* ── Slim link-based buttons avoid navigate() delay ── */}
-                        <Link
-                          to={`/app/cart-editor/${cart.cartId}`}
-                          prefetch="intent"
-                          style={{ textDecoration: "none" }}
-                        >
-                          <Button size="slim">Edit cart</Button>
-                        </Link>
-                        <Button
-                          size="slim"
-                          onClick={() =>
-                            window.open(`https://${shop.myshopifyDomain}`, "_blank")
-                          }
-                        >
-                          Preview
-                        </Button>
-                      </InlineStack>
-                    </IndexTable.Cell>
-                  </IndexTable.Row>
-                ))}
+                      <IndexTable.Cell>
+                        <InlineStack gap="200" align="end">
+                          {/* ── Slim link-based buttons avoid navigate() delay ── */}
+                          <Link
+                            to={`/app/cart-editor/${cart.cartId}`}
+                            prefetch="intent"
+                            style={{ textDecoration: "none" }}
+                          >
+                            <Button size="slim">Edit cart</Button>
+                          </Link>
+                          <Button
+                            size="slim"
+                            onClick={() =>
+                              window.open(`https://${shop.myshopifyDomain}`, "_blank")
+                            }
+                          >
+                            Preview
+                          </Button>
+                        </InlineStack>
+                      </IndexTable.Cell>
+                    </IndexTable.Row>
+                  );
+                })}
               </IndexTable>
             </div>
           ) : (
