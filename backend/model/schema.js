@@ -110,12 +110,13 @@ const orderRevenueSchema = new mongoose.Schema({
 const cartOrderCountSchema = new mongoose.Schema({
   shop: { type: String, required: true },
   cartId: { type: String, required: true },
+  date: { type: String, required: true },
   totalOrders: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
 
-cartOrderCountSchema.index({ shop: 1, cartId: 1 }, { unique: true });
+cartOrderCountSchema.index({ shop: 1, cartId: 1, date: 1 }, { unique: true });
 
 const cartModels        = mongoose.models.cartItems      || mongoose.model("cartItems", cartSchema);
 const stickyCartModel   = mongoose.models.stickyCart     || mongoose.model("stickyCart", stickyCartSchema);

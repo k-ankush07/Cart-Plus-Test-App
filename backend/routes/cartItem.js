@@ -634,9 +634,15 @@ router.post("/order-revenue", async (req, res) => {
     }
 
     // Always count the order against the published cart when the app is enabled.
+    // Bucketed per day (UTC) so we can report orders date-wise.
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
     await cartOrderCountModel.findOneAndUpdate(
-      { shop, cartId: publishedCart.cartId },
-      { $inc: { totalOrders: 1 }, $set: { updatedAt: new Date() } },
+      { shop, cartId: publishedCart.cartId, date: today },
+      {
+        $inc: { totalOrders: 1 },
+        $set: { updatedAt: new Date() },
+        $setOnInsert: { createdAt: new Date() },
+      },
       { upsert: true, new: true },
     );
 
@@ -838,6 +844,8 @@ router.get("/revenue-stats", async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing shop" });
     }
 
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
     // ───── Revenue Totals ─────
     const [totals] = await orderRevenueModel.aggregate([
       { $match: { shop: cleanShop } },
@@ -856,8 +864,6 @@ router.get("/revenue-stats", async (req, res) => {
     ]);
 
     // ───── Last 30 days revenue ─────
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
     const dailyRevenue = await orderRevenueModel.aggregate([
       { $match: { shop: cleanShop, createdAt: { $gte: thirtyDaysAgo } } },
       {
@@ -873,7 +879,7 @@ router.get("/revenue-stats", async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
-    // ───── Analytics Data (NEW) ─────
+    // ───── Analytics Totals ─────
     const analyticsStats = await analyticsModel.aggregate([
       { $match: { shop: cleanShop } },
       {
@@ -884,19 +890,65 @@ router.get("/revenue-stats", async (req, res) => {
       },
     ]);
 
-    // Convert to object
     const analyticsFormatted = {};
     analyticsStats.forEach((item) => {
       analyticsFormatted[item._id] = item.count;
     });
 
+    // ───── Daily Analytics (last 30 days) ─────
+    const dailyAnalytics = await analyticsModel.aggregate([
+      {
+        $match: {
+          shop: cleanShop,
+          createdAt: { $gte: thirtyDaysAgo },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            eventType: "$eventType",
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id.date": 1 } },
+    ]);
+
+    const dailyAnalyticsMap = {};
+    dailyAnalytics.forEach(({ _id, count }) => {
+      const { date, eventType } = _id;
+      if (!dailyAnalyticsMap[date]) dailyAnalyticsMap[date] = {};
+      dailyAnalyticsMap[date][eventType] = count;
+    });
+
+    // ───── Checkouts Completed (date-wise + total) ─────
     const cartOrderCounts = await cartOrderCountModel
       .find({ shop: cleanShop })
       .lean();
-    const checkoutsCompleted = cartOrderCounts.reduce(
-      (sum, doc) => sum + (doc.totalOrders || 0),
-      0,
-    );
+
+    const thirtyDaysAgoDate = thirtyDaysAgo.toISOString().slice(0, 10);
+    let checkoutsCompleted = 0;
+    const checkoutsByDate = {};
+
+    cartOrderCounts.forEach((doc) => {
+      const count = doc.totalOrders || 0;
+      checkoutsCompleted += count;
+
+      const bucketDate =
+        doc.date ||
+        (doc.createdAt
+          ? new Date(doc.createdAt).toISOString().slice(0, 10)
+          : null);
+      if (!bucketDate || bucketDate < thirtyDaysAgoDate) return;
+
+      checkoutsByDate[bucketDate] = (checkoutsByDate[bucketDate] || 0) + count;
+      if (!dailyAnalyticsMap[bucketDate]) dailyAnalyticsMap[bucketDate] = {};
+      dailyAnalyticsMap[bucketDate].checkout_completed =
+        (dailyAnalyticsMap[bucketDate].checkout_completed || 0) + count;
+    });
+
+    analyticsFormatted.checkout_completed = checkoutsCompleted;
 
     // ───── FINAL RESPONSE ─────
     return res.json({
@@ -914,7 +966,9 @@ router.get("/revenue-stats", async (req, res) => {
           daily: dailyRevenue,
         },
         analytics: analyticsFormatted,
+        dailyAnalytics: dailyAnalyticsMap,
         checkoutsCompleted,
+        checkoutsByDate,
       },
     });
   } catch (error) {
@@ -939,7 +993,10 @@ router.get("/cart-order-count", async (req, res) => {
     const filter = { shop };
     if (cartId) filter.cartId = cartId;
 
-    const orderCounts = await cartOrderCountModel.find(filter).lean();
+    const orderCounts = await cartOrderCountModel
+      .find(filter)
+      .sort({ date: -1 })
+      .lean();
 
     if (!orderCounts || orderCounts.length === 0) {
       return res.status(404).json({
@@ -948,17 +1005,32 @@ router.get("/cart-order-count", async (req, res) => {
       });
     }
 
-    // Aggregate total across all carts if no specific cartId given
-    const totalOrders = orderCounts.reduce(
-      (sum, doc) => sum + (doc.totalOrders || 0),
-      0,
-    );
+    // Aggregate across the filtered docs
+    let totalOrders = 0;
+    const byDate = {};
+    orderCounts.forEach((doc) => {
+      const count = doc.totalOrders || 0;
+      totalOrders += count;
+
+      const bucket =
+        doc.date ||
+        (doc.createdAt
+          ? new Date(doc.createdAt).toISOString().slice(0, 10)
+          : "unknown");
+      byDate[bucket] = (byDate[bucket] || 0) + count;
+    });
+
+    // Sorted [{ date, totalOrders }] for easy charting (most recent first)
+    const dateWise = Object.entries(byDate)
+      .map(([date, count]) => ({ date, totalOrders: count }))
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
 
     return res.status(200).json({
       success: true,
       data: {
         breakdown: orderCounts,
         totalOrders,
+        dateWise,
       },
     });
   } catch (error) {

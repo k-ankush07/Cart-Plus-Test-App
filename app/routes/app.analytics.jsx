@@ -234,7 +234,7 @@ export const loader = async ({ request }) => {
 export default function Analytics() {
   const { stats } = useLoaderData();
   const navigate = useNavigate();
-
+  
   const today = new Date();
 
   const currency = stats?.revenue?.totals?.currency ?? "USD";
@@ -251,6 +251,7 @@ export default function Analytics() {
   const totals = stats?.revenue?.totals ?? {};
   const daily = stats?.revenue?.daily ?? [];
   const analytics = stats?.analytics ?? {};
+  const dailyAnalytics = stats?.dailyAnalytics ?? {};
 
   const cartImpressions = analytics.cart_impression ?? 0;
   const checkouts = analytics.checkout_initiated ?? 0;
@@ -276,15 +277,22 @@ export default function Analytics() {
     ? Math.min((checkouts / cartImpressions) * 100, 100)
     : 0;
 
-  const orderConvRate = checkouts > 0
-    ? Math.min((checkoutComplate / checkouts) * 100, 100)
-    : 0;
-
   const abandonedCart = cartImpressions - checkouts; // carts that didn't reach checkout
 
-  // For the chart — spread real conversion rates across the last day (today)
-  const checkoutConv = labels.map((_, i) => (i === 29 ? checkoutConvRate : 0));
-  const orderConv = labels.map((_, i) => (i === 29 ? orderConvRate : 0));
+  // Per-day conversion rates from dailyAnalytics
+  const checkoutConv = labels.map((l) => {
+    const day = dailyAnalytics[l] ?? {};
+    const impressions = day.cart_impression ?? 0;
+    const initiated = day.checkout_initiated ?? 0;
+    return impressions > 0 ? Math.min((initiated / impressions) * 100, 100) : 0;
+  });
+
+  const orderConv = labels.map((l) => {
+    const day = dailyAnalytics[l] ?? {};
+    const initiated = day.checkout_initiated ?? 0;
+    const completed = day.checkout_completed ?? 0;
+    return initiated > 0 ? Math.min((completed / initiated) * 100, 100) : 0;
+  });
 
   // Displayed conversion rate (checkout conversion)
   const conversionRate =
