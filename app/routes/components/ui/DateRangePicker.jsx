@@ -89,13 +89,26 @@ export default function DateRangePicker({ value, onChange }) {
 
     const handlePreset = (vals) => {
         const days = parseInt(vals[0]);
-        const end = new Date();
-        const start = new Date();
-        start.setDate(end.getDate() - days);
 
+        const end = new Date();
+        end.setHours(0, 0, 0, 0);
+
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+
+        start.setDate(end.getDate() - (days - 1));
+
+        const newRange = { start, end };
+
+        setRange(newRange);
         setStartInput(formatDate(start));
         setEndInput(formatDate(end));
         setPreset(vals[0]);
+
+        setDate({
+            month: start.getMonth(),
+            year: start.getFullYear(),
+        });
     };
 
     const handleCalendarChange = (r) => {

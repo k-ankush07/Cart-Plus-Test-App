@@ -195,9 +195,9 @@ function SmallCard({ title, value, tooltip, valueTooltip, icon }) {
             </Tooltip>
             <InlineStack align="left" gap="200" blockAlign="center">
               <Text variant="headingLg" as="h5">{value}</Text>
-              <Tooltip content={tooltip} hasUnderline activatorWrapper="span">
+              {/* <Tooltip content={tooltip} hasUnderline activatorWrapper="span">
                 <FlatIcon />
-              </Tooltip>
+              </Tooltip> */}
             </InlineStack>
           </BlockStack>
 
@@ -234,7 +234,7 @@ export const loader = async ({ request }) => {
 export default function Analytics() {
   const { stats } = useLoaderData();
   const navigate = useNavigate();
-  
+
   const today = new Date();
 
   const currency = stats?.revenue?.totals?.currency ?? "USD";
@@ -253,20 +253,34 @@ export default function Analytics() {
   const analytics = stats?.analytics ?? {};
   const dailyAnalytics = stats?.dailyAnalytics ?? {};
 
-  const cartImpressions = analytics.cart_impression ?? 0;
-  const checkouts = analytics.checkout_initiated ?? 0;
-  const checkoutComplate = stats?.checkoutsCompleted ?? 0;
+  const labels = getLabelsFromRange(range.start, range.end);
+  const dayMap = buildDailyMap(daily);
+
+  const cartImpressions = labels.reduce((sum, label) => {
+    return sum + (dailyAnalytics[label]?.cart_impression ?? 0);
+  }, 0);
+
+  const checkouts = labels.reduce((sum, label) => {
+    return sum + (dailyAnalytics[label]?.checkout_initiated ?? 0);
+  }, 0);
+
+  const checkoutComplate = labels.reduce((sum, label) => {
+    return sum + (dailyAnalytics[label]?.checkout_completed ?? 0);
+  }, 0);
 
   const [filters, setFilters] = useState({ addons: true, upsells: true, subscriptions: true });
   const toggleFilter = (key) => setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const totalRevenue =
-    (filters.upsells ? (totals.upsellRevenue ?? 0) : 0) +
-    (filters.addons ? (totals.addonRevenue ?? 0) : 0) +
-    (filters.subscriptions ? (totals.subscriptionRevenue ?? 0) : 0);
+  const totalRevenue = labels.reduce((sum, label) => {
+    const day = dayMap[label] ?? {};
 
-  const labels = getLabelsFromRange(range.start, range.end);
-  const dayMap = buildDailyMap(daily);
+    return (
+      sum +
+      (filters.upsells ? (day.upsellRevenue ?? 0) : 0) +
+      (filters.addons ? (day.addonRevenue ?? 0) : 0) +
+      (filters.subscriptions ? (day.subscriptionRevenue ?? 0) : 0)
+    );
+  }, 0);
 
   const upsellSeries = labels.map((l) => dayMap[l]?.upsellRevenue ?? 0);
   const addonSeries = labels.map((l) => dayMap[l]?.addonRevenue ?? 0);
@@ -295,10 +309,23 @@ export default function Analytics() {
   });
 
   // Displayed conversion rate (checkout conversion)
-  const conversionRate =
-    cartImpressions > 0
-      ? checkoutConvRate.toFixed(2) + "%"
-      : "0.00%";
+  const rangeCartImpressions = labels.reduce((sum, label) => {
+    return sum + (dailyAnalytics[label]?.cart_impression ?? 0);
+  }, 0);
+
+  const rangeCheckoutInitiated = labels.reduce((sum, label) => {
+    return sum + (dailyAnalytics[label]?.checkout_initiated ?? 0);
+  }, 0);
+
+  const rangeConversionRate =
+    rangeCartImpressions > 0
+      ? Math.min(
+        (rangeCheckoutInitiated / rangeCartImpressions) * 100,
+        100
+      )
+      : 0;
+
+  const conversionRate = rangeConversionRate.toFixed(2) + "%";
 
   // full date labels: "Apr 3, 2026"
   const shortLabels = labels.map((l) => {
@@ -486,10 +513,12 @@ export default function Analytics() {
                 <BlockStack gap="300">
                   <InlineStack align="space-between" blockAlign="start">
                     <BlockStack gap="100">
-                      <Text variant="bodyMd" tone="subdued">Conversion rate</Text>
+                      <Tooltip content="This is the total conversion rate of the cart which is measured by dividing the number of visited checkouts or completed orders by the impressions." hasUnderline activatorWrapper="span">
+                        <Text variant="bodyMd" tone="subdued">Conversion rate</Text>
+                      </Tooltip>
                       <InlineStack gap="100" blockAlign="center">
                         <Text variant="headingLg" as="h5">{conversionRate}</Text>
-                        <FlatIcon />
+                        {/* <FlatIcon /> */}
                       </InlineStack>
                     </BlockStack>
                     <Button icon={DownloadIcon} size="slim" onClick={() => downloadCSV(convChartData, "conversion.csv", true)}

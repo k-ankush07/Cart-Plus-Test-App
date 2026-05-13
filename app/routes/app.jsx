@@ -71,10 +71,10 @@ export const loader = async ({ request }) => {
 export default function App() {
   const { apiKey } = useLoaderData();
   const navigation = useNavigation();
-  const isNavigating = navigation.state === "loading" && navigation.location != null;
+  const isNavigating = navigation.state !== "idle";
 
   return (
-    <ShopifyAppProvider isEmbeddedApp apiKey={apiKey}>
+    <ShopifyAppProvider embedded apiKey={apiKey}>
       <PolarisAppProvider i18n={enTranslations}>
         {isNavigating && (
           <div style={{
