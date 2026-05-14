@@ -71,8 +71,8 @@ export default function App() {
   const isNavigating = navigation.state !== "idle";
 
   return (
-    <AppProvider i18n={enTranslations}>
-      <ShopifyAppProvider embedded apiKey={apiKey}>
+    <ShopifyAppProvider embedded apiKey={apiKey}>
+      <AppProvider i18n={enTranslations}>
         {isNavigating && (
           <div
             style={{
@@ -123,8 +123,8 @@ export default function App() {
         </s-app-nav>
 
         <Outlet />
-      </ShopifyAppProvider>
-    </AppProvider>
+      </AppProvider>
+    </ShopifyAppProvider>
   );
 }
 

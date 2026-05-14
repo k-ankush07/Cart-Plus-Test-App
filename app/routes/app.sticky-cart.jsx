@@ -67,7 +67,6 @@ export const loader = async ({ request }) => {
   } catch (error) {
     console.error("Shop Loader Error:", error);
 
-    // IMPORTANT
     if (error instanceof Response) {
       throw error;
     }

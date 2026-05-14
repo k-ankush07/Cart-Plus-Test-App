@@ -1,7 +1,7 @@
 import { Page, Button, Modal, TextField, InlineStack, Badge, Popover, ActionList, Icon } from "@shopify/polaris";
 import { EditIcon, ArrowLeftIcon, InfoIcon, CheckIcon, CaretDownIcon } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../index.css";
 import { renameCart, togglePublishCart, getCarts } from "../../services/apiRoutes";
 
@@ -36,6 +36,7 @@ export default function CartLayout({
   isDirty
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [cartName, setCartName] = useState(initialCartName || "Untitled cart");
   const [cartStatus, setCartStatus] = useState(cart?.status || "unpublished");
@@ -174,9 +175,13 @@ export default function CartLayout({
     },
   ];
 
+  const searchParams = new URLSearchParams(location.search);
+  const fromPage = searchParams.get("from");
+  const backPath = fromPage === "home" ? "/app" : "/app/carts";
+
   return (
     <>
-    <Page fullWidth>
+      <Page fullWidth>
         {/* ── Top bar ── */}
         <div className={`header-wrapper ${isPreviewVisible ? 'preview-visible' : ''} ${designSettings?.desktopWidth === "wide" ? 'wide' : 'normal'}`}>
 
@@ -185,7 +190,7 @@ export default function CartLayout({
             <Button
               icon={ArrowLeftIcon}
               variant="plain"
-              onClick={() => navigate("/app/carts")}
+              onClick={() => navigate(backPath)}
               accessibilityLabel="Go back"
             />
             <Popover

@@ -60,7 +60,7 @@ export const loader = async ({ request }) => {
     // ... date setup unchanged ...
 
     const appEmbedId = process.env.SHOPIFY_API_KEY || "";
-   
+
     const today = new Date();
     const defaultStart = new Date();
 
@@ -165,7 +165,7 @@ export default function AppCarts() {
         setLoading(true);
         const tempCartId = "cart_" + Date.now() + "_" + Math.random().toString(36).slice(2, 11);
         setTimeout(() => {
-            navigate(`/app/cart-editor/${tempCartId}`, { replace: true });
+            navigate(`/app/cart-editor/${tempCartId}?from=carts`, { replace: true });
             createCart(apiUrl, {
                 shop: shop.myshopifyDomain,
                 shopEmail: shop.email,
@@ -188,7 +188,7 @@ export default function AppCarts() {
             }).then((data) => {
                 if (data.success) shopify.toast.show("Cart created successfully");
             }).catch(() => { });
-        }, 200);
+        }, 1000);
     };
 
     const confirmDeleteCart = async () => {
@@ -355,7 +355,7 @@ export default function AppCarts() {
                                     <CartHoverCard cart={cart}>
                                         <div
                                             style={{ maxWidth: "150px", cursor: "pointer" }}
-                                            onClick={() => navigate(`/app/cart-editor/${cart.cartId}`)}
+                                            onClick={() => navigate(`/app/cart-editor/${cart.cartId}?from=carts`)}
                                         >
                                             <Text truncate as="span">
                                                 {cart.cartName || "Untitled cart"}
@@ -390,7 +390,7 @@ export default function AppCarts() {
                                 <IndexTable.Cell>
                                     <InlineStack gap="200" align="end">
                                         <Tooltip content="Edit cart">
-                                            <Button icon={EditIcon} onClick={() => navigate(`/app/cart-editor/${cart.cartId}`)} />
+                                            <Button icon={EditIcon} onClick={() => navigate(`/app/cart-editor/${cart.cartId}?from=carts`)} />
                                         </Tooltip>
                                         <Tooltip content={cart.status === "published" ? "Preview cart" : "Only available for live carts"}>
                                             <Button

@@ -76,7 +76,7 @@ function SetupTask({
 
 function buildSetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled, appEmbedStarted) {
   const cartId = liveCart?.cartId;
-  const goTo = (module) => () => cartId && navigate(`/app/cart-editor/${cartId}?module=${module}`);
+  const goTo = (module) => () => cartId && navigate(`/app/cart-editor/${cartId}?from=home&module=${module}`);
   const storeHandle = shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
 
@@ -652,7 +652,7 @@ export default function Dashboard() {
                         <InlineStack gap="200" align="end">
                           {/* ── Slim link-based buttons avoid navigate() delay ── */}
                           <Link
-                            to={`/app/cart-editor/${cart.cartId}`}
+                            to={`/app/cart-editor/${cart.cartId}?from=home`}
                             prefetch="intent"
                             style={{ textDecoration: "none" }}
                           >
