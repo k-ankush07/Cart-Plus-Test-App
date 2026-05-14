@@ -25,7 +25,20 @@ app.use("/api", fileUpload);
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB"))
+  .then(async () => {
+    console.log("Connected to MongoDB");
+    try {
+      const coll = mongoose.connection.collection("cartordercounts");
+      const indexes = await coll.indexes();
+      const stale = indexes.find((i) => i.name === "shop_1_cartId_1");
+      if (stale) {
+        await coll.dropIndex("shop_1_cartId_1");
+        console.log("Dropped stale index shop_1_cartId_1 on cartordercounts");
+      }
+    } catch (err) {
+      console.error("Index cleanup error:", err?.message);
+    }
+  })
   .catch((err) => console.error(" MongoDB connection error:", err));
 
 app.listen(port, () =>

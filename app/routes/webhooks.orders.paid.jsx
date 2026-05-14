@@ -124,7 +124,42 @@ export const action = async ({ request }) => {
       return new Response();
     }
 
-    const lineItems = payload.line_items || [];
+    let lineItems = payload.line_items || [];
+
+    // The webhook payload sometimes omits selling_plan_allocation. Fetch the
+    // order via Admin REST to get authoritative selling_plan_id per line.
+    try {
+      const accessToken = session?.accessToken;
+      if (accessToken) {
+        const orderRes = await fetch(
+          `https://${shop}/admin/api/2025-10/orders/${payload.id}.json?fields=line_items`,
+          {
+            headers: {
+              "X-Shopify-Access-Token": accessToken,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        if (orderRes.ok) {
+          const orderData = await orderRes.json();
+          const adminItems = orderData?.order?.line_items || [];
+          const planById = new Map(
+            adminItems.map((li) => [String(li.id), li.selling_plan_allocation || (li.selling_plan_id ? { selling_plan: { id: li.selling_plan_id } } : null)]),
+          );
+          lineItems = lineItems.map((li) => ({
+            ...li,
+            selling_plan_allocation:
+              li.selling_plan_allocation || planById.get(String(li.id)) || null,
+          }));
+        } else {
+          console.warn(
+            `[orders/paid] admin order fetch failed status=${orderRes.status}`,
+          );
+        }
+      }
+    } catch (e) {
+      console.error("[orders/paid] admin order fetch error:", e?.message);
+    }
 
     let upsellRevenue = 0;
     let addonRevenue = 0;
@@ -139,11 +174,14 @@ export const action = async ({ request }) => {
         return acc;
       }, {});
 
+      const isSubscription =
+        !!item.selling_plan_allocation || !!props._hub_subscription;
+
       if (props._hub_addon || props.__upcartAddon) {
         addonRevenue += lineTotal;
       } else if (props.__upcartRecommendation) {
         upsellRevenue += lineTotal;
-      } else if (props._hub_subscription) {
+      } else if (isSubscription) {
         subscriptionRevenue += lineTotal;
       } else if (props._hub_reward || props._triggered_reward) {
         // tracked but contributes no revenue
@@ -171,8 +209,17 @@ export const action = async ({ request }) => {
       }),
     });
 
-    const data = await res.json();
-    console.log(`[orders/paid] #${payload.order_number} saved:`, JSON.stringify(data));
+    console.log("[orders/paid] line_items:", JSON.stringify(lineItems.map(i => ({
+      title: i.title,
+      selling_plan_allocation: i.selling_plan_allocation,
+      properties: i.properties,
+    }))));
+
+    const data = await res.json().catch(() => ({}));
+    console.log(
+      `[orders/paid] #${payload.order_number} response status=${res.status} body=`,
+      JSON.stringify(data),
+    );
   } catch (err) {
     console.error("[orders/paid] processing error:", err.message);
   }

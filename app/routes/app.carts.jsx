@@ -58,7 +58,6 @@ import "../index.css";
 export const loader = async ({ request }) => {
     const { shop, apiUrl, accessToken, currency, admin } = await shopLoader(request);
     // ... date setup unchanged ...
-
     const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 
     const today = new Date();

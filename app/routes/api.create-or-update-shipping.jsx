@@ -109,7 +109,7 @@ export const action = async ({ request }) => {
                 {
                   id: variantId,
                   price: String(price || "0.00"),
-                  inventoryPolicy: "CONTINUE", //  IMPORTANT
+                  inventoryPolicy: "CONTINUE", 
                 },
               ],
             },

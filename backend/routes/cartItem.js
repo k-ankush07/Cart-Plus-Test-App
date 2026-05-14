@@ -676,7 +676,9 @@ router.post("/order-revenue", async (req, res) => {
     return res.json({ success: true, counted: true, revenueSaved: true });
   } catch (error) {
     console.error("ORDER REVENUE ERROR:", error);
-    return res.status(500).json({ success: false });
+    return res
+      .status(500)
+      .json({ success: false, message: error?.message, code: error?.code });
   }
 });
 
