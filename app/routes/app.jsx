@@ -5,10 +5,8 @@ import {
   useNavigation,
 } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import {
-  AppProvider as ShopifyAppProvider,
-} from "@shopify/shopify-app-react-router/react";
-import { AppProvider } from "@shopify/polaris";
+import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
+import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
 import "@shopify/polaris/build/esm/styles.css";
 import enTranslations from "@shopify/polaris/locales/en.json";
 import { authenticate, sessionStorage } from "../shopify.server";
@@ -72,7 +70,7 @@ export default function App() {
 
   return (
     <ShopifyAppProvider embedded apiKey={apiKey}>
-      <AppProvider i18n={enTranslations}>
+      <PolarisAppProvider  i18n={enTranslations}>
         {isNavigating && (
           <div
             style={{
@@ -123,7 +121,7 @@ export default function App() {
         </s-app-nav>
 
         <Outlet />
-      </AppProvider>
+      </PolarisAppProvider >
     </ShopifyAppProvider>
   );
 }
