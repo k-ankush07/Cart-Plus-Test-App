@@ -52,12 +52,19 @@ export default function DateRangePicker({ value, onChange }) {
         (value?.end || today).toISOString().slice(0, 10)
     );
 
-    const formatDate = (date) =>
-        date ? date.toISOString().slice(0, 10) : "";
+    const formatDate = (date) => {
+        if (!date) return "";
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+    };
 
     const parseInput = (str) => {
-        const d = new Date(str + "T00:00:00");
-        return isNaN(d.getTime()) ? null : d;
+        if (!str) return null;
+        const [y, m, d] = str.split("-").map(Number);
+        const date = new Date(y, m - 1, d); 
+        return isNaN(date.getTime()) ? null : date;
     };
 
     const handleStartInput = (val) => {
@@ -93,10 +100,7 @@ export default function DateRangePicker({ value, onChange }) {
         const end = new Date();
         end.setHours(0, 0, 0, 0);
 
-        const start = new Date();
-        start.setHours(0, 0, 0, 0);
-
-        start.setDate(end.getDate() - (days - 1));
+        const start = new Date(end.getTime() - (days - 1) * 24 * 60 * 60 * 1000);
 
         const newRange = { start, end };
 
@@ -113,11 +117,16 @@ export default function DateRangePicker({ value, onChange }) {
 
     const handleCalendarChange = (r) => {
         setRange(r);
-        setStartInput(formatDate(r.start));
-        setEndInput(formatDate(r.end));
+
+        if (r.start) setStartInput(formatDate(r.start));
+        if (r.end) {
+            setEndInput(formatDate(r.end));
+        } else {
+            setEndInput(formatDate(r.start));
+        }
+
         setPreset(null);
     };
-
     const handleSave = () => {
         setAppliedRange(range);
         setAppliedPreset(preset);
