@@ -208,6 +208,22 @@ function initCartDrawerAfterData() {
       drawer.classList.remove(`hub-visible-${blockId}`);
       bg.classList.remove(`hub-visible-${blockId}`);
       hubCloseOffersPanel(blockId);
+
+      const breakdown = document.getElementById(`hub-total-breakdown-${blockId}`);
+      if (breakdown) {
+        breakdown.classList.remove("hub-breakdown-open");
+ 
+       const arrow = breakdown
+        .closest(".hub-total-summary")
+        ?.querySelector(".hub-total-arrow");
+        if (arrow) arrow.style.transform = "rotate(0deg)";
+
+        const totalSummary = breakdown.closest(".hub-total-summary");
+        if (totalSummary) totalSummary.classList.remove("hub-total-summary--open");
+
+        drawer.classList.remove("hub-cart-total-open");
+       }
+      
       document.body.classList.remove("no-scroll", "overflow-hidden");
       document.documentElement.classList.remove("overflow-hidden");
       document.body.style.overflow = "";
