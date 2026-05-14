@@ -12,7 +12,7 @@ import {
     Icon,
     Banner,
 } from "@shopify/polaris";
-
+import { useState } from "react";
 import { CheckIcon } from "@shopify/polaris-icons";
 import { useLoaderData, useFetcher } from "react-router-dom";
 import { authenticate } from "../shopify.server";
@@ -333,12 +333,14 @@ export default function Pricing() {
 
 function PricingCard({ plan, activePlan }) {
     const fetcher = useFetcher();
+    const [redirecting, setRedirecting] = useState(false);
     const isActive = activePlan === plan.id;
     const isHighlighted = plan.badge === "Popular";
-    const isLoading = fetcher.state !== "idle";
+    const isLoading = fetcher.state !== "idle" || redirecting;
     const onPaidPlan = activePlan !== "free";
 
-    if (fetcher.data?.confirmationUrl) {
+    if (fetcher.data?.confirmationUrl && !redirecting) {
+        setRedirecting(true);
         window.top.location.href = fetcher.data.confirmationUrl;
     }
 
