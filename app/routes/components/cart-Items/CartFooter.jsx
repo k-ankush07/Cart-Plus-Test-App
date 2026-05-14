@@ -61,23 +61,25 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 </div>)}
 
                 <div className={`hub-total-breakdown ${breakdownOpen ? "hub-breakdown-open" : ""}`}>
-                    <div className="hub-breakdown-row">
-                        <span>Total MRP</span>
-                        <span>$200.00</span>
-                    </div>
-                    <div className="hub-breakdown-row">
-                        <span style={{ color: designSettings.textColor }}>{cartSettings.discountsSavingsText}</span>
-                        <span style={{ color: '#10812F' }}>MEGA20</span>
-                    </div>
+                    <div className="custom-cart-breakdown-header">
+                        <div className="hub-breakdown-row">
+                            <span>Total MRP</span>
+                            <span>$200.00</span>
+                        </div>
+                        <div className="hub-breakdown-row">
+                            <span style={{ color: designSettings.textColor }}>{cartSettings.discountsSavingsText}</span>
+                            <span style={{ color: '#10812F' }}>MEGA20</span>
+                        </div>
 
-                    <div className="hub-breakdown-row">
-                        <span>Shipping</span>
-                        <span style={{ color: '#10812F' }}>Free</span>
-                    </div>
+                        <div className="hub-breakdown-row">
+                            <span>Shipping</span>
+                            <span style={{ color: '#10812F' }}>Free</span>
+                        </div>
 
-                    <div className="hub-breakdown-row hub-breakdown-grand">
-                        <span>Grand Total</span>
-                        <span>$200.00</span>
+                        <div className="hub-breakdown-row hub-breakdown-grand">
+                            <span>Grand Total</span>
+                            <span>$200.00</span>
+                        </div>
                     </div>
 
                     {/* {designSettings.enableSubtotal && (

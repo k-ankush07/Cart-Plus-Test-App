@@ -76,7 +76,7 @@ export const action = async ({ request }) => {
       }
     }
 
-    // ✅ Transform same as before
+    //  Transform same as before
     const finalProducts = allProducts.map(({ node }) => {
 
       const allVariants = node.variants.edges.map(v => v.node);

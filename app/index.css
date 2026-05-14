@@ -947,7 +947,6 @@ body,
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px 0 0;
     font-size: 15px;
     color: #000000;
 }
@@ -1342,7 +1341,7 @@ span.upcart-rewards-tier-icon {
     align-items: center;
     cursor: pointer;
     user-select: none;
-    padding: 15px 20px 10px;
+    padding: 15px 20px 5px;
     border-radius: 8px;
     transition: background 0.25s ease;
 }
@@ -1358,7 +1357,7 @@ span.upcart-rewards-tier-icon {
 }
 
 .upcart-checkout-button-container {
-    padding: 10px 0;
+    padding: 20px 0;
 }
 
 .hub-total-header-right {
@@ -1435,4 +1434,8 @@ span.hub-total-arrow svg {
 
 .Polaris-Page {
     padding-bottom: 90px;
+}
+
+.custom-cart-breakdown-header {
+    padding-top: 15px;
 }

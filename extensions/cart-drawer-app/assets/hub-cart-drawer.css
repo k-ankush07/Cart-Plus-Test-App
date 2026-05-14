@@ -824,7 +824,7 @@ h3.styles_CartPreview__empty__ {
   align-items: center;
   cursor: pointer;
   user-select: none;
-  padding: 15px 20px 10px;
+  padding: 15px 20px 5px;
   border-radius: 8px;
   transition: background 0.25s ease;
 }
@@ -962,7 +962,7 @@ span.hub-total-arrow svg {
   transition: 0.3s ease;
   line-height: 20px;
   width: calc(100% - 40px);
-  margin: 10px 20px !important;
+  margin:20px !important;
 }
 
 .hub-cart-checkout-btn:hover {
@@ -1156,11 +1156,9 @@ span.hub-total-arrow svg {
   cursor: pointer;
   font-weight: 700;
   line-height: 20px;
-  padding: 10px 0 0;
   width: calc(100% - 40px);
   margin: 0 20px !important;
 }
-
 
 .upcart-internal-component-upsell-tile {
   border-radius: 5px;
