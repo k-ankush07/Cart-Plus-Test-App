@@ -317,7 +317,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                         ]}
                     >
                         <Modal.Section>
-                            <div style={{ height: "700px" }}>
+                            <div>
                                 <ProductItemCollections
                                     currency={currency}
                                     onSelect={(data) => {

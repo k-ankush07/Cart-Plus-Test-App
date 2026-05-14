@@ -236,7 +236,7 @@ export default function SuggestedProducts({ recommendationsSettings, handleChang
                         ]}
                     >
                         <Modal.Section>
-                            <div style={{ height: "700px" }}>
+                            <div>
                                 <ProductItemCollections
                                     currency={currency}
                                     onSelect={(data) => {

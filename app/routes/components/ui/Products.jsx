@@ -282,7 +282,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
                                 <div style={{
                                     display: "flex", gap: "8px", justifyContent: "flex-end", minWidth: product.variants.every((v) => !v.available)
                                         ? "165px"
-                                        : "80px",
+                                        : "90px",
                                 }}>
                                     <div
                                         style={{
@@ -348,7 +348,6 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
             <div
                 style={{
                     padding: "12px",
-                    borderTop: "1px solid #e1e3e5",
                     display: "flex",
                     justifyContent: "center",
                     gap: "10px",
