@@ -130,11 +130,9 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   return (
-    <ShopifyAppProvider>
-      <PolarisAppProvider i18n={enTranslations}>
-        {boundary.error(error)}
-      </PolarisAppProvider>
-    </ShopifyAppProvider>
+    <PolarisAppProvider i18n={enTranslations}>
+      {boundary.error(error)}
+    </PolarisAppProvider>
   );
 }
 
