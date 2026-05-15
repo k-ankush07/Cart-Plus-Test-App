@@ -1,4 +1,6 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "react-router";
+import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
+import enTranslations from "@shopify/polaris/locales/en.json";
 import '@shopify/polaris/build/esm/styles.css';
 import "./index.css";
 
@@ -33,7 +35,9 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet />
+        <PolarisAppProvider i18n={enTranslations}>
+          <Outlet />
+        </PolarisAppProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

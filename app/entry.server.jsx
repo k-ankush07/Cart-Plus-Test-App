@@ -4,6 +4,8 @@ import { ServerRouter } from "react-router";
 import { createReadableStreamFromReadable } from "@react-router/node";
 import { isbot } from "isbot";
 import { addDocumentResponseHeaders } from "./shopify.server";
+import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
+import enTranslations from "@shopify/polaris/locales/en.json";
 
 export const streamTimeout = 5000;
 
@@ -19,7 +21,10 @@ export default async function handleRequest(
 
   return new Promise((resolve, reject) => {
     const { pipe, abort } = renderToPipeableStream(
-      <ServerRouter context={reactRouterContext} url={request.url} />,
+      // ↓ WRAP ServerRouter WITH PolarisAppProvider
+      <PolarisAppProvider i18n={enTranslations}>
+        <ServerRouter context={reactRouterContext} url={request.url} />
+      </PolarisAppProvider>,
       {
         [callbackName]: () => {
           const body = new PassThrough();
@@ -44,8 +49,6 @@ export default async function handleRequest(
       },
     );
 
-    // Automatically timeout the React renderer after 6 seconds, which ensures
-    // React has enough time to flush down the rejected boundary contents
     setTimeout(abort, streamTimeout + 1000);
   });
 }

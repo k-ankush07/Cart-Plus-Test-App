@@ -17,6 +17,37 @@ const generateNewCartId = () => {
 
 const router = express.Router();
 
+// ─── Plan order limits (monthly) ─────────────────────────────────────────────
+const PLAN_ORDER_LIMITS = {
+  free: 15,
+  starter: 20,
+  growth: 22,
+};
+
+const getMonthlyOrderCount = async (shop) => {
+  const now = new Date();
+  const monthStart = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
+  const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  const monthEnd = nextMonth.toISOString().slice(0, 10); 
+
+  const result = await cartOrderCountModel.aggregate([
+    {
+      $match: {
+        shop,
+        date: { $gte: monthStart, $lt: monthEnd },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: "$totalOrders" },
+      },
+    },
+  ]);
+
+  return result[0]?.total || 0;
+};
+
 router.get("/get-carts", async (req, res) => {
   try {
     const { shop } = req.query;
@@ -622,17 +653,35 @@ router.post("/order-revenue", async (req, res) => {
       status: "published",
     });
     if (!publishedCart) {
-      console.warn(
-        `[order-revenue] Rejected: no published cart for shop: ${shop}`,
-      );
       return res
         .status(403)
         .json({ success: false, message: "No active cart for shop" });
     }
 
-    // Always count the order against the published cart when the app is enabled.
-    // Bucketed per day (UTC) so we can report orders date-wise.
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    // ─── Plan limit check ────────────────────────────────────────────────────
+    const shopPlan = await shopPlanModel.findOne({ shop });
+    const planName = shopPlan?.plan || "free";
+    const monthlyLimit = PLAN_ORDER_LIMITS[planName] ?? PLAN_ORDER_LIMITS.free;
+    const monthlyOrderCount = await getMonthlyOrderCount(shop);
+
+    if (monthlyOrderCount >= monthlyLimit) {
+      // Auto-unpublish the cart so the drawer stops showing
+      await cartModels.findOneAndUpdate(
+        { cartId: publishedCart.cartId },
+        { $set: { status: "unpublished" } },
+      );
+
+      return res.status(403).json({
+        success: false,
+        message: "Monthly order limit reached for your plan. Cart has been unpublished.",
+        planName,
+        monthlyLimit,
+        monthlyOrderCount,
+      });
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
+    const today = new Date().toISOString().slice(0, 10);
     await cartOrderCountModel.findOneAndUpdate(
       { shop, cartId: publishedCart.cartId, date: today },
       {
@@ -643,9 +692,18 @@ router.post("/order-revenue", async (req, res) => {
       { upsert: true, new: true },
     );
 
-    // Only persist a revenue record when the cart drawer actually contributed
-    // upsell / addon / subscription revenue. Pure base-revenue orders are
-    // counted above but skipped here.
+    // ─── Re-check after incrementing ────────────────────────────────────────
+    // The increment above pushed us to or past the limit — unpublish now.
+    const newMonthlyCount = monthlyOrderCount + 1;
+    if (newMonthlyCount >= monthlyLimit) {
+      await cartModels.findOneAndUpdate(
+        { cartId: publishedCart.cartId },
+        { $set: { status: "unpublished" } },
+      );
+
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     const hasHubRevenue =
       Number(upsellRevenue) > 0 ||
       Number(addonRevenue) > 0 ||

@@ -11,7 +11,8 @@ import {
     BlockStack,
     Box,
     Icon,
-    SkeletonBodyText
+    SkeletonBodyText,
+    Banner,
 } from "@shopify/polaris";
 import {
     defaultSettings,
@@ -54,6 +55,12 @@ import {
     duplicateCart,
 } from "../services/apiRoutes";
 import "../index.css";
+
+const PLAN_ORDER_LIMITS = {
+    free: 15,
+    starter: 20,
+    growth: 22,
+};
 
 export const loader = async ({ request }) => {
     const { shop, apiUrl, accessToken, currency, admin } = await shopLoader(request);
@@ -101,11 +108,27 @@ export const loader = async ({ request }) => {
     const carts = cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [];
     const cartStats = statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {};
 
-    return Response.json({ shop, apiUrl, accessToken, currency, carts, cartStats, appEmbedInstalled, mainThemeId, appEmbedId });
+    const planRes = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shop.myshopifyDomain)}`);
+    const planData = await planRes.json();
+    const shopPlan = planData?.data?.plan || "free";
+
+    const now = new Date();
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+
+    const monthOrdersRes = await fetch(
+        `${apiUrl}/api/cart-order-count?shop=${encodeURIComponent(shop.myshopifyDomain)}`
+    );
+    const monthOrdersData = await monthOrdersRes.json();
+
+    const currentMonthOrders = (monthOrdersData?.data?.dateWise || [])
+        .filter(({ date }) => date >= monthStart)
+        .reduce((sum, { totalOrders }) => sum + totalOrders, 0);
+
+    return Response.json({ shop, apiUrl, accessToken, currency, carts, cartStats, appEmbedInstalled, mainThemeId, appEmbedId, shopPlan, currentMonthOrders });
 };
 
 export default function AppCarts() {
-    const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency, appEmbedInstalled, mainThemeId, appEmbedId } = useLoaderData();
+    const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency, appEmbedInstalled, mainThemeId, appEmbedId, shopPlan, currentMonthOrders } = useLoaderData();
 
     const navigate = useNavigate();
 
@@ -288,7 +311,7 @@ export default function AppCarts() {
         </Tooltip>
     );
 
-    const CartTable = ({ carts, emptyText, isDraft, stats }) => (
+    const CartTable = ({ carts, emptyText, isDraft, stats, monthOrders }) => (
         <div style={{ paddingTop: 12 }}>
             {carts.length === 0 ? (
                 <Text tone="subdued">{emptyText}</Text>
@@ -416,20 +439,43 @@ export default function AppCarts() {
                                                 }}
                                             />
                                         </Tooltip>
-                                        <Tooltip content={cart.status === "published" ? "Unpublish cart" : "Publish cart"}>
-                                            <Button
-                                                size="slim"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
+                                        {(() => {
+                                            const limit = PLAN_ORDER_LIMITS[shopPlan] ?? PLAN_ORDER_LIMITS.free;
+                                            const limitReached = monthOrders >= limit;
 
-                                                    cart.status === "published"
-                                                        ? handleUnpublishClick(cart.cartId)
-                                                        : handlePublishClick(cart);
-                                                }}
-                                            >
-                                                {cart.status === "published" ? "Unpublish" : "Publish"}
-                                            </Button>
-                                        </Tooltip>
+                                            if (cart.status === "published" && limitReached) {
+                                                return (
+                                                    <Tooltip content={`Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to republish.`}>
+                                                        <span>
+                                                            <Badge tone="critical">Limit reached</Badge>
+                                                        </span>
+                                                    </Tooltip>
+                                                );
+                                            }
+
+                                            return (
+                                                <Tooltip content={
+                                                    cart.status !== "published" && limitReached
+                                                        ? `Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to publish.`
+                                                        : cart.status === "published" ? "Unpublish cart" : "Publish cart"
+                                                }>
+                                                    <span>
+                                                        <Button
+                                                            size="slim"
+                                                            disabled={cart.status !== "published" && limitReached}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                cart.status === "published"
+                                                                    ? handleUnpublishClick(cart.cartId)
+                                                                    : handlePublishClick(cart);
+                                                            }}
+                                                        >
+                                                            {cart.status === "published" ? "Unpublish" : "Publish"}
+                                                        </Button>
+                                                    </span>
+                                                </Tooltip>
+                                            );
+                                        })()}
                                         {isDraft && (
                                             <Tooltip content="Delete cart">
                                                 <Button
@@ -506,13 +552,36 @@ export default function AppCarts() {
             }
         >
             <Layout>
+                {(() => {
+                    const limit = PLAN_ORDER_LIMITS[shopPlan] ?? PLAN_ORDER_LIMITS.free;
+                    if (currentMonthOrders < limit) return null;
+
+                    return (
+                        <Layout.Section>
+                            <Banner
+                                tone="warning"
+                                title={`Monthly order limit reached (${currentMonthOrders}/${limit})`}
+                                action={{
+                                    content: "Upgrade plan",
+                                    onAction: () => navigate("/app/pricing")
+                                }}
+                            >
+                                <Text as="p" variant="bodyMd">
+                                    Your store has reached the <strong>{currentMonthOrders}</strong> order
+                                    limit for the <strong>{shopPlan}</strong> plan this month.
+                                    Your cart has been automatically unpublished. Upgrade your plan to continue selling.
+                                </Text>
+                            </Banner>
+                        </Layout.Section>
+                    );
+                })()}
+
                 {/* Live Cart Section */}
                 <Layout.Section>
                     <div className="carts_liveStatusHeader___LUes" style={{ marginTop: 16 }}>
                         <LiveDot />
                         <Text variant="headingMd" as="h3">Live cart</Text>
                     </div>
-
                     {liveCarts.length === 0 ? (
                         <EmptyState
                             title="No live cart configured"
@@ -520,7 +589,7 @@ export default function AppCarts() {
                             tag={!appEmbedInstalled ? { label: "App embed off", tone: "warning" } : null}
                         />
                     ) : (
-                        <CartTable carts={liveCarts} emptyText="No live cart configured" stats={cartStats} />
+                        <CartTable carts={liveCarts} emptyText="No live cart configured" stats={cartStats} monthOrders={currentMonthOrders} />
                     )}
                 </Layout.Section>
 
@@ -543,7 +612,7 @@ export default function AppCarts() {
                             subtitle="Create a new cart to start customizing. Draft carts won't go live until you publish them."
                         />
                     ) : (
-                        <CartTable carts={draftCarts} emptyText="No draft carts yet." isDraft stats={cartStats} />
+                        <CartTable carts={draftCarts} emptyText="No draft carts yet." isDraft stats={cartStats} monthOrders={currentMonthOrders} />
                     )}
                 </Layout.Section>
             </Layout>
