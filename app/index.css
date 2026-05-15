@@ -1429,7 +1429,7 @@ span.hub-total-arrow svg {
 }
 
 .icon-selector:hover {
-  background-color: rgba(77, 166, 166, .15);
+    background-color: rgba(77, 166, 166, .15);
 }
 
 .Polaris-Page {
@@ -1438,4 +1438,14 @@ span.hub-total-arrow svg {
 
 .custom-cart-breakdown-header {
     padding-top: 15px;
+}
+
+@keyframes upcart-slide {
+    0% {
+        transform: translateX(-150%);
+    }
+
+    100% {
+        transform: translateX(400%);
+    }
 }

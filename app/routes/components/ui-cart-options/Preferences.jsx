@@ -137,13 +137,13 @@ export default function Preferences({ handleChange, cartSettings }) {
                                         value={cartSettings.cartPosition}
                                         onChange={(v) => update("cartPosition", v)}
                                     />
-                                    <RangeSlider
+                                    {/* <RangeSlider
                                         label={`Traffic allocation percent (${cartSettings.trafficAllocationPercent}%)`}
                                         min={0}
                                         max={100}
                                         value={cartSettings.trafficAllocationPercent}
                                         onChange={(v) => update("trafficAllocationPercent", v)}
-                                    />
+                                    /> */}
                                     <Checkbox
                                         label="Disable fixed footer"
                                         checked={cartSettings.disableFixedFooter}

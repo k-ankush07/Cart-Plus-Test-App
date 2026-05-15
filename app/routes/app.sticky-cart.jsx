@@ -539,12 +539,10 @@ export default function StickyCart() {
                               selectedIcon === icon.id
                                 ? "2px solid #4da6a6"
                                 : "2px solid #FFFFFF",
-
                             background:
                               selectedIcon === icon.id
                                 ? "rgba(77, 166, 166, .15)"
-                                : "transparent",
-
+                                : "",
                             color:
                               selectedIcon === icon.id
                                 ? "#2c7be5"
