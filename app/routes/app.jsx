@@ -20,9 +20,7 @@ export const loader = async ({ request }) => {
     const offlineSession = await sessionStorage.loadSession(
       `offline_${session.shop}`
     );
-
     const token = offlineSession?.accessToken;
-
     const response = await admin.graphql(`
       query {
         shop {
@@ -32,36 +30,36 @@ export const loader = async ({ request }) => {
         }
       }
     `);
-
     const shopData = await response.json();
-
     const storeEmail = shopData?.data?.shop?.email;
 
     if (token && _lastSentToken.get(session.shop) !== token) {
       const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
-
       await fetch(`${apiUrl}/api/save-shop-token`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           shop: session.shop,
           accessToken: token,
           email: storeEmail,
         }),
       });
-
       _lastSentToken.set(session.shop, token);
     }
   } catch (err) {
     console.warn("[hub] Could not save shop token:", err.message);
   }
 
-  return {
-    apiKey: process.env.SHOPIFY_API_KEY || "",
-  };
+  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
+
+function PolarisWrapper({ children }) {
+  return (
+    <PolarisAppProvider i18n={enTranslations}>
+      {children}
+    </PolarisAppProvider>
+  );
+}
 
 export default function App() {
   const { apiKey } = useLoaderData();
@@ -69,8 +67,8 @@ export default function App() {
   const isNavigating = navigation.state !== "idle";
 
   return (
-    <ShopifyAppProvider embedded apiKey={apiKey}>
-      <PolarisAppProvider  i18n={enTranslations}>
+    <PolarisWrapper>
+      <ShopifyAppProvider embedded apiKey={apiKey}>
         {isNavigating && (
           <div
             style={{
@@ -102,7 +100,6 @@ export default function App() {
                 }}
               />
             </div>
-
             <style>{`
               @keyframes upcart-slide {
                 0%   { transform: translateX(-150%); }
@@ -121,8 +118,8 @@ export default function App() {
         </s-app-nav>
 
         <Outlet />
-      </PolarisAppProvider >
-    </ShopifyAppProvider>
+      </ShopifyAppProvider>
+    </PolarisWrapper>
   );
 }
 
@@ -130,11 +127,10 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   return (
-    <PolarisAppProvider i18n={enTranslations}>
+    <PolarisWrapper>
       {boundary.error(error)}
-    </PolarisAppProvider>
+    </PolarisWrapper>
   );
 }
 
-export const headers = (headersArgs) =>
-  boundary.headers(headersArgs);
+export const headers = (headersArgs) => boundary.headers(headersArgs);
