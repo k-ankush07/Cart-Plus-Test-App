@@ -349,6 +349,8 @@ export default function AppCarts() {
                                 key={cart.cartId || `${cart._id || "cart"}-${i}`}
                                 id={cart.cartId || `${i}`}
                                 position={i}
+                                onClick={() => navigate(`/app/cart-editor/${cart.cartId}?from=carts`)}
+                                style={{ cursor: "pointer" }}
                             >
                                 <IndexTable.Cell>
                                     <CartHoverCard cart={cart}>
@@ -395,7 +397,8 @@ export default function AppCarts() {
                                             <Button
                                                 icon={ViewIcon}
                                                 disabled={cart.status !== "published"}
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     if (cart.status === "published") {
                                                         window.open(`https://${shop.myshopifyDomain}`, "_blank");
                                                     }
@@ -407,17 +410,22 @@ export default function AppCarts() {
                                                 icon={DuplicateIcon}
                                                 loading={duplicatingCartId === cart.cartId}
                                                 disabled={duplicatingCartId !== null}
-                                                onClick={() => handleDuplicateCart(cart)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDuplicateCart(cart);
+                                                }}
                                             />
                                         </Tooltip>
                                         <Tooltip content={cart.status === "published" ? "Unpublish cart" : "Publish cart"}>
                                             <Button
                                                 size="slim"
-                                                onClick={() =>
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+
                                                     cart.status === "published"
                                                         ? handleUnpublishClick(cart.cartId)
-                                                        : handlePublishClick(cart)
-                                                }
+                                                        : handlePublishClick(cart);
+                                                }}
                                             >
                                                 {cart.status === "published" ? "Unpublish" : "Publish"}
                                             </Button>
@@ -427,7 +435,11 @@ export default function AppCarts() {
                                                 <Button
                                                     icon={DeleteIcon}
                                                     tone="critical"
-                                                    onClick={() => { setSelectedCart(cart); setDeleteModal(true); }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedCart(cart);
+                                                        setDeleteModal(true);
+                                                    }}
                                                 />
                                             </Tooltip>
                                         )}
