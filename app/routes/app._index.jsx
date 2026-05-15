@@ -601,28 +601,23 @@ export default function Dashboard() {
                       key={safeId}
                       id={safeId}
                       position={i}
+                      onClick={() => navigate(`/app/cart-editor/${cart.cartId}?from=home`)}
+                      style={{ cursor: "pointer" }}
                     >
                       <IndexTable.Cell>
                         <CartHoverCard cart={cart}>
-                          {/* ── Use Link for instant prefetch on hover ── */}
-                          <Link
-                            to={`/app/cart-editor/${cart.cartId}`}
-                            prefetch="intent"
-                            style={{ textDecoration: "none", color: "inherit" }}
-                          >
-                            <div style={{ maxWidth: "150px", cursor: "pointer" }}>
-                              <Text truncate as="span">
-                                {cart.cartName || "Untitled cart"}
-                              </Text>
-                              <Text as="span" tone="subdued" variant="bodySm">
-                                {cart.updatedAt
-                                  ? `Last edited: ${new Date(cart.updatedAt)
-                                    .toLocaleDateString("en-GB")
-                                    .replace(/\//g, "-")}`
-                                  : ""}
-                              </Text>
-                            </div>
-                          </Link>
+                          <div style={{ maxWidth: "150px", cursor: "pointer" }}>
+                            <Text truncate as="span">
+                              {cart.cartName || "Untitled cart"}
+                            </Text>
+                            <Text as="span" tone="subdued" variant="bodySm">
+                              {cart.updatedAt
+                                ? `Last edited: ${new Date(cart.updatedAt)
+                                  .toLocaleDateString("en-GB")
+                                  .replace(/\//g, "-")}`
+                                : ""}
+                            </Text>
+                          </div>
                         </CartHoverCard>
                       </IndexTable.Cell>
 
@@ -660,9 +655,10 @@ export default function Dashboard() {
                           </Link>
                           <Button
                             size="slim"
-                            onClick={() =>
-                              window.open(`https://${shop.myshopifyDomain}`, "_blank")
-                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(`https://${shop.myshopifyDomain}`, "_blank");
+                            }}
                           >
                             Preview
                           </Button>
