@@ -819,10 +819,20 @@ window.hubUtils = {
     const items = document.getElementById(`hub-cart-items-${blockId}`);
     if (skeleton) skeleton.style.display = "block";
     if (items) items.style.visibility = "visible";
+
+    const footerSkel = document.getElementById(`hub-footer-skeleton-${blockId}`);
+    const footer = document.querySelector(`#hub-cart-drawer-${blockId} .hub-cart-footer`);
+    if (footerSkel) footerSkel.style.display = "flex";
+    if (footer) footer.classList.add("hub-footer-loading");
   },
   hideCartSkeleton(blockId) {
     const skeleton = document.getElementById(`hub-skeleton-${blockId}`);
     if (skeleton) skeleton.style.display = "none";
+
+    const footerSkel = document.getElementById(`hub-footer-skeleton-${blockId}`);
+    const footer = document.querySelector(`#hub-cart-drawer-${blockId} .hub-cart-footer`);
+    if (footerSkel) footerSkel.style.display = "none";
+    if (footer) footer.classList.remove("hub-footer-loading");
   },
   revealCartItems(blockId) {
     const items = document.getElementById(`hub-cart-items-${blockId}`);

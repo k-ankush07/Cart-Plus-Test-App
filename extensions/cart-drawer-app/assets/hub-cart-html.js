@@ -339,6 +339,14 @@ window.injectCartHTML = function (blockId, root) {
 
       <div class="hub-cart-footer" style="background-color:${designSettings.accentColor || ""};">
 
+        <!-- skeleton shown while cart data loads -->
+        <div id="hub-footer-skeleton-${blockId}" class="hub-footer-skeleton" style="display:none;">
+          <div class="hub-skeleton hub-skeleton-line" style="width:40%;">&nbsp;</div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:40px;border-radius:6px;margin-top:6px;">&nbsp;</div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:60%;height:18px;border-radius:4px;margin-top:6px;">&nbsp;</div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:44px;border-radius:6px;margin-top:6px;">&nbsp;</div>
+        </div>
+
          <!-- NOTES (position: top of footer) -->
         <div id="hub-notes-footer-${blockId}"></div>
 

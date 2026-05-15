@@ -18,14 +18,23 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
   const discountCodesSettings = window.__HUB_ACTIVE_CART__?.discountCodesSettings;
   const discountRow = document.getElementById(`hub-discount-row-${blockId}`);
+ 
   if (discountRow) {
     discountRow.style.display = discountCodesSettings?.enabled === false ? "flex" : "none";
   }
 
-  if (opts.showSkeleton) hubUtils.showCartSkeleton(blockId);
+  const _itemsContainer = drawer?.querySelector(`#hub-cart-items-${blockId}`);
+  const _hasRenderedItems = !!_itemsContainer?.querySelector(".hub-cart-item");
+  if (
+    opts.showSkeleton &&
+    window._hubLastCartHadItems !== false &&
+    !_hasRenderedItems
+  ) {
+    hubUtils.showCartSkeleton(blockId);
+  }
 
   const _footer = drawer?.querySelector(".hub-cart-footer");
-  if (_footer && !window._hubLastCartHadItems) {
+  if (_footer && window._hubLastCartHadItems === false) {
     _footer.classList.add("hub-empty-footer");
   }
 
@@ -863,7 +872,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     if (cart.total_discount > 0) container.insertAdjacentHTML("beforeend", ``);
 
-    // Discount display (unchanged logic)
     const manualCodes = new Set((cart.discount_codes || []).map((d) => d.code.toLowerCase()));
     const seenTitles = new Set();
     const allDiscounts = [];

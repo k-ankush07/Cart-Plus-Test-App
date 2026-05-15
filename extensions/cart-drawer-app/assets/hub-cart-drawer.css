@@ -1114,6 +1114,17 @@ span.hub-total-arrow svg {
   flex-shrink: 0;
 }
 
+.hub-footer-skeleton {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hub-cart-footer.hub-footer-loading > *:not(.hub-footer-skeleton) {
+  display: none !important;
+}
+
 /* ── Product card reviews ── */
 .hub-product-reviews {
   display: flex;

@@ -55,10 +55,7 @@ function initCartDrawerAfterData() {
 }
 
 // ── FETCH INTERCEPTOR (defined ONCE) ─────────────────────────────────────────
-// FIX: Original file defined this TWICE — once near the top and again at the
-// bottom. The second definition wrapped the already-patched window.fetch,
-// meaning every cart mutation fired cart:updated twice and every /cart/add.js
-// call went through two layers of JSON cloning. Removed the duplicate.
+
 (function () {
   // Guard: only patch once even if this file is loaded multiple times
   if (window.__hubFetchPatched) return;
@@ -149,6 +146,7 @@ function initCartDrawerAfterData() {
       try {
         const res = await fetch("/cart.js");
         const cart = await res.json();
+        window._hubLastCartHadItems = (cart.items?.length || 0) > 0;
         const count = cart.items
           .filter((i) => !i.properties?._triggered_reward)
           .reduce((sum, i) => sum + i.quantity, 0);
