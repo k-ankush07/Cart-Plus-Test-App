@@ -19,9 +19,9 @@ const router = express.Router();
 
 // ─── Plan order limits (monthly) ─────────────────────────────────────────────
 const PLAN_ORDER_LIMITS = {
-  free: 15,
-  starter: 20,
-  growth: 22,
+    free: 50,
+    starter: 100,
+    growth: 200,
 };
 
 const getMonthlyOrderCount = async (shop) => {
