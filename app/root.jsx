@@ -4,6 +4,7 @@ import enTranslations from "@shopify/polaris/locales/en.json";
 import '@shopify/polaris/build/esm/styles.css';
 import "./index.css";
 
+
 export async function loader() {
   return {
     apiKey: process.env.SHOPIFY_API_KEY || "",
