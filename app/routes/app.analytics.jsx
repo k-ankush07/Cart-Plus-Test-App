@@ -107,7 +107,7 @@ function getChartOpts(currency = "USD") {
         filter: (item) => item.dataset.label !== "Previous Period",
         callbacks: {
           title: (items) => items[0]?.label ?? "",
-          label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y, currency)}`,  // ✅ dynamic currency
+          label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y, currency)}`,  
         },
       },
     },
