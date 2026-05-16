@@ -4,7 +4,7 @@ import { json } from "@remix-run/node";
 export const loader = async ({ request }) => {
 
     const { admin } = await authenticate.admin(request);
-
+    
     let hasNextPage = true;
     let cursor = null;
     let allCollections = [];
