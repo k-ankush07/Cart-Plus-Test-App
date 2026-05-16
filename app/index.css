@@ -4,7 +4,6 @@ body,
     height: 100%;
 }
 
-/* All Carts page — Create cart button: white background */
 .Polaris-Page-Header__PrimaryActionWrapper .Polaris-Button--primary {
     background: #fff !important;
     color: #303030 !important;
