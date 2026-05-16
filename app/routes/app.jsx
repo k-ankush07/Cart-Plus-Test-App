@@ -4,6 +4,7 @@ import {
   useRouteError,
   useNavigation,
 } from "react-router";
+
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
 import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
