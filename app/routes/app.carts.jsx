@@ -46,6 +46,7 @@ import { useState, useEffect, useRef } from "react";
 import CartHoverCard from "./components/ui/CartHoverCard"
 import LiveDot from "./components/ui/LiveDot";
 import { shopLoader } from "./components/shop.server";
+
 import {
     createCart,
     getCarts,
