@@ -148,7 +148,7 @@ function classicItemHTML(ctx) {
         ${discountHtml}
         ${discountBadges}
       </div>
-      <div class="hub-item-total">
+      <div class="hub-item-total custom-cart-public-component-product-title-container">
         ${rightCol}
       </div>
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
@@ -296,7 +296,7 @@ function modernItemHTML(ctx) {
         </div>
       </div>
       <div class="hub-item-info custom-cart-public-component-product-tile__info">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px" class="custom-cart-public-component-product-title-container">
           <div class="hub-cart-item--modern-title">
             <a href="/products/${item.handle}" class="hub-item-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
             ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
