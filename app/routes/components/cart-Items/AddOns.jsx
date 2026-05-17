@@ -21,19 +21,23 @@ const Toggle = ({ on, onChange }) => (
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            justifyContent: on ? "flex-end" : "flex-start",
+            justifyContent: "flex-start",
             transition: "background 0.2s ease",
             flexShrink: 0,
         }}
     >
-        <div className="custom-cart-public-addons__toggle-slider"
+        <div
+            className="custom-cart-public-addons__toggle-slider"
             style={{
-                width: 18,
-                height: 18,
+                width: 16,
+                height: 16,
                 borderRadius: "50%",
                 background: "#fff",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-            }} />
+                transform: on ? "translateX(18px)" : "translateX(0px)",
+                transition: "transform 0.2s ease",
+            }}
+        />
     </button>
 );
 
@@ -44,6 +48,13 @@ export default function AddOns({ addonsSettings, currency }) {
 
     const isShipping = addonsSettings.type === "shipping_protection";
     const product = addonsSettings.selectedProduct;
+
+    const handleToggle = () => {
+        setToggled(true);
+        setTimeout(() => {
+            setToggled(false);
+        }, 200);
+    };
 
     return (
         <div className="cart-addon-tile upcart-addons custom-cart-public-addons">
@@ -97,7 +108,7 @@ export default function AddOns({ addonsSettings, currency }) {
 
             {/* TOGGLE */}
             <div className="upcart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
-                <Toggle on={toggled} onChange={setToggled} />
+                <Toggle on={toggled} onChange={handleToggle} />
             </div>
         </div>
     );
