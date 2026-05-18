@@ -2,7 +2,7 @@ import {
     Page, Card, Text, InlineStack, BlockStack,
     Box, Button, DataTable, Layout, Tooltip, Icon
 } from "@shopify/polaris";
-import { useLoaderData, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 export default function HelpSupport() {
     const navigate = useNavigate();
