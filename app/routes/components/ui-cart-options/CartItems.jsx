@@ -53,7 +53,7 @@ function QtyStepper() {
         >
             <button style={{ padding: "4px 10px", border: "none", background: "none", cursor: "pointer" }}>−</button>
             <span style={{ padding: "4px 10px" }}>
-              1
+                1
             </span>
             <button style={{ padding: "4px 10px", border: "none", background: "none", cursor: "pointer" }}>+</button>
         </div>
@@ -279,21 +279,53 @@ export default function CartItems({ handleChange, cartSettings }) {
                                                 The Monaco - Black
                                             </Text>
                                             <div style={{ marginTop: "8px" }}>
-                                                <InlineStack gap="200" blockAlign="center">
-                                                    <Text variant="bodyXs">
-                                                        Size:{" "}
-                                                        <Text as="span" variant="bodyXs" fontWeight="medium">
-                                                            STANDARD
-                                                        </Text>
-                                                    </Text>
+                                                <BlockStack gap="100">
 
-                                                    <Text variant="bodyXs">
-                                                        Color:{" "}
-                                                        <Text as="span" variant="bodyXs" fontWeight="medium">
-                                                            BLACK
+                                                    {/* Size */}
+                                                    <InlineStack gap="200" blockAlign="center">
+                                                        <Text variant="bodyXs">
+                                                            Size:{" "}
+                                                            <Text as="span" variant="bodyXs" fontWeight="medium">
+                                                                <select
+                                                                    style={{
+                                                                        border: "1px solid #d1d5db",
+                                                                        borderRadius: "4px",
+                                                                        padding: "2px 4px",
+                                                                        fontSize: "12px",
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                >
+                                                                    <option>STANDARD</option>
+                                                                    <option>LARGE</option>
+                                                                    <option>SMALL</option>
+                                                                </select>
+                                                            </Text>
                                                         </Text>
-                                                    </Text>
-                                                </InlineStack>
+                                                    </InlineStack>
+
+                                                    {/* Color */}
+                                                    <InlineStack gap="200" blockAlign="center">
+                                                        <Text variant="bodyXs">
+                                                            Color:{" "}
+                                                            <Text as="span" variant="bodyXs" fontWeight="medium">
+                                                                <select
+                                                                    style={{
+                                                                        border: "1px solid #d1d5db",
+                                                                        borderRadius: "4px",
+                                                                        padding: "2px 4px",
+                                                                        fontSize: "12px",
+                                                                        cursor: "pointer",
+                                                                    }}
+                                                                >
+                                                                    <option>BLACK</option>
+                                                                    <option>WHITE</option>
+                                                                    <option>BLUE</option>
+                                                                </select>
+                                                            </Text>
+                                                        </Text>
+                                                    </InlineStack>
+
+                                                </BlockStack>
                                             </div>
                                         </div>
                                         <BlockStack gap="050" inlineAlign="end">
