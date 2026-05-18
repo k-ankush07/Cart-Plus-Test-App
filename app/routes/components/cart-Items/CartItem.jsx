@@ -261,7 +261,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", lineHeight: '8px', }}>
           <div>
-            <div className="cart-app-item__title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
+            <div className="cart-app-item__title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, lineHeight:1 }}>
               <span dangerouslySetInnerHTML={{ __html: productName }} />
             </div>
             <div
