@@ -613,7 +613,12 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     window._hubCompareCache = window._hubCompareCache || {};
 
-    const sortedItems = [...cart.items].sort((a, b) => {
+    window.hubItemOrder?.syncWithCart(cart);
+    const stablySorted = window.hubItemOrder
+      ? window.hubItemOrder.sortItems(cart.items)
+      : [...cart.items];
+
+    const sortedItems = stablySorted.sort((a, b) => {
       const aIsGift = !!a.properties?._triggered_reward;
       const bIsGift = !!b.properties?._triggered_reward;
       return aIsGift - bIsGift;
@@ -641,6 +646,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     // Store full product data keyed by handle for selling plans lookup too
     const _productDataByHandle = {};
 
+    // REPLACE your uncachedHandles fetch block with this:
     if (uncachedHandles.length > 0) {
       await Promise.all(
         uncachedHandles.map(async (handle) => {
@@ -648,7 +654,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
             const r = await fetch(`/products/${handle}.js`);
             const data = await r.json();
             _productDataByHandle[handle] = data;
-            // Pre-cache compare_at_price for every variant
             (data.variants || []).forEach((v) => {
               window._hubCompareCache[`${handle}_${v.id}`] =
                 v.compare_at_price || 0;
@@ -660,8 +665,20 @@ window.hubCartRender = async function (drawer, opts = {}) {
       );
     }
 
-    // Also pre-fetch selling plans for all unique handles in parallel
-    // FIX: was called per-item inside the loop (one await per item)
+    uniqueHandles.forEach((handle) => {
+      if (
+        !_productDataByHandle[handle] &&
+        window._hubProductDataByHandle?.[handle]
+      ) {
+        _productDataByHandle[handle] = window._hubProductDataByHandle[handle];
+      }
+    });
+
+    window._hubProductDataByHandle = {
+      ...(window._hubProductDataByHandle || {}),
+      ..._productDataByHandle,
+    };
+
     const _sellingPlansByHandle = {};
     const subscriptionSettings =
       window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;

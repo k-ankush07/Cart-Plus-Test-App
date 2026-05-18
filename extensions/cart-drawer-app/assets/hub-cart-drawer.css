@@ -200,7 +200,7 @@
 .hub-cart-item--modern-title {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 5px;
   line-height: 1;
 }
 

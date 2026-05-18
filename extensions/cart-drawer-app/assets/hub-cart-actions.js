@@ -345,3 +345,130 @@ if (!window._hubNotesClickBound) {
     wrapper.classList.toggle("open");
   });
 }
+
+window.hubChangeVariantOption = async function (selectEl) {
+  const key = selectEl.dataset.key;
+  const handle = selectEl.dataset.handle;
+
+  const itemEl = selectEl.closest("[data-item-key]");
+  const allSelects = itemEl?.querySelectorAll(".hub-variant-option-select") || [];
+
+  const selectedOptions = Array.from(allSelects).map((s) =>
+    s.options[s.selectedIndex]?.value || s.value
+  );
+
+  const productData = window._hubProductDataByHandle?.[handle];
+  if (!productData) {
+    console.error("No product data for:", handle);
+    return;
+  }
+
+  const matchedVariant = productData.variants.find((v) => {
+    const variantOptions = [v.option1, v.option2, v.option3].filter(Boolean);
+    if (variantOptions.length < selectedOptions.length) return false;
+    return selectedOptions.every((val, i) => variantOptions[i] === val);
+  });
+
+  if (!matchedVariant) {
+    console.error("No match for options:", selectedOptions);
+    return;
+  }
+
+  const oldVariantId = String(key?.split(":")?.[0] || "");
+  if (String(matchedVariant.id) === oldVariantId) return;
+
+  allSelects.forEach((s) => (s.disabled = true));
+  const currentQty = Number(itemEl?.querySelector(".hub-qty-input")?.value || 1);
+
+  window._hubVariantSwapping = true;
+
+  try {
+    const addRes = await fetch("/cart/add.js", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: matchedVariant.id, quantity: currentQty }),
+    });
+    if (!addRes.ok) throw new Error("Add failed");
+
+    await fetch("/cart/change.js", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: key, quantity: 0 }),
+    });
+
+    const updatedCart = await fetch("/cart.js").then((r) => r.json());
+    const newItem = updatedCart.items.find(
+      (i) => String(i.variant_id) === String(matchedVariant.id)
+    );
+
+    if (!newItem) throw new Error("New item not found in cart");
+
+    window.hubItemOrder?.replaceVariant(oldVariantId, newItem.variant_id);
+
+    itemEl.dataset.itemKey = newItem.key;
+    itemEl.setAttribute("data-item-key", newItem.key);
+
+    allSelects.forEach((s) => {
+      s.dataset.key = newItem.key;
+      s.disabled = false;
+    });
+
+    itemEl.querySelectorAll(".hub-qty-btn").forEach((btn) => {
+      const type = btn.dataset.type;
+      const newQty = type === "minus" ? newItem.quantity - 1 : newItem.quantity + 1;
+      btn.setAttribute("onclick", `updateQty('${newItem.key}', ${newQty}, this)`);
+      if (type === "minus") btn.disabled = newItem.quantity <= 1;
+    });
+
+    const qtyInput = itemEl.querySelector(".hub-qty-input");
+    if (qtyInput) {
+      qtyInput.value = newItem.quantity;
+      qtyInput.setAttribute("oninput", `handleQtyInput('${newItem.key}', this.value)`);
+    }
+
+    const deleteBtn = itemEl.querySelector(".hub-delete-btn");
+    if (deleteBtn) {
+      deleteBtn.setAttribute(
+        "onclick",
+        `removeItem('${newItem.key}', '${(newItem.product_title || "").replace(/'/g, "\\'")}')`
+      );
+    }
+
+    const imgEl = itemEl.querySelector(".hub-item-img");
+    if (imgEl && newItem.image) {
+      imgEl.src = newItem.image;
+      imgEl.alt = newItem.product_title || "";
+    }
+
+    const priceEl = itemEl.querySelector(".hub-item-unit-price");
+    if (priceEl) priceEl.textContent = hubUtils.formatMoney(newItem.final_line_price);
+
+    const compareEl = itemEl.querySelector(".hub-item-compare-price");
+    if (compareEl) {
+      const compareAtPrice =
+        window._hubCompareCache?.[`${handle}_${matchedVariant.id}`] || 0;
+      if (compareAtPrice > 0) {
+        compareEl.textContent = hubUtils.formatMoney(compareAtPrice * newItem.quantity);
+        compareEl.style.display = "";
+      } else {
+        compareEl.style.display = "none";
+      }
+    }
+
+    window._hubVariantSwapping = false;
+    document.dispatchEvent(
+      new CustomEvent("cart:updated", {
+        detail: { cart: updatedCart, skipItemRerender: true },
+      })
+    );
+
+  } catch (err) {
+    window._hubVariantSwapping = false;
+    console.error("Variant change failed:", err);
+    allSelects.forEach((s) => (s.disabled = false));
+    const recoveredCart = await fetch("/cart.js").then((r) => r.json()).catch(() => null);
+    if (recoveredCart) {
+      document.dispatchEvent(new CustomEvent("cart:updated", { detail: { cart: recoveredCart } }));
+    }
+  }
+};

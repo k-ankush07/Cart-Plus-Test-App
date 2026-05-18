@@ -266,12 +266,87 @@ function modernItemHTML(ctx) {
 
   const discountBadges = _discountBadgesHtml(item);
 
-  // LINE TOTAL = item.final_line_price (unit price × quantity, after discounts)
-  // COMPARE TOTAL = effectiveCompare × quantity (original price × quantity)
   const lineTotal = item.final_line_price;
   const compareTotal = effectiveCompare * item.quantity;
 
   const saveBadge = hasCompare ? `${saveHtml}` : "";
+
+  // ── BUILD VARIANT SELECT DROPDOWNS ──────────────────────────────────────
+  const variantSelectHtml =
+    item.options_with_values &&
+    item.options_with_values.length > 0 &&
+    !item.product_has_only_default_variant
+      ? item.options_with_values
+          .map((opt) => {
+            const productData = window._hubProductDataByHandle?.[item.handle];
+
+            const optIndex = item.options_with_values.findIndex(
+              (o) => o.name === opt.name,
+            );
+
+            const currentVariantValue = (() => {
+              const currentVariant = productData?.variants?.find(
+                (v) => String(v.id) === String(item.variant_id),
+              );
+
+              if (currentVariant) {
+                return optIndex === 0
+                  ? currentVariant.option1
+                  : optIndex === 1
+                    ? currentVariant.option2
+                    : currentVariant.option3;
+              }
+              return null;
+            })();
+
+            const allValues = productData
+              ? [
+                  ...new Set(
+                    productData.variants
+                      .map((v) => {
+                        return optIndex === 0
+                          ? v.option1
+                          : optIndex === 1
+                            ? v.option2
+                            : v.option3;
+                      })
+                      .filter(Boolean),
+                  ),
+                ]
+              : [opt.value];
+
+            const encodedCurrentValue =
+              currentVariantValue
+                ?.replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;") ?? "";
+
+            const optionsHTML = allValues
+              .map((val) => {
+                const encodedVal = val
+                  .replace(/&/g, "&amp;")
+                  .replace(/"/g, "&quot;");
+                return `<option value="${encodedVal}" ${val === currentVariantValue ? "selected" : ""}>${val}</option>`;
+              })
+              .join("");
+
+            return `
+              <div class="hub-item-variant-select-wrap" style="display:flex;align-items:center;gap:4px;margin-top:3px;">
+                <span class="hub-item-variant-name" style="color:${colorItems};font-size:12px;white-space:nowrap;">${opt.name}:</span>
+                <select
+                  class="hub-variant-option-select"
+                  data-key="${item.key}"
+                  data-option-name="${opt.name}"
+                  data-option-index="${optIndex}" 
+                  data-handle="${item.handle}"
+                  style="font-size:12px;border:1px solid #d1d5db;border-radius:4px;padding:2px 4px;color:${colorItems};background:transparent;cursor:pointer;"
+                  onchange="hubChangeVariantOption(this)"
+                >
+                  ${optionsHTML}
+                </select>
+              </div>`;
+          })
+          .join("")
+      : variantHtml;
 
   const priceBlock = `
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
@@ -300,7 +375,7 @@ function modernItemHTML(ctx) {
           <div class="hub-cart-item--modern-title">
             <a href="/products/${item.handle}" class="hub-item-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
             ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
-            ${variantHtml}
+             ${variantSelectHtml}
             ${propertiesHtml}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">

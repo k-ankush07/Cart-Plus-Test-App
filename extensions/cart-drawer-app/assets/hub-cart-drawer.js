@@ -126,7 +126,7 @@ function initCartDrawerAfterData() {
       }
     }
 
-    if (url.includes("/cart/add") && !window._hubRewardUpdating) {
+    if (url.includes("/cart/add") && !window._hubRewardUpdating && !window._hubVariantSwapping) {
       const blockId = window.HUB_CART_BLOCK_ID;
       const items =
         blockId && document.getElementById(`hub-cart-items-${blockId}`);
@@ -151,7 +151,7 @@ function initCartDrawerAfterData() {
     const response = await originalFetch.apply(this, args);
 
     // ── Fire cart:updated for mutations ──
-    if (window._hubRewardUpdating) return response;
+    if (window._hubRewardUpdating || window._hubVariantSwapping) return response;
 
     if (
       url.includes("/cart/add") ||
@@ -365,9 +365,15 @@ function initCartDrawerAfterData() {
       );
 
       let _cartUpdateTimer = null;
-      document.addEventListener("cart:updated", function () {
+      document.addEventListener("cart:updated", function (e) {
         if (window._hubRewardUpdating) return;
         clearTimeout(_cartUpdateTimer);
+
+        if (e?.detail?.skipItemRerender) {
+          window.updateCartCount();
+          return;
+        }
+
         const shouldOpen =
           window.__HUB_ACTIVE_CART__?.cartSettings?.openOnAddToCart !== false;
         if (shouldOpen) {
