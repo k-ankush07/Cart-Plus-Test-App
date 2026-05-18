@@ -30,7 +30,6 @@ async function updateQty(key, qty, btn = null) {
     });
 
     await window.hubCartRender(getDrawer());
-
   } catch (err) {
     console.error("Qty update error:", err);
     if (btn) {
@@ -315,17 +314,20 @@ window.hubCheckoutClick = function (e, blockId, btn) {
 
   // Track checkout initiation — revenue split is tracked by the web pixel
   // on checkout_completed so it only fires on confirmed orders.
-  fetch(`${window.__HUB_API_URL__ || "http://localhost:9002"}/api/track-event`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      shop: window.__SHOPIFY_SHOP__?.domain,
-      cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
-      sessionId: window._hubGetSessionId?.() || "",
-      eventType: "checkout_initiated",
-      userAgent: navigator.userAgent,
-    }),
-  }).catch(() => {});
+  fetch(
+    `${window.__HUB_API_URL__ || "http://localhost:9002"}/api/track-event`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        shop: window.__SHOPIFY_SHOP__?.domain,
+        cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
+        sessionId: window._hubGetSessionId?.() || "",
+        eventType: "checkout_initiated",
+        userAgent: navigator.userAgent,
+      }),
+    },
+  ).catch(() => {});
 
   setTimeout(() => {
     window.location.href = url;
@@ -351,10 +353,11 @@ window.hubChangeVariantOption = async function (selectEl) {
   const handle = selectEl.dataset.handle;
 
   const itemEl = selectEl.closest("[data-item-key]");
-  const allSelects = itemEl?.querySelectorAll(".hub-variant-option-select") || [];
+  const allSelects =
+    itemEl?.querySelectorAll(".hub-variant-option-select") || [];
 
-  const selectedOptions = Array.from(allSelects).map((s) =>
-    s.options[s.selectedIndex]?.value || s.value
+  const selectedOptions = Array.from(allSelects).map(
+    (s) => s.options[s.selectedIndex]?.value || s.value,
   );
 
   const productData = window._hubProductDataByHandle?.[handle];
@@ -378,7 +381,9 @@ window.hubChangeVariantOption = async function (selectEl) {
   if (String(matchedVariant.id) === oldVariantId) return;
 
   allSelects.forEach((s) => (s.disabled = true));
-  const currentQty = Number(itemEl?.querySelector(".hub-qty-input")?.value || 1);
+  const currentQty = Number(
+    itemEl?.querySelector(".hub-qty-input")?.value || 1,
+  );
 
   window._hubVariantSwapping = true;
 
@@ -398,7 +403,7 @@ window.hubChangeVariantOption = async function (selectEl) {
 
     const updatedCart = await fetch("/cart.js").then((r) => r.json());
     const newItem = updatedCart.items.find(
-      (i) => String(i.variant_id) === String(matchedVariant.id)
+      (i) => String(i.variant_id) === String(matchedVariant.id),
     );
 
     if (!newItem) throw new Error("New item not found in cart");
@@ -415,22 +420,29 @@ window.hubChangeVariantOption = async function (selectEl) {
 
     itemEl.querySelectorAll(".hub-qty-btn").forEach((btn) => {
       const type = btn.dataset.type;
-      const newQty = type === "minus" ? newItem.quantity - 1 : newItem.quantity + 1;
-      btn.setAttribute("onclick", `updateQty('${newItem.key}', ${newQty}, this)`);
+      const newQty =
+        type === "minus" ? newItem.quantity - 1 : newItem.quantity + 1;
+      btn.setAttribute(
+        "onclick",
+        `updateQty('${newItem.key}', ${newQty}, this)`,
+      );
       if (type === "minus") btn.disabled = newItem.quantity <= 1;
     });
 
     const qtyInput = itemEl.querySelector(".hub-qty-input");
     if (qtyInput) {
       qtyInput.value = newItem.quantity;
-      qtyInput.setAttribute("oninput", `handleQtyInput('${newItem.key}', this.value)`);
+      qtyInput.setAttribute(
+        "oninput",
+        `handleQtyInput('${newItem.key}', this.value)`,
+      );
     }
 
     const deleteBtn = itemEl.querySelector(".hub-delete-btn");
     if (deleteBtn) {
       deleteBtn.setAttribute(
         "onclick",
-        `removeItem('${newItem.key}', '${(newItem.product_title || "").replace(/'/g, "\\'")}')`
+        `removeItem('${newItem.key}', '${(newItem.product_title || "").replace(/'/g, "\\'")}')`,
       );
     }
 
@@ -441,17 +453,44 @@ window.hubChangeVariantOption = async function (selectEl) {
     }
 
     const priceEl = itemEl.querySelector(".hub-item-unit-price");
-    if (priceEl) priceEl.textContent = hubUtils.formatMoney(newItem.final_line_price);
+    if (priceEl)
+      priceEl.textContent = hubUtils.formatMoney(newItem.final_line_price);
 
     const compareEl = itemEl.querySelector(".hub-item-compare-price");
     if (compareEl) {
       const compareAtPrice =
         window._hubCompareCache?.[`${handle}_${matchedVariant.id}`] || 0;
       if (compareAtPrice > 0) {
-        compareEl.textContent = hubUtils.formatMoney(compareAtPrice * newItem.quantity);
+        compareEl.textContent = hubUtils.formatMoney(
+          compareAtPrice * newItem.quantity,
+        );
         compareEl.style.display = "";
       } else {
         compareEl.style.display = "none";
+      }
+    }
+
+    const saveBadgeEl = itemEl.querySelector(".hub-item-save");
+    if (saveBadgeEl) {
+      const compareAtPrice =
+        window._hubCompareCache?.[`${handle}_${matchedVariant.id}`] || 0;
+      const effectiveUnitPrice =
+        newItem.quantity > 0
+          ? Math.round(newItem.final_line_price / newItem.quantity)
+          : newItem.price;
+      const unitSave =
+        compareAtPrice > effectiveUnitPrice
+          ? compareAtPrice - effectiveUnitPrice
+          : 0;
+
+      if (unitSave > 0) {
+        const totalSave = unitSave * newItem.quantity;
+        const savingsText =
+          window.__HUB_ACTIVE_CART__?.cartSettings?.savingsText || "Save";
+        saveBadgeEl.textContent = `${savingsText} ${hubUtils.formatMoney(totalSave)}`;
+        saveBadgeEl.style.display = "";
+      } else {
+        saveBadgeEl.style.display = "none";
       }
     }
 
@@ -459,16 +498,19 @@ window.hubChangeVariantOption = async function (selectEl) {
     document.dispatchEvent(
       new CustomEvent("cart:updated", {
         detail: { cart: updatedCart, skipItemRerender: true },
-      })
+      }),
     );
-
   } catch (err) {
     window._hubVariantSwapping = false;
     console.error("Variant change failed:", err);
     allSelects.forEach((s) => (s.disabled = false));
-    const recoveredCart = await fetch("/cart.js").then((r) => r.json()).catch(() => null);
+    const recoveredCart = await fetch("/cart.js")
+      .then((r) => r.json())
+      .catch(() => null);
     if (recoveredCart) {
-      document.dispatchEvent(new CustomEvent("cart:updated", { detail: { cart: recoveredCart } }));
+      document.dispatchEvent(
+        new CustomEvent("cart:updated", { detail: { cart: recoveredCart } }),
+      );
     }
   }
 };
