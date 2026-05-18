@@ -330,7 +330,7 @@ function modernItemHTML(ctx) {
               .join("");
 
             return `
-              <div class="hub-item-variant-select-wrap" style="display:flex;align-items:center;gap:4px;margin-top:3px;">
+              <div class="hub-item-variant-select-wrap" style="display:flex;align-items:center;gap:4px;">
                 <span class="hub-item-variant-name" style="color:${colorItems};font-size:12px;white-space:nowrap;">${opt.name}:</span>
                 <select
                   class="hub-variant-option-select"
@@ -338,7 +338,7 @@ function modernItemHTML(ctx) {
                   data-option-name="${opt.name}"
                   data-option-index="${optIndex}" 
                   data-handle="${item.handle}"
-                  style="font-size:12px;border:1px solid #d1d5db;border-radius:4px;padding:2px 4px;color:${colorItems};background:transparent;cursor:pointer;"
+                  style="font-size:12px;border:1px solid #d1d5db;border-radius:4px;padding:2px 4px;color:${colorItems};background:transparent;cursor:pointer;width:100%"
                   onchange="hubChangeVariantOption(this)"
                 >
                   ${optionsHTML}

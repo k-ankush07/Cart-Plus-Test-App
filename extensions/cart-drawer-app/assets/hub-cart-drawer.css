@@ -2364,6 +2364,10 @@ button.hub-qty-btn span.svg-wrapper {
   width: 1rem;
 }
 
+select.hub-variant-option-select{
+  outline: none;
+  box-shadow: none;
+}
 
 /* ====== responsive styles ====== */
 
