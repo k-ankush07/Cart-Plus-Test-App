@@ -264,12 +264,69 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
             <div className="cart-app-item__title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
               <span dangerouslySetInnerHTML={{ __html: productName }} />
             </div>
-            <div className="custom-cart-public-component-product-tile__variant" style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
-              <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
-                Size: STANDARD
+            <div
+              className="custom-cart-public-component-product-tile__variant"
+              style={{
+                display: "flex",
+                gap: "6px",
+                flexDirection: "column",
+                marginTop: "10px",
+              }}
+            >
+              <div
+                className="cart-app-item__variant custom-cart-public-component-product-tile__variant"
+                style={{
+                  color: textColor,
+                  fontSize: "10px",
+                  lineHeight: "8px",
+                }}
+              >
+                Size:
+                <select
+                  style={{
+                    border: "1px solid #d1d5db",
+                    borderRadius: "4px",
+                    padding: "1px 4px",
+                    fontSize: "10px",
+                     marginLeft: "4px",
+                    background: "transparent",
+                    color: textColor,
+                    cursor: "pointer",
+                  }}
+                  defaultValue="STANDARD"
+                >
+                  <option value="STANDARD">STANDARD</option>
+                  <option value="LARGE">LARGE</option>
+                  <option value="SMALL">SMALL</option>
+                </select>
               </div>
-              <div className="cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
-                Color: BLACK
+
+              <div
+                className="cart-app-item__variant custom-cart-public-component-product-tile__variant"
+                style={{
+                  color: textColor,
+                  fontSize: "10px",
+                  lineHeight: "8px",
+                }}
+              >
+                Color:
+                <select
+                  style={{
+                    border: "1px solid #d1d5db",
+                    borderRadius: "4px",
+                    padding: "1px 4px",
+                    fontSize: "10px",
+                    marginLeft: "4px",
+                    background: "transparent",
+                    color: textColor,
+                    cursor: "pointer",
+                  }}
+                  defaultValue="BLACK"
+                >
+                  <option value="BLACK">BLACK</option>
+                  <option value="WHITE">WHITE</option>
+                  <option value="BLUE">BLUE</option>
+                </select>
               </div>
             </div>
           </div>
