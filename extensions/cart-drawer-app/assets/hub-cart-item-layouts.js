@@ -366,7 +366,7 @@ function modernItemHTML(ctx) {
     <div class="hub-cart-item hub-cart-item--modern custom-cart-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">
       <div style="display:flex;flex-direction:column;flex-shrink:0;">
         ${saveBadge}
-        <div class="hub-item-img-wrap custom-cart-public-component-product-tile__image-wrapper" style="margin-top:5px;">
+        <div class="hub-item-img-wrap custom-cart-public-component-product-tile__image-wrapper" style="margin-top:${saveBadge ? "5px" : "0px"};">
           <img src="${item.image}" alt="${item.product_title}" class="hub-item-img custom-cart-public-component-product-tile__image" />
         </div>
       </div>
