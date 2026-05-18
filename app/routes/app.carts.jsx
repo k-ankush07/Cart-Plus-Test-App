@@ -128,8 +128,6 @@ export const loader = async ({ request }) => {
     return Response.json({ shop, apiUrl, accessToken, currency, carts, cartStats, appEmbedInstalled, mainThemeId, appEmbedId, shopPlan, currentMonthOrders });
 };
 
-
-
 export default function AppCarts() {
     const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency, appEmbedInstalled, mainThemeId, appEmbedId, shopPlan, currentMonthOrders } = useLoaderData();
 
