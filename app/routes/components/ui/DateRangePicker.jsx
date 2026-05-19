@@ -8,13 +8,13 @@ import {
     BlockStack,
     Text,
     Icon,
+    Popover,
+    Scrollable,
 } from "@shopify/polaris";
 import { CalendarIcon, ArrowRightIcon } from "@shopify/polaris-icons";
-import { useState, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 
-const CalendarPrefix = () => (
-    <Icon source={CalendarIcon} tone="subdued" />
-);
+const CalendarPrefix = () => <Icon source={CalendarIcon} tone="subdued" />;
 
 const PRESETS = [
     { label: "Last 30 days", value: "30", prefix: <CalendarPrefix /> },
@@ -23,256 +23,245 @@ const PRESETS = [
     { label: "Last 365 days", value: "365", prefix: <CalendarPrefix /> },
 ];
 
+const pad = (n) => String(n).padStart(2, "0");
+const fmt = (d) => d ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` : "";
+const parse = (s) => {
+    if (!s) return null;
+    const [y, m, d] = s.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    return isNaN(date.getTime()) ? null : date;
+};
+
+const todayMidnight = () => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+};
+
+const presetRange = (days) => {
+    const end = todayMidnight();
+    const start = new Date(end.getTime() - (days - 1) * 86400000);
+    return { start, end };
+};
+
 export default function DateRangePicker({ value, onChange }) {
-    const today = new Date();
-    const panelRef = useRef();
+    const today = todayMidnight();
 
+    // ── open state ──────────────────────────────────────────────────────────
     const [open, setOpen] = useState(false);
-    const toggle = () => setOpen((o) => !o);
 
-    const [{ month, year }, setDate] = useState({
-        month: today.getMonth(),
-        year: today.getFullYear(),
+    // ── applied (committed) state ────────────────────────────────────────────
+    const initRange = value || presetRange(30);
+    const initPreset = "30";
+
+    const [appliedRange, setAppliedRange] = useState(initRange);
+    const [appliedPreset, setAppliedPreset] = useState(initPreset);
+
+    // ── draft (in-panel) state ───────────────────────────────────────────────
+    const [range, setRange] = useState(initRange);
+    const [preset, setPreset] = useState(initPreset);
+
+    const [startInput, setStartInput] = useState(fmt(initRange.start));
+    const [endInput, setEndInput] = useState(fmt(initRange.end));
+
+    const [{ month, year }, setCalDate] = useState({
+        month: initRange.start.getMonth(),
+        year: initRange.start.getFullYear(),
     });
 
-    const [range, setRange] = useState(
-        value || { start: today, end: today }
-    );
-    const [appliedRange, setAppliedRange] = useState(
-        value || { start: today, end: today }
-    );
+    // ── helpers ──────────────────────────────────────────────────────────────
+    const syncDraftToApplied = useCallback((r, p) => {
+        setRange(r);
+        setPreset(p);
+        setStartInput(fmt(r.start));
+        setEndInput(fmt(r.end));
+        setCalDate({ month: r.start.getMonth(), year: r.start.getFullYear() });
+    }, []);
 
-    const [preset, setPreset] = useState("30");
-    const [appliedPreset, setAppliedPreset] = useState("30");
+    // ── handlers ─────────────────────────────────────────────────────────────
+    const handleToggle = useCallback(() => {
+        if (!open) {
+            // reset draft to applied when re-opening
+            syncDraftToApplied(appliedRange, appliedPreset);
+        }
+        setOpen((o) => !o);
+    }, [open, appliedRange, appliedPreset, syncDraftToApplied]);
 
-    const [startInput, setStartInput] = useState(() =>
-        (value?.start || today).toISOString().slice(0, 10)
-    );
-    const [endInput, setEndInput] = useState(() =>
-        (value?.end || today).toISOString().slice(0, 10)
-    );
+    const handleClose = useCallback(() => {
+        syncDraftToApplied(appliedRange, appliedPreset);
+        setOpen(false);
+    }, [appliedRange, appliedPreset, syncDraftToApplied]);
 
-    const formatDate = (date) => {
-        if (!date) return "";
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, "0");
-        const d = String(date.getDate()).padStart(2, "0");
-        return `${y}-${m}-${d}`;
-    };
+    const handlePreset = useCallback((vals) => {
+        const days = parseInt(vals[0]);
+        const r = presetRange(days);
+        setRange(r);
+        setPreset(vals[0]);
+        setStartInput(fmt(r.start));
+        setEndInput(fmt(r.end));
+        setCalDate({ month: r.start.getMonth(), year: r.start.getFullYear() });
+    }, []);
 
-    const parseInput = (str) => {
-        if (!str) return null;
-        const [y, m, d] = str.split("-").map(Number);
-        const date = new Date(y, m - 1, d); 
-        return isNaN(date.getTime()) ? null : date;
-    };
-
-    const handleStartInput = (val) => {
+    const handleStartInput = useCallback((val) => {
         setStartInput(val);
         setPreset(null);
-        const d = parseInput(val);
+        const d = parse(val);
         if (d) {
-            const end = d > range.end ? d : range.end;
-            setRange({ start: d, end });
-            setDate({ month: d.getMonth(), year: d.getFullYear() });
+            setRange((prev) => ({ start: d, end: d > prev.end ? d : prev.end }));
+            setCalDate({ month: d.getMonth(), year: d.getFullYear() });
         }
-    };
+    }, []);
 
-    const handleEndInput = (val) => {
+    const handleEndInput = useCallback((val) => {
         setEndInput(val);
         setPreset(null);
-        const d = parseInput(val);
+        const d = parse(val);
         if (d) {
-            const start = d < range.start ? d : range.start;
-            setRange({ start, end: d });
+            setRange((prev) => ({ start: d < prev.start ? d : prev.start, end: d }));
         }
-    };
+    }, []);
 
-    const buttonLabel =
-        PRESETS.find((p) => p.value === appliedPreset)?.label ||
-        `${formatDate(appliedRange.start)} – ${formatDate(
-            appliedRange.end
-        )}`;
-
-    const handlePreset = (vals) => {
-        const days = parseInt(vals[0]);
-
-        const end = new Date();
-        end.setHours(0, 0, 0, 0);
-
-        const start = new Date(end.getTime() - (days - 1) * 24 * 60 * 60 * 1000);
-
-        const newRange = { start, end };
-
-        setRange(newRange);
-        setStartInput(formatDate(start));
-        setEndInput(formatDate(end));
-        setPreset(vals[0]);
-
-        setDate({
-            month: start.getMonth(),
-            year: start.getFullYear(),
-        });
-    };
-
-    const handleCalendarChange = (r) => {
+    const handleCalendarChange = useCallback((r) => {
         setRange(r);
-
-        if (r.start) setStartInput(formatDate(r.start));
-        if (r.end) {
-            setEndInput(formatDate(r.end));
-        } else {
-            setEndInput(formatDate(r.start));
-        }
-
         setPreset(null);
-    };
-    const handleSave = () => {
+        if (r.start) setStartInput(fmt(r.start));
+        setEndInput(fmt(r.end ?? r.start));
+    }, []);
+
+    const handleSave = useCallback(() => {
         setAppliedRange(range);
         setAppliedPreset(preset);
-
-        onChange && onChange(range);
-
+        onChange?.(range);
         setOpen(false);
-    };
+    }, [range, preset, onChange]);
 
-    const handleCancel = () => {
-        setRange(appliedRange);
-        setPreset(appliedPreset);
+    // ── button label ─────────────────────────────────────────────────────────
+    const buttonLabel =
+        PRESETS.find((p) => p.value === appliedPreset)?.label ||
+        `${fmt(appliedRange.start)} – ${fmt(appliedRange.end)}`;
 
-        setStartInput(formatDate(appliedRange.start));
-        setEndInput(formatDate(appliedRange.end));
-
-        setOpen(false);
-    };
-
-    useEffect(() => {
-        const handleClick = (e) => {
-            if (
-                panelRef.current &&
-                !panelRef.current.contains(e.target)
-            ) {
-                handleCancel();
-            }
-        };
-
-        document.addEventListener("mousedown", handleClick);
-
-        return () =>
-            document.removeEventListener(
-                "mousedown",
-                handleClick
-            );
-    }, [appliedRange, appliedPreset]);
+    // ── activator ────────────────────────────────────────────────────────────
+    const activator = (
+        <Button icon={CalendarIcon} disclosure onClick={handleToggle}>
+            {buttonLabel}
+        </Button>
+    );
 
     return (
-        <div>
-            <Button icon={CalendarIcon} disclosure onClick={toggle}>
-                {buttonLabel}
-            </Button>
-
-            <div
-                ref={panelRef}
-                style={{
-                    position: "absolute",
-                    top: "45px",
-                    right: 0,
-                    zIndex: 999,
-                    background: "#fff",
-                    borderRadius: "12px",
-                    boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
-                    padding: "4px",
-                    width: "100%",
-                    maxWidth: "700px",
-                    marginTop: "15px",
-                    border: "1px solid #dfe3e8",
-                    opacity: open ? 1 : 0,
-                    transform: open
-                        ? "translateY(0px) scale(1)"
-                        : "translateY(-10px) scale(0.98)",
-                    transition: "all 250ms ease",
-                    pointerEvents: open ? "auto" : "none",
-
-                    transformOrigin: "top right",
-                }}
+        <Popover
+            active={open}
+            activator={activator}
+            onClose={handleClose}
+            fluidContent
+        >
+            {/* ── top section: presets + calendar ── */}
+            <Box
+                minWidth="calc(500px + 200px)"
+                padding="100"
             >
-                <Box
-                    style={{
-                        borderBottom: "0.5px solid #dfe3e8",
-                    }}
-                >
+                <Box borderBlockEndWidth="025" borderColor="border-secondary" borderStyle="solid">
                     <InlineStack gap="100" align="start" wrap={false}>
 
                         {/* LEFT — Presets */}
-                        <Box
-                            minWidth="400px"
-                            paddingInlineEnd="300"
-                            style={{
-                                minWidth: "180px",
-                                borderRight: "0.5px solid #dfe3e8",
-                            }}
-                        >
-                            <BlockStack gap="50">
-                                <Box paddingBlockStart="200" paddingInlineStart="300">
-                                    <Text variant="bodyMd" fontWeight="semibold">
-                                        Presets
-                                    </Text>
-                                </Box>
-                                <OptionList
-                                    options={PRESETS}
-                                    selected={preset ? [preset] : []}
-                                    onChange={handlePreset}
-                                />
-                            </BlockStack>
-                        </Box>
+                        <Scrollable style={{ minWidth: "180px" }}>
+                            <Box
+                                minHeight="100%"
+                                minWidth="180px"
+                                borderInlineEndWidth="025"
+                                borderColor="border-secondary"
+                                borderStyle="solid"
+                            >
+                                <BlockStack gap="050">
+                                    <Box paddingBlockStart="200" paddingInlineStart="300">
+                                        <Text variant="headingMd" as="h4">
+                                            Presets
+                                        </Text>
+                                    </Box>
+
+                                    <Scrollable style={{ maxHeight: "239px" }}>
+                                        <OptionList
+                                            options={PRESETS}
+                                            selected={preset ? [preset] : []}
+                                            onChange={handlePreset}
+                                        />
+                                    </Scrollable>
+                                </BlockStack>
+                            </Box>
+                        </Scrollable>
 
                         {/* RIGHT — Calendar */}
-                        <Box padding="200">
-                            <BlockStack gap="200">
-                                <InlineStack gap="100" blockAlign="center" align="space-around">
-                                    <TextField
-                                        label="Start Date"
-                                        labelHidden
-                                        value={startInput}
-                                        onChange={handleStartInput}
-                                        placeholder="YYYY-MM-DD"
-                                        autoComplete="off"
-                                    />
-                                    <InlineStack> <Icon source={ArrowRightIcon} tone="subdued" /></InlineStack>
-                                    <TextField
-                                        label="End Date"
-                                        labelHidden
-                                        value={endInput}
-                                        onChange={handleEndInput}
-                                        placeholder="YYYY-MM-DD"
-                                        autoComplete="off"
-                                    />
-                                </InlineStack>
+                        <Scrollable>
+                            <Box maxWidth="500px" paddingBlockStart="200" paddingBlockEnd="200" paddingInlineStart="300" paddingInlineEnd="200">
+                                <BlockStack gap="400">
 
-                                <DatePicker
-                                    month={month}
-                                    year={year}
-                                    selected={range}
-                                    onChange={handleCalendarChange}
-                                    onMonthChange={(m, y) => setDate({ month: m, year: y })}
-                                    allowRange
-                                    multiMonth
-                                    disableDatesAfter={today}
-                                />
-                            </BlockStack>
-                        </Box>
+                                    {/* Date inputs */}
+                                    <InlineStack
+                                        gap="100"
+                                        blockAlign="center"
+                                        align="space-around"
+                                        wrap={false}
+                                    >
+                                        <Box>
+                                            <TextField
+                                                label="Start Date"
+                                                labelHidden
+                                                value={startInput}
+                                                onChange={handleStartInput}
+                                                placeholder="YYYY-MM-DD"
+                                                autoComplete="off"
+                                            />
+                                        </Box>
+
+                                        <Box minHeight="100%">
+                                            <Icon source={ArrowRightIcon} tone="subdued" />
+                                        </Box>
+
+                                        <Box>
+                                            <TextField
+                                                label="End Date"
+                                                labelHidden
+                                                value={endInput}
+                                                onChange={handleEndInput}
+                                                placeholder="YYYY-MM-DD"
+                                                autoComplete="off"
+                                            />
+                                        </Box>
+                                    </InlineStack>
+
+                                    {/* Calendar */}
+                                    <DatePicker
+                                        month={month}
+                                        year={year}
+                                        selected={range}
+                                        onChange={handleCalendarChange}
+                                        onMonthChange={(m, y) => setCalDate({ month: m, year: y })}
+                                        allowRange
+                                        multiMonth
+                                        disableDatesAfter={today}
+                                    />
+                                </BlockStack>
+                            </Box>
+                        </Scrollable>
+
                     </InlineStack>
                 </Box>
-                <Box padding="200">
-                    <InlineStack align="end" gap="200">
-                        <Button onClick={handleCancel}>Cancel</Button>
 
+                <Box
+                    borderColor="border-secondary"
+                    borderStyle="solid"
+                    paddingBlockStart="200"
+                    paddingBlockEnd="200"
+                    paddingInlineStart="200"
+                    paddingInlineEnd="200"
+                >
+                    <InlineStack align="end" gap="200">
+                        <Button onClick={handleClose}>Cancel</Button>
                         <Button variant="primary" onClick={handleSave}>
                             Save
                         </Button>
                     </InlineStack>
                 </Box>
-            </div>
-        </div>
+            </Box>
+        </Popover>
     );
 }
