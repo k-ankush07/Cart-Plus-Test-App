@@ -297,8 +297,10 @@ function initCartDrawerAfterData() {
           if (footerRec) footerRec.innerHTML = "";
         }
 
-        if (window.hubCartRender) {
+        if (window.hubCartRender && !window._hubRenderInProgress) {
           window.hubCartRender(drawer, { showSkeleton: false });
+        } else if (window.hubCartRender && window._hubRenderInProgress) {
+          window._hubPendingRender = { drawer, opts: { showSkeleton: false } };
         }
 
         if (!window._hubRecLoaded && window.__HUB_ACTIVE_CART__) {

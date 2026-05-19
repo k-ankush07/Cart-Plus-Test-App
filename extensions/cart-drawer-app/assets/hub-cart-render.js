@@ -1,7 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // HUB CART RENDER
 window.hubCartRender = async function (drawer, opts = {}) {
-  if (window._hubRenderInProgress) return;
+  if (window._hubRenderInProgress) {
+    window._hubPendingRender = { drawer, opts };
+    return;
+  }
   window._subscriptionOpen = {};
   window._upsellCache = window._upsellCache || {};
   window._hubRenderInProgress = true;
@@ -1221,5 +1224,11 @@ window.hubCartRender = async function (drawer, opts = {}) {
     window._hubRewardUpdating = false;
     hubUtils.hideCartSkeleton(blockId);
     hubUtils.revealCartItems(blockId);
+
+    if (window._hubPendingRender) {
+      const pending = window._hubPendingRender;
+      window._hubPendingRender = null;
+      window.hubCartRender(pending.drawer, pending.opts);
+    }
   }
 };
