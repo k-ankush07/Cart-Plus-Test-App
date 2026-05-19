@@ -2402,7 +2402,7 @@ select.hub-variant-option-select{
 
 /* ====== responsive styles ====== */
 
-@media screen and (max-width:480px) {
+@media screen and (max-width:440px) {
   .custom-cart-public-component-product-title-container {
     width: 100%;
   }
