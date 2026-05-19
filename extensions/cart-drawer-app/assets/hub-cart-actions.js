@@ -170,8 +170,32 @@ async function removeItem(key, title) {
     inner.style.pointerEvents = "none";
   }
 
-  // If this removal empties the cart of paying products, fade the
-  // reward/gift items too so the user sees they'll go with it.
+  // ── Immediately decrement badge ──────────────────────────────────────────
+  const removedQty = Number(el.querySelector(".hub-qty-input")?.value || 1);
+
+  const badgeText = document.querySelector(
+    ".custom-cart-sticky-cart-quantity-icon-text",
+  );
+  const badgeWrapper = document.querySelector(
+    ".custom-cart-sticky-cart-quantity-icon",
+  );
+
+  function _applyBadgeCount(count) {
+    const n = Math.max(0, count);
+    if (badgeText) badgeText.textContent = n > 99 ? "99+" : n;
+    if (badgeWrapper) badgeWrapper.style.display = n > 0 ? "flex" : "none";
+    document.querySelectorAll(".cart-count-bubble").forEach((bubble) => {
+      const numEl = bubble.querySelector('[aria-hidden="true"]');
+      const lblEl = bubble.querySelector(".visually-hidden");
+      if (numEl) numEl.textContent = n;
+      if (lblEl) lblEl.textContent = n === 1 ? "1 item" : `${n} items`;
+    });
+  }
+
+  const countBefore = parseInt(badgeText?.textContent || "0", 10) || 0;
+  _applyBadgeCount(countBefore - removedQty);
+  // ────────────────────────────────────────────────────────────────────────
+
   const willEmpty =
     Array.from(drawer.querySelectorAll("[data-item-key]")).filter((row) => {
       const k = row.getAttribute("data-item-key");
@@ -179,6 +203,7 @@ async function removeItem(key, title) {
       if (row.getAttribute("data-is-reward") === "1") return false;
       return true;
     }).length === 0;
+
   let fadedRewardInners = [];
   if (willEmpty) {
     fadedRewardInners = Array.from(
@@ -211,6 +236,7 @@ async function removeItem(key, title) {
     itemEl: el,
     innerEl: inner,
     fadedRewardInners,
+    removedQty,
     timer: setTimeout(() => _commitRemoval(key), UNDO_DURATION_MS),
   };
 }
@@ -356,26 +382,71 @@ async function _commitRemoval(key) {
     }
 
     const el = p.itemEl;
+
     if (el) {
+      // ── UPDATE HEADER FIRST ─────────────────────────────
+      const headerEl = document.querySelector(".upcart-header-text");
+
+      if (headerEl) {
+        const hs = window.__HUB_ACTIVE_CART__?.headerSettings || {};
+
+        const remainingCount = Array.from(
+          drawer.querySelectorAll("[data-item-key]"),
+        ).reduce((total, row) => {
+          const rowKey = row.getAttribute("data-item-key");
+
+          if (String(rowKey) === String(key)) {
+            return total;
+          }
+
+          if (row.getAttribute("data-is-reward") === "1") {
+            return total;
+          }
+
+          const qty = Number(row.querySelector(".hub-qty-input")?.value || 0);
+
+          return total + qty;
+        }, 0);
+
+        headerEl.innerText = (
+          hs.titleText || "Cart • {{cart_quantity}}"
+        ).replace("{{cart_quantity}}", Math.max(0, remainingCount));
+      }
+
+      // ── UPDATE FOOTER PRICES OPTIMISTICALLY ─────────────
+      const removedLinePrice = Number(el.dataset.linePrice) || 0;
+      if (removedLinePrice > 0) {
+        const currentTotal = Number(window._hubCartFinalTotal) || 0;
+        const newTotal = Math.max(0, currentTotal - removedLinePrice);
+        window._hubCartFinalTotal = newTotal;
+        const newTotalFmt = hubUtils.formatMoney(newTotal);
+
+        const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
+        if (totalEl) totalEl.textContent = newTotalFmt;
+
+        const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
+        if (grandEl) grandEl.textContent = newTotalFmt;
+
+        const checkoutBtn = document.getElementById(
+          `hub-checkout-btn-${blockId}`,
+        );
+        if (checkoutBtn) {
+          const cs = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+          const rawText = cs.checkoutButtonText || "Proceed to checkout";
+          checkoutBtn.textContent = rawText.replace(
+            "{{total_price}}",
+            newTotalFmt,
+          );
+        }
+      }
+
+      // ── THEN PRODUCT HIDE ANIMATION ─────────────────────
       el.style.overflow = "hidden";
       el.style.transition = "transform 0.3s ease, opacity 0.3s ease";
       el.style.transform = "translateX(-100%)";
       el.style.opacity = "0";
-      await new Promise((r) => setTimeout(r, 300));
 
-      el.style.transition =
-        "height 0.2s ease, margin 0.2s ease, padding 0.2s ease";
-      el.style.height = el.offsetHeight + "px";
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          el.style.height = "0";
-          el.style.marginTop = "0";
-          el.style.marginBottom = "0";
-          el.style.paddingTop = "0";
-          el.style.paddingBottom = "0";
-        }),
-      );
-      await new Promise((r) => setTimeout(r, 220));
+      await new Promise((r) => setTimeout(r, 300));
     }
 
     await networkDone;
