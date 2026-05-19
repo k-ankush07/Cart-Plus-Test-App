@@ -414,10 +414,10 @@ export default function AppCarts() {
 
                                 <IndexTable.Cell>
                                     <InlineStack gap="200" align="end">
-                                        <Tooltip content="Edit cart">
+                                        <Tooltip content="Edit">
                                             <Button icon={EditIcon} onClick={() => navigate(`/app/cart-editor/${cart.cartId}?from=carts`)} />
                                         </Tooltip>
-                                        <Tooltip content={cart.status === "published" ? "Preview cart" : "Only available for live carts"}>
+                                        <Tooltip content={cart.status === "published" ? "Preview" : "Only available for live carts"}>
                                             <Button
                                                 icon={ViewIcon}
                                                 disabled={cart.status !== "published"}
@@ -429,7 +429,7 @@ export default function AppCarts() {
                                                 }}
                                             />
                                         </Tooltip>
-                                        <Tooltip content="Duplicate cart">
+                                        <Tooltip content="Duplicate">
                                             <Button
                                                 icon={DuplicateIcon}
                                                 loading={duplicatingCartId === cart.cartId}
@@ -458,7 +458,7 @@ export default function AppCarts() {
                                                 <Tooltip content={
                                                     cart.status !== "published" && limitReached
                                                         ? `Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to publish.`
-                                                        : cart.status === "published" ? "Unpublish cart" : "Publish cart"
+                                                        : cart.status === "published" ? "Unpublish" : "Publish"
                                                 }>
                                                     <span>
                                                         <Button
@@ -478,7 +478,7 @@ export default function AppCarts() {
                                             );
                                         })()}
                                         {isDraft && (
-                                            <Tooltip content="Delete cart">
+                                            <Tooltip content="Delete">
                                                 <Button
                                                     icon={DeleteIcon}
                                                     tone="critical"
