@@ -209,7 +209,7 @@ export default function Extras({ addonsSettings, handleChange, currency, }) {
                         ) : (
                             <BlockStack gap="300">
                                 {addonsSettings.selectedProduct ? (
-                                    <BlockStack gap="200">
+                                    <BlockStack gap="400">
                                         <Box width="80%" className="ProductAddonSettings_product__SoIR7">
                                             <LegacyCard>
                                                 <LegacyCard.Section>

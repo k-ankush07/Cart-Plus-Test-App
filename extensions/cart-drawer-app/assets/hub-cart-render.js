@@ -1,6 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // HUB CART RENDER
-
 window.hubCartRender = async function (drawer, opts = {}) {
   if (window._hubRenderInProgress) return;
   window._subscriptionOpen = {};
@@ -52,6 +51,31 @@ window.hubCartRender = async function (drawer, opts = {}) {
     // ── FETCH 1: cart (the only guaranteed fetch) ─────────────────────────
     const res = await fetch("/cart.js");
     let cart = await res.json();
+
+    // Auto-remove orphan addons/rewards: if the only items left are
+    // addons or gift/reward items (no paying products), drop them all.
+    const _isAddonOrReward = (i) =>
+      !!(
+        i.properties?._hub_addon ||
+        i.properties?.__upcartAddon ||
+        i.properties?._hub_reward ||
+        i.properties?._triggered_reward
+      );
+    const _orphanItems = cart.items.filter(_isAddonOrReward);
+    const _payingItems = cart.items.filter((i) => !_isAddonOrReward(i));
+    if (_orphanItems.length > 0 && _payingItems.length === 0) {
+      const updates = {};
+      _orphanItems.forEach((i) => {
+        updates[i.key] = 0;
+      });
+      await fetch("/cart/update.js", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updates }),
+      });
+      const refreshed = await fetch("/cart.js");
+      cart = await refreshed.json();
+    }
 
     hubUtils.updateDiscountUI(blockId, cart);
 
@@ -895,6 +919,11 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const addonsSettings = window.__HUB_ACTIVE_CART__?.addonsSettings;
     const addonsEl = document.getElementById(`hub-addons-${blockId}`);
 
+    const _prevSpChecked =
+      document.getElementById(`hub-sp-toggle-${blockId}`)?.checked ?? null;
+    const _prevAddonChecked =
+      document.getElementById(`hub-addon-toggle-${blockId}`)?.checked ?? null;
+
     if (!addonsEl || addonsSettings?.enabled || cart.items.length === 0) {
       if (addonsEl) addonsEl.style.display = "none";
     } else {
@@ -914,19 +943,25 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (!variantId || (!isShipping && !isProduct)) {
         addonsEl.style.display = "none";
       } else {
-        const isInCart = cart.items.some(
-          (i) => String(i.variant_id) === String(variantId),
+        const matchedAddonItem = cart.items.find(
+          (i) =>
+            String(i.variant_id) === String(variantId) &&
+            (i.properties?._hub_addon ||
+              i.properties?.__upcartAddon === String(variantId)),
         );
-        const price = hubUtils.formatMoney(
-          Math.round(
-            Number(
-              isShipping
-                ? addonsSettings.price
-                : addonsSettings.selectedProduct?.price,
-            ) * 100,
-          ),
+        const isInCart = !!matchedAddonItem;
+        const addonLineKey = matchedAddonItem?.key || "";
+        const addonPriceCents = Math.round(
+          Number(
+            isShipping
+              ? addonsSettings.price
+              : addonsSettings.selectedProduct?.price,
+          ) * 100,
         );
+        const price = hubUtils.formatMoney(addonPriceCents);
         addonsEl.style.display = "block";
+
+        const shouldBeChecked = isInCart;
 
         if (isShipping) {
           addonsEl.innerHTML = `
@@ -941,27 +976,26 @@ window.hubCartRender = async function (drawer, opts = {}) {
               <div class="hub-addon-sp-right">
                 <span class="hub-addon-sp-price">${price}</span>
                 <label class="hub-addon-sp-toggle">
-                  <input type="checkbox" id="hub-sp-toggle-${blockId}" class="hub-sp-checkbox" data-variant="${variantId}" ${isInCart ? "checked" : ""}/>
-                  <span class="hub-addon-sp-slider"></span>
-                </label>
+              <input type="checkbox" id="hub-sp-toggle-${blockId}" class="hub-sp-checkbox" data-variant="${variantId}" data-line-key="${addonLineKey}" data-price-cents="${addonPriceCents}" ${shouldBeChecked ? "checked" : ""}/>
+              <span class="hub-addon-sp-slider"></span>
+            </label>
               </div>
             </div>`;
         } else {
           const selected = addonsSettings.selectedProduct;
           addonsEl.innerHTML = `
-            <div class="hub-addon-product">
-              ${selected.image ? `<img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img"/>` : ""}
-              <div class="hub-addon-product-info">
-                <p class="hub-addon-product-title">${selected.title || ""}</p>
-                <span class="hub-addon-product-price">${price}</span>
-              </div>
-              <label class="hub-addon-sp-toggle">
-                <input type="checkbox" id="hub-addon-toggle-${blockId}" class="hub-addon-checkbox" data-variant="${variantId}" ${isInCart ? "checked" : ""}/>
-                <span class="hub-addon-sp-slider"></span>
-              </label>
-            </div>`;
+    <div class="hub-addon-product">
+      ${selected.image ? `<img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img"/>` : ""}
+      <div class="hub-addon-product-info">
+        <p class="hub-addon-product-title">${selected.title || ""}</p>
+        <span class="hub-addon-product-price">${price}</span>
+      </div>
+      <label class="hub-addon-sp-toggle">
+        <input type="checkbox" id="hub-addon-toggle-${blockId}" class="hub-addon-checkbox" data-variant="${variantId}" data-line-key="${addonLineKey}" data-price-cents="${addonPriceCents}" ${shouldBeChecked ? "checked" : ""}/>
+        <span class="hub-addon-sp-slider"></span>
+      </label>
+    </div>`;
         }
-
         const checkboxId = isShipping
           ? `hub-sp-toggle-${blockId}`
           : `hub-addon-toggle-${blockId}`;
@@ -969,35 +1003,72 @@ window.hubCartRender = async function (drawer, opts = {}) {
         if (checkbox) {
           checkbox.addEventListener("change", async function () {
             const vid = this.dataset.variant;
-            if (this.checked) {
-              await fetch("/cart/add.js", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  id: Number(vid),
-                  quantity: 1,
-                  properties: {
-                    _hub_addon: isShipping
-                      ? "shipping_protection"
-                      : "product_addon",
-                    __upcartAddon: String(vid),
-                  },
-                }),
-              });
-            } else {
-              const latestCart = await (await fetch("/cart.js")).json();
-              const match = latestCart.items.find(
-                (i) => String(i.variant_id) === String(vid),
-              );
-              if (match) {
+            const lineKey = this.dataset.lineKey;
+            const priceCents = Number(this.dataset.priceCents) || 0;
+            const checked = this.checked;
+
+            this.disabled = true;
+
+            // Optimistic total update — no waiting on Shopify round-trips
+            const totalEl = document.getElementById(
+              `hub-cart-total-${blockId}`,
+            );
+            const checkoutTotalEl = document.querySelector(
+              `#hub-cart-drawer-${blockId} .hub-checkout-total, #hub-cart-drawer-${blockId} [data-checkout-total]`,
+            );
+            const currentTotal = Number(window._hubCartFinalTotal) || 0;
+            const optimisticTotal = checked
+              ? currentTotal + priceCents
+              : Math.max(0, currentTotal - priceCents);
+            window._hubCartFinalTotal = optimisticTotal;
+            if (totalEl)
+              totalEl.textContent = hubUtils.formatMoney(optimisticTotal);
+            if (checkoutTotalEl)
+              checkoutTotalEl.textContent =
+                hubUtils.formatMoney(optimisticTotal);
+
+            try {
+              if (checked) {
+                await fetch("/cart/add.js", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    id: Number(vid),
+                    quantity: 1,
+                    properties: {
+                      _hub_addon: isShipping
+                        ? "shipping_protection"
+                        : "product_addon",
+                      __upcartAddon: String(vid),
+                    },
+                  }),
+                });
+              } else if (lineKey) {
                 await fetch("/cart/change.js", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: match.key, quantity: 0 }),
+                  body: JSON.stringify({ id: lineKey, quantity: 0 }),
                 });
+              } else {
+                const latestCart = await (await fetch("/cart.js")).json();
+                const match = latestCart.items.find(
+                  (i) =>
+                    String(i.variant_id) === String(vid) &&
+                    (i.properties?._hub_addon ||
+                      i.properties?.__upcartAddon === String(vid)),
+                );
+                if (match) {
+                  await fetch("/cart/change.js", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: match.key, quantity: 0 }),
+                  });
+                }
               }
+            } finally {
+              this.disabled = false;
+              document.dispatchEvent(new CustomEvent("cart:updated"));
             }
-            document.dispatchEvent(new CustomEvent("cart:updated"));
           });
         }
       }

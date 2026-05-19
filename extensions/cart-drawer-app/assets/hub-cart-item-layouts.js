@@ -63,9 +63,9 @@ function _discountBadgesHtml(item) {
     .join("");
 }
 
-function _wrapper(key, inner, sellingPlanHtml, customHtmlBlocks) {
+function _wrapper(key, inner, sellingPlanHtml, customHtmlBlocks, isReward) {
   return `
-    <div class="hub-cart-for-item custom-cart-public-cart-item" data-item-key="${key}" style="position:relative">
+    <div class="hub-cart-for-item custom-cart-public-cart-item" data-item-key="${key}"${isReward ? ' data-is-reward="1"' : ""} style="position:relative">
       ${inner}
       <div>${hubUtils.renderCustomHTML(customHtmlBlocks.between_line_items)}</div>
     </div>
@@ -154,7 +154,7 @@ function classicItemHTML(ctx) {
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
     </div>`;
 
-  return _wrapper(item.key, inner, sellingPlanHtml, customHtmlBlocks);
+  return _wrapper(item.key, inner, sellingPlanHtml, customHtmlBlocks, isReward);
 }
 
 // ── Layout 2: Subscription ───────────────────────────────────────────────────
@@ -237,7 +237,7 @@ function subscriptionItemHTML(ctx) {
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
     </div>`;
 
-  return _wrapper(item.key, inner, sellingPlanHtml, customHtmlBlocks);
+  return _wrapper(item.key, inner, sellingPlanHtml, customHtmlBlocks, isReward);
 }
 
 // ── Layout 3: Modern ─────────────────────────────────────────────────────────
@@ -396,7 +396,7 @@ function modernItemHTML(ctx) {
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
     </div>`;
 
-  return _wrapper(item.key, inner, sellingPlanHtml, customHtmlBlocks);
+  return _wrapper(item.key, inner, sellingPlanHtml, customHtmlBlocks, isReward);
 }
 
 window.hubItemLayouts = {
