@@ -334,6 +334,7 @@ body,
 
 .cart-app__checkout:hover {
     color: var(--btn-hover-text);
+    opacity: 0.8;
 }
 
 .custom-cart-internal-style__title-large_button a:hover {
@@ -955,6 +956,11 @@ body,
     align-items: center;
     font-size: 15px;
     color: #000000;
+    cursor: pointer;
+}
+
+.styles_Footer__continueShopping__:hover {
+    opacity: 0.8;
 }
 
 .cart-trust-badges {

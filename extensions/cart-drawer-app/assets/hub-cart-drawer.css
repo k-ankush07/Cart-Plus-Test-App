@@ -1172,6 +1172,10 @@ span.hub-total-arrow svg {
   margin: 0 20px !important;
 }
 
+.hub-continue-shopping:hover{
+  opacity: 0.8;
+}
+
 .upcart-internal-component-upsell-tile {
   border-radius: 5px;
   width: 100%;
