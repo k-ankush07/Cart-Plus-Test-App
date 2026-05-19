@@ -951,7 +951,7 @@ span.hub-total-arrow svg {
 
 .hub-cart-checkout-btn {
   display: block;
-  padding: 15px;
+  padding: 18px;
   background: #1a1a1a;
   color: #fff;
   text-align: center;
@@ -961,7 +961,7 @@ span.hub-total-arrow svg {
   border-radius: 4px;
   cursor: pointer;
   transition: 0.3s ease;
-  line-height: 20px;
+  line-height: 1;
   width: calc(100% - 40px);
   margin: 20px !important;
 }
@@ -1327,6 +1327,10 @@ span.hub-total-arrow svg {
   border-radius: 15px;
   padding: 8px;
   max-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 37px;
 }
 
 .hub-add-btn {
@@ -1959,8 +1963,8 @@ span.upsell-text.suggestion-product {
 }
 
 .loader {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   border: 2px solid rgba(170, 170, 170, 0.15);
   border-top: 2px solid #000;
   border-radius: 50%;
@@ -2247,7 +2251,7 @@ span.upsell-text.suggestion-product {
 .hub-discount-chip span.code {
   color: #1e1e1e;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 15px;
 }
 
@@ -2264,8 +2268,8 @@ button.remove-btn {
   border: 0;
   background: #000;
   border-radius: 50%;
-  height: 14px;
-  width: 14px;
+  height: 16px;
+  width: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2367,6 +2371,29 @@ button.hub-qty-btn span.svg-wrapper {
 select.hub-variant-option-select{
   outline: none;
   box-shadow: none;
+}
+
+.hub-cart-checkout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.discount-loader {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: discount-spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes discount-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ====== responsive styles ====== */

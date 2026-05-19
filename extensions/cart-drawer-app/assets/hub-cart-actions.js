@@ -541,7 +541,7 @@ window.removeDiscountCode = async function (btn, blockId) {
 
   btn.classList.add("loading");
   btn.dataset.original = btn.innerHTML;
-  btn.innerHTML = `<span class="loader"></span>`;
+  btn.innerHTML = `<span class="discount-loader"></span>`;
   btn.disabled = true;
 
   try {

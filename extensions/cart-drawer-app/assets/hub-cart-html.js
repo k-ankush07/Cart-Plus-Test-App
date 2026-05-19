@@ -429,6 +429,7 @@ window.injectCartHTML = function (blockId, root) {
         <a id="hub-checkout-btn-${blockId}" href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" onclick="hubCheckoutClick(event, '${blockId}', this)" class="hub-cart-checkout-btn" style="border-radius:${designSettings.buttonRadius}px;">
           ${checkoutButtonText}
         </a>
+
         <div>${renderCustomHTML(customHtmlBlocks.below_checkout)}</div>
         ${
           designSettings.continueshopping
