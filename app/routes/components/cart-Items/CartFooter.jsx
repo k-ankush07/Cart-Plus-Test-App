@@ -105,6 +105,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                         onClick={handleCheckout}
                     >
                         {loading ? (<span className="loader"></span>) : (checkoutText)}
+                       
                     </button>
                 </div>
 
