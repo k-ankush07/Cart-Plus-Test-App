@@ -11,7 +11,9 @@ import {
   Collapsible,
   ProgressBar,
   Divider,
-  Icon
+  Icon,
+  InlineGrid,
+  Card
 } from "@shopify/polaris";
 import { ChevronDownIcon, HeartIcon, NoteIcon, ExternalIcon } from "@shopify/polaris-icons";
 
@@ -36,14 +38,7 @@ function SetupTask({
 }) {
   return (
     <Box padding="500">
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(auto, 500px) auto minmax(300px, 30%)",
-          alignItems: "start",
-          gap: "16px",
-        }}
-      >
+      <InlineGrid columns={{ xs: 1, sm: ["twoThirds", "oneThird"] }} gap="300" alignItems="center">
         <BlockStack gap="150">
           <InlineStack gap="200" blockAlign="center">
             <Text variant="bodyMd" fontWeight="semibold">
@@ -61,13 +56,13 @@ function SetupTask({
             {description}
           </Text>
         </BlockStack>
-        <div />
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+
+        <InlineStack align="end">
           <Button size="slim" onClick={onAction}>
             {actionLabel}
           </Button>
-        </div>
-      </div>
+        </InlineStack>
+      </InlineGrid>
     </Box>
   );
 }
@@ -324,7 +319,7 @@ function Sparkline({ type = "flat", value = 0 }) {
   );
 }
 
-function StatTile({ label, value, sparklineType, rawValue, onClick }) {
+function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft }) {
   return (
     <div
       onClick={onClick}
@@ -335,6 +330,7 @@ function StatTile({ label, value, sparklineType, rawValue, onClick }) {
         cursor: "pointer",
         transition: "background 0.15s",
         overflow: "hidden",
+        borderLeft: borderLeft ? "1px solid #e1e3e5" : "none",
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = "#f6f6f7")}
       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -347,9 +343,9 @@ function StatTile({ label, value, sparklineType, rawValue, onClick }) {
             <Badge>—</Badge>
           </InlineStack>
         </BlockStack>
-        <div style={{ flexShrink: 0, marginLeft: 8 }}>
+        <Box flexShrink="0" paddingInlineStart="200">
           <Sparkline type={sparklineType} value={rawValue} />
-        </div>
+        </Box>
       </InlineStack>
     </div>
   );
@@ -492,7 +488,7 @@ export default function Dashboard() {
               overflow: "hidden",
             }}
           >
-            <div style={{ display: "flex" }}>
+            <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }}>
               <StatTile
                 label="Add-ons revenue"
                 value={fmt(shopRevenue.addonRevenue ?? 0, currency)}
@@ -500,24 +496,24 @@ export default function Dashboard() {
                 sparklineType="spike"
                 onClick={() => navigate("/app/analytics")}
               />
-              <div style={{ width: "1px", background: "#e1e3e5", flexShrink: 0, margin: "12px 0" }} />
               <StatTile
+                borderLeft
                 label="Upsell revenue"
                 value={fmt(shopRevenue.upsellRevenue ?? 0, currency)}
                 rawValue={shopRevenue.upsellRevenue ?? 0}
                 sparklineType="peak"
                 onClick={() => navigate("/app/analytics")}
               />
-              <div style={{ width: "1px", background: "#e1e3e5", flexShrink: 0, margin: "12px 0" }} />
               <StatTile
+                borderLeft
                 label="Subscriptions revenue"
                 value={fmt(shopRevenue.subscriptionRevenue ?? 0, currency)}
                 rawValue={shopRevenue.subscriptionRevenue ?? 0}
                 sparklineType="flat"
                 onClick={() => navigate("/app/analytics")}
               />
-              <div style={{ width: "1px", background: "#e1e3e5", flexShrink: 0, margin: "12px 0" }} />
               <StatTile
+                borderLeft
                 label="Total revenue"
                 value={fmt(
                   (shopRevenue.addonRevenue ?? 0) +
@@ -525,11 +521,15 @@ export default function Dashboard() {
                   (shopRevenue.subscriptionRevenue ?? 0),
                   currency
                 )}
-                rawValue={(shopRevenue.addonRevenue ?? 0) + (shopRevenue.upsellRevenue ?? 0) + (shopRevenue.subscriptionRevenue ?? 0)}
+                rawValue={
+                  (shopRevenue.addonRevenue ?? 0) +
+                  (shopRevenue.upsellRevenue ?? 0) +
+                  (shopRevenue.subscriptionRevenue ?? 0)
+                }
                 sparklineType="peak"
                 onClick={() => navigate("/app/analytics")}
               />
-            </div>
+            </InlineGrid>
           </div>
         </BlockStack>
 
@@ -757,79 +757,37 @@ export default function Dashboard() {
 
       {/* ── Help cards ── */}
       <Box paddingBlockStart="400">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #e1e3e5",
-              borderRadius: 12,
-              padding: 16,
-            }}
-          >
+        <InlineGrid columns={{ xs: 1, sm: 2 }} gap="300">
+          <Card padding="400">
             <InlineStack align="space-between" blockAlign="center" gap="400" wrap={false}>
               <InlineStack gap="300" blockAlign="start" wrap={false}>
-                <div
-                  style={{
-                    width: 50,
-                    height: 50,
-                    background: "#EDEDEE",
-                    borderRadius: 5,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    border: "1px solid #C5C5C5",
-                  }}
-                >
+                <div style={{ width: 44, height: 44, background: '#EDEDEE', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #C5C5C5' }}>
                   <Icon source={HeartIcon} />
                 </div>
                 <BlockStack gap="050">
                   <Text variant="headingXs">Need help?</Text>
-                  <Text variant="bodySm" tone="subdued">
-                    Chat with us for hands-on help.
-                  </Text>
+                  <Text variant="bodySm" tone="subdued">Chat with us for hands-on help.</Text>
                 </BlockStack>
               </InlineStack>
               <Button>Chat with us</Button>
             </InlineStack>
-          </div>
+          </Card>
 
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #e1e3e5",
-              borderRadius: 12,
-              padding: 16,
-            }}
-          >
+          <Card padding="400">
             <InlineStack align="space-between" blockAlign="center" gap="400" wrap={false}>
               <InlineStack gap="300" blockAlign="start" wrap={false}>
-                <div
-                  style={{
-                    width: 50,
-                    height: 50,
-                    background: "#EDEDEE",
-                    borderRadius: 5,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    border: "1px solid #C5C5C5",
-                  }}
-                >
+                <div style={{ width: 44, height: 44, background: '#EDEDEE', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #C5C5C5' }}>
                   <Icon source={NoteIcon} />
                 </div>
                 <BlockStack gap="050">
                   <Text variant="headingXs">See our docs</Text>
-                  <Text variant="bodySm" tone="subdued">
-                    Browse our documentation and guides.
-                  </Text>
+                  <Text variant="bodySm" tone="subdued">Browse our documentation and guides.</Text>
                 </BlockStack>
               </InlineStack>
               <Button>View docs</Button>
             </InlineStack>
-          </div>
-        </div>
+          </Card>
+        </InlineGrid>
       </Box>
     </Page>
   );
