@@ -14,6 +14,7 @@ import {
     SkeletonBodyText,
     Banner,
 } from "@shopify/polaris";
+
 import {
     defaultSettings,
     defaultHeaderSettings,
