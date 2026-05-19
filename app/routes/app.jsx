@@ -28,7 +28,7 @@ async function saveShopTokenInBackground(session, admin) {
 
     const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
+    const timeout = setTimeout(() => controller.abort(), 10000);
 
     await fetch(`${apiUrl}/api/save-shop-token`, {
       method: "POST",
