@@ -1967,13 +1967,13 @@ span.upsell-text.suggestion-product {
 }
 
 .loader {
-  width: 15px;
-  height: 15px;
-  border: 2px solid rgba(170, 170, 170, 0.15);
-  border-top: 2px solid #000;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  display: inline-block;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(170, 170, 170, 0.15);
+    border-top: 2px solid #c7c7c7;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
 }
 
 .hub-qty-btn.loading {
