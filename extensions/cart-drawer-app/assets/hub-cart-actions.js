@@ -34,8 +34,12 @@ function _hubHideAllCartSections(blockId) {
 
   hide(drawer.querySelector(".hub-cart-footer"));
   hide(document.getElementById(`hub-addons-${blockId}`));
-  hide(document.getElementById(`hub-rewards-${blockId}`));
-  hide(document.getElementById(`hub-rewards-bar-${blockId}`));
+
+  const rewards = window.__HUB_ACTIVE_CART__?.rewardsSettings;
+  if (!rewards?.showOnEmptyCart) {
+    hide(document.getElementById(`hub-rewards-${blockId}`));
+    hide(document.getElementById(`hub-rewards-bar-${blockId}`));
+  }
   hide(document.getElementById(`hub-upsell-top-${blockId}`));
   hide(document.getElementById(`hub-upsell-bottom-${blockId}`));
   hide(document.getElementById(`hub-trust-badges-top-${blockId}`));
@@ -260,54 +264,40 @@ async function _commitRemoval(key) {
       body: JSON.stringify({ updates }),
     });
 
-    if (p.toastEl) {
-      p.toastEl.classList.add("hub-toast-hiding");
-      await new Promise((r) => setTimeout(r, 220));
-      p.toastEl.remove();
-    }
-
-    const slidingEls = [p.itemEl].filter(Boolean);
     if (cartWillBeEmpty) {
-      drawer
-        .querySelectorAll('[data-item-key][data-is-reward="1"]')
-        .forEach((rewardEl) => slidingEls.push(rewardEl));
-    }
+      // Render empty UI INSTANTLY — items are already faded from removeItem.
+      // Skip toast-hide + slide-out animations entirely.
+      if (p.toastEl) p.toastEl.remove();
 
-    if (slidingEls.length) {
-      slidingEls.forEach((sEl) => {
-        sEl.style.overflow = "hidden";
-        sEl.style.transition = "transform 0.3s ease, opacity 0.3s ease";
-        sEl.style.transform = "translateX(-100%)";
-        sEl.style.opacity = "0";
-      });
-      await new Promise((r) => setTimeout(r, 300));
+      // _hubHideAllCartSections faded the cart body + items container — restore
+      // them immediately so the empty UI we're about to inject is visible.
+      const cartBody = document.getElementById("hub-upcart-cart-body");
+      if (cartBody) {
+        cartBody.style.transition = "";
+        cartBody.style.opacity = "";
+        cartBody.style.pointerEvents = "";
+      }
 
-      slidingEls.forEach((sEl) => {
-        sEl.style.transition =
-          "height 0.2s ease, margin 0.2s ease, padding 0.2s ease";
-        sEl.style.height = sEl.offsetHeight + "px";
-      });
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          slidingEls.forEach((sEl) => {
-            sEl.style.height = "0";
-            sEl.style.marginTop = "0";
-            sEl.style.marginBottom = "0";
-            sEl.style.paddingTop = "0";
-            sEl.style.paddingBottom = "0";
-          });
-        }),
-      );
-      await new Promise((r) => setTimeout(r, 220));
-    }
+      // Hide the footer entirely via the empty-footer class (display:none !important)
+      const footerEl = drawer.querySelector(".hub-cart-footer");
+      if (footerEl) {
+        footerEl.classList.add("hub-empty-footer");
+        footerEl.style.transition = "";
+        footerEl.style.opacity = "";
+        footerEl.style.pointerEvents = "";
+      }
 
-    if (cartWillBeEmpty) {
       const cs = window.__HUB_ACTIVE_CART__?.cartSettings || {};
       const ds = window.__HUB_ACTIVE_CART__?.designSettings || {};
       const rec = window.__HUB_ACTIVE_CART__?.recommendationsSettings || {};
       const container = drawer.querySelector(".hub-cart-items");
       const cartItemsEl = document.getElementById(`hub-cart-items-${blockId}`);
-      if (cartItemsEl) cartItemsEl.classList.add("footer-empty");
+      if (cartItemsEl) {
+        cartItemsEl.style.transition = "";
+        cartItemsEl.style.opacity = "";
+        cartItemsEl.style.pointerEvents = "";
+        cartItemsEl.classList.add("footer-empty");
+      }
       if (container) {
         const btnColor = ds.buttonColor || "#000000";
         const btnHoverColor = ds.buttonHoverColor || "#333333";
@@ -319,6 +309,13 @@ async function _commitRemoval(key) {
               ${cs.emptyCartMessage || "Your cart is empty"}
             </h3>
             ${
+              showRecsBlock
+                ? `<p class="hub-rec-subtitle hub-public-upsell__header" style="color:${ds.textColor || "#000"};">
+                    ${rec.headerText || ""}
+                  </p>`
+                : ""
+            }
+            ${
               showRecsBlock && rec.showShopNowButton
                 ? `<a href="${rec.buttonUrl || "/collections/all"}" class="hub-rec-btn hub-public-upsell__shop-now-button"
                   style="--btn-bg:${btnColor};--btn-hover:${btnHoverColor};--btn-text:${txtColor};border-radius:${ds.buttonRadius || 0}px;">
@@ -329,6 +326,13 @@ async function _commitRemoval(key) {
           </div>`;
       }
 
+      const headerEl = document.querySelector(".upcart-header-text");
+      if (headerEl) {
+        const hs = window.__HUB_ACTIVE_CART__?.headerSettings || {};
+        headerEl.innerText = (
+          hs.titleText || "Cart • {{cart_quantity}}"
+        ).replace("{{cart_quantity}}", 0);
+      }
       window._hubLastCartHadItems = false;
 
       networkDone
@@ -342,6 +346,36 @@ async function _commitRemoval(key) {
         })
         .catch(() => {});
       return;
+    }
+
+    // Non-empty case: keep the original toast-hide + slide-out animations
+    if (p.toastEl) {
+      p.toastEl.classList.add("hub-toast-hiding");
+      await new Promise((r) => setTimeout(r, 220));
+      p.toastEl.remove();
+    }
+
+    const el = p.itemEl;
+    if (el) {
+      el.style.overflow = "hidden";
+      el.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+      el.style.transform = "translateX(-100%)";
+      el.style.opacity = "0";
+      await new Promise((r) => setTimeout(r, 300));
+
+      el.style.transition =
+        "height 0.2s ease, margin 0.2s ease, padding 0.2s ease";
+      el.style.height = el.offsetHeight + "px";
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          el.style.height = "0";
+          el.style.marginTop = "0";
+          el.style.marginBottom = "0";
+          el.style.paddingTop = "0";
+          el.style.paddingBottom = "0";
+        }),
+      );
+      await new Promise((r) => setTimeout(r, 220));
     }
 
     await networkDone;
