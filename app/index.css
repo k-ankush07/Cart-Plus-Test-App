@@ -1116,7 +1116,6 @@ button.show-icon-toggleCartVisibility span.Polaris-Icon {
 
 .upsell-checkbox-wrapper {
     display: flex;
-    align-items: center;
     gap: 10px;
     cursor: pointer;
 }
@@ -1126,7 +1125,7 @@ button.show-icon-toggleCartVisibility span.Polaris-Icon {
 }
 
 .custom-checkbox {
-    width: 25px;
+    width: 18px;
     height: 18px;
     border: 2px solid #ccc;
     border-radius: 4px;
@@ -1153,6 +1152,8 @@ button.show-icon-toggleCartVisibility span.Polaris-Icon {
 .upsell-text {
     font-size: 14px;
     color: #333;
+    width: 100%;
+    line-height: 1;
 }
 
 .loader {

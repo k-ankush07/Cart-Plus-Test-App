@@ -1827,7 +1827,6 @@ span.hub-total-arrow svg {
 
 .upsell-checkbox-wrapper {
   display: flex;
-  align-items: center;
   gap: 10px;
   cursor: pointer;
 }
