@@ -407,11 +407,8 @@ export default function AppCarts() {
                             >
                                 <IndexTable.Cell>
                                     <CartHoverCard cart={cart}>
-                                        <div
-                                            style={{ maxWidth: "150px", cursor: "pointer" }}
-                                            onClick={() => navigate(`/app/cart-editor/${cart.cartId}?from=carts`)}
-                                        >
-                                            <Text truncate as="span">
+                                        <div style={{ maxWidth: "70px" }}> 
+                                            <Text truncate as="span" style={{ cursor: "pointer" }}>
                                                 {cart.cartName || "Untitled cart"}
                                             </Text>
                                         </div>
@@ -625,7 +622,7 @@ export default function AppCarts() {
                             tag={!appEmbedInstalled ? { label: "App embed off", tone: "warning" } : null}
                         />
                     ) : (
-                        <CartTable carts={liveCarts} emptyText="No live cart configured" stats={cartStats} monthOrders={currentMonthOrders} range={range}  />
+                        <CartTable carts={liveCarts} emptyText="No live cart configured" stats={cartStats} monthOrders={currentMonthOrders} range={range} />
                     )}
                 </Layout.Section>
 
@@ -648,7 +645,7 @@ export default function AppCarts() {
                             subtitle="Create a new cart to start customizing. Draft carts won't go live until you publish them."
                         />
                     ) : (
-                        <CartTable carts={draftCarts} emptyText="No draft carts yet." isDraft stats={cartStats} monthOrders={currentMonthOrders} range={range}/>
+                        <CartTable carts={draftCarts} emptyText="No draft carts yet." isDraft stats={cartStats} monthOrders={currentMonthOrders} range={range} />
                     )}
                 </Layout.Section>
             </Layout>
