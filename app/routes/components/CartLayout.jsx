@@ -114,6 +114,7 @@ export default function CartLayout({
 
   // Build ActionList items: other carts + rename option
   const otherCarts = allCarts.filter((c) => c.cartId !== cart?.cartId);
+
   const switcherItems = [
     {
       items: [
@@ -127,7 +128,7 @@ export default function CartLayout({
                   <circle cx="4" cy="4" r="3.5" stroke="#8c8c8c" strokeWidth="1" fill="none" />
                 )}
               </svg>
-              {cartName}
+              {cartName.length > 20 ? cartName.slice(0, 20) + "..." : cartName}
             </span>
           ),
           suffix: <Icon source={CheckIcon} />,
@@ -149,7 +150,9 @@ export default function CartLayout({
                   <circle cx="4" cy="4" r="3.5" stroke="#8c8c8c" strokeWidth="1" fill="none" />
                 )}
               </svg>
-              {c.cartName || "Untitled cart"}
+              {(c.cartName || "Untitled cart").length > 20
+                ? (c.cartName || "Untitled cart").slice(0, 20) + "..."
+                : (c.cartName || "Untitled cart")}
             </span>
           ),
           onAction: () => {
@@ -210,7 +213,7 @@ export default function CartLayout({
                           <circle cx="4" cy="4" r="3.5" stroke="#8c8c8c" strokeWidth="1" fill="none" />
                         )}
                       </svg>
-                      {cartName}
+                      {cartName.length > 20 ? cartName.slice(0, 20) + "..." : cartName}
                       <span
                         onClick={(e) => {
                           e.stopPropagation();
@@ -230,7 +233,6 @@ export default function CartLayout({
             >
               <ActionList sections={switcherItems} />
             </Popover>
-
 
             {/* Edit icon — opens rename modal directly */}
             <Button
@@ -404,8 +406,10 @@ export default function CartLayout({
                 </span>
               }
               value={newCartName}
-              onChange={setNewCartName}
+              onChange={(val) => val.length <= 150 && setNewCartName(val)}
               autoComplete="off"
+              maxLength={150}
+              showCharacterCount
             />
           </Modal.Section>
         </Modal>

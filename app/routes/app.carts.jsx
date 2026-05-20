@@ -407,11 +407,11 @@ export default function AppCarts() {
                             >
                                 <IndexTable.Cell>
                                     <CartHoverCard cart={cart}>
-                                        <div style={{ maxWidth: "70px" }}> 
-                                            <Text truncate as="span" style={{ cursor: "pointer" }}>
-                                                {cart.cartName || "Untitled cart"}
-                                            </Text>
-                                        </div>
+                                        <Text as="span" style={{ cursor: "pointer" }}>
+                                            {(cart.cartName || "Untitled cart").length > 8
+                                                ? (cart.cartName || "Untitled cart").slice(0, 8) + "..."
+                                                : (cart.cartName || "Untitled cart")}
+                                        </Text>
                                     </CartHoverCard>
                                 </IndexTable.Cell>
 
