@@ -1804,11 +1804,11 @@ span.hub-total-arrow svg {
   pointer-events: none;
 }
 
-.hub-cart-total-open #hub-upcart-cart-body {
+/* .hub-cart-total-open #hub-upcart-cart-body {
   box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.25);
   transition: box-shadow 0.3s ease;
   overflow-y: hidden;
-}
+} */
 
 .hub-offers-open-body #hub-upcart-cart-body {
   box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.25);

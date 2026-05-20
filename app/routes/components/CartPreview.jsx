@@ -35,6 +35,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
     const emptyCart = previewMode === "empty";
 
     const [qty, setQty] = useState(1);
+    const [breakdownOpen, setBreakdownOpen] = useState(false);
 
     return (
         <div
@@ -50,7 +51,23 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 <style dangerouslySetInnerHTML={{ __html: scopeCss(cartSettings.customCss, ".cart-app") }} />
             )}
 
-            <div className="cart-app__container styles_CartPreview__card__">
+            <div className="cart-app__container styles_CartPreview__card__" style={{ position: "relative" }}>
+                {breakdownOpen && (
+                    <div
+                        onClick={() => setBreakdownOpen(false)}
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: "rgba(0, 0, 0, 0.25)",
+                            zIndex: 10,
+                            pointerEvents: "auto",
+                        }}
+                    />
+                )}
+
                 <div className="cart-app__heading">
                     <CartHeading
                         headerSettings={headerSettings}
@@ -78,7 +95,6 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                         <>
                             {!emptyCart && activeTab !== "Suggested Products" && (
                                 <>
-                                    {/* above_announcements */}
                                     <CustomHtml cartSettings={cartSettings} position="above_announcements" />
 
                                     {!announcementSettings.enabled &&
@@ -93,7 +109,10 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                     {!rewardsSettings.enabled && (
                                         <TieredReward rewardsSettings={rewardsSettings} />)}
 
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "top" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings}/>}
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "top" && (
+                                        <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings} />
+                                    )}
+
                                     <CartItem
                                         showStrikethrough={designSettings.showStrikethrough}
                                         textColor={designSettings.textColor}
@@ -105,26 +124,25 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                                         qty={qty}
                                         designSettings={designSettings}
                                     />
+
                                     {!upsellsSettings.enabled && upsellsSettings.showSuggestedProduct && (
                                         <div className="upsell-suggestion">
                                             <label className="upsell-checkbox-wrapper">
-                                                <input
-                                                    type="checkbox"
-                                                />
-
+                                                <input type="checkbox" />
                                                 <span className="custom-checkbox"></span>
-
                                                 <span className="upsell-text">
                                                     {upsellsSettings?.suggestedProduct?.items?.titles?.[0]}
                                                 </span>
                                             </label>
                                         </div>
                                     )}
-                                    {/* between_line_items */}
-                                    <CustomHtml cartSettings={cartSettings} position="between_line_items" />
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings} />}
 
-                                    {/* below_cart_items */}
+                                    <CustomHtml cartSettings={cartSettings} position="between_line_items" />
+
+                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && (
+                                        <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings} />
+                                    )}
+
                                     <CustomHtml cartSettings={cartSettings} position="below_cart_items" />
 
                                     {!additionalNotesSettings.enabled && additionalNotesSettings.placement === "below_items" && (
@@ -166,6 +184,8 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                         trustBadgesSettings={trustBadgesSettings}
                         disableFixedFooter={cartSettings?.disableFixedFooter}
                         cartSettings={cartSettings}
+                        setBreakdownOpen={setBreakdownOpen}
+                        breakdownOpen={breakdownOpen}
                     />
                 )}
 
