@@ -145,7 +145,8 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                                     autoComplete="off"
                                 />
                             </div>
-                            <div style={{
+                            <div className="styles_ButtonRadiusWrapper_ltYpX"
+                            style={{
                                 display: "flex",
                                 justifyContent: "space-between",
                                 alignItems: "center",

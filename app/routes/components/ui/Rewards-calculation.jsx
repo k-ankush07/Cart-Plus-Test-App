@@ -422,10 +422,10 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                                 </Text>
                             </InlineStack>
 
-                            <div style={{ display: "flex", width: "100%", gap: "12px" }}>
+                            <div style={{ display: "flex", width: "100%", gap: "12px", flexWrap: "wrap" }}>
 
                                 {current?.products?.map((item, index) => (
-                                    <div key={item.id + index} style={{ flex: 1, minWidth: 0 }}>
+                                    <div key={item.id + index} style={{ flex: "1 1 calc(33.333% - 8px)", minWidth: "160px" }}>
                                         <Box
                                             borderColor="border"
                                             borderWidth="025"
@@ -480,29 +480,29 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
 
                                 {/* Add product button — always 1 slot wide */}
                                 {(current?.products?.length || 0) < 3 && (
-                                    <Box
-                                        borderColor="border"
-                                        borderStyle="dashed"
-                                        borderWidth="050"
-                                        borderRadius="400"
-                                        minWidth="160px"
-                                        padding="400"
-                                        width="calc(33.333% - 8px)"
-                                    >
-                                        <div style={{ minHeight: "56px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                            <Button
-                                                icon={PlusIcon}
-                                                size="slim"
-                                                onClick={() => {
-                                                    setTempSelected([]);
-                                                    setIsEditing(false);
-                                                    setOpenProductModal(true);
-                                                }}
-                                            >
-                                                Add product
-                                            </Button>
-                                        </div>
-                                    </Box>
+                                    <div style={{ flex: "1 1 calc(33.333% - 8px)", minWidth: "160px" }}>
+                                        <Box
+                                            borderColor="border"
+                                            borderStyle="dashed"
+                                            borderWidth="050"
+                                            borderRadius="400"
+                                            padding="400"
+                                        >
+                                            <div style={{ minHeight: "56px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <Button
+                                                    icon={PlusIcon}
+                                                    size="slim"
+                                                    onClick={() => {
+                                                        setTempSelected([]);
+                                                        setIsEditing(false);
+                                                        setOpenProductModal(true);
+                                                    }}
+                                                >
+                                                    Add product
+                                                </Button>
+                                            </div>
+                                        </Box>
+                                    </div>
                                 )}
 
                                 {Array.from({
@@ -510,7 +510,7 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                                 }).map((_, i) => (
                                     <div
                                         key={`spacer-${i}`}
-                                        style={{ width: "calc(33.333% - 8px)", flexShrink: 0 }}
+                                        style={{ flex: "1 1 calc(33.333% - 8px)", minWidth: "160px" }}
                                     />
                                 ))}
 

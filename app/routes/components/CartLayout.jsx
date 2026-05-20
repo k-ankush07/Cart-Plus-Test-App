@@ -464,9 +464,9 @@ export default function CartLayout({
       </button>
 
       <div
-        className="cartPreviewWrapper"
+        className={`cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
         style={{
-          width: isPreviewVisible ? (designSettings?.desktopWidth === "wide" ? "500px" : "440px") : "0px",
+          width: isPreviewVisible ? undefined : "0px",
         }}
       >
         <CartPreview
