@@ -9,7 +9,8 @@ import {
     Icon,
     Spinner,
     TextField,
-    ResourceItem
+    ResourceItem,
+    Tabs
 } from "@shopify/polaris";
 import {
     ChevronDownIcon,
@@ -293,27 +294,28 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
     return (
         <div>
             <BlockStack gap="300">
-                <InlineStack gap="200">
-                    {showProducts && (
-                        <Button
-                            variant={activeTab === "products" ? "primary" : "secondary"}
-                            onClick={() => setActiveTab("products")}
-                        >
-                            Products
-                        </Button>
-                    )}
-
-                    {showCollections && (
-                        <Button
-                            variant={activeTab === "collections" ? "primary" : "secondary"}
-                            onClick={() => setActiveTab("collections")}
-                        >
-                            Collections
-                        </Button>
-                    )}
-                </InlineStack>
-
-                <div style={{ height: "12px" }} />
+                {(showProducts || showCollections) && (
+                    <Tabs
+                        tabs={[
+                            ...(showProducts ? [{ id: "products", content: "Product", accessibilityLabel: "Search Products" }] : []),
+                            ...(showCollections ? [{ id: "collections", content: "Collection", accessibilityLabel: "Search Collections" }] : []),
+                        ]}
+                        selected={
+                            activeTab === "products"
+                                ? showProducts ? 0 : -1
+                                : showProducts ? 1 : 0
+                        }
+                        onSelect={(index) => {
+                            const tabs = [
+                                ...(showProducts ? ["products"] : []),
+                                ...(showCollections ? ["collections"] : []),
+                            ];
+                            setActiveTab(tabs[index]);
+                        }}
+                        fitted
+                    />
+                )}
+                <div style={{ height: "4px" }} />
             </BlockStack>
 
             <BlockStack gap="300">
