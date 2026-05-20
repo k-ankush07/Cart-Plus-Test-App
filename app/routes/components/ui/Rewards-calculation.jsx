@@ -17,11 +17,12 @@ import {
     RadioButton,
     Grid,
     Popover,
+    Pagination
 } from "@shopify/polaris";
 
 import RichTextEditor from "../ui/RichTextEditor";
-import Prodcuts from "./Products";
-import { useState } from "react";
+import Products from "./Products";
+import { useState, useRef } from "react";
 import { EditIcon, DeleteIcon, XSmallIcon, PlusIcon } from "@shopify/polaris-icons";
 
 export default function TierSettings({ rewardsSettings, handleChange, products, nextCursor, hasNextPage, currency }) {
@@ -33,6 +34,17 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
     const [isEditing, setIsEditing] = useState(false);
     const [editIndex, setEditIndex] = useState(null);
     const [activePopover, setActivePopover] = useState(null);
+
+    const productsRef = useRef(null);
+    const [prodHasPrev, setProdHasPrev] = useState(false);
+    const [prodHasNext, setProdHasNext] = useState(false);
+
+    const [pagination, setPagination] = useState({
+        hasPrevious: false,
+        hasNext: false,
+        handlePrev: () => { },
+        handleNext: () => { },
+    })
 
     const updateTier = (key, value) => {
         handleChange("rewardsSettings", (prev) => {
@@ -521,7 +533,7 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                                 onClose={() => setOpenProductModal(false)}
                                 title="Select Product"
                                 primaryAction={{
-                                    content: "Save",
+                                    content: 'Save',
                                     onAction: () => {
                                         let updated = [...(current.products || [])];
                                         if (isEditing && editIndex !== null) {
@@ -538,25 +550,35 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                                 }}
                                 secondaryActions={[
                                     {
-                                        content: "Cancel",
-                                        onAction: () => setOpenProductModal(false),
-                                    },
+                                        content: 'close',
+                                        onAction: () => setOpenProductModal(false)
+                                    }
                                 ]}
+                                footer={
+                                    <InlineStack align="space-between" blockAlign="center">
+                                        <Pagination
+                                            hasPrevious={pagination.hasPrevious}
+                                            onPrevious={pagination.handlePrev}
+                                            hasNext={pagination.hasNext}
+                                            onNext={pagination.handleNext}
+                                        />
+                                    </InlineStack>
+                                }
                             >
                                 <Modal.Section>
-                                    <Prodcuts
+                                    <Products
                                         products={products}
                                         hasNextPage={hasNextPage}
                                         nextCursor={nextCursor}
                                         currency={currency}
                                         selectedItems={tempSelected}
                                         onSelect={(items) => setTempSelected(items)}
+                                        onPaginationChange={(p) => setPagination(p)}
                                     />
                                 </Modal.Section>
                             </Modal>
                         </BlockStack>
                     )}
-
                 </BlockStack>
             </LegacyCard>
         </>

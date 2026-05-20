@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 import {
     Text,
@@ -20,7 +20,8 @@ import {
     ChevronRightIcon
 } from "@shopify/polaris-icons";
 
-export default function Products({ currency, onSelect, selectedItems = [], }) {
+const Products = forwardRef(function Products({ currency, onSelect, selectedItems = [], onPaginationChange }, ref) {
+
     const authenticatedFetch = useAuthenticatedFetch();
 
     const [products, setProducts] = useState([]);
@@ -42,6 +43,22 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
     useEffect(() => {
         loadMore(null, "");
     }, []);
+
+    useImperativeHandle(ref, () => ({
+        hasPrevious: cursorStack.length > 0,
+        hasNext: hasNextPage,
+        handlePrev,
+        handleNext,
+    }));
+
+    useEffect(() => {
+        onPaginationChange?.({
+            hasPrevious: cursorStack.length > 0,
+            hasNext: hasNextPage,
+            handlePrev,
+            handleNext,
+        });
+    }, [cursorStack, hasNextPage]);
 
     useEffect(() => {
         clearTimeout(searchDebounceRef.current);
@@ -186,7 +203,6 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
 
     return (
         <BlockStack gap="300">
-
             <InlineStack gap="200">
                 <div style={{ flex: 1 }}>
                     <TextField
@@ -208,7 +224,7 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
                 />
             </InlineStack>
 
-            <div style={{ borderTop: "1px solid #e1e3e5" }}>
+            <div style={{ borderTop: "1px solid #e1e3e5", position: "relative", minHeight: "200px" }}>
                 {loading && (
                     <div
                         style={{
@@ -231,19 +247,22 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
                     <div style={{ padding: "20px", textAlign: "center" }}>
                         <Text tone="subdued">No items to display</Text>
                     </div>
-                ) : (visibleProducts.map((product) => (
+                ) : (visibleProducts.map((product, index) => (
                     <div key={product.id}>
                         <div
                             style={{
                                 padding: "10px 0",
-                                borderBottom: "1px solid #e1e3e5",
+                                borderBottom:
+                                    index !== products.length - 1
+                                        ? "1px solid #e1e3e5"
+                                        : "none",
                             }}
                         >
                             <InlineStack align="space-between" wrap={false} gap="500">
 
                                 {/* LEFT SIDE */}
                                 <div style={{ flex: 1 }}>
-                                  <InlineStack gap="200" align="start" blockAlign="start" wrap={false}>
+                                    <InlineStack gap="200" align="start" blockAlign="start" wrap={false}>
                                         <Checkbox
                                             checked={isProductSelected(product)}
                                             onChange={() => toggleProduct(product)}
@@ -345,27 +364,8 @@ export default function Products({ currency, onSelect, selectedItems = [], }) {
                 ))
                 )}
             </div>
-            <div
-                style={{
-                    padding: "12px",
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: "10px",
-                }}
-            >
-                <Button
-                    icon={ChevronLeftIcon}
-                    disabled={cursorStack.length === 0}
-                    onClick={handlePrev}
-                />
-
-                <Button
-                    icon={ChevronRightIcon}
-                    disabled={!hasNextPage}
-                    onClick={handleNext}
-                />
-            </div>
-
         </BlockStack>
     );
-}
+});
+
+export default Products;
