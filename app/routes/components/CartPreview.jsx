@@ -36,6 +36,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
 
     const [qty, setQty] = useState(1);
     const [breakdownOpen, setBreakdownOpen] = useState(false);
+    const [offerOpen, setOfferOpen] = useState(false);
 
     return (
         <div
@@ -44,9 +45,26 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 backgroundColor: designSettings.backgroundColor,
                 maxWidth: designSettings.desktopWidth === "wide" ? "500px" : "440px",
                 width: "100%",
+                position: "relative",
                 overflowY: cartSettings?.disableFixedFooter ? "auto" : "unset",
             }}
         >
+            {offerOpen && (
+                <div
+                    onClick={() => setOfferOpen(false)}
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: "rgba(0, 0, 0, 0.25)",
+                        zIndex: 10,
+                        pointerEvents: "auto",
+                    }}
+                />
+            )}
+
             {cartSettings?.customCss && (
                 <style dangerouslySetInnerHTML={{ __html: scopeCss(cartSettings.customCss, ".cart-app") }} />
             )}
@@ -186,6 +204,8 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                         cartSettings={cartSettings}
                         setBreakdownOpen={setBreakdownOpen}
                         breakdownOpen={breakdownOpen}
+                        setOfferOpen={setOfferOpen}
+                        offerOpen={offerOpen}
                     />
                 )}
 

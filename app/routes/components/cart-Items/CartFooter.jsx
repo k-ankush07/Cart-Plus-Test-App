@@ -7,7 +7,7 @@ import CustomHtml from "./CustomHtml";
 
 export default function CartFooter({ designSettings, additionalNotesSettings,
     addonsSettings, currency, discountCodesSettings, trustBadgesSettings, disableFixedFooter,
-    cartSettings, breakdownOpen, setBreakdownOpen }) {
+    cartSettings, breakdownOpen, setBreakdownOpen, offerOpen, setOfferOpen }) {
 
     const [loading, setLoading] = useState(false);
 
@@ -30,7 +30,6 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
             className="cart-app__footer custom-cart-footer"
             style={{
                 backgroundColor: designSettings.accentColor,
-                position: "relative",   
                 zIndex: 20,
                 ...(disableFixedFooter ? { flexShrink: 1 } : {}),
             }}
@@ -41,7 +40,9 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
 
             <div>
                 <AddOns addonsSettings={addonsSettings} currency={currency} />
-                <DiscountCode discountCodesSettings={discountCodesSettings} />
+                <DiscountCode discountCodesSettings={discountCodesSettings}
+                    setOfferOpen={setOfferOpen}
+                    offerOpen={offerOpen} />
 
                 {designSettings.enableSubtotal && (
                     <div className="hub-total-summary" onClick={() => setBreakdownOpen(prev => !prev)} style={{ cursor: "pointer" }}>
