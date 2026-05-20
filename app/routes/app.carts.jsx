@@ -133,7 +133,6 @@ export default function AppCarts() {
     const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency, appEmbedInstalled, mainThemeId, appEmbedId, shopPlan, currentMonthOrders } = useLoaderData();
 
     const navigate = useNavigate();
-
     const [deleteModal, setDeleteModal] = useState(false);
     const [selectedCart, setSelectedCart] = useState(null);
     const [publishModal, setPublishModal] = useState(false);
@@ -313,7 +312,7 @@ export default function AppCarts() {
         </Tooltip>
     );
 
-    const CartTable = ({ carts, emptyText, isDraft, stats, monthOrders }) => (
+    const CartTable = ({ carts, emptyText, isDraft, stats, monthOrders, range }) => (
         <div style={{ paddingTop: 12 }}>
             {carts.length === 0 ? (
                 <Text tone="subdued">{emptyText}</Text>
@@ -626,7 +625,7 @@ export default function AppCarts() {
                             tag={!appEmbedInstalled ? { label: "App embed off", tone: "warning" } : null}
                         />
                     ) : (
-                        <CartTable carts={liveCarts} emptyText="No live cart configured" stats={cartStats} monthOrders={currentMonthOrders} />
+                        <CartTable carts={liveCarts} emptyText="No live cart configured" stats={cartStats} monthOrders={currentMonthOrders} range={range}  />
                     )}
                 </Layout.Section>
 
@@ -649,7 +648,7 @@ export default function AppCarts() {
                             subtitle="Create a new cart to start customizing. Draft carts won't go live until you publish them."
                         />
                     ) : (
-                        <CartTable carts={draftCarts} emptyText="No draft carts yet." isDraft stats={cartStats} monthOrders={currentMonthOrders} />
+                        <CartTable carts={draftCarts} emptyText="No draft carts yet." isDraft stats={cartStats} monthOrders={currentMonthOrders} range={range}/>
                     )}
                 </Layout.Section>
             </Layout>

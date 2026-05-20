@@ -19,16 +19,18 @@ const router = express.Router();
 
 // ─── Plan order limits (monthly) ─────────────────────────────────────────────
 const PLAN_ORDER_LIMITS = {
-    free: 50,
-    starter: 100,
-    growth: 200,
+  free: 50,
+  starter: 100,
+  growth: 200,
 };
 
 const getMonthlyOrderCount = async (shop) => {
   const now = new Date();
   const monthStart = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
-  const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-  const monthEnd = nextMonth.toISOString().slice(0, 10); 
+  const nextMonth = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+  );
+  const monthEnd = nextMonth.toISOString().slice(0, 10);
 
   const result = await cartOrderCountModel.aggregate([
     {
@@ -565,7 +567,7 @@ router.post("/cart-impression", async (req, res) => {
     const exists = await analyticsModel.findOne({
       shop,
       sessionId,
-      cartId,    
+      cartId,
       eventType: "cart_impression",
     });
 
@@ -674,7 +676,8 @@ router.post("/order-revenue", async (req, res) => {
 
       return res.status(403).json({
         success: false,
-        message: "Monthly order limit reached for your plan. Cart has been unpublished.",
+        message:
+          "Monthly order limit reached for your plan. Cart has been unpublished.",
         planName,
         monthlyLimit,
         monthlyOrderCount,
@@ -701,7 +704,6 @@ router.post("/order-revenue", async (req, res) => {
         { cartId: publishedCart.cartId },
         { $set: { status: "unpublished" } },
       );
-
     }
     // ────────────────────────────────────────────────────────────────────────
 
@@ -804,6 +806,8 @@ router.get("/cart-stats", async (req, res) => {
       publishedCart,
       shopRevenueBreakdown,
       ordersByCartByDate,
+      impressionsByCartByDate,
+      revenueByCartByDate,
     ] = await Promise.all([
       orderRevenueModel.aggregate([
         { $match: revenueMatch },
@@ -844,6 +848,36 @@ router.get("/cart-stats", async (req, res) => {
         },
         { $sort: { "_id.date": 1 } },
       ]),
+      analyticsModel.aggregate([
+        { $match: { ...analyticsMatch, eventType: "cart_impression" } },
+        {
+          $group: {
+            _id: {
+              cartId: "$cartId",
+              date: {
+                $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+              },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { "_id.date": 1 } },
+      ]),
+      orderRevenueModel.aggregate([
+        { $match: revenueMatch },
+        {
+          $group: {
+            _id: {
+              cartId: "$cartId",
+              date: {
+                $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+              },
+            },
+            totalRevenue: { $sum: "$totalRevenue" },
+          },
+        },
+        { $sort: { "_id.date": 1 } },
+      ]),
     ]);
 
     const emptyStat = () => ({
@@ -852,6 +886,8 @@ router.get("/cart-stats", async (req, res) => {
       checkouts: 0,
       completedOrders: 0,
       ordersByDate: {},
+      impressionsByDate: {},
+      revenueByDate: {},
     });
 
     const stats = {};
@@ -872,6 +908,18 @@ router.get("/cart-stats", async (req, res) => {
       stats[cartId].completedOrders += totalOrders;
       stats[cartId].ordersByDate[date] =
         (stats[cartId].ordersByDate[date] || 0) + totalOrders;
+    });
+
+    impressionsByCartByDate.forEach(({ _id: { cartId, date }, count }) => {
+      if (!stats[cartId]) stats[cartId] = emptyStat();
+      stats[cartId].impressionsByDate[date] =
+        (stats[cartId].impressionsByDate[date] || 0) + count;
+    });
+
+    revenueByCartByDate.forEach(({ _id: { cartId, date }, totalRevenue }) => {
+      if (!stats[cartId]) stats[cartId] = emptyStat();
+      stats[cartId].revenueByDate[date] =
+        (stats[cartId].revenueByDate[date] || 0) + totalRevenue;
     });
 
     if (publishedCart?.cartId) {
@@ -896,7 +944,7 @@ router.get("/cart-stats", async (req, res) => {
     Object.entries(stats).forEach(
       ([
         cartId,
-        { revenue, impressions, checkouts, completedOrders, ordersByDate },
+           { revenue, impressions, checkouts, completedOrders, ordersByDate, impressionsByDate, revenueByDate },  
       ]) => {
         // Prefer completed orders for conversion rate; fall back to
         // checkout_initiated when no order-count data exists for the range.
@@ -907,7 +955,13 @@ router.get("/cart-stats", async (req, res) => {
 
         result[cartId] = {
           revenue,
+          revenueByDate: Object.entries(revenueByDate) 
+            .map(([date, total]) => ({ date, revenue: total }))
+            .sort((a, b) => (a.date < b.date ? 1 : -1)),
           impressions,
+          impressionsByDate: Object.entries(impressionsByDate)
+            .map(([date, count]) => ({ date, count }))
+            .sort((a, b) => (a.date < b.date ? 1 : -1)),
           conversionRate:
             impressions > 0
               ? Math.min((numerator / impressions) * 100, 100)
