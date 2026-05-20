@@ -16,19 +16,25 @@ window._hubGetSessionId = getSessionId;
 window.__HUB_API_URL__ = apiUrl;
 
 function trackCartImpressionUnique() {
-  const key = "hub_cart_impression_tracked";
-  if (localStorage.getItem(key)) return;
+  const cartId = window.__HUB_ACTIVE_CART__?.cartId || null;
+
+  const key = `hub_cart_impression_tracked_${cartId}`;
+
   localStorage.setItem(key, "true");
+
   fetch(`${apiUrl}/api/cart-impression`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       shop: window.__SHOPIFY_SHOP__?.domain,
-      cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
+      cartId,
       sessionId: getSessionId(),
       userAgent: navigator.userAgent,
     }),
-  });
+  })
+    .then((res) => res.json())
+    .then((data) => console.log("[HUB] Impression response:", data))
+    .catch((err) => console.error("[HUB] Impression error:", err));
 }
 
 window.__HUB_RATINGS_URL__ = apiUrl;
@@ -531,6 +537,7 @@ window.startAnnTimer = function (blockId, timeStr) {
           publishedCart.recommendationsSettings,
         );
 
+        trackCartImpressionUnique();
         queueMicrotask(() => {
           const drawerEl = document.getElementById(
             `hub-cart-drawer-${window.HUB_CART_BLOCK_ID}`,

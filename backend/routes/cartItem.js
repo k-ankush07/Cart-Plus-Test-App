@@ -565,6 +565,7 @@ router.post("/cart-impression", async (req, res) => {
     const exists = await analyticsModel.findOne({
       shop,
       sessionId,
+      cartId,    
       eventType: "cart_impression",
     });
 

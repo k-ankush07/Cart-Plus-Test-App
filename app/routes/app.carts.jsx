@@ -328,7 +328,28 @@ export default function AppCarts() {
                         headings={[
                             { title: "Cart name", id: "cart-name" },
                             ...(!isDraft ? [{ title: "Status", id: "status" }] : []),
-                            { title: "Impressions	", id: "impressions" },
+                            {
+                                id: "impressions",
+                                title: (
+                                    <Tooltip hasUnderline activatorWrapper="span" content={
+                                        <BlockStack gap="200">
+                                            <Text as="p" fontWeight="bold">
+                                                Impressions
+                                            </Text>
+
+                                            <Text as="p" variant="bodyMd">
+                                                Number of times this cart was shown to a shopper.
+                                            </Text>
+
+                                            <Text as="p" variant="bodyMd">
+                                                Values shown are for the date range selected at the top of the page.
+                                            </Text>
+                                        </BlockStack>
+                                    }>
+                                        <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium"> Impressions</Text>
+                                    </Tooltip>
+                                ),
+                            },
                             {
                                 id: "conversion-rate",
                                 title: (
@@ -415,7 +436,7 @@ export default function AppCarts() {
                                         ? stats[cart.cartId].impressions.toLocaleString()
                                         : "—"}
                                 </IndexTable.Cell>
-                                
+
                                 <IndexTable.Cell>
                                     {!isDraft && stats?.[cart.cartId]?.conversionRate != null
                                         ? stats[cart.cartId].conversionRate.toFixed(2) + "%"
