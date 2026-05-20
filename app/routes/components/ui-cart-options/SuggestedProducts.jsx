@@ -21,7 +21,8 @@ import {
     Select,
     Modal,
     Banner,
-    Link
+    Link,
+    Pagination
 } from "@shopify/polaris";
 import {
     StarIcon,                 // Recommendations
@@ -37,6 +38,13 @@ export default function SuggestedProducts({ recommendationsSettings, handleChang
     const [selected, setSelected] = useState({
         type: recommendationsSettings.sourceType || "products",
         items: recommendationsSettings.selectedItems || []
+    });
+
+    const [pagination, setPagination] = useState({
+        hasPrevious: false,
+        hasNext: false,
+        handlePrev: () => { },
+        handleNext: () => { },
     });
 
     const update = (key, value) => {
@@ -234,6 +242,16 @@ export default function SuggestedProducts({ recommendationsSettings, handleChang
                                 onAction: () => setOpen(false),
                             },
                         ]}
+                        footer={
+                            <InlineStack align="space-between" blockAlign="center">
+                                <Pagination
+                                    hasPrevious={pagination.hasPrevious}
+                                    onPrevious={pagination.handlePrev}
+                                    hasNext={pagination.hasNext}
+                                    onNext={pagination.handleNext}
+                                />
+                            </InlineStack>
+                        }
                     >
                         <Modal.Section>
                             <div>
@@ -243,6 +261,7 @@ export default function SuggestedProducts({ recommendationsSettings, handleChang
                                         setSelected(data);
                                     }}
                                     initialSelected={selected}
+                                    onPaginationChange={(p) => setPagination(p)}
                                 />
                             </div>
                         </Modal.Section>

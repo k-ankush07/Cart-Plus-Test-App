@@ -3,7 +3,7 @@ import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 import {
   Card, Text, BlockStack, InlineStack, Button, TextField, Thumbnail,
   Badge, Modal, Checkbox, ButtonGroup, Icon, LegacyCard,
-  LegacyStack, RangeSlider, Box, Divider,
+  LegacyStack, RangeSlider, Box, Divider, Pagination
 } from "@shopify/polaris";
 import {
   DeleteIcon, EditIcon, RefreshIcon, CartIcon,
@@ -284,6 +284,13 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
   const [pendingDiscountType, setPendingDiscountType] = useState("percentage");
   const [pendingDiscountValue, setPendingDiscountValue] = useState("0");
   const [editingTriggerIdx, setEditingTriggerIdx] = useState(null);
+
+  const [pagination, setPagination] = useState({
+    hasPrevious: false,
+    hasNext: false,
+    handlePrev: () => { },
+    handleNext: () => { },
+  });
 
   const openTriggerList = (slot) => {
     setActiveSlot(slot);
@@ -778,11 +785,21 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
       <Modal open={specificProductsOpen} onClose={() => setSpecificProductsOpen(false)} title="Specific products"
         primaryAction={{ content: "Confirm", onAction: confirmSpecificProducts }}
         secondaryActions={[{ content: "Back", onAction: () => { setSpecificProductsOpen(false); setTriggerListOpen(true); } }]}
+        footer={
+          <InlineStack align="space-between" blockAlign="center">
+            <Pagination
+              hasPrevious={pagination.hasPrevious}
+              onPrevious={pagination.handlePrev}
+              hasNext={pagination.hasNext}
+              onNext={pagination.handleNext}
+            />
+          </InlineStack>
+        }
       >
         <Modal.Section>
           <BlockStack gap="300">
             <TextField label="Minimum number of matching items" type="number" value={pendingMinItems} onChange={setPendingMinItems} autoComplete="off" />
-            <ProductItemCollections currency={currency} onSelect={setPendingItems} initialSelected={{ type: "products", items: pendingItems.items }} showCollections={false} />
+            <ProductItemCollections currency={currency} onSelect={setPendingItems} initialSelected={{ type: "products", items: pendingItems.items }} showCollections={false} onPaginationChange={(p) => setPagination(p)} />
           </BlockStack>
         </Modal.Section>
       </Modal>
@@ -794,7 +811,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
         <Modal.Section>
           <BlockStack gap="300">
             <TextField label="Minimum number of matching items" type="number" value={pendingMinItems} onChange={setPendingMinItems} autoComplete="off" />
-            <ProductItemCollections currency={currency} onSelect={setPendingItems} multiSelectCollections={true} initialSelected={{ type: "collections", items: pendingItems.items }} showProducts={false} />
+            <ProductItemCollections currency={currency} onSelect={setPendingItems} multiSelectCollections={true} initialSelected={{ type: "collections", items: pendingItems.items }} showProducts={false} onPaginationChange={(p) => setPagination(p)} />
           </BlockStack>
         </Modal.Section>
       </Modal>
@@ -834,9 +851,19 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
       <Modal open={freeGiftOpen} onClose={() => setFreeGiftOpen(false)} title="Select a free Gift"
         primaryAction={{ content: "Confirm", onAction: confirmFreeGift }}
         secondaryActions={[{ content: "Back", onAction: () => { setFreeGiftOpen(false); setRewardListOpen(true); } }]}
+        footer={
+          <InlineStack align="space-between" blockAlign="center">
+            <Pagination
+              hasPrevious={pagination.hasPrevious}
+              onPrevious={pagination.handlePrev}
+              hasNext={pagination.hasNext}
+              onNext={pagination.handleNext}
+            />
+          </InlineStack>
+        }
       >
         <Modal.Section>
-          <ProductItemCollections currency={currency} onSelect={setPendingGiftItems} initialSelected={{ type: "products", items: pendingGiftItems.items }} showCollections={false} maxSelect={1} />
+          <ProductItemCollections currency={currency} onSelect={setPendingGiftItems} initialSelected={{ type: "products", items: pendingGiftItems.items }} showCollections={false} maxSelect={1} onPaginationChange={(p) => setPagination(p)} />
         </Modal.Section>
       </Modal>
 

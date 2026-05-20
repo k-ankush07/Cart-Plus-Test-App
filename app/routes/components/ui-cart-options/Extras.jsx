@@ -16,7 +16,8 @@ import {
     Thumbnail,
     LegacyCard,
     LegacyStack,
-    Box
+    Box,
+    Pagination
 } from "@shopify/polaris";
 import { DeliveryIcon, ProductIcon, AppsIcon } from "@shopify/polaris-icons";
 import Products from "../ui/Products";
@@ -27,6 +28,13 @@ export default function Extras({ addonsSettings, handleChange, currency, }) {
     const [productModalOpen, setProductModalOpen] = useState(false);
     const [modalKey, setModalKey] = useState(0);
     const [tempProduct, setTempProduct] = useState(addonsSettings.selectedProduct || null);
+
+    const [pagination, setPagination] = useState({
+        hasPrevious: false,
+        hasNext: false,
+        handlePrev: () => { },
+        handleNext: () => { },
+    })
 
     useEffect(() => {
         setTempProduct(addonsSettings.selectedProduct || null);
@@ -355,26 +363,35 @@ export default function Extras({ addonsSettings, handleChange, currency, }) {
                         },
                     }}
                     secondaryActions={[{ content: "Cancel", onAction: () => setProductModalOpen(false) }]}
+                    footer={
+                        <InlineStack align="space-between" blockAlign="center">
+                            <Pagination
+                                hasPrevious={pagination.hasPrevious}
+                                onPrevious={pagination.handlePrev}
+                                hasNext={pagination.hasNext}
+                                onNext={pagination.handleNext}
+                            />
+                        </InlineStack>
+                    }
                 >
                     <Modal.Section>
-                        <div style={{ height: "700px" }}>
-                            <Products
-                                key={modalKey}
-                                currency={currency}
-                                selectedItems={tempProduct ? [{ id: tempProduct.id, productTitle: tempProduct.title, productImage: tempProduct.image, price: tempProduct.price }] : []}
-                                onSelect={(items) => {
-                                    const v = items[0];
-                                    if (!v) { setTempProduct(null); return; }
-                                    setTempProduct({
-                                        id: v.id,
-                                        handle: v.handle,
-                                        title: v.productTitle || v.title,
-                                        image: v.productImage || v.image,
-                                        price: v.price,
-                                    });
-                                }}
-                            />
-                        </div>
+                        <Products
+                            key={modalKey}
+                            currency={currency}
+                            selectedItems={tempProduct ? [{ id: tempProduct.id, productTitle: tempProduct.title, productImage: tempProduct.image, price: tempProduct.price }] : []}
+                            onSelect={(items) => {
+                                const v = items[0];
+                                if (!v) { setTempProduct(null); return; }
+                                setTempProduct({
+                                    id: v.id,
+                                    handle: v.handle,
+                                    title: v.productTitle || v.title,
+                                    image: v.productImage || v.image,
+                                    price: v.price,
+                                });
+                            }}
+                            onPaginationChange={(p) => setPagination(p)}
+                        />
                     </Modal.Section>
                 </Modal>
             </BlockStack>

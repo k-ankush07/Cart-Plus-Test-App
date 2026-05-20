@@ -13,7 +13,8 @@ import {
     Modal,
     Badge,
     Box,
-    Icon
+    Icon,
+    Pagination
 } from "@shopify/polaris";
 import {
     PlusCircleIcon,           // Upsells
@@ -41,6 +42,13 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
             [key]: value,
         }));
     };
+
+    const [pagination, setPagination] = useState({
+        hasPrevious: false,
+        hasNext: false,
+        handlePrev: () => { },
+        handleNext: () => { },
+    });
 
     return (
         <div className="mainContent">
@@ -315,6 +323,16 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                                 onAction: () => setOpen(false),
                             },
                         ]}
+                        footer={
+                            <InlineStack align="space-between" blockAlign="center">
+                                <Pagination
+                                    hasPrevious={pagination.hasPrevious}
+                                    onPrevious={pagination.handlePrev}
+                                    hasNext={pagination.hasNext}
+                                    onNext={pagination.handleNext}
+                                />
+                            </InlineStack>
+                        }
                     >
                         <Modal.Section>
                             <div>
@@ -324,6 +342,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                                         setSelected(data);
                                     }}
                                     initialSelected={selected}
+                                    onPaginationChange={(p) => setPagination(p)}
                                 />
                             </div>
                         </Modal.Section>

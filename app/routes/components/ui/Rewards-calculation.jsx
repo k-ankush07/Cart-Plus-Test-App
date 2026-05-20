@@ -22,7 +22,7 @@ import {
 
 import RichTextEditor from "../ui/RichTextEditor";
 import Products from "./Products";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { EditIcon, DeleteIcon, XSmallIcon, PlusIcon } from "@shopify/polaris-icons";
 
 export default function TierSettings({ rewardsSettings, handleChange, products, nextCursor, hasNextPage, currency }) {
@@ -34,10 +34,6 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
     const [isEditing, setIsEditing] = useState(false);
     const [editIndex, setEditIndex] = useState(null);
     const [activePopover, setActivePopover] = useState(null);
-
-    const productsRef = useRef(null);
-    const [prodHasPrev, setProdHasPrev] = useState(false);
-    const [prodHasNext, setProdHasNext] = useState(false);
 
     const [pagination, setPagination] = useState({
         hasPrevious: false,

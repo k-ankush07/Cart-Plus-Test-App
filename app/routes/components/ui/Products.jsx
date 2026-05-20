@@ -16,8 +16,6 @@ import {
 import {
     ChevronDownIcon,
     ChevronUpIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon
 } from "@shopify/polaris-icons";
 
 const Products = forwardRef(function Products({ currency, onSelect, selectedItems = [], onPaginationChange }, ref) {
@@ -35,6 +33,9 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
     const [showSelected, setShowSelected] = useState(false);
     const searchDebounceRef = useRef(null);
     const currentSearchRef = useRef("");
+
+    const cursorRef = useRef(null);
+    const cursorStackRef = useRef([]);
 
     useEffect(() => {
         setSelected(selectedItems);
@@ -114,21 +115,22 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
         setLoading(false);
     };
 
+    useEffect(() => { cursorRef.current = cursor; }, [cursor]);
+    useEffect(() => { cursorStackRef.current = cursorStack; }, [cursorStack]);
+
     const handleNext = async () => {
         if (!hasNextPage) return;
-
-        setCursorStack((prev) => [...prev, cursor]);
-        await loadMore(cursor, currentSearchRef.current);
+        const currentCursor = cursorRef.current;
+        setCursorStack((prev) => [...prev, currentCursor]);
+        await loadMore(currentCursor, currentSearchRef.current);
     };
 
     const handlePrev = async () => {
-        if (cursorStack.length === 0) return;
-
-        const newStack = [...cursorStack];
+        const stack = cursorStackRef.current;
+        if (stack.length === 0) return;
+        const newStack = [...stack];
         const prevCursor = newStack.pop();
-
         setCursorStack(newStack);
-
         await loadMore(prevCursor || null, currentSearchRef.current);
     };
 
@@ -226,22 +228,30 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
 
             <div style={{ borderTop: "1px solid #e1e3e5", position: "relative", minHeight: "200px" }}>
                 {loading && (
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: "rgba(255,255,255,0.7)",
-                            zIndex: 10,
-                        }}
-                    >
-                        <Spinner accessibilityLabel="Loading products" size="large" />
-                    </div>
+                    <>
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                background: "rgba(255,255,255,0.7)",
+                                zIndex: 10,
+                            }}
+                        />
+                        <div
+                            style={{
+                                position: "fixed",
+                                top: "50%",
+                                left: "50%",
+                                transform: "translate(-50%, -50%)",
+                                zIndex: 11,
+                            }}
+                        >
+                            <Spinner accessibilityLabel="Loading products" size="large" />
+                        </div>
+                    </>
                 )}
                 {visibleProducts.length === 0 ? (
                     <div style={{ padding: "20px", textAlign: "center" }}>

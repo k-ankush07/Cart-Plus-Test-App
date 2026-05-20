@@ -10,18 +10,19 @@ import {
     Spinner,
     TextField,
     ResourceItem,
-    Tabs
+    Tabs,
+    Pagination,
+    Box
 } from "@shopify/polaris";
 import {
     ChevronDownIcon,
     ChevronUpIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon
 } from "@shopify/polaris-icons";
-import { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 
-export default function ProductItemCollections({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null, multiSelectCollections = false }) {
+const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null, multiSelectCollections = false, onPaginationChange }, ref) => {
+
     const authenticatedFetch = useAuthenticatedFetch();
     const [cursorStack, setCursorStack] = useState([]);
     const [openProducts, setOpenProducts] = useState({});
@@ -36,6 +37,9 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
     const [collectionsLoading, setCollectionsLoading] = useState(false);
     const searchDebounceRef = useRef(null);
     const currentSearchRef = useRef("");
+
+    const cursorRef = useRef(null);
+    const cursorStackRef = useRef([]);
 
     useEffect(() => {
         if (!initialSelected) return;
@@ -142,22 +146,38 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
             .map((p) => p.id)
     ).size;
 
+    useEffect(() => {
+        onPaginationChange?.({
+            hasPrevious: cursorStack.length > 0,
+            hasNext: hasNextPage,
+            handlePrev,
+            handleNext,
+        });
+    }, [cursorStack, hasNextPage]);
+
+    useImperativeHandle(ref, () => ({
+        hasPrevious: cursorStack.length > 0,
+        hasNext: hasNextPage,
+        handlePrev,
+        handleNext,
+    }));
+
+    useEffect(() => { cursorRef.current = cursor; }, [cursor]);
+    useEffect(() => { cursorStackRef.current = cursorStack; }, [cursorStack]);
+
     const handleNext = async () => {
         if (!hasNextPage) return;
-
-        setCursorStack((prev) => [...prev, cursor]);
-
-        await loadMore(cursor, currentSearchRef.current);
+        const currentCursor = cursorRef.current;
+        setCursorStack((prev) => [...prev, currentCursor]);
+        await loadMore(currentCursor, currentSearchRef.current);
     };
 
     const handlePrev = async () => {
-        if (cursorStack.length === 0) return;
-
-        const newStack = [...cursorStack];
+        const stack = cursorStackRef.current;
+        if (stack.length === 0) return;
+        const newStack = [...stack];
         const prevCursor = newStack.pop();
-
         setCursorStack(newStack);
-
         await loadMore(prevCursor || null, currentSearchRef.current);
     };
 
@@ -346,22 +366,30 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
             {activeTab === "products" && (
                 <div style={{ position: "relative", minHeight: "200px" }}>
                     {loading && (
-                        <div
-                            style={{
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                background: "rgba(255,255,255,0.7)",
-                                zIndex: 10,
-                            }}
-                        >
-                            <Spinner accessibilityLabel="Loading products" size="large" />
-                        </div>
+                        <>
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    background: "rgba(255,255,255,0.7)",
+                                    zIndex: 10,
+                                }}
+                            />
+                            <div
+                                style={{
+                                    position: "fixed",
+                                    top: "50%",
+                                    left: "50%",
+                                    transform: "translate(-50%, -50%)",
+                                    zIndex: 11,
+                                }}
+                            >
+                                <Spinner accessibilityLabel="Loading products" size="large" />
+                            </div>
+                        </>
                     )}
 
                     {showSelected && filteredProducts.length === 0 && !loading && (
@@ -374,13 +402,17 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
                         resourceName={{ singular: "product", plural: "products" }}
                         items={filteredProducts}
                         renderItem={(product) => {
+                            const index = filteredProducts.indexOf(product);
+
                             return (
                                 <div key={product.id}>
 
                                     {/* PRODUCT ROW */}
                                     <div style={{
                                         padding: "10px 0",
-                                        borderBottom: "1px solid #e1e3e5"
+                                        borderBottom: index !== filteredProducts.length - 1
+                                            ? "1px solid #e1e3e5"
+                                            : "none",
                                     }}>
 
                                         <InlineStack align="space-between" wrap={false} gap="500">
@@ -482,27 +514,6 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
                     />
                 </div>)}
 
-            {activeTab === "products" && (<div
-                style={{
-                    padding: "12px",
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: "10px",
-                }}
-            >
-                <Button
-                    icon={ChevronLeftIcon}
-                    disabled={cursorStack.length === 0}
-                    onClick={handlePrev}
-                />
-
-                <Button
-                    icon={ChevronRightIcon}
-                    disabled={!hasNextPage}
-                    onClick={handleNext}
-                />
-            </div>)}
-
             {activeTab === "collections" && (
                 <div style={{ position: "relative", minHeight: "200px" }}>
                     {collectionsLoading && (
@@ -565,4 +576,6 @@ export default function ProductItemCollections({ currency, onSelect, initialSele
             )}
         </div>
     )
-}
+});
+
+export default ProductItemCollections

@@ -906,6 +906,7 @@ router.get("/cart-stats", async (req, res) => {
 
         result[cartId] = {
           revenue,
+          impressions,
           conversionRate:
             impressions > 0
               ? Math.min((numerator / impressions) * 100, 100)
