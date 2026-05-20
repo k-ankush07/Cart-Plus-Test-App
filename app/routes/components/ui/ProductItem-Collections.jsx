@@ -76,7 +76,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
             if (prev.includes(variant.id)) {
                 updated = prev.filter((i) => i !== variant.id);
             } else if (maxSelect === 1) {
-                updated = [variant.id]; // replace — only one allowed
+                updated = [variant.id]; 
             } else {
                 updated = [...prev, variant.id];
             }
@@ -115,7 +115,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
             if (allSelected) {
                 updated = prev.filter((id) => !variantIds.includes(id));
             } else if (maxSelect === 1) {
-                updated = [variantIds[0]]; // replace with first variant only
+                updated = [variantIds[0]]; 
             } else {
                 updated = [...new Set([...prev, ...variantIds])];
             }
