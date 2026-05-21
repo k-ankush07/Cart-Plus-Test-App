@@ -17,8 +17,12 @@ window.__HUB_API_URL__ = apiUrl;
 
 function trackCartImpressionUnique() {
   const cartId = window.__HUB_ACTIVE_CART__?.cartId || null;
-
   const key = `hub_cart_impression_tracked_${cartId}`;
+
+  if (localStorage.getItem(key)) {
+    console.log("[HUB] Impression already tracked, skipping.");
+    return;
+  }
 
   localStorage.setItem(key, "true");
 
@@ -34,7 +38,10 @@ function trackCartImpressionUnique() {
   })
     .then((res) => res.json())
     .then((data) => console.log("[HUB] Impression response:", data))
-    .catch((err) => console.error("[HUB] Impression error:", err));
+    .catch((err) => {
+      localStorage.removeItem(key);
+      console.error("[HUB] Impression error:", err);
+    });
 }
 
 window.__HUB_RATINGS_URL__ = apiUrl;
