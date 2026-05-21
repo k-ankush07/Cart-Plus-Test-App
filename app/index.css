@@ -385,7 +385,7 @@ body,
 
 .tier-card {
     padding: 18px 20px 10px;
-    background: #fff;
+    /* background: #fff; */
 }
 
 .tier-title {
@@ -1724,6 +1724,20 @@ span.hub-offers-title {
     background: linear-gradient(90deg, #67d, #c5b, #f28, #f4a, #d4c, #96c, #67d);
     background-size: 300% 100%;
     animation: design-cart_rainbow-flow__lHFAe 4s linear infinite;
+}
+
+.design-cart_styleGrid__bAZ9i {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 16px;
+    gap: 16px;
+}
+
+.design-cart_modulesGridStep__qbxcO {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 16px;
+    gap: 16px;
 }
 
 /* Responsive Styles */

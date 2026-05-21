@@ -21,10 +21,6 @@ import {
     defaultTriggeredRewardsSettings,
 } from "../routes/components/constants/cartDefaults";
 
-import {
-    ViewIcon
-} from "@shopify/polaris-icons";
-
 export const loader = async ({ request }) => {
     const { shop, apiUrl } = await shopLoader(request);
     return { shop, apiUrl };
@@ -44,6 +40,7 @@ const TEMPLATES = [
     {
         id: "live",
         name: "Your Live Theme",
+        cartName: "Live Theme Cart",
         font: "Inter",
         bg: "#ffffff",
         announcementBg: "rgb(18,18,18)",
@@ -53,6 +50,7 @@ const TEMPLATES = [
     {
         id: "default",
         name: "Default",
+        cartName: "Default Cart",
         font: "Inherits from theme",
         bg: "#ffffff",
         announcementBg: "rgb(240,240,240)",
@@ -62,6 +60,7 @@ const TEMPLATES = [
     {
         id: "ivory",
         name: "Ivory",
+        cartName: "Ivory Cart",
         font: "Inherits from theme",
         bg: "rgb(245,243,240)",
         announcementBg: "rgb(233,229,228)",
@@ -71,6 +70,7 @@ const TEMPLATES = [
     {
         id: "electric",
         name: "Electric",
+        cartName: "Electric Cart",
         font: "Inherits from theme",
         bg: "#ffffff",
         announcementBg: "rgb(222,242,64)",
@@ -80,6 +80,7 @@ const TEMPLATES = [
     {
         id: "natural",
         name: "Natural",
+        cartName: "Natural Cart",
         font: "Inherits from theme",
         bg: "rgb(255,253,247)",
         announcementBg: "rgb(242,168,85)",
@@ -257,7 +258,7 @@ function TemplateCard({ template, isActive, onSelect }) {
                 flexDirection: "column",
                 borderRadius: 10,
                 overflow: "hidden",
-                border: isActive ? "2px solid #303030" : "2px solid transparent",
+                border: isActive ? "1px solid #303030" : "1px solid transparent",
                 boxShadow: isActive ? "0 0 0 1px #303030" : "0 0 0 1px #e1e3e5",
                 transition: "box-shadow 0.15s, border-color 0.15s",
                 background: "#fff",
@@ -302,7 +303,7 @@ export default function Designcart() {
     const [step, setStep] = useState(1);
     const [saving, setSaving] = useState(false);
 
-    const [selectedTemplate, setSelectedTemplate] = useState("electric");
+    const [selectedTemplate, setSelectedTemplate] = useState("default");
     const [activeModules, setActiveModules] = useState(
         () => new Set(MODULES.filter((m) => m.defaultOn).map((m) => m.id))
     );
@@ -351,16 +352,19 @@ export default function Designcart() {
         enabled: activeModules.has("subscriptions"),
     };
 
+    const selectedTemplateData = TEMPLATES.find((t) => t.id === selectedTemplate);
+
     const handleSaveAsDraft = () => {
         if (saving) return;
         setSaving(true);
         const tempCartId = "cart_" + Date.now() + "_" + Math.random().toString(36).slice(2, 11);
-        navigate(`/app/cart-editor/${tempCartId}?from=design-cart`, { replace: true });
+
         createCart(apiUrl, {
             shop: shop.myshopifyDomain,
             shopEmail: shop.email,
             storeOwner: shop.name,
             cartId: tempCartId,
+            cartName: selectedTemplateData?.cartName || "My Cart",
             designSettings: mergedDesignSettings,
             headerSettings: defaultHeaderSettings,
             announcementSettings: mergedAnnouncementSettings,
@@ -377,10 +381,16 @@ export default function Designcart() {
             triggeredRewardsSettings: defaultTriggeredRewardsSettings,
         })
             .then((data) => {
-                if (data?.success) shopify.toast.show("Cart saved as draft");
+                if (data?.success) {
+                    shopify.toast.show("Cart saved as draft");
+                    navigate(`/app/cart-editor/${tempCartId}?from=design-cart`, { replace: true });
+                } else {
+                    setSaving(false);
+                }
             })
-            .catch(() => { })
-            .finally(() => setSaving(false));
+            .catch(() => {
+                setSaving(false);
+            });
     };
 
     return (
@@ -394,23 +404,19 @@ export default function Designcart() {
                 borderRight: "1px solid #e1e3e5",
             }}>
 
-                <div style={{ flex: 1, padding: 32 }}>
+                <div style={{ flex: 1, padding: 32, background:'white' }}>
 
                     {step === 1 && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                            <div>
+                            <div style={{marginBottom:20}}>
                                 <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#303030" }}>
                                     Select a base style
                                 </h2>
-                                <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6d7175" }}>
+                                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6d7175", marginBottom:20 }}>
                                     Colours can be adjusted later in the cart editor — focus on the overall layout and feel.
                                 </p>
                             </div>
-                            <div style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
-                                gap: 12,
-                            }}>
+                            <div className="design-cart_styleGrid__bAZ9i">
                                 {TEMPLATES.map((template) => (
                                     <TemplateCard
                                         key={template.id}
@@ -433,11 +439,7 @@ export default function Designcart() {
                                     Pick any modules to include in your cart — you can add or remove these at anytime later in the cart editor.
                                 </p>
                             </div>
-                            <div style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-                                gap: 10,
-                            }}>
+                            <div className="design-cart_modulesGridStep__qbxcO">
                                 {MODULES.map((module) => (
                                     <ModuleCard
                                         key={module.id}
@@ -469,29 +471,24 @@ export default function Designcart() {
                                 Back
                             </Button>
                         )}
-                        <Button
-                            icon={ViewIcon}
-                            onClick={() => window.open(`https://${shop.myshopifyDomain}`, "_blank")}
-                        >
-                            Preview
-                        </Button>
-                        <Button
-                            variant="primary"
-                            onClick={() => step === 1 ? setStep(2) : console.log("Done!")}
-                        >
-                            {step === 1 ? "Next" : "Create cart"}
-                        </Button>
-                        {step === 2 && (
-                            <div className="design-cart_saveDraftRainbowBorder__XHNl9">
-                                <Button
-                                    variant="primary"
-                                    loading={saving}
-                                    disabled={saving}
-                                    onClick={handleSaveAsDraft}
-                                >
-                                    Save as draft
-                                </Button>
-                            </div>
+
+                        {step === 1 ? (
+                            <Button variant="primary" onClick={() => setStep(2)}>
+                                Next
+                            </Button>
+                        ) : (
+                            <>
+                                <div className="design-cart_saveDraftRainbowBorder__XHNl9">
+                                    <Button
+                                        variant="primary"
+                                        loading={saving}
+                                        disabled={saving}
+                                        onClick={handleSaveAsDraft}
+                                    >
+                                        Save as draft
+                                    </Button>
+                                </div>
+                            </>
                         )}
                     </InlineStack>
                 </div>

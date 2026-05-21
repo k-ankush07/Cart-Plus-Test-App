@@ -122,6 +122,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
             setSelectedVariants(initial);
             return;
         }
+
         fetch("/app/get-products", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -142,7 +143,13 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                 });
                 setSelectedVariants(initial);
             });
-    }, [useAiRecommended, selectedItems, limitUpsellsInCart, maxUpsellsInCart]);
+    }, [
+        useAiRecommended,
+        sourceType,
+        limitUpsellsInCart,
+        maxUpsellsInCart,
+        JSON.stringify(selectedItems),
+    ]);
 
     const handleVariantChange = (productId, variantId) => {
         const product = products.find((p) => p.id === productId);

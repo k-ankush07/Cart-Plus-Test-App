@@ -117,6 +117,7 @@ router.post("/create-cart", async (req, res) => {
       shopEmail,
       storeOwner,
       cartId: clientCartId,
+      cartName: clientCartName,
       designSettings,
       headerSettings,
       announcementSettings,
@@ -140,9 +141,9 @@ router.post("/create-cart", async (req, res) => {
     }
 
     const count = await cartModels.countDocuments({ shop });
-    const cartName = `Untitled cart ${count + 1}`;
+    const cartName = clientCartName?.trim() || `Untitled cart ${count + 1}`;
     const cartId = clientCartId || crypto.randomUUID();
-
+    
     const newCart = await cartModels.create({
       shop,
       shopEmail,
