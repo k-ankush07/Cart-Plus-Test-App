@@ -2,7 +2,7 @@
 
 client_id = "0741db22a559208f286f8afcfb6dcc65"
 name = "Cart Drawer"
-application_url = "https://port-intelligent-ten-logs.trycloudflare.com"
+application_url = "https://reservoir-smallest-feels-latter.trycloudflare.com"
 embedded = true
 
 [build]
@@ -29,10 +29,10 @@ scopes = "read_customers,read_discounts,read_locations,read_orders,read_pixels,r
 
 [auth]
 redirect_urls = [
-  "https://port-intelligent-ten-logs.trycloudflare.com/api/auth"
+  "https://reservoir-smallest-feels-latter.trycloudflare.com/api/auth"
 ]
 
 [app_proxy]
-url = "https://port-intelligent-ten-logs.trycloudflare.com/api/proxy-order-track"
+url = "https://reservoir-smallest-feels-latter.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"
