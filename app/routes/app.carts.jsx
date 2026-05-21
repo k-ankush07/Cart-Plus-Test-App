@@ -14,6 +14,7 @@ import {
     SkeletonBodyText,
     SkeletonDisplayText,
     Banner,
+    Popover, ActionList
 } from "@shopify/polaris";
 
 import {
@@ -203,6 +204,7 @@ function AppCartsInner({
     const [unpublishModal, setUnpublishModal] = useState(false);
     const [cartToUnpublish, setCartToUnpublish] = useState(null);
     const [duplicatingCartId, setDuplicatingCartId] = useState(null);
+    const [popoverActive, setPopoverActive] = useState(false);
 
     const today = new Date();
     const defaultStart = new Date();
@@ -443,7 +445,7 @@ function AppCartsInner({
                                     onClick={() => navigate(cartEditorPath)}
                                 >
                                     <IndexTable.Cell>
-                                      
+
                                         <Link
                                             to={cartEditorPath}
                                             prefetch="intent"
