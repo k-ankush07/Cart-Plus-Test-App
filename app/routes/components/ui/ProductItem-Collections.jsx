@@ -76,7 +76,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
             if (prev.includes(variant.id)) {
                 updated = prev.filter((i) => i !== variant.id);
             } else if (maxSelect === 1) {
-                updated = [variant.id]; 
+                updated = [variant.id];
             } else {
                 updated = [...prev, variant.id];
             }
@@ -115,7 +115,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
             if (allSelected) {
                 updated = prev.filter((id) => !variantIds.includes(id));
             } else if (maxSelect === 1) {
-                updated = [variantIds[0]]; 
+                updated = [variantIds[0]];
             } else {
                 updated = [...new Set([...prev, ...variantIds])];
             }
@@ -208,6 +208,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
             const newProducts = edges.map((p) => ({
                 id: p.node.id,
                 title: p.node.title,
+                status: p.node.status,
                 image: p.node.images.edges[0]?.node?.url,
                 price: p.node.variants.edges[0]?.node?.price || "0",
                 variants: p.node.variants.edges.map((v) => ({
@@ -431,17 +432,19 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                                                     <BlockStack>
                                                         <Text fontWeight="medium">{product.title}</Text>
 
-                                                        {product.variants.length > 1 && (<InlineStack gap="50" align="left">
-                                                            <div style={{ display: "inline-flex", alignItems: 'center' }}>
-                                                                <Text tone="subdued" variant="bodySm">
-                                                                    {product.variants.length} variants
-                                                                </Text>
+                                                        {product.variants.length > 0 && (
+                                                            <InlineStack gap="50" align="left">
+                                                                <div style={{ display: "inline-flex", alignItems: "center" }}>
+                                                                    <Text tone="subdued" variant="bodySm">
+                                                                        {product.variants.length} variants
+                                                                    </Text>
 
-                                                                <Icon
-                                                                    source={openProducts[product.id] ? ChevronUpIcon : ChevronDownIcon}
-                                                                />
-                                                            </div>
-                                                        </InlineStack>)}
+                                                                    {product.variants.length > 1 && (
+                                                                        <Icon source={openProducts[product.id] ? ChevronUpIcon : ChevronDownIcon} />
+                                                                    )}
+                                                                </div>
+                                                            </InlineStack>
+                                                        )}
                                                     </BlockStack>
                                                 </div>
 
@@ -458,8 +461,15 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                                                         display: "flex",
                                                         alignItems: "center",
                                                         height: "25px",
+                                                        gap: "8px"
                                                     }}
                                                 >
+                                                    {product.status !== "ACTIVE" && (
+                                                        <Badge tone={product.status === "DRAFT" ? "info" : "warning"}>
+                                                            {product.status === "DRAFT" ? "Draft" : "Archived"}
+                                                        </Badge>
+                                                    )}
+
                                                     {product.variants.every((v) => !v.available) && (
                                                         <Badge tone="warning">Out of stock</Badge>
                                                     )}

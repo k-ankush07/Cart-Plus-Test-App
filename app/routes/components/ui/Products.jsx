@@ -89,6 +89,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                 id: p.node.id,
                 title: p.node.title,
                 handle: p.node.handle,
+                status: p.node.status,
                 image: p.node.images.edges[0]?.node?.url,
                 price: p.node.variants.edges[0]?.node?.price || "0",
                 variants: p.node.variants.edges.map((v) => ({
@@ -286,23 +287,22 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                                             style={{ cursor: "pointer" }}
                                             onClick={() => toggleVariants(product.id)}
                                         >
-
                                             <BlockStack>
                                                 <Text fontWeight="medium">{product.title}</Text>
 
-                                                {product.variants.length > 1 && (<InlineStack gap="50" align="left">
-                                                    <div style={{ display: "inline-flex", alignItems: 'center' }}>
-                                                        <Text tone="subdued" variant="bodySm">
-                                                            {product.variants.length} variants
-                                                        </Text>
-
-                                                        <Icon
-                                                            source={openProducts[product.id] ? ChevronUpIcon : ChevronDownIcon}
-                                                        />
-                                                    </div>
-                                                </InlineStack>)}
+                                                {product.variants.length > 0 && (
+                                                    <InlineStack gap="50" align="left">
+                                                        <div style={{ display: "inline-flex", alignItems: "center" }}>
+                                                            <Text tone="subdued" variant="bodySm">
+                                                                {product.variants.length} variants
+                                                            </Text>
+                                                            {product.variants.length > 1 && (
+                                                                <Icon source={openProducts[product.id] ? ChevronUpIcon : ChevronDownIcon} />
+                                                            )}
+                                                        </div>
+                                                    </InlineStack>
+                                                )}
                                             </BlockStack>
-
                                         </div>
                                     </InlineStack>
                                 </div>
@@ -319,8 +319,14 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                                             display: "flex",
                                             alignItems: "center",
                                             height: "25px",
+                                            gap: "8px"
                                         }}
                                     >
+                                        {product.status !== "ACTIVE" && (
+                                            <Badge tone={product.status === "DRAFT" ? "info" : "warning"}>
+                                                {product.status === "DRAFT" ? "Draft" : "Archived"}
+                                            </Badge>
+                                        )}
                                         {product.variants.every((v) => !v.available) && (
                                             <Badge tone="warning">Out of stock</Badge>
                                         )}

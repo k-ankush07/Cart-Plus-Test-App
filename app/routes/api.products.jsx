@@ -17,6 +17,7 @@ export const loader = async ({ request }) => {
         id
         title
         handle   
+        status
         images(first: 1) {
           edges {
             node { url }
