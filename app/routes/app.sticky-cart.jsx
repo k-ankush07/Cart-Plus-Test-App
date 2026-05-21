@@ -535,19 +535,9 @@ export default function StickyCart() {
                           style={{
                             borderRadius: 6,
                             padding: 6,
-                            border:
-                              selectedIcon === icon.id
-                                ? "2px solid #4da6a6"
-                                : "2px solid #FFFFFF",
-                            background:
-                              selectedIcon === icon.id
-                                ? "rgba(77, 166, 166, .15)"
-                                : "",
-                            color:
-                              selectedIcon === icon.id
-                                ? "#2c7be5"
-                                : "#6b7280",
-
+                            border: selectedIcon === icon.id ? "2px solid #4da6a6" : "2px solid #FFFFFF",
+                            background: selectedIcon === icon.id ? "rgba(77, 166, 166, .15)" : undefined,
+                            color: selectedIcon === icon.id ? "#2c7be5" : "#6b7280",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
