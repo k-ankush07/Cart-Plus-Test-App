@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import {
   Outlet,
   useLoaderData,
@@ -165,11 +166,18 @@ export default function App() {
   const { apiKey } = useLoaderData();
   const navigation = useNavigation();
   const isNavigating = navigation.state !== "idle";
+  const initialLoadDoneRef = useRef(false);
+
+  if (!isNavigating) {
+    initialLoadDoneRef.current = true;
+  }
+
+  const showInitialLoader = isNavigating && !initialLoadDoneRef.current;
 
   return (
     <PolarisProvider>
       <ShopifyAppProvider embedded apiKey={apiKey}>
-        {isNavigating && <NavigationProgressBar />}
+        {showInitialLoader && <NavigationProgressBar />}
         <AppNav />
         <Outlet />
       </ShopifyAppProvider>
