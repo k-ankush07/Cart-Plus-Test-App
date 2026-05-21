@@ -218,7 +218,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                                                 fontWeight: 700,
                                                 padding: "5px 7px",
                                                 borderRadius: "14px",
-                                                lineHeight:1,
+                                                lineHeight: 1,
                                             }}
                                         >
                                             {cartSettings.savingsText} {""}
@@ -312,7 +312,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
 
             {direction === "carousel" ? (
                 <div className="upcart-slider-wrapper">
-                    {carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev">‹</div>)}
+                    {carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"></path></svg></div>)}
 
                     <Swiper
                         modules={[Navigation]}
@@ -335,7 +335,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                             </SwiperSlide>
                         ))}
                     </Swiper>
-                    {carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next">›</div>)}
+                    {carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"></path></svg></div>)}
                     {carouselIndicator === "progressBar" && (<div className="upsell-progress-bar">
                         <div ref={fillRef} className="upsell-progress-fill"></div>
                     </div>)}

@@ -118,6 +118,7 @@ body,
 .hub-upsell-product {
     margin-top: auto;
     padding-top: 20px;
+
 }
 
 .announcement-after {
@@ -764,7 +765,8 @@ body,
     color: #000;
 }
 
-.custom-cart-slider-wrapper {
+.custom-cart-slider-wrapper,
+.upcart-slider-wrapper {
     position: relative;
 }
 
@@ -789,11 +791,11 @@ body,
 }
 
 .custom-prev {
-    left: -9px;
+    left: -10px;
 }
 
 .custom-next {
-    right: -9px;
+    right: -10px;
 }
 
 .custom-prev,
@@ -1679,7 +1681,7 @@ span.hub-offers-title {
     font-weight: 500;
     line-height: 1;
     margin: 10px 0;
-} 
+}
 
 .hub-coupon-action-btn.apply {
     color: #1a8c4e;
@@ -1713,6 +1715,15 @@ span.hub-offers-title {
     align-items: center;
     justify-content: center;
     margin: auto;
+}
+
+.design-cart_saveDraftRainbowBorder__XHNl9 {
+    display: inline-block;
+    padding: 2px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #67d, #c5b, #f28, #f4a, #d4c, #96c, #67d);
+    background-size: 300% 100%;
+    animation: design-cart_rainbow-flow__lHFAe 4s linear infinite;
 }
 
 /* Responsive Styles */

@@ -467,6 +467,7 @@ export default function CartLayout({
         <Icon source={ArrowLeftIcon} />
       </button>
 
+
       <div
         className={`cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
         style={{

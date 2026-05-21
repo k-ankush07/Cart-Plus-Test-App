@@ -40,7 +40,8 @@ import {
     DuplicateIcon,
     DeleteIcon,
     PlusIcon,
-    ExternalIcon
+    ExternalIcon,
+    MagicIcon
 } from "@shopify/polaris-icons";
 
 import DateRangePicker from "./components/ui/DateRangePicker";
@@ -213,7 +214,7 @@ function AppCartsInner({
     const [range, setRange] = useState({ start: defaultStart, end: today });
     const [carts, setCarts] = useState(initialCarts);
     const [cartStats, setCartStats] = useState(initialCartStats);
-    const [loading, setLoading] = useState(false);
+    const [creatingFrom, setCreatingFrom] = useState(null);
 
     const isFirstRender = useRef(true);
 
@@ -238,8 +239,9 @@ function AppCartsInner({
         fetchStats();
     }, [range.start, range.end]);
 
-    const handleCreateCart = () => {
-        setLoading(true);
+   const handleCreateCart = (from = "scratch") => {
+        setCreatingFrom(from);
+        setPopoverActive(false);
         const tempCartId = "cart_" + Date.now() + "_" + Math.random().toString(36).slice(2, 11);
         setTimeout(() => {
             navigate(`/app/cart-editor/${tempCartId}?from=carts`, { replace: true });
@@ -638,14 +640,37 @@ function AppCartsInner({
             primaryAction={
                 <InlineStack gap="300">
                     <DateRangePicker value={range} onChange={setRange} />
-                    <Button
-                        icon={PlusIcon}
-                        loading={loading}
-                        disabled={loading}
-                        onClick={handleCreateCart}
+                    <Popover
+                        active={popoverActive && !creatingFrom}
+                        activator={
+                            <Button
+                                icon={PlusIcon}
+                                onClick={() => setPopoverActive((v) => !v)}
+                                disclosure
+                                loading={!!creatingFrom}
+                                disabled={!!creatingFrom}
+                            >
+                                {creatingFrom ? "Creating..." : "Create cart"}
+                            </Button>
+                        }
+                        onClose={() => setPopoverActive(false)}
                     >
-                        {loading ? "Creating..." : "Create cart"}
-                    </Button>
+                        <ActionList
+                            actionRole="menuitem"
+                            items={[
+                                {
+                                    content: "Create from scratch",
+                                    icon: PlusIcon,
+                                    onAction: () => handleCreateCart("scratch"),
+                                },
+                                {
+                                    content: "Create from templates",
+                                    icon: MagicIcon,
+                                    onAction: () => navigate('/app/design-cart'),
+                                },
+                            ]}
+                        />
+                    </Popover>
                 </InlineStack>
             }
         >

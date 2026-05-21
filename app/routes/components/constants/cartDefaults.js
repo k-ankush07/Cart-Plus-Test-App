@@ -62,7 +62,7 @@ export const defaultRewardsSettings = {
   completeIconColor: "#ffffff",
   incompleteIconColor: "#4D4949",
   successText: "Free shipping unlocked!",
-  barLength: 2,
+  barLength: 5,
   barGap: 0,
   calculationType: "total",
   usePreDiscount: true,
@@ -71,11 +71,11 @@ export const defaultRewardsSettings = {
     {
       id: 1,
       type: "shipping",
-      minAmount: 1000,
+      minAmount: 500,
       minQuantity: 1,
       description: "Free Shipping",
       title: "You're {AMOUNT} away from free shipping!",
-      showIcon: true,
+      showIcon: false,
       products: [],
     },
   ],
@@ -113,8 +113,8 @@ export const defaultUpsellsSettings = {
   title: "You'll love these",
   buttonText: "Add",
   position: "bottom",
-  direction: "block",
-  carouselIndicator: "progressBar",
+  direction: "carousel",
+  carouselIndicator: "none",
 };
 
 export const defaultAdditionalNotesSettings = {
