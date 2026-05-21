@@ -668,26 +668,28 @@ window._hubFetchRecProducts = async function (settings = {}) {
   } else if (sourceType === "collections") {
     const rawColIds = Array.isArray(selectedItems)
       ? selectedItems
-      : selectedItems?.collections || [];
+      : selectedItems.collections || [];
     const collectionIds = rawColIds.map((gid) => gid.split("/").pop());
-    const colRes = await fetch(`/collections.json?limit=250`);
-    const colData = await colRes.json();
-    const matchedCollections = colData.collections.filter((c) =>
-      collectionIds.includes(String(c.id)),
-    );
+
     let allProducts = [];
-    for (const col of matchedCollections) {
+    for (const colId of collectionIds) {
       let page = 1,
         more = true;
       while (more) {
         const res = await fetch(
-          `/collections/${col.handle}/products.json?limit=250&page=${page}`,
+          `/collections/${colId}/products.json?limit=250&page=${page}`,
         );
+        if (!res.ok) {
+          more = false;
+          break;
+        }
         const data = await res.json();
-        if (data.products.length > 0) {
+        if (data.products?.length > 0) {
           allProducts.push(...data.products);
           page++;
-        } else more = false;
+        } else {
+          more = false;
+        }
       }
     }
     finalProducts = allProducts;

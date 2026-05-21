@@ -179,6 +179,16 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                                 },
                             }}
                             secondaryActions={[{ content: "Close", onAction: () => setSuggestedOpen(false) }]}
+                            footer={
+                                <InlineStack align="space-between" blockAlign="center">
+                                    <Pagination
+                                        hasPrevious={pagination.hasPrevious}
+                                        onPrevious={pagination.handlePrev}
+                                        hasNext={pagination.hasNext}
+                                        onNext={pagination.handleNext}
+                                    />
+                                </InlineStack>
+                            }
                         >
                             <Modal.Section>
                                 <div style={{ height: "700px" }}>
@@ -188,6 +198,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                                         showCollections={false}
                                         onSelect={(data) => setSuggestedSelected(data)}
                                         initialSelected={suggestedSelected}
+                                        onPaginationChange={(p) => setPagination(p)}
                                     />
                                 </div>
                             </Modal.Section>

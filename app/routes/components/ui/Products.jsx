@@ -121,18 +121,18 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
 
     const handleNext = async () => {
         if (!hasNextPage) return;
-        const currentCursor = cursorRef.current;
-        setCursorStack((prev) => [...prev, currentCursor]);
-        await loadMore(currentCursor, currentSearchRef.current);
+        setCursorStack((prev) => [...prev, cursorRef.current]);
+        await loadMore(cursorRef.current, currentSearchRef.current);
     };
 
     const handlePrev = async () => {
-        const stack = cursorStackRef.current;
+        const stack = [...cursorStackRef.current];
         if (stack.length === 0) return;
-        const newStack = [...stack];
-        const prevCursor = newStack.pop();
-        setCursorStack(newStack);
-        await loadMore(prevCursor || null, currentSearchRef.current);
+        stack.pop();
+        const prevCursor =
+            stack.length > 0 ? stack[stack.length - 1] : null;
+        setCursorStack(stack);
+        await loadMore(prevCursor, currentSearchRef.current);
     };
 
     const toggleSelect = (variant, product) => {
