@@ -339,9 +339,9 @@ function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft }
             <Badge>—</Badge>
           </InlineStack>
         </BlockStack>
-        <Box flexShrink="0" paddingInlineStart="200">
+        <div style={{ flexShrink: 0, paddingInlineStart: "8px" }}>
           <Sparkline type={sparklineType} value={rawValue} />
-        </Box>
+        </div>
       </InlineStack>
     </div>
   );
