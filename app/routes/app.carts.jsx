@@ -12,6 +12,7 @@ import {
     Box,
     Icon,
     SkeletonBodyText,
+    SkeletonDisplayText,
     Banner,
 } from "@shopify/polaris";
 
@@ -42,8 +43,8 @@ import {
 } from "@shopify/polaris-icons";
 
 import DateRangePicker from "./components/ui/DateRangePicker";
-import { useLoaderData, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { Await, useLoaderData, useNavigate } from "react-router-dom";
+import { Suspense, useState, useEffect, useRef } from "react";
 import CartHoverCard from "./components/ui/CartHoverCard"
 import LiveDot from "./components/ui/LiveDot";
 import { shopLoader } from "./components/shop.server";
@@ -64,35 +65,10 @@ const PLAN_ORDER_LIMITS = {
     growth: 200,
 };
 
-export const loader = async ({ request }) => {
-    const { shop, apiUrl, accessToken, currency, admin } = await shopLoader(request);
-    // ... date setup unchanged ...
-    const appEmbedId = process.env.SHOPIFY_API_KEY || "";
-
-    const today = new Date();
-    const defaultStart = new Date();
-
-    defaultStart.setDate(today.getDate() - 29);
-
-    const [themeResult, cartsResult, statsResult] = await Promise.allSettled([
-        admin.graphql(`{ themes(first: 5, roles: [MAIN]) { nodes { id } } }`),
-        getCarts(apiUrl, shop.myshopifyDomain),
-        getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString()),
-    ]);
-
-    let mainThemeId = "current";
-    if (themeResult.status === "fulfilled") {
-        try {
-            const themeData = await themeResult.value.json();
-            const rawId = themeData?.data?.themes?.nodes?.[0]?.id || "";
-            mainThemeId = rawId.split("/").pop() || "current";
-        } catch (_) { }
-    }
-
-    let appEmbedInstalled = false;
+async function checkAppEmbed(shopDomain, accessToken, themeId) {
     try {
         const assetRes = await fetch(
-            `https://${shop.myshopifyDomain}/admin/api/2025-10/themes/${mainThemeId}/assets.json?asset[key]=config/settings_data.json`,
+            `https://${shopDomain}/admin/api/2025-10/themes/${themeId}/assets.json?asset[key]=config/settings_data.json`,
             { headers: { "X-Shopify-Access-Token": accessToken, "Content-Type": "application/json" } }
         );
         const assetData = await assetRes.json();
@@ -101,37 +77,139 @@ export const loader = async ({ request }) => {
         for (const key in blocks) {
             const block = blocks[key];
             if (block?.type?.includes("shopify://apps/cart-drawer/")) {
-                if (!block?.disabled) appEmbedInstalled = true;
-                break;
+                return !block?.disabled;
             }
         }
     } catch (_) { }
+    return false;
+}
 
-    const carts = cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [];
-    const cartStats = statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {};
+async function fetchShopPlan(apiUrl, shopDomain) {
+    try {
+        const res = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`);
+        const data = await res.json();
+        return data?.data?.plan || "free";
+    } catch (_) {
+        return "free";
+    }
+}
 
-    const planRes = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shop.myshopifyDomain)}`);
-    const planData = await planRes.json();
-    const shopPlan = planData?.data?.plan || "free";
+async function fetchCurrentMonthOrders(apiUrl, shopDomain) {
+    try {
+        const res = await fetch(
+            `${apiUrl}/api/cart-order-count?shop=${encodeURIComponent(shopDomain)}`
+        );
+        const data = await res.json();
+        const now = new Date();
+        const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+        return (data?.data?.dateWise || [])
+            .filter(({ date }) => date >= monthStart)
+            .reduce((sum, { totalOrders }) => sum + totalOrders, 0);
+    } catch (_) {
+        return 0;
+    }
+}
 
-    const now = new Date();
-    const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+export const loader = async ({ request }) => {
+    const { shop, apiUrl, accessToken, currency, mainThemeId } =
+        await shopLoader(request);
 
-    const monthOrdersRes = await fetch(
-        `${apiUrl}/api/cart-order-count?shop=${encodeURIComponent(shop.myshopifyDomain)}`
-    );
-    const monthOrdersData = await monthOrdersRes.json();
+    const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 
-    const currentMonthOrders = (monthOrdersData?.data?.dateWise || [])
-        .filter(({ date }) => date >= monthStart)
-        .reduce((sum, { totalOrders }) => sum + totalOrders, 0);
+    const today = new Date();
+    const defaultStart = new Date();
+    defaultStart.setDate(today.getDate() - 29);
 
-    return Response.json({ shop, apiUrl, accessToken, currency, carts, cartStats, appEmbedInstalled, mainThemeId, appEmbedId, shopPlan, currentMonthOrders });
+    const dataPromise = Promise.allSettled([
+        getCarts(apiUrl, shop.myshopifyDomain),
+        getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString()),
+        checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
+        fetchShopPlan(apiUrl, shop.myshopifyDomain),
+        fetchCurrentMonthOrders(apiUrl, shop.myshopifyDomain),
+    ]).then(([cartsResult, statsResult, embedResult, planResult, ordersResult]) => ({
+        carts: cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [],
+        cartStats: statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {},
+        appEmbedInstalled: embedResult.status === "fulfilled" ? embedResult.value : false,
+        shopPlan: planResult.status === "fulfilled" ? planResult.value : "free",
+        currentMonthOrders: ordersResult.status === "fulfilled" ? ordersResult.value : 0,
+    }));
+
+    return {
+        shop,
+        apiUrl,
+        currency,
+        appEmbedId,
+        mainThemeId,
+        dataPromise,
+    };
 };
 
-export default function AppCarts() {
-    const { shop, apiUrl, carts: initialCarts, cartStats: initialCartStats, currency, appEmbedInstalled, mainThemeId, appEmbedId, shopPlan, currentMonthOrders } = useLoaderData();
+function AppCartsSkeleton() {
+    return (
+        <Page title="All Carts">
+            <Layout>
+                <Layout.Section>
+                    <div style={{ marginTop: 16 }}>
+                        <SkeletonDisplayText size="small" />
+                    </div>
+                    <Box paddingBlockStart="300">
+                        <div
+                            style={{
+                                background: "#fff",
+                                border: "1px solid #e1e3e5",
+                                borderRadius: 12,
+                                padding: 20,
+                            }}
+                        >
+                            <SkeletonBodyText lines={4} />
+                        </div>
+                    </Box>
+                </Layout.Section>
+                <Layout.Section>
+                    <div style={{ marginTop: 16 }}>
+                        <SkeletonDisplayText size="small" />
+                    </div>
+                    <Box paddingBlockStart="300">
+                        <div
+                            style={{
+                                background: "#fff",
+                                border: "1px solid #e1e3e5",
+                                borderRadius: 12,
+                                padding: 20,
+                            }}
+                        >
+                            <SkeletonBodyText lines={4} />
+                        </div>
+                    </Box>
+                </Layout.Section>
+            </Layout>
+        </Page>
+    );
+}
 
+export default function AppCarts() {
+    const loaderData = useLoaderData();
+    return (
+        <Suspense fallback={<AppCartsSkeleton />}>
+            <Await resolve={loaderData.dataPromise} errorElement={<AppCartsSkeleton />}>
+                {(data) => <AppCartsInner {...loaderData} {...data} />}
+            </Await>
+        </Suspense>
+    );
+}
+
+function AppCartsInner({
+    shop,
+    apiUrl,
+    currency,
+    appEmbedId,
+    mainThemeId,
+    carts: initialCarts,
+    cartStats: initialCartStats,
+    appEmbedInstalled,
+    shopPlan,
+    currentMonthOrders,
+}) {
     const navigate = useNavigate();
     const [deleteModal, setDeleteModal] = useState(false);
     const [selectedCart, setSelectedCart] = useState(null);

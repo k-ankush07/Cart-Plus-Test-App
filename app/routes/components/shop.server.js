@@ -22,10 +22,15 @@ export const shopLoader = async (request) => {
             displayName
           }
         }
+        themes(first: 5, roles: [MAIN]) {
+          nodes { id }
+        }
       }
     `);
 
     const shopData = await shopRes.json();
+    const rawThemeId = shopData?.data?.themes?.nodes?.[0]?.id || "";
+    const mainThemeId = rawThemeId.split("/").pop() || "current";
 
     return {
       shop: shopData?.data?.shop || null,
@@ -33,6 +38,7 @@ export const shopLoader = async (request) => {
       apiUrl: process.env.PUBLIC_REACT_APP_API_URL,
       accessToken,
       admin,
+      mainThemeId,
     };
   } catch (error) {
     console.error("Shop Loader Error:", error);
@@ -41,6 +47,7 @@ export const shopLoader = async (request) => {
       shop: null,
       apiUrl: process.env.PUBLIC_REACT_APP_API_URL,
       accessToken: null,
+      mainThemeId: "current",
     };
   }
 };

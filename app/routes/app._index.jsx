@@ -13,15 +13,17 @@ import {
   Divider,
   Icon,
   InlineGrid,
-  Card
+  Card,
+  SkeletonBodyText,
+  SkeletonDisplayText,
 } from "@shopify/polaris";
 import { ChevronDownIcon, HeartIcon, NoteIcon, ExternalIcon } from "@shopify/polaris-icons";
 
 import { getCarts, getCartStats } from "../services/apiRoutes";
 import { shopLoader } from "./components/shop.server";
 import DateRangePicker from "./components/ui/DateRangePicker";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useLoaderData, useNavigate, Link } from "react-router-dom";
+import { Suspense, useState, useEffect, useRef, useCallback } from "react";
+import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import LiveDot from "./components/ui/LiveDot";
 
@@ -122,42 +124,10 @@ function buildSetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appE
 
 // ─── Loader ────────────────────────────────────────────────────────────────────
 
-export const loader = async ({ request }) => {
-  const { shop, apiUrl, accessToken, currency, admin } = await shopLoader(request);
-
-  const appEmbedId = process.env.SHOPIFY_API_KEY || "";
-
-  const today = new Date();
-  const defaultStart = new Date();
-  defaultStart.setDate(today.getDate() - 29);
-
-  // ── Run all independent fetches in parallel ────────────────────────────────
-  const [themeResult, cartsResult, statsResult] = await Promise.allSettled([
-    // 1) Get main theme ID
-    admin.graphql(`{ themes(first: 5, roles: [MAIN]) { nodes { id } } }`),
-    // 2) Get carts
-    getCarts(apiUrl, shop.myshopifyDomain),
-    // 3) Get cart stats
-    getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString()),
-  ]);
-
-  // ── Parse theme ID ─────────────────────────────────────────────────────────
-  let mainThemeId = "current";
-  if (themeResult.status === "fulfilled") {
-    try {
-      const themeData = await themeResult.value.json();
-      const rawId = themeData?.data?.themes?.nodes?.[0]?.id || "";
-      mainThemeId = rawId.split("/").pop() || "current";
-    } catch (_) { }
-  }
-
-  // ── Check app embed (depends on mainThemeId, run after) ───────────────────
-  let appEmbedInstalled = false;
-  let appEmbedStarted = false;
-
+async function checkAppEmbed(shopDomain, accessToken, themeId) {
   try {
     const assetRes = await fetch(
-      `https://${shop.myshopifyDomain}/admin/api/2025-10/themes/${mainThemeId}/assets.json?asset[key]=config/settings_data.json`,
+      `https://${shopDomain}/admin/api/2025-10/themes/${themeId}/assets.json?asset[key]=config/settings_data.json`,
       {
         headers: {
           "X-Shopify-Access-Token": accessToken,
@@ -172,38 +142,64 @@ export const loader = async ({ request }) => {
     for (const key in blocks) {
       const block = blocks[key];
       if (block?.type?.includes("shopify://apps/cart-drawer/")) {
-        appEmbedStarted = true;
-        if (!block?.disabled) appEmbedInstalled = true;
-        break;
+        return { started: true, installed: !block?.disabled };
       }
     }
   } catch (_) { }
+  return { started: false, installed: false };
+}
 
-  // ── Parse carts & stats ────────────────────────────────────────────────────
-  const carts =
-    cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [];
+export const loader = async ({ request }) => {
+  const { shop, apiUrl, accessToken, currency, mainThemeId } =
+    await shopLoader(request);
 
-  const cartStats =
-    statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {};
+  const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 
-  const shopRevenue =
-    statsResult.status === "fulfilled"
-      ? statsResult.value?.shopRevenue || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 }
-      : { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 };
+  const today = new Date();
+  const defaultStart = new Date();
+  defaultStart.setDate(today.getDate() - 29);
 
-  return Response.json({
+  // ── Stream non-critical data — page shell renders immediately ─────────────
+  const fallbackRevenue = {
+    addonRevenue: 0,
+    upsellRevenue: 0,
+    subscriptionRevenue: 0,
+  };
+
+  const dataPromise = Promise.allSettled([
+    getCarts(apiUrl, shop.myshopifyDomain),
+    getCartStats(
+      apiUrl,
+      shop.myshopifyDomain,
+      defaultStart.toISOString(),
+      today.toISOString()
+    ),
+    checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
+  ]).then(([cartsResult, statsResult, embedResult]) => ({
+    carts:
+      cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [],
+    cartStats:
+      statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {},
+    shopRevenue:
+      statsResult.status === "fulfilled"
+        ? statsResult.value?.shopRevenue || fallbackRevenue
+        : fallbackRevenue,
+    appEmbedInstalled:
+      embedResult.status === "fulfilled"
+        ? embedResult.value.installed
+        : false,
+    appEmbedStarted:
+      embedResult.status === "fulfilled" ? embedResult.value.started : false,
+  }));
+
+  return {
     shop,
     apiUrl,
-    accessToken,
     currency,
-    carts,
-    cartStats,
-    shopRevenue,
     appEmbedId,
     mainThemeId,
-    appEmbedInstalled,
-    appEmbedStarted,
-  });
+    dataPromise,
+  };
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -353,20 +349,71 @@ function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft }
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────────
 
-export default function Dashboard() {
-  const {
-    shop,
-    apiUrl,
-    carts: initialCarts,
-    cartStats: initialCartStats,
-    shopRevenue: initialShopRevenue,
-    appEmbedId,
-    mainThemeId,
-    appEmbedInstalled,
-    appEmbedStarted,
-    currency
-  } = useLoaderData();
+function DashboardSkeleton() {
+  return (
+    <Page title="Welcome to Custom Cart 🎉">
+      <BlockStack gap="400">
+        <BlockStack gap="200">
+          <SkeletonDisplayText size="small" />
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #e1e3e5",
+              borderRadius: 12,
+              padding: 20,
+            }}
+          >
+            <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }} gap="400">
+              {[0, 1, 2, 3].map((i) => (
+                <BlockStack gap="200" key={i}>
+                  <SkeletonBodyText lines={1} />
+                  <SkeletonDisplayText size="small" />
+                </BlockStack>
+              ))}
+            </InlineGrid>
+          </div>
+        </BlockStack>
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #e1e3e5",
+            borderRadius: 12,
+            padding: 20,
+          }}
+        >
+          <SkeletonBodyText lines={5} />
+        </div>
+      </BlockStack>
+    </Page>
+  );
+}
 
+export default function Dashboard() {
+  const loaderData = useLoaderData();
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <Await
+        resolve={loaderData.dataPromise}
+        errorElement={<DashboardSkeleton />}
+      >
+        {(data) => <DashboardInner {...loaderData} {...data} />}
+      </Await>
+    </Suspense>
+  );
+}
+
+function DashboardInner({
+  shop,
+  apiUrl,
+  carts: initialCarts,
+  cartStats: initialCartStats,
+  shopRevenue: initialShopRevenue,
+  appEmbedId,
+  mainThemeId,
+  appEmbedInstalled,
+  appEmbedStarted,
+  currency,
+}) {
   const navigate = useNavigate();
 
   const [carts, setCarts] = useState(initialCarts || []);
@@ -551,6 +598,28 @@ export default function Dashboard() {
                   { title: "Cart name", id: "cart-name" },
                   { title: "Status", id: "status" },
                   {
+                    id: "impressions",
+                    title: (
+                      <Tooltip hasUnderline activatorWrapper="span" content={
+                        <BlockStack gap="200">
+                          <Text as="p" fontWeight="bold">
+                            Impressions
+                          </Text>
+
+                          <Text as="p" variant="bodyMd">
+                            Number of times this cart was shown to a shopper.
+                          </Text>
+
+                          <Text as="p" variant="bodyMd">
+                            Values shown are for the date range selected at the top of the page.
+                          </Text>
+                        </BlockStack>
+                      }>
+                        <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium"> Impressions</Text>
+                      </Tooltip>
+                    ),
+                  },
+                  {
                     id: "conversion-rate",
                     title: (
                       <Tooltip hasUnderline activatorWrapper="span" content={
@@ -629,6 +698,12 @@ export default function Dashboard() {
                             <AppEmbedLink />
                           )}
                         </InlineStack>
+                      </IndexTable.Cell>
+
+                      <IndexTable.Cell>
+                        {cartStats?.[cart.cartId]?.impressions != null
+                          ? cartStats[cart.cartId].impressions.toLocaleString()
+                          : "—"}
                       </IndexTable.Cell>
 
                       <IndexTable.Cell>
