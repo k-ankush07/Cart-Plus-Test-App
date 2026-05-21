@@ -1,5 +1,4 @@
 import { useLoaderData, useNavigate } from "react-router";
-import { authenticate } from "../shopify.server";
 import {
   Page, Card, Text, InlineStack, BlockStack,
   Box, Button, DataTable, Layout, Tooltip, Icon
@@ -11,6 +10,7 @@ import {
 } from "chart.js";
 import { useState, useCallback } from "react";
 import DateRangePicker from "./components/ui/DateRangePicker";
+import { shopLoader } from "./components/shop.server";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, ChartTooltip);
 
@@ -221,14 +221,17 @@ function SmallCard({ title, value, tooltip, valueTooltip, icon }) {
 // ─── loader ───────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
-  const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
+
+  const { shop, apiUrl } = await shopLoader(request);
+
+  const shopDomain = shop?.myshopifyDomain;
+
   try {
-    const res = await fetch(`${apiUrl}/api/revenue-stats?shop=${session.shop}`);
+    const res = await fetch(`${apiUrl}/api/revenue-stats?shop=${shopDomain}`);
     const json = await res.json();
-    return { stats: json.data || null, shop: session.shop };
+    return { stats: json.data || null, shop: shopDomain, currency: shop?.currencyCode || "USD" };
   } catch {
-    return { stats: null, shop: session.shop };
+    return { stats: null, shop: shopDomain, currency: shop?.currencyCode || "USD" };
   }
 };
 

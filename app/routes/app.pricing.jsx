@@ -17,15 +17,7 @@ import { CheckIcon } from "@shopify/polaris-icons";
 import { useLoaderData, useFetcher } from "react-router-dom";
 import { authenticate } from "../shopify.server";
 import "../index.css";
-
-const apiUrl = process.env.PUBLIC_REACT_APP_API_URL;
-
-const savePlan = (shop, plan, price, subscriptionId, status) =>
-    fetch(`${apiUrl}/api/shop-plan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shop, plan, price, subscriptionId, status }),
-    });
+import { shopLoader } from "./components/shop.server";
 
 const PLANS = [
     {
@@ -84,11 +76,21 @@ const PLANS = [
     },
 ];
 
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+const savePlan = (apiUrl, shop, plan, price, subscriptionId, status) =>
+    fetch(`${apiUrl}/api/shop-plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shop, plan, price, subscriptionId, status }),
+    });
+
 // ─── Loader ──────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
-    const { admin, session } = await authenticate.admin(request);
-    const shop = session.shop;
+    const { shop, apiUrl, admin } = await shopLoader(request);
+
+    const shopDomain = shop?.myshopifyDomain;
 
     const res = await admin.graphql(`
         query {
@@ -128,18 +130,20 @@ export const loader = async ({ request }) => {
         activeSubscriptionId = active.id;
     }
 
-    await savePlan(shop, activePlan, activePrice, activeSubscriptionId, "active");
+    await savePlan(apiUrl, shopDomain, activePlan, activePrice, activeSubscriptionId, "active");
 
-    const dbRes = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shop)}`);
+    const dbRes = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`);
     const dbData = await dbRes.json();
 
-    return Response.json({ activePlan, dbRecord: dbData.data });
+    return Response.json({ activePlan, apiUrl, dbRecord: dbData.data });
 };
 
 // ─── Action ──────────────────────────────────────────────────────────────────
 
 export const action = async ({ request }) => {
+   
     const { admin, session } = await authenticate.admin(request);
+    const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
     const formData = await request.formData();
     const actionType = formData.get("_action");
 
@@ -170,7 +174,7 @@ export const action = async ({ request }) => {
             );
         }
 
-        await savePlan(session.shop, "free", 0, null, "active");
+        await savePlan(apiUrl, session.shop, "free", 0, null, "active");
         return Response.json({ cancelled: true });
     }
 
@@ -260,7 +264,7 @@ export const action = async ({ request }) => {
     const subscriptionId = result?.appSubscription?.id;
 
     if (confirmationUrl) {
-        await savePlan(session.shop, selectedPlan, parseFloat(price), subscriptionId, "pending");
+        await savePlan(apiUrl, session.shop, selectedPlan, parseFloat(price), subscriptionId, "pending");
         return Response.json({ confirmationUrl });
     }
 
@@ -366,12 +370,8 @@ function PricingCard({ plan, activePlan }) {
             )}
 
             <BlockStack gap="100">
-                <Text as="h3" variant="headingMd">
-                    {plan.name}
-                </Text>
-                <Text as="p" variant="bodySm" tone="subdued">
-                    {plan.description}
-                </Text>
+                <Text as="h3" variant="headingMd">{plan.name}</Text>
+                <Text as="p" variant="bodySm" tone="subdued">{plan.description}</Text>
             </BlockStack>
 
             <InlineStack gap="100" blockAlign="end">
@@ -393,9 +393,7 @@ function PricingCard({ plan, activePlan }) {
                         <Box>
                             <Icon source={CheckIcon} tone="success" />
                         </Box>
-                        <Text as="p" variant="bodySm">
-                            {feature}
-                        </Text>
+                        <Text as="p" variant="bodySm">{feature}</Text>
                     </InlineStack>
                 ))}
             </BlockStack>
