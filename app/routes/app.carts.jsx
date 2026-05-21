@@ -43,9 +43,9 @@ import {
 } from "@shopify/polaris-icons";
 
 import DateRangePicker from "./components/ui/DateRangePicker";
-import { Await, useLoaderData, useNavigate } from "react-router-dom";
+import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
 import { Suspense, useState, useEffect, useRef } from "react";
-import CartHoverCard from "./components/ui/CartHoverCard"
+import CartHoverCard from "./components/ui/CartHoverCard";
 import LiveDot from "./components/ui/LiveDot";
 import { shopLoader } from "./components/shop.server";
 
@@ -134,15 +134,10 @@ export const loader = async ({ request }) => {
         currentMonthOrders: ordersResult.status === "fulfilled" ? ordersResult.value : 0,
     }));
 
-    return {
-        shop,
-        apiUrl,
-        currency,
-        appEmbedId,
-        mainThemeId,
-        dataPromise,
-    };
+    return { shop, apiUrl, currency, appEmbedId, mainThemeId, dataPromise };
 };
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function AppCartsSkeleton() {
     return (
@@ -153,14 +148,7 @@ function AppCartsSkeleton() {
                         <SkeletonDisplayText size="small" />
                     </div>
                     <Box paddingBlockStart="300">
-                        <div
-                            style={{
-                                background: "#fff",
-                                border: "1px solid #e1e3e5",
-                                borderRadius: 12,
-                                padding: 20,
-                            }}
-                        >
+                        <div style={{ background: "#fff", border: "1px solid #e1e3e5", borderRadius: 12, padding: 20 }}>
                             <SkeletonBodyText lines={4} />
                         </div>
                     </Box>
@@ -170,14 +158,7 @@ function AppCartsSkeleton() {
                         <SkeletonDisplayText size="small" />
                     </div>
                     <Box paddingBlockStart="300">
-                        <div
-                            style={{
-                                background: "#fff",
-                                border: "1px solid #e1e3e5",
-                                borderRadius: 12,
-                                padding: 20,
-                            }}
-                        >
+                        <div style={{ background: "#fff", border: "1px solid #e1e3e5", borderRadius: 12, padding: 20 }}>
                             <SkeletonBodyText lines={4} />
                         </div>
                     </Box>
@@ -197,6 +178,8 @@ export default function AppCarts() {
         </Suspense>
     );
 }
+
+// ─── Inner ────────────────────────────────────────────────────────────────────
 
 function AppCartsInner({
     shop,
@@ -232,16 +215,10 @@ function AppCartsInner({
 
     const isFirstRender = useRef(true);
 
-    useEffect(() => {
-        setCarts(initialCarts);
-    }, [initialCarts]);
+    useEffect(() => { setCarts(initialCarts); }, [initialCarts]);
 
     useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-        }
-
+        if (isFirstRender.current) { isFirstRender.current = false; return; }
         const fetchStats = async () => {
             try {
                 const params = new URLSearchParams({
@@ -249,16 +226,13 @@ function AppCartsInner({
                     startDate: range.start.toISOString(),
                     endDate: range.end.toISOString(),
                 });
-                const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
-                    credentials: "include",
-                });
+                const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, { credentials: "include" });
                 const data = await res.json();
                 if (data.success) setCartStats(data.data || {});
             } catch (err) {
                 console.error("STATS FETCH ERROR:", err);
             }
         };
-
         fetchStats();
     }, [range.start, range.end]);
 
@@ -368,7 +342,9 @@ function AppCartsInner({
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const fmt = (n) =>
-        new Intl.NumberFormat("en-US", { style: "currency", currency: currency ?? "USD", minimumFractionDigits: 2 }).format(Number(n ?? 0));
+        new Intl.NumberFormat("en-US", {
+            style: "currency", currency: currency ?? "USD", minimumFractionDigits: 2,
+        }).format(Number(n ?? 0));
 
     const AppEmbedLink = () => (
         <Tooltip content="Enable the app embed to start showing this cart on your storefront. Click to enable in your theme editor.">
@@ -390,7 +366,9 @@ function AppCartsInner({
         </Tooltip>
     );
 
-    const CartTable = ({ carts, emptyText, isDraft, stats, monthOrders, range }) => (
+    // ─── CartTable ─────────────────────────────────────────────────────────────
+
+    const CartTable = ({ carts, emptyText, isDraft, stats, monthOrders }) => (
         <div style={{ paddingTop: 12 }}>
             {carts.length === 0 ? (
                 <Text tone="subdued">{emptyText}</Text>
@@ -410,17 +388,9 @@ function AppCartsInner({
                                 title: (
                                     <Tooltip hasUnderline activatorWrapper="span" content={
                                         <BlockStack gap="200">
-                                            <Text as="p" fontWeight="bold">
-                                                Impressions
-                                            </Text>
-
-                                            <Text as="p" variant="bodyMd">
-                                                Number of times this cart was shown to a shopper.
-                                            </Text>
-
-                                            <Text as="p" variant="bodyMd">
-                                                Values shown are for the date range selected at the top of the page.
-                                            </Text>
+                                            <Text as="p" fontWeight="bold">Impressions</Text>
+                                            <Text as="p" variant="bodyMd">Number of times this cart was shown to a shopper.</Text>
+                                            <Text as="p" variant="bodyMd">Values shown are for the date range selected at the top of the page.</Text>
                                         </BlockStack>
                                     }>
                                         <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium"> Impressions</Text>
@@ -432,17 +402,9 @@ function AppCartsInner({
                                 title: (
                                     <Tooltip hasUnderline activatorWrapper="span" content={
                                         <BlockStack gap="200">
-                                            <Text as="p" fontWeight="bold">
-                                                Cart conversion rate (%)
-                                            </Text>
-
-                                            <Text as="p" variant="bodyMd">
-                                                The percentage of cart impressions that resulted in a completed purchase.
-                                            </Text>
-
-                                            <Text as="p" variant="bodyMd">
-                                                Values shown are for the date range selected at the top of the page.
-                                            </Text>
+                                            <Text as="p" fontWeight="bold">Cart conversion rate (%)</Text>
+                                            <Text as="p" variant="bodyMd">The percentage of cart impressions that resulted in a completed purchase.</Text>
+                                            <Text as="p" variant="bodyMd">Values shown are for the date range selected at the top of the page.</Text>
                                         </BlockStack>
                                     }>
                                         <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium">  Cart conversion rate (%)</Text>
@@ -454,117 +416,134 @@ function AppCartsInner({
                                 title: (
                                     <Tooltip hasUnderline activatorWrapper="span" content={
                                         <BlockStack gap="200">
-                                            <Text as="p" fontWeight="bold">
-                                                Added revenue
-                                            </Text>
-
-                                            <Text as="p" variant="bodyMd">
-                                                Revenue generated by Upcart offers.
-                                            </Text>
-                                            <Text as="p" variant="bodyMd">
-                                                Values shown are for the date range selected at the top of the page.
-                                            </Text>
+                                            <Text as="p" fontWeight="bold">Added revenue</Text>
+                                            <Text as="p" variant="bodyMd">Revenue generated by Upcart offers.</Text>
+                                            <Text as="p" variant="bodyMd">Values shown are for the date range selected at the top of the page.</Text>
                                         </BlockStack>
                                     }>
                                         <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium">  Added revenue</Text>
                                     </Tooltip>
-
                                 ),
                             },
                             { title: "", id: "actions" },
                         ]}
                         selectable={false}
                     >
-                        {carts.map((cart, i) => (
-                            <IndexTable.Row
-                                key={cart.cartId || `${cart._id || "cart"}-${i}`}
-                                id={cart.cartId || `${i}`}
-                                position={i}
-                                onClick={() => navigate(`/app/cart-editor/${cart.cartId}?from=carts`)}
-                                style={{ cursor: "pointer" }}
-                            >
-                                <IndexTable.Cell>
-                                    <CartHoverCard cart={cart}>
-                                        <Text as="span" style={{ cursor: "pointer" }}>
-                                            {(cart.cartName || "Untitled cart").length > 8
-                                                ? (cart.cartName || "Untitled cart").slice(0, 8) + "..."
-                                                : (cart.cartName || "Untitled cart")}
-                                        </Text>
-                                    </CartHoverCard>
-                                </IndexTable.Cell>
+                        {carts.map((cart, i) => {
+                            const cartEditorPath = `/app/cart-editor/${cart.cartId}?from=carts`;
+                            const limit = PLAN_ORDER_LIMITS[shopPlan] ?? PLAN_ORDER_LIMITS.free;
+                            const limitReached = monthOrders >= limit;
 
-                                {!isDraft && (
+                            return (
+                                // ── FIX: No onClick on the row — cover Link handles navigation instantly
+                                <IndexTable.Row
+                                    key={cart.cartId || `${cart._id || "cart"}-${i}`}
+                                    id={cart.cartId || `${i}`}
+                                    position={i}
+                                    onClick={() => navigate(cartEditorPath)}
+                                >
                                     <IndexTable.Cell>
-                                        <InlineStack gap="200" blockAlign="center">
-                                            {appEmbedInstalled ? (
-                                                <Badge tone="success">Live</Badge>
-                                            ) : (
-                                                <AppEmbedLink />
-                                            )}
-                                        </InlineStack>
+                                      
+                                        <Link
+                                            to={cartEditorPath}
+                                            prefetch="intent"
+                                            style={{
+                                                position: "absolute",
+                                                inset: 0,
+                                                zIndex: 0,
+                                            }}
+                                            aria-label={`Edit cart ${cart.cartName || "Untitled cart"}`}
+                                        />
+                                        <CartHoverCard cart={cart}>
+                                            {/* zIndex: 1 keeps hover card above the cover link */}
+                                            <div style={{ position: "relative", zIndex: 1, cursor: "pointer" }}>
+                                                <Text as="span">
+                                                    {(cart.cartName || "Untitled cart").length > 8
+                                                        ? (cart.cartName || "Untitled cart").slice(0, 8) + "..."
+                                                        : (cart.cartName || "Untitled cart")}
+                                                </Text>
+                                            </div>
+                                        </CartHoverCard>
                                     </IndexTable.Cell>
-                                )}
 
-                                <IndexTable.Cell>
-                                    {!isDraft && stats?.[cart.cartId]?.impressions != null
-                                        ? stats[cart.cartId].impressions.toLocaleString()
-                                        : "—"}
-                                </IndexTable.Cell>
+                                    {!isDraft && (
+                                        <IndexTable.Cell>
+                                            <InlineStack gap="200" blockAlign="center">
+                                                {/* zIndex: 1 keeps badge/link above cover */}
+                                                <span style={{ position: "relative", zIndex: 1 }}>
+                                                    {appEmbedInstalled ? (
+                                                        <Badge tone="success">Live</Badge>
+                                                    ) : (
+                                                        <AppEmbedLink />
+                                                    )}
+                                                </span>
+                                            </InlineStack>
+                                        </IndexTable.Cell>
+                                    )}
 
-                                <IndexTable.Cell>
-                                    {!isDraft && stats?.[cart.cartId]?.conversionRate != null
-                                        ? stats[cart.cartId].conversionRate.toFixed(2) + "%"
-                                        : "—"}
-                                </IndexTable.Cell>
-                                <IndexTable.Cell>
-                                    {!isDraft && stats?.[cart.cartId]?.revenue != null
-                                        ? fmt(stats[cart.cartId].revenue)
-                                        : "—"}
-                                </IndexTable.Cell>
+                                    <IndexTable.Cell>
+                                        {!isDraft && stats?.[cart.cartId]?.impressions != null
+                                            ? stats[cart.cartId].impressions.toLocaleString()
+                                            : "—"}
+                                    </IndexTable.Cell>
 
-                                <IndexTable.Cell>
-                                    <InlineStack gap="200" align="end">
-                                        <Tooltip content="Edit">
-                                            <Button icon={EditIcon} onClick={() => navigate(`/app/cart-editor/${cart.cartId}?from=carts`)} />
-                                        </Tooltip>
-                                        <Tooltip content={cart.status === "published" ? "Preview" : "Only available for live carts"}>
-                                            <Button
-                                                icon={ViewIcon}
-                                                disabled={cart.status !== "published"}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (cart.status === "published") {
-                                                        window.open(`https://${shop.myshopifyDomain}`, "_blank");
-                                                    }
-                                                }}
-                                            />
-                                        </Tooltip>
-                                        <Tooltip content="Duplicate">
-                                            <Button
-                                                icon={DuplicateIcon}
-                                                loading={duplicatingCartId === cart.cartId}
-                                                disabled={duplicatingCartId !== null}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDuplicateCart(cart);
-                                                }}
-                                            />
-                                        </Tooltip>
-                                        {(() => {
-                                            const limit = PLAN_ORDER_LIMITS[shopPlan] ?? PLAN_ORDER_LIMITS.free;
-                                            const limitReached = monthOrders >= limit;
+                                    <IndexTable.Cell>
+                                        {!isDraft && stats?.[cart.cartId]?.conversionRate != null
+                                            ? stats[cart.cartId].conversionRate.toFixed(2) + "%"
+                                            : "—"}
+                                    </IndexTable.Cell>
 
-                                            if (cart.status === "published" && limitReached) {
-                                                return (
-                                                    <Tooltip content={`Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to republish.`}>
-                                                        <span>
-                                                            <Badge tone="critical">Limit reached</Badge>
-                                                        </span>
-                                                    </Tooltip>
-                                                );
-                                            }
+                                    <IndexTable.Cell>
+                                        {!isDraft && stats?.[cart.cartId]?.revenue != null
+                                            ? fmt(stats[cart.cartId].revenue)
+                                            : "—"}
+                                    </IndexTable.Cell>
 
-                                            return (
+                                    {/* Action buttons — all at zIndex: 1 so they sit above the cover link */}
+                                    <IndexTable.Cell>
+                                        <InlineStack gap="200" align="end" style={{ position: "relative", zIndex: 1 }}>
+                                            <Tooltip content="Edit">
+                                                <Link
+                                                    to={cartEditorPath}
+                                                    prefetch="intent"
+                                                    style={{ textDecoration: "none" }}
+                                                >
+                                                    <Button icon={EditIcon} />
+                                                </Link>
+                                            </Tooltip>
+
+                                            <Tooltip content={cart.status === "published" ? "Preview" : "Only available for live carts"}>
+                                                <Button
+                                                    icon={ViewIcon}
+                                                    disabled={cart.status !== "published"}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (cart.status === "published") {
+                                                            window.open(`https://${shop.myshopifyDomain}`, "_blank");
+                                                        }
+                                                    }}
+                                                />
+                                            </Tooltip>
+
+                                            <Tooltip content="Duplicate">
+                                                <Button
+                                                    icon={DuplicateIcon}
+                                                    loading={duplicatingCartId === cart.cartId}
+                                                    disabled={duplicatingCartId !== null}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDuplicateCart(cart);
+                                                    }}
+                                                />
+                                            </Tooltip>
+
+                                            {cart.status === "published" && limitReached ? (
+                                                <Tooltip content={`Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to republish.`}>
+                                                    <span>
+                                                        <Badge tone="critical">Limit reached</Badge>
+                                                    </span>
+                                                </Tooltip>
+                                            ) : (
                                                 <Tooltip content={
                                                     cart.status !== "published" && limitReached
                                                         ? `Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to publish.`
@@ -585,30 +564,33 @@ function AppCartsInner({
                                                         </Button>
                                                     </span>
                                                 </Tooltip>
-                                            );
-                                        })()}
-                                        {isDraft && (
-                                            <Tooltip content="Delete">
-                                                <Button
-                                                    icon={DeleteIcon}
-                                                    tone="critical"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setSelectedCart(cart);
-                                                        setDeleteModal(true);
-                                                    }}
-                                                />
-                                            </Tooltip>
-                                        )}
-                                    </InlineStack>
-                                </IndexTable.Cell>
-                            </IndexTable.Row>
-                        ))}
+                                            )}
+
+                                            {isDraft && (
+                                                <Tooltip content="Delete">
+                                                    <Button
+                                                        icon={DeleteIcon}
+                                                        tone="critical"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedCart(cart);
+                                                            setDeleteModal(true);
+                                                        }}
+                                                    />
+                                                </Tooltip>
+                                            )}
+                                        </InlineStack>
+                                    </IndexTable.Cell>
+                                </IndexTable.Row>
+                            );
+                        })}
                     </IndexTable>
                 </div>
             )}
         </div>
     );
+
+    // ─── EmptyState ────────────────────────────────────────────────────────────
 
     const EmptyState = ({ title, subtitle, tag }) => (
         <Box paddingBlockStart="300">
@@ -632,10 +614,11 @@ function AppCartsInner({
                             <Text variant="headingMd" as="h4">{title}</Text>
                             {tag?.label ? (
                                 <Badge tone={tag.tone || "warning"}>{tag.label}</Badge>
-                            ) : <div style={{ width: "100px" }}>
-                                <SkeletonBodyText lines={1} />
-                            </div>}
-
+                            ) : (
+                                <div style={{ width: "100px" }}>
+                                    <SkeletonBodyText lines={1} />
+                                </div>
+                            )}
                         </div>
                         <Text variant="bodySm" tone="subdued" as="p">{subtitle}</Text>
                     </div>
@@ -643,6 +626,8 @@ function AppCartsInner({
             </Box>
         </Box>
     );
+
+    // ─── Render ────────────────────────────────────────────────────────────────
 
     return (
         <Page
@@ -666,16 +651,12 @@ function AppCartsInner({
                 {(() => {
                     const limit = PLAN_ORDER_LIMITS[shopPlan] ?? PLAN_ORDER_LIMITS.free;
                     if (currentMonthOrders < limit) return null;
-
                     return (
                         <Layout.Section>
                             <Banner
                                 tone="warning"
                                 title={`Monthly order limit reached (${currentMonthOrders}/${limit})`}
-                                action={{
-                                    content: "Upgrade plan",
-                                    onAction: () => navigate("/app/pricing")
-                                }}
+                                action={{ content: "Upgrade plan", onAction: () => navigate("/app/pricing") }}
                             >
                                 <Text as="p" variant="bodyMd">
                                     Your store has reached the <strong>{currentMonthOrders}</strong> order
@@ -700,14 +681,19 @@ function AppCartsInner({
                             tag={!appEmbedInstalled ? { label: "App embed off", tone: "warning" } : null}
                         />
                     ) : (
-                        <CartTable carts={liveCarts} emptyText="No live cart configured" stats={cartStats} monthOrders={currentMonthOrders} range={range} />
+                        <CartTable
+                            carts={liveCarts}
+                            emptyText="No live cart configured"
+                            stats={cartStats}
+                            monthOrders={currentMonthOrders}
+                        />
                     )}
                 </Layout.Section>
 
                 {/* Draft Carts Section */}
                 <Layout.Section>
                     <div className="carts_liveStatusHeader___LUes" style={{ marginTop: 16 }}>
-                        <span style={{ display: "flex", width: 20, height: 20, flexShrink: 0, color: "rgb(48, 48, 48)", opacity: 0.7 }}>
+                        <span style={{ display: "flex", width: 20, height: 20, flexShrink: 0, color: "rgb(48,48,48)", opacity: 0.7 }}>
                             <svg viewBox="0 0 20 20">
                                 <path d="M15.747 2.354c.195-.196.512-.196.707 0l1.06 1.06c.196.195.196.512 0 .707l-.956.957-1.768-1.767.957-.957Z" fill="currentColor" />
                                 <path d="m14.083 4.018 1.768 1.768-2.831 2.83c-.359.359-.84.568-1.348.585l-.772.025c-.144.005-.263-.113-.258-.258l.026-.772c.016-.507.225-.989.584-1.348l2.83-2.83Z" fill="currentColor" />
@@ -716,14 +702,19 @@ function AppCartsInner({
                         </span>
                         <Text variant="headingMd" as="h3">Draft carts</Text>
                     </div>
-
                     {draftCarts.length === 0 ? (
                         <EmptyState
                             title="No draft carts"
                             subtitle="Create a new cart to start customizing. Draft carts won't go live until you publish them."
                         />
                     ) : (
-                        <CartTable carts={draftCarts} emptyText="No draft carts yet." isDraft stats={cartStats} monthOrders={currentMonthOrders} range={range} />
+                        <CartTable
+                            carts={draftCarts}
+                            emptyText="No draft carts yet."
+                            isDraft
+                            stats={cartStats}
+                            monthOrders={currentMonthOrders}
+                        />
                     )}
                 </Layout.Section>
             </Layout>

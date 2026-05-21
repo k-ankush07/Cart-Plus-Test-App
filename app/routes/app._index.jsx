@@ -159,7 +159,6 @@ export const loader = async ({ request }) => {
   const defaultStart = new Date();
   defaultStart.setDate(today.getDate() - 29);
 
-  // ── Stream non-critical data — page shell renders immediately ─────────────
   const fallbackRevenue = {
     addonRevenue: 0,
     upsellRevenue: 0,
@@ -231,7 +230,6 @@ function isSameDay(a, b) {
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
 function Sparkline({ type = "flat", value = 0 }) {
-  // If value is zero, always show flat line regardless of type
   if (Number(value) === 0) type = "flat";
   const lineRef = useRef(null);
   const areaRef = useRef(null);
@@ -262,33 +260,23 @@ function Sparkline({ type = "flat", value = 0 }) {
     const dot = dotRef.current;
     if (!line) return;
 
-    // Get total length for stroke-dasharray animation
     const len = line.getTotalLength();
-
-    // Line: draw from left to right
     line.style.strokeDasharray = len;
     line.style.strokeDashoffset = len;
     line.style.transition = "none";
-
-    // Area: fade in after line draws
     area.style.opacity = "0";
     dot.style.opacity = "0";
     dot.style.transform = "scale(0)";
     dot.style.transformOrigin = "70px " + p.cy + "px";
 
-    // Trigger animation on next frame
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         line.style.transition = "stroke-dashoffset 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
         line.style.strokeDashoffset = "0";
-
-        // Fade in area slightly after line starts
         setTimeout(() => {
           area.style.transition = "opacity 0.4s ease";
           area.style.opacity = "1";
         }, 300);
-
-        // Pop in dot at end of line
         setTimeout(() => {
           dot.style.transition = "opacity 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)";
           dot.style.opacity = "1";
@@ -446,14 +434,11 @@ function DashboardInner({
   const progressPercent = Math.round((completedCount / setupTasks.length) * 100);
   const allCompleted = completedCount === setupTasks.length;
 
-  // Sync carts if loader data changes
   useEffect(() => {
     setCarts(initialCarts);
   }, [initialCarts]);
 
-  // ── Fetch stats only when range actually changes from default ──────────────
   useEffect(() => {
-    // Skip if range matches the initial default (loader already fetched this)
     if (
       isSameDay(range.start, DEFAULT_RANGE.start) &&
       isSameDay(range.end, DEFAULT_RANGE.end)
@@ -602,17 +587,9 @@ function DashboardInner({
                     title: (
                       <Tooltip hasUnderline activatorWrapper="span" content={
                         <BlockStack gap="200">
-                          <Text as="p" fontWeight="bold">
-                            Impressions
-                          </Text>
-
-                          <Text as="p" variant="bodyMd">
-                            Number of times this cart was shown to a shopper.
-                          </Text>
-
-                          <Text as="p" variant="bodyMd">
-                            Values shown are for the date range selected at the top of the page.
-                          </Text>
+                          <Text as="p" fontWeight="bold">Impressions</Text>
+                          <Text as="p" variant="bodyMd">Number of times this cart was shown to a shopper.</Text>
+                          <Text as="p" variant="bodyMd">Values shown are for the date range selected at the top of the page.</Text>
                         </BlockStack>
                       }>
                         <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium"> Impressions</Text>
@@ -624,13 +601,8 @@ function DashboardInner({
                     title: (
                       <Tooltip hasUnderline activatorWrapper="span" content={
                         <BlockStack gap="200">
-                          <Text as="p" fontWeight="bold">
-                            Cart conversion rate (%)
-                          </Text>
-
-                          <Text as="p" variant="bodySm">
-                            The percentage of cart impressions that resulted in a completed purchase.
-                          </Text>
+                          <Text as="p" fontWeight="bold">Cart conversion rate (%)</Text>
+                          <Text as="p" variant="bodySm">The percentage of cart impressions that resulted in a completed purchase.</Text>
                         </BlockStack>
                       }>
                         <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium">  Cart conversion rate (%)</Text>
@@ -642,13 +614,8 @@ function DashboardInner({
                     title: (
                       <Tooltip hasUnderline activatorWrapper="span" content={
                         <BlockStack gap="200">
-                          <Text as="p" fontWeight="bold">
-                            Added revenue
-                          </Text>
-
-                          <Text as="p" variant="bodySm">
-                            The percentage of cart impressions that resulted in a completed purchase.
-                          </Text>
+                          <Text as="p" fontWeight="bold">Added revenue</Text>
+                          <Text as="p" variant="bodySm">The percentage of cart impressions that resulted in a completed purchase.</Text>
                         </BlockStack>
                       }>
                         <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium">  Added revenue</Text>
@@ -665,17 +632,33 @@ function DashboardInner({
                     (cart._id && cart._id.toString().trim() !== "" && cart._id.toString().trim()) ||
                     `row-${i}`;
 
+                  const cartEditorPath = `/app/cart-editor/${cart.cartId}?from=home`;
+
                   return (
+                    // ── FIX: Row uses position-relative wrapper so the cover
+                    //    <Link> makes the whole row clickable without navigate().
+                    //    This fires instantly — no loader waterfall on click.
                     <IndexTable.Row
                       key={safeId}
                       id={safeId}
                       position={i}
-                      onClick={() => navigate(`/app/cart-editor/${cart.cartId}?from=home`)}
-                      style={{ cursor: "pointer" }}
+                      onClick={() => navigate(cartEditorPath)}
                     >
                       <IndexTable.Cell>
+                       
+                        <Link
+                          to={cartEditorPath}
+                          prefetch="intent"
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            zIndex: 0,
+                          }}
+                          aria-label={`Edit cart ${cart.cartName || "Untitled cart"}`}
+                        />
                         <CartHoverCard cart={cart}>
-                          <div style={{ maxWidth: "150px", cursor: "pointer" }}>
+                          {/* z-index keeps hover card above the cover link */}
+                          <div style={{ maxWidth: "150px", cursor: "pointer", position: "relative", zIndex: 1 }}>
                             <Text truncate as="span">
                               {cart.cartName || "Untitled cart"}
                             </Text>
@@ -695,7 +678,9 @@ function DashboardInner({
                           {appEmbedInstalled ? (
                             <Badge tone="success">Live</Badge>
                           ) : (
-                            <AppEmbedLink />
+                            <span style={{ position: "relative", zIndex: 1 }}>
+                              <AppEmbedLink />
+                            </span>
                           )}
                         </InlineStack>
                       </IndexTable.Cell>
@@ -719,10 +704,10 @@ function DashboardInner({
                       </IndexTable.Cell>
 
                       <IndexTable.Cell>
-                        <InlineStack gap="200" align="end">
-                          {/* ── Slim link-based buttons avoid navigate() delay ── */}
+                        {/* These buttons need z-index so they sit above cover link */}
+                        <InlineStack gap="200" align="end" style={{ position: "relative", zIndex: 1 }}>
                           <Link
-                            to={`/app/cart-editor/${cart.cartId}?from=home`}
+                            to={cartEditorPath}
                             prefetch="intent"
                             style={{ textDecoration: "none" }}
                           >
@@ -771,7 +756,6 @@ function DashboardInner({
         <BlockStack gap="200">
           <Text variant="headingMd">Help &amp; Support</Text>
 
-          {/* Setup guide collapsible — hidden when all tasks done */}
           {!allCompleted && (
             <div
               style={{
@@ -836,7 +820,7 @@ function DashboardInner({
           <Card padding="400">
             <InlineStack align="space-between" blockAlign="center" gap="400" wrap={false}>
               <InlineStack gap="300" blockAlign="start" wrap={false}>
-                <div style={{ width: 44, height: 44, background: '#EDEDEE', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #C5C5C5' }}>
+                <div style={{ width: 44, height: 44, background: "#EDEDEE", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid #C5C5C5" }}>
                   <Icon source={HeartIcon} />
                 </div>
                 <BlockStack gap="050">
@@ -851,7 +835,7 @@ function DashboardInner({
           <Card padding="400">
             <InlineStack align="space-between" blockAlign="center" gap="400" wrap={false}>
               <InlineStack gap="300" blockAlign="start" wrap={false}>
-                <div style={{ width: 44, height: 44, background: '#EDEDEE', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #C5C5C5' }}>
+                <div style={{ width: 44, height: 44, background: "#EDEDEE", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid #C5C5C5" }}>
                   <Icon source={NoteIcon} />
                 </div>
                 <BlockStack gap="050">
