@@ -80,6 +80,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
             });
             return;
         }
+
         fetch("/app/get-products", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -90,9 +91,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
         })
             .then(res => res.json())
             .then(data => {
-
                 const productsData = data.products.slice(0, maxRecommendations);
-
                 setProducts(productsData);
 
                 const initial = {};
@@ -101,11 +100,14 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                         initial[product.id] = product.variants[0];
                     }
                 });
-
                 setSelectedVariants(initial);
             });
 
-    }, [selectedItems, sourceType, maxRecommendations]);
+    }, [
+        sourceType,
+        maxRecommendations,
+        JSON.stringify(selectedItems),
+    ]);
 
     const handleVariantChange = (productId, variantId) => {
         const product = products.find(p => p.id === productId);

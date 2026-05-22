@@ -94,42 +94,42 @@ const MODULES = [
         id: "upsells",
         name: "Upsells",
         desc: "Present targeted upsell offers to increase order value",
-        img: "/images/templates/modules/upsells.png",
+        img: "https://slide.upcart.app/images/templates/modules/upsells.png",
         defaultOn: false,
     },
     {
         id: "rewards",
         name: "Rewards",
         desc: "Incentivize customers to add more to their cart with reward tiers",
-        img: "/images/templates/modules/rewards.png",
+        img: "https://slide.upcart.app/images/templates/modules/rewards.png",
         defaultOn: false,
     },
     {
         id: "recommendations",
         name: "Recommendations",
         desc: "Show AI-powered product recommendations to boost AOV",
-        img: "/images/templates/modules/recommendations.png",
+        img: "https://slide.upcart.app/images/templates/modules/recommendations.png",
         defaultOn: true,
     },
     {
         id: "addons",
         name: "Add ons",
         desc: "Let customers add complementary products with a single toggle",
-        img: "/images/templates/modules/addons.png",
+        img: "https://slide.upcart.app/images/templates/modules/addons.png",
         defaultOn: true,
     },
     {
         id: "announcements",
         name: "Announcements",
         desc: "Display promotional banners and messages at the top of the cart",
-        img: "/images/templates/modules/announcements.png",
+        img: "https://slide.upcart.app/images/templates/modules/announcements.png",
         defaultOn: true,
     },
     {
         id: "subscriptions",
         name: "Subscriptions",
         desc: "Offer subscription upgrades directly in the cart drawer",
-        img: "/images/templates/modules/subscriptions.png",
+        img: "https://slide.upcart.app/images/templates/modules/subscriptions.png",
         defaultOn: true,
     },
 ];
@@ -140,40 +140,25 @@ function ModuleCard({ module, isActive, onToggle }) {
             type="button"
             aria-pressed={isActive}
             onClick={() => onToggle(module.id)}
+            className="design-cart_moduleCard__UrJxu"
             style={{
-                all: "unset",
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 12,
-                borderRadius: 10,
-                border: !isActive ? "2px solid #303030" : "2px solid transparent",
+                border: !isActive ? "1px solid #303030" : "1px solid transparent",
                 boxShadow: !isActive ? "0 0 0 1px #303030" : "0 0 0 1px #e1e3e5",
-                transition: "box-shadow 0.15s, border-color 0.15s",
-                background: "#fff",
-                padding: "10px 12px",
-                textAlign: "left",
             }}
         >
             {/* Thumbnail */}
-            <div style={{
-                width: 56, height: 56, borderRadius: 8,
-                overflow: "hidden", flexShrink: 0,
-                background: "#f6f6f7",
-                display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
+            <div className="design-cart_moduleThumb__eosbP">
                 <img
                     src={module.img}
                     alt={module.name}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    className="design-cart_moduleThumbImage__yzrFn"
                 />
             </div>
 
             {/* Info */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#303030" }}>{module.name}</span>
-                <span style={{ fontSize: 11, color: "#6d7175", lineHeight: 1.4 }}>{module.desc}</span>
+            <div className="design-cart_moduleInfo__FhN6x">
+                <span className="design-cart_templateName__qUadx">{module.name}</span>
+                <span className="design-cart_templateDesc__2HpzX">{module.desc}</span>
             </div>
         </button>
     );
@@ -313,7 +298,7 @@ export default function Designcart() {
     useEffect(() => {
         const timer = setTimeout(() => {
             setMounted(true);
-        }, 2500);
+        }, 1000);
         return () => clearTimeout(timer);
     }, []);
 
@@ -492,7 +477,7 @@ export default function Designcart() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "right",
-                    padding: "12px 24px",
+                    padding: "16px 32px",
                     borderTop: "1px solid #e1e3e5",
                     background: "#fff",
                     flexShrink: 0,
