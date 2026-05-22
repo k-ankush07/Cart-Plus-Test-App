@@ -60,6 +60,9 @@ export const shopLoader = async (request) => {
       admin,
     };
   } catch (error) {
+    if (error instanceof Response) {
+      throw error;
+    }
     console.error("Shop Loader Error:", error);
 
     return {
