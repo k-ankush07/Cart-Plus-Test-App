@@ -215,7 +215,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         target.innerHTML = ann.text
           ? ann.text.replace(
               "{TIMER}",
-              `<span id="hub-timer-${blockId}">${timerText}</span>`,
+               `<strong><span id="hub-timer-${blockId}">${timerText}</span></strong>`,
             )
           : "";
         if (ann.text?.includes("{TIMER}")) startAnnTimer(blockId, timerText);

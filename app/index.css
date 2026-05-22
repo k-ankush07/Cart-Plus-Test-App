@@ -1355,6 +1355,14 @@ span.upcart-rewards-tier-icon {
     border: solid #E8E8E8;
     border-width: 1px 0px 0px 0px;
     cursor: pointer;
+    background: #f2f2f2;
+}
+
+span.hub-coupon-code {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
 }
 
 .hub-view-offers-btn {
