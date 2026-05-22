@@ -1801,7 +1801,7 @@ span.hub-total-arrow svg {
   inset: 0;
   background: rgba(0, 0, 0, 0.25);
   z-index: 9;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 /* .hub-cart-total-open #hub-upcart-cart-body {
