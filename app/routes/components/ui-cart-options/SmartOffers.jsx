@@ -655,7 +655,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
 
       {rewards.map((reward, index) => {
         const isExpanded = !!expandedCards[reward.id];
-        const hasConditions = reward.triggers.some((t) =>
+        const hasConditions = (reward.triggers || []).filter(Boolean).some((t) =>
           t.type === "specific_products" || t.type === "specific_collections"
         );
 
@@ -700,7 +700,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
 
                 <InlineStack gap="200" blockAlign="center" wrap>
                   <Text variant="bodySm" fontWeight="medium">Trigger type</Text>
-                  {reward.triggers.map((t, i) => (
+                  {(reward.triggers || []).filter(Boolean).map((t, i) => (
                     <Badge key={i}>{triggerBadgeLabel(t)}</Badge>
                   ))}
                   {hasConditions && (
