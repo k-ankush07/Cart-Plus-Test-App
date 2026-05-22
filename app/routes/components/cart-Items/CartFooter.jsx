@@ -42,7 +42,8 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 <AddOns addonsSettings={addonsSettings} currency={currency} />
                 <DiscountCode discountCodesSettings={discountCodesSettings}
                     setOfferOpen={setOfferOpen}
-                    offerOpen={offerOpen} />
+                    offerOpen={offerOpen} 
+                    designSettings={designSettings}/>
 
                 {designSettings.enableSubtotal && (
                     <div className="hub-total-summary" onClick={() => setBreakdownOpen(prev => !prev)} style={{ cursor: "pointer" }}>
@@ -66,20 +67,20 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 <div className={`hub-total-breakdown ${breakdownOpen ? "hub-breakdown-open" : ""}`}>
                     <div className="custom-cart-breakdown-header">
                         <div className="hub-breakdown-row">
-                            <span>Total MRP</span>
-                            <span>$200.00</span>
+                            <span style={{ color: designSettings.textColor }}>Total MRP</span>
+                            <span style={{ color: designSettings.textColor }}>$200.00</span>
                         </div>
                         <div className="hub-breakdown-row">
                             <span style={{ color: designSettings.textColor }}>{cartSettings.discountsSavingsText}</span>
                             <span style={{ color: '#10812F' }}>MEGA20</span>
                         </div>
                         <div className="hub-breakdown-row">
-                            <span>Shipping</span>
+                            <span style={{ color: designSettings.textColor }}>Shipping</span>
                             <span style={{ color: '#10812F' }}>Free</span>
                         </div>
                         <div className="hub-breakdown-row hub-breakdown-grand">
-                            <span>Grand Total</span>
-                            <span>$200.00</span>
+                            <span style={{ color: designSettings.textColor }}>Grand Total</span>
+                            <span style={{ color: designSettings.textColor }}>$200.00</span>
                         </div>
                     </div>
                 </div>

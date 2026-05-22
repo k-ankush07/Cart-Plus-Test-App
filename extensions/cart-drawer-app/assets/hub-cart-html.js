@@ -195,6 +195,8 @@ window.injectCartHTML = function (blockId, root) {
   const btnHoverColor = designSettings.buttonHoverColor || "#333333";
   const textColor = designSettings.buttonTextColor || "#000";
 
+  const textColorAll = designSettings.textColor || "#000";
+
   // Inject button color + hover style for this drawer
   const btnStyleId = `hub-btn-style-${blockId}`;
   if (!document.getElementById(btnStyleId)) {
@@ -355,7 +357,7 @@ window.injectCartHTML = function (blockId, root) {
         <!-- DISCOUNT -->
         
         <div class="hub-discount-input-row-items"id="hub-discount-row-${blockId}">
-         <div class="hub-discount-heading">Coupon Code</div>
+         <div class="hub-discount-heading" style="color:${textColorAll}">Coupon Code</div>
         <div class="hub-discount-input-row">
         <div id="hub-discount-status-${blockId}" class="hub-discount-status-code"></div>
          <div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}">
@@ -371,7 +373,7 @@ window.injectCartHTML = function (blockId, root) {
           </div>
           <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
          ${showOfferBox ? ` <div class="discount-offer-btn" onclick="hubOpenOffersPanel('${blockId}')">
-          <button class="hub-view-offers-btn">View all offers</button>
+          <button class="hub-view-offers-btn" style="color:${textColorAll}">View all offers</button>
           <svg viewBox="0 0 20 20" style="width: 20px; height: 20px; fill: #111;">
                    <path fill-rule="evenodd" d="M7.72 14.53a.75.75 0 0 1 0-1.06l3.47-3.47-3.47-3.47a.75.75 0 0 1 1.06-1.06l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 0 1-1.06 0Z"/>
           </svg>
@@ -400,24 +402,24 @@ window.injectCartHTML = function (blockId, root) {
 
           <div class="hub-total-breakdown" id="hub-total-breakdown-${blockId}">
             <div class="hub-breakdown-row">
-              <span>Total MRP</span>
-              <span id="hub-mrp-${blockId}"></span>
+              <span style="color:${textColorAll}">Total MRP</span>
+              <span id="hub-mrp-${blockId}" style="color:${textColorAll}"></span>
             </div>
             <div class="hub-breakdown-row hub-breakdown-discount" id="hub-discount-mrp-row-${blockId}" style="display:none;">
-              <span>${cartSettings.discountsSavingsText}</span>
+              <span style="color:${textColorAll}">${cartSettings.discountsSavingsText}</span>
               <span id="hub-discount-mrp-${blockId}"></span>
             </div>
             <div class="hub-breakdown-row hub-breakdown-discount" id="hub-coupon-row-${blockId}" style="display:none;">
-              <span>Coupon Discount</span>
+              <span style="color:${textColorAll}">Coupon Discount</span>
               <span id="hub-coupon-${blockId}"></span>
             </div>
             <div class="hub-breakdown-row" id="hub-shipping-row-${blockId}" style="display:none;">
-              <span>Shipping</span>
+              <span style="color:${textColorAll}">Shipping</span>
               <span id="hub-shipping-cost-${blockId}" class="hub-shipping-cost-show"></span>
             </div>
             <div class="hub-breakdown-row hub-breakdown-grand">
-              <span>Grand Total</span>
-              <span id="hub-grand-total-${blockId}"></span>
+              <span style="color:${textColorAll}">Grand Total</span>
+              <span id="hub-grand-total-${blockId}" style="color:${textColorAll}"></span>
             </div>
           </div>
         </div> ` : ""}

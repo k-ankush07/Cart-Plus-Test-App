@@ -80,6 +80,7 @@ export default function DiscountCode({
   discountCodesSettings,
   offerOpen,
   setOfferOpen,
+  designSettings
 }) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -106,7 +107,7 @@ export default function DiscountCode({
       {/* ── Inline discount row ── */}
       <div className="cart-discount-row upcart-discount-code-row upcart-discount-code-module custom-cart-public-discount-code">
         <div className="upcart-discount-code-input-wrapper custom-cart-public-discount-code__input-wrapper">
-          <div className="hub-discount-heading">Coupon Code</div>
+          <div className="hub-discount-heading" style={{ color: designSettings.textColor }}>Coupon Code</div>
 
           <div className="hub-discount-input-row">
             <div className="hub-discount-input-wrapped">
@@ -134,7 +135,7 @@ export default function DiscountCode({
                 className="discount-offer-btn"
                 onClick={() => setOfferOpen(!offerOpen)}
               >
-                <button className="hub-view-offers-btn">View all offers</button>
+                <button className="hub-view-offers-btn" style={{ color: designSettings.textColor }}>View all offers</button>
                 <img
                   src="https://hubsyntax.com/cart-images/Vector%20(4).svg"
                   alt="discount-code"
