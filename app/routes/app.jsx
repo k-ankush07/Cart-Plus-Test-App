@@ -96,6 +96,10 @@ export async function loader({ request }) {
   };
 }
 
+export function shouldRevalidate() {
+  return false;
+}
+
 function PolarisProvider({ children }) {
   return (
     <PolarisAppProvider i18n={enTranslations}>
