@@ -413,7 +413,7 @@ export default function Designcart() {
                                 height: 32,
                                 borderRadius: "50%",
                                 border: "3px solid #e1e3e5",
-                                borderTopColor: "#f4a",
+                                borderTopColor: "#1271a3",
                                 animation: "spin 0.75s linear infinite",
                             }} />
                             <style>{`
