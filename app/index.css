@@ -293,6 +293,7 @@ body,
     height: 26px;
     cursor: pointer;
     font-size: 14px;
+    color: #333;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -568,7 +569,17 @@ body,
     padding: 15px 30px;
 }
 
+span.svg-wrapper {
+    width: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
+.svg-wrapper>svg {
+    height: 100%;
+    width: 100%;
+}
 
 /* ===== WRAPPER ===== */
 .upcart-internal-upsell__vertical-layout-wrapper {

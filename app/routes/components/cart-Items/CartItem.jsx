@@ -74,18 +74,36 @@ function UndoToast({ message, onUndo, onDismiss }) {
 }
 
 // ─── Qty Stepper ──────────────────────────────────────────────────────────────
-function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
-  return (
-    <div className="cart-app-item__qty custom-cart-public-component-product-tile__quantity-selector">
-      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus custom-cart-public-component-product-tile__quantity-minus">
-        {loadingType === "dec" ? <span className="loader"></span> : "−"}
-      </button>
-      <span className="cart-app-item__qty-value upcart-product-quantity-input custom-cart-public-component-product-tile__quantity-plus">{qty}</span>
-      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus custom-cart-public-component-product-tile__quantity-plus">
-        {loadingType === "inc" ? <span className="loader"></span> : "+"}
-      </button>
-    </div>
-  );
+function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) { 
+  return ( 
+    <div className="cart-app-item__qty custom-cart-public-component-product-tile__quantity-selector"> 
+      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus custom-cart-public-component-product-tile__quantity-minus"> 
+        {loadingType === "dec" 
+          ? <span className="loader"></span> 
+          : <span className="svg-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-minus" viewBox="0 0 10 2">
+                <path fill="currentColor" fillRule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clipRule="evenodd"></path>
+              </svg>
+            </span>
+        } 
+      </button> 
+
+      <span className="cart-app-item__qty-value upcart-product-quantity-input custom-cart-public-component-product-tile__quantity-plus">
+        {qty}
+      </span> 
+
+      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus custom-cart-public-component-product-tile__quantity-plus"> 
+        {loadingType === "inc" 
+          ? <span className="loader"></span> 
+          : <span className="svg-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-plus" viewBox="0 0 10 10">
+                <path fill="currentColor" fillRule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clipRule="evenodd"></path>
+              </svg>
+            </span>
+        } 
+      </button> 
+    </div> 
+  ); 
 }
 
 // ─── Classic Layout ───────────────────────────────────────────────────────────
