@@ -1740,6 +1740,11 @@ span.hub-offers-title {
     gap: 16px;
 }
 
+.styles_CartPreview__right__ {
+    width: 100%;
+    max-width: 440px;
+}
+
 /* Responsive Styles */
 
 @media screen and (max-width:1024px) {
@@ -1763,6 +1768,13 @@ span.hub-offers-title {
         margin: 0 !important;
     }
 
+    .design-cart_styleGrid__bAZ9i {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .design-cart_modulesGridStep__qbxcO {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media screen and (max-width:640px) {
@@ -1777,6 +1789,21 @@ span.hub-offers-title {
     .cartPreviewWrapper.cart-wide {
         width: 100%;
     }
+
+    .design-cart_body__BVncQ {
+        display: block !important;
+        overflow: auto !important;
+    }
+
+    .styles_CartPreview__right__ {
+        width: 100%;
+        max-width: 100%;
+        margin-top: 20px;
+    }
+
+    .design-cart_modulesGridStep__qbxcO {
+        grid-template-columns: repeat(1, 1fr);
+    }
 }
 
 @media screen and (max-width:540px) {
@@ -1787,10 +1814,18 @@ span.hub-offers-title {
     .mainContent {
         width: 100%;
     }
+    
+    .design-cart_stepContent___TudZ{
+        padding: 20px !important;
+    }
 }
 
 @media screen and (max-width:370px) {
     .custom-cart-public-component-product-tile__info {
         display: block !important;
+    }
+
+    .design-cart_styleGrid__bAZ9i {
+        grid-template-columns: repeat(1, 1fr);
     }
 }

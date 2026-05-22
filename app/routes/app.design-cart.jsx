@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CartPreview from "./components/CartPreview";
 import { Button, InlineStack } from "@shopify/polaris";
 import { useLoaderData, useNavigate } from "react-router-dom";
@@ -308,6 +308,15 @@ export default function Designcart() {
         () => new Set(MODULES.filter((m) => m.defaultOn).map((m) => m.id))
     );
 
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setMounted(true);
+        }, 2500);
+        return () => clearTimeout(timer);
+    }, []);
+
     const toggleModule = (id) => {
         setActiveModules((prev) => {
             const next = new Set(prev);
@@ -394,7 +403,7 @@ export default function Designcart() {
     };
 
     return (
-        <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
+        <div style={{ display: "flex", height: "100%", overflow: "hidden" }} className="design-cart_body__BVncQ">
 
             <div style={{
                 flex: 1,
@@ -404,53 +413,78 @@ export default function Designcart() {
                 borderRight: "1px solid #e1e3e5",
             }}>
 
-                <div style={{ flex: 1, padding: 32, background:'white' }}>
+                <div style={{ flex: 1, padding: 32, background: 'white' }} className="design-cart_stepContent___TudZ">
 
-                    {step === 1 && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                            <div style={{marginBottom:20}}>
-                                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#303030" }}>
-                                    Select a base style
-                                </h2>
-                                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6d7175", marginBottom:20 }}>
-                                    Colours can be adjusted later in the cart editor — focus on the overall layout and feel.
-                                </p>
-                            </div>
-                            <div className="design-cart_styleGrid__bAZ9i">
-                                {TEMPLATES.map((template) => (
-                                    <TemplateCard
-                                        key={template.id}
-                                        template={template}
-                                        isActive={selectedTemplate === template.id}
-                                        onSelect={setSelectedTemplate}
-                                    />
-                                ))}
-                            </div>
+                    {!mounted ? (
+                        <div style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            height: "100%",
+                            minHeight: 400,
+                        }}>
+                            <div style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: "50%",
+                                border: "3px solid #e1e3e5",
+                                borderTopColor: "#f4a",
+                                animation: "spin 0.75s linear infinite",
+                            }} />
+                            <style>{`
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        `}</style>
                         </div>
-                    )}
+                    ) : (
+                        <>
+                            {step === 1 && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <div style={{ marginBottom: 20 }}>
+                                        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#303030" }}>
+                                            Select a base style
+                                        </h2>
+                                        <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6d7175", marginBottom: 20 }}>
+                                            Colours can be adjusted later in the cart editor — focus on the overall layout and feel.
+                                        </p>
+                                    </div>
+                                    <div className="design-cart_styleGrid__bAZ9i">
+                                        {TEMPLATES.map((template) => (
+                                            <TemplateCard
+                                                key={template.id}
+                                                template={template}
+                                                isActive={selectedTemplate === template.id}
+                                                onSelect={setSelectedTemplate}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
-                    {step === 2 && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                            <div>
-                                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#303030" }}>
-                                    Recommended modules
-                                </h2>
-                                <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6d7175" }}>
-                                    Pick any modules to include in your cart — you can add or remove these at anytime later in the cart editor.
-                                </p>
-                            </div>
-                            <div className="design-cart_modulesGridStep__qbxcO">
-                                {MODULES.map((module) => (
-                                    <ModuleCard
-                                        key={module.id}
-                                        module={module}
-                                        isActive={activeModules.has(module.id)}
-                                        onToggle={toggleModule}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                            {step === 2 && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <div>
+                                        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#303030" }}>
+                                            Recommended modules
+                                        </h2>
+                                        <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6d7175" }}>
+                                            Pick any modules to include in your cart — you can add or remove these at anytime later in the cart editor.
+                                        </p>
+                                    </div>
+                                    <div className="design-cart_modulesGridStep__qbxcO">
+                                        {MODULES.map((module) => (
+                                            <ModuleCard
+                                                key={module.id}
+                                                module={module}
+                                                isActive={activeModules.has(module.id)}
+                                                onToggle={toggleModule}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </>)}
                 </div>
 
                 {/* ── Sticky footer inside left panel ── */}
@@ -495,7 +529,7 @@ export default function Designcart() {
             </div>
 
             {/* ── RIGHT: CartPreview fixed ── */}
-            <div>
+            <div className="styles_CartPreview__right__">
                 <CartPreview
                     designSettings={mergedDesignSettings}
                     headerSettings={defaultHeaderSettings}
