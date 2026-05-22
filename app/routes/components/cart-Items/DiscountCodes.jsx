@@ -69,7 +69,7 @@ function ApplyButton({ loading, buttonText }) {
     <button
       type="button"
       className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button"
-      onClick={undefined} 
+      onClick={undefined}
     >
       {loading ? <span className="loader" /> : buttonText || "Apply"}
     </button>
@@ -109,22 +109,24 @@ export default function DiscountCode({
           <div className="hub-discount-heading">Coupon Code</div>
 
           <div className="hub-discount-input-row">
-            <div className="hub-discount-input-btn">
-              <Icon source={DiscountIcon} />
-              <input
-                type="text"
-                className="cart-discount-row__input hub-discount-input upcart-discount-code-input custom-cart-public-discount-code__input"
-                placeholder={placeholder}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-              />
-              <button
-                type="button"
-                className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button"
-                onClick={handleDiscount}
-              >
-                {loading ? <span className="loader" /> : buttonText}
-              </button>
+            <div className="hub-discount-input-wrapped">
+              <div className="hub-discount-input-btn">
+                <Icon source={DiscountIcon} />
+                <input
+                  type="text"
+                  className="cart-discount-row__input hub-discount-input upcart-discount-code-input custom-cart-public-discount-code__input"
+                  placeholder={placeholder}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button"
+                  onClick={handleDiscount}
+                >
+                  {loading ? <span className="loader" /> : buttonText}
+                </button>
+              </div>
             </div>
 
             {discountCodesSettings?.showOfferBox && (

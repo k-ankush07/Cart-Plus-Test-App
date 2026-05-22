@@ -350,6 +350,11 @@ body,
     color: var(--btn-hover-text);
 }
 
+.upcart-internal-component-upsell-tile__variant-row button {
+    color: var(--btn-text);
+    transition: all 0.2s ease;
+}
+
 .upcart-internal-component-upsell-tile__variant-row button:hover {
     color: var(--btn-hover-text);
 }
@@ -537,7 +542,7 @@ body,
     display: block;
     padding: 10px 20px;
     background-color: #000000;
-    color: #ffffff;
+    /* color: #ffffff; */
     font-size: 15px;
     font-weight: 600;
     text-align: center;
@@ -671,7 +676,6 @@ body,
     height: 34px;
     border: none;
     background: #000;
-    color: #fff;
     border-radius: 4px;
     cursor: pointer;
     white-space: nowrap;
@@ -1319,6 +1323,11 @@ span.upcart-rewards-tier-icon {
     border-radius: 5px;
 }
 
+.hub-discount-input-wrapped {
+    width: 100%;
+    background: white;
+}
+
 .hub-discount-input {
     flex: 1;
     flex-grow: 1;
@@ -1345,7 +1354,6 @@ span.upcart-rewards-tier-icon {
     padding: 10px 20px;
     border: solid #E8E8E8;
     border-width: 1px 0px 0px 0px;
-    background: #f2f2f2;
     cursor: pointer;
 }
 

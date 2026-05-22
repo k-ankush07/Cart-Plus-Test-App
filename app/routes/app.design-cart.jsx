@@ -29,9 +29,9 @@ export const loader = async ({ request }) => {
 const TEMPLATE_SETTINGS = {
     live: { backgroundColor: "#ffffff", textColor: "rgb(18,18,18)", buttonColor: "rgb(18,18,18)", buttonTextColor: "#ffffff", accentColor: "rgba(18,18,18,0.05)", buttonRadius: "2", announcementBg: "rgb(18,18,18)" },
     default: { backgroundColor: "#ffffff", textColor: "rgb(17,17,17)", buttonColor: "rgb(48,48,48)", buttonTextColor: "#ffffff", accentColor: "rgb(245,245,245)", buttonRadius: "0", announcementBg: "rgb(240,240,240)" },
-    ivory: { backgroundColor: "rgb(245,243,240)", textColor: "rgb(36,21,16)", buttonColor: "rgb(36,21,16)", buttonTextColor: "rgb(245,243,240)", accentColor: "rgb(233,229,228)", buttonRadius: "0", announcementBg: "rgb(233,229,228)" },
-    electric: { backgroundColor: "#ffffff", textColor: "rgb(0,26,100)", buttonColor: "rgb(0,58,221)", buttonTextColor: "rgb(222,242,64)", accentColor: "rgb(240,242,255)", buttonRadius: "0", announcementBg: "rgb(222,242,64)" },
-    natural: { backgroundColor: "rgb(255,253,247)", textColor: "rgb(27,51,5)", buttonColor: "rgb(27,51,5)", buttonTextColor: "rgb(255,253,247)", accentColor: "rgb(245,242,233)", buttonRadius: "0", announcementBg: "rgb(242,168,85)" },
+    ivory: { backgroundColor: "rgb(245,243,240)", textColor: "rgb(36,21,16)", buttonColor: "rgb(36,21,16)", buttonTextColor: "rgb(245,243,240)", accentColor: "rgb(233,229,228)", buttonRadius: "0", announcementBg: "rgb(233,229,228)", savingsColor: "#A29B99" },
+    electric: { backgroundColor: "#ffffff", textColor: "rgb(0,26,100)", buttonColor: "rgb(0,58,221)", buttonTextColor: "rgb(222,242,64)", accentColor: "rgb(240,242,255)", buttonRadius: "0", announcementBg: "rgb(222,242,64)", savingsColor: "#003ADD" },
+    natural: { backgroundColor: "rgb(255,253,247)", textColor: "rgb(27,51,5)", buttonColor: "rgb(27,51,5)", buttonTextColor: "rgb(255,253,247)", accentColor: "rgb(245,242,233)", buttonRadius: "0", announcementBg: "rgb(242,168,85)", savingsColor: "#E8881C", buttonHoverColor:"rgb(242,168,85)" },
 };
 
 // ─── Template Definitions ──────────────────────────────────────────────────────
