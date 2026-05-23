@@ -9,6 +9,7 @@ import {
   cartOrderCountModel,
 } from "../model/schema.js";
 import { sendEmail } from "./sendEmail.js";
+import { buildPlanUpgradeEmailHtml } from "./emailTemplates.js";
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -520,6 +521,8 @@ router.post("/shop-plan", async (req, res) => {
         .json({ success: false, message: "Missing required fields" });
     }
 
+    const previousPlan = await shopPlanModel.findOne({ shop });
+
     const updated = await shopPlanModel.findOneAndUpdate(
       { shop },
       {
@@ -532,6 +535,36 @@ router.post("/shop-plan", async (req, res) => {
       },
       { upsert: true, new: true },
     );
+
+    const finalStatus = status || "active";
+    const planChanged =
+      !previousPlan ||
+      previousPlan.plan !== plan ||
+      previousPlan.status !== finalStatus;
+
+    if (plan && plan !== "free" && finalStatus === "active" && planChanged) {
+      try {
+        const [shopConfig, cart] = await Promise.all([
+          shopConfigModel.findOne({ shop }),
+          cartModels.findOne({ shop }),
+        ]);
+        const toEmail = shopConfig?.email || cart?.shopEmail;
+        const storeOwner = cart?.storeOwner || "there";
+
+        if (toEmail) {
+          const subject = "Your Custom Cart plan has been upgraded";
+          const html = buildPlanUpgradeEmailHtml({ storeOwner, shop, plan });
+          await sendEmail(toEmail, subject, html);
+          await sendEmail("sahil@hubsyntax.com", subject, html);
+        } else {
+          console.warn(
+            `[hub] Plan upgrade email skipped — no email on file for shop ${shop}`,
+          );
+        }
+      } catch (emailError) {
+        console.error("[hub] Plan upgrade email error:", emailError);
+      }
+    }
 
     return res.status(200).json({ success: true, data: updated });
   } catch (error) {

@@ -1,0 +1,236 @@
+export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
+  const safeOwner = String(storeOwner || "there").replace(/</g, "&lt;");
+  const safeShop = String(shop || "").replace(/</g, "&lt;");
+  const safePlan = String(plan || "Premium").replace(/</g, "&lt;");
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Congratulations – Custom Cart</title>
+    <!--[if mso]>
+    <noscript>
+      <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+    </noscript>
+    <![endif]-->
+    <style>
+      /* Kept only for clients that DO support <style> (Apple Mail, some webmail) */
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+    .cartThankyouImage {
+    height: 390px;
+    width: 600px;
+    }
+
+    </style>
+  </head>
+  <body style="margin:0; padding:0; background:#ffffff; font-family:Arial,sans-serif;">
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
+
+            <!-- ===================== HEADER ===================== -->
+            <!-- Uses table rows instead of position:absolute so it works in all clients -->
+            
+            <!-- ===================== HEADER IMAGE ===================== -->
+            <tr>
+              <td style="padding:0; line-height:0; font-size:0;">
+              <a href="#" style="display:block; text-decoration:none; cursor:auto; pointer-events:none;">
+              <img
+                 src="https://hubsyntax.com/cart-images/dashBoardImg.png"
+                 alt="Dashboard"
+                 width="600"
+                 height="390"
+                 style="display:inline-block; width:100%; max-width:600px; height:auto; border:0;"
+                 />
+                 </a>
+              </td>
+            </tr>
+            <!-- ===================== BODY TEXT ===================== -->
+            <tr>
+              <td bgcolor="#f7f7f7" style="background-color:#f7f7f7; padding:50px; text-align:center; font-family:Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
+                <p style="margin:0 0 12px;">Hi <strong>${safeOwner}</strong>,</p>
+                <p style="margin:0 0 12px;"><strong>${safeShop}</strong></p>
+                <p style="margin:0;">
+                  <strong>Thank you for upgrading your account</strong><br />
+                  Your ${safePlan} plan is now active and you can start using all advanced
+                  Checkout Cart features immediately.
+                </p>
+              </td>
+            </tr>
+
+            <!-- ===================== FEATURES STRIP ===================== -->
+            <!-- background-image replaced with solid bgcolor fallback -->
+            <tr>
+              <td bgcolor="#1a0040" style="background-color:#1a0040; padding:50px 30px;">
+
+                <!-- Feature icons row -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                  style="width:100%; border:1px solid rgba(255,255,255,0.2); border-radius:20px;">
+                  <tr>
+                    <!-- Premium Features -->
+                    <td width="33%" style="padding:20px 15px; text-align:center; vertical-align:top;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                        <tr>
+                          <td>
+                            <img
+                              src="https://hubsyntax.com/cart-images/features8.png"
+                              style="display:inline-block; vertical-align:middle; border:0;"
+                            />
+                          </td>
+                        </tr>
+                      </table>
+                      <p style="margin:12px 0 0; font-family:Arial,sans-serif; font-size:14px; font-weight:500; color:#ffffff; line-height:1.3;">
+                        Premium Features
+                      </p>
+                    </td>
+                    <!-- Higher Limits -->
+                    <td width="33%" style="padding:20px 15px; text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2);">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                        <tr>
+                          <td>
+                            <img
+                              src="https://hubsyntax.com/cart-images/features9.png"
+                              style="display:inline-block; vertical-align:middle; border:0;"
+                            />
+                          </td>
+                        </tr>
+                      </table>
+                      <p style="margin:12px 0 0; font-family:Arial,sans-serif; font-size:14px; font-weight:500; color:#ffffff; line-height:1.3;">
+                        Higher Limits
+                      </p>
+                    </td>
+                    <!-- Priority Support -->
+                    <td width="34%" style="padding:20px 15px; text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2);">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                        <tr>
+                          <td>
+                            <img
+                              src="https://hubsyntax.com/cart-images/features10.png"
+                              style="display:inline-block; vertical-align:middle; border:0;"
+                            />
+                          </td>
+                        </tr>
+                      </table>
+                      <p style="margin:12px 0 0; font-family:Arial,sans-serif; font-size:14px; font-weight:500; color:#ffffff; line-height:1.3;">
+                        Priority Support
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Need Help section -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:30px;">
+                  <tr>
+                    <td style="text-align:center;">
+                      <p style="margin:0 0 10px; font-family:Arial,sans-serif; font-size:26px; font-weight:700; color:#ffffff;">
+                        Need Help?
+                      </p>
+                      <p style="margin:0 0 20px; font-family:Arial,sans-serif; font-size:18px; color:#ffffff;">
+                        Our support team is always here to help you.
+                      </p>
+
+                      <!-- Support button — table-based, no display:inline-table -->
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"
+                        style="border:1px solid rgba(255,255,255,0.2); border-radius:26px; background:transparent;">
+                        <tr>
+                          <td style="padding:5px 28px 5px 5px; vertical-align:middle;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                              <tr>
+                                <td style="width:36px; height:36px; background:#680bd6; border-radius:50%; text-align:center; vertical-align:middle;">
+                                  <img
+                                    src="https://hubsyntax.com/cart-images/cartEmail.svg"
+                                    alt="" width="18" height="18"
+                                    style="display:inline-block; vertical-align:middle; border:0;"
+                                  />
+                                </td>
+                                <td style="padding-left:12px; vertical-align:middle;">
+                                  <a href="mailto:Info@customcart.com"
+                                    style="font-family:Arial,sans-serif; font-size:17px; font-weight:500; color:#ffffff; text-decoration:none;">
+                                    Contact Support
+                                  </a>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+
+            <!-- ===================== FOOTER ===================== -->
+            <tr>
+              <td bgcolor="#f7f7f7" style="background-color:#f7f7f7; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+
+                <p style="margin:0 0 20px; font-family:Arial,sans-serif; font-size:18px; font-weight:700; color:#1a1a1a;">
+                  Follow us
+                </p>
+
+                <!-- Social icons -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
+                  <tr>
+                    <td style="padding:0 6px;">
+                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
+                        <img src="https://hubsyntax.com/cart-images/cartFacbook.svg" alt="Facebook" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      </a>
+                    </td>
+                    <td style="padding:0 6px;">
+                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
+                        <img src="https://hubsyntax.com/cart-images/cartInstagram.svg" alt="Instagram" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      </a>
+                    </td>
+                    <td style="padding:0 6px;">
+                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
+                        <img src="https://hubsyntax.com/cart-images/cartLinkdin.svg" alt="LinkedIn" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0 0 20px; font-family:Arial,sans-serif; color:#888888;">
+                  <a href="mailto:Info@customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Info@customcart.com</a>
+                  &nbsp;|&nbsp;
+                  <a href="https://www.customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.customcart.com</a>
+                </p>
+
+                <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                  style="border-bottom:1px solid #dddddd; padding-bottom:20px; margin-bottom:20px;">
+                  <tr>
+                    <td align="left" style="font-family:Arial,sans-serif; font-size:14px; color:#3c3c3c;">
+                      &copy; 2026 Custom Cart. All rights reserved.
+                    </td>
+                    <td align="right" style="font-family:Arial,sans-serif; font-size:14px; color:#3c3c3c;">
+                      <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Preference</a>
+                      &nbsp;|&nbsp;
+                      <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Unsubscription</a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0; font-family:Arial,sans-serif; font-size:14px; color:#3c3c3c; line-height:20px;">
+                  Thank you for choosing Custom Cart! &#128156;<br />
+                  The Custom Cart Team
+                </p>
+
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+
+  </body>
+</html>`;
+};
