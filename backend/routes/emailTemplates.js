@@ -38,17 +38,21 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
             
             <!-- ===================== HEADER IMAGE ===================== -->
             <tr>
-              <td style="padding:0; line-height:0; font-size:0;">
-              <a href="#" style="display:block; text-decoration:none; cursor:auto; pointer-events:none;">
-              <img
-                 src="https://hubsyntax.com/cart-images/dashBoardImg.png"
-                 alt="Dashboard"
-                 width="600"
-                 height="390"
-                 style="display:inline-block; width:100%; max-width:600px; height:auto; border:0;"
-                 />
-                 </a>
-              </td>
+              <td
+                width="600"
+                height="390"
+                bgcolor="#1a1a1a"
+                background="https://hubsyntax.com/cart-images/dashBoardImg.png"
+                style="
+                  padding:50px; line-height:0; font-size:0;
+                  width:100%; max-width:600px; height:390px;
+                  background-color:#1a1a1a;
+                  background-image:url('https://hubsyntax.com/cart-images/dashBoardImg.png');
+                  background-repeat:no-repeat;
+                  background-position:center center;
+                  background-size:cover;
+                "
+              >&nbsp;</td>
             </tr>
             <!-- ===================== BODY TEXT ===================== -->
             <tr>
@@ -230,7 +234,6 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
         </td>
       </tr>
     </table>
-
   </body>
 </html>`;
 };

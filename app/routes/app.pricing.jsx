@@ -91,7 +91,6 @@ export const loader = async ({ request }) => {
     const { shop, apiUrl, admin } = await shopLoader(request);
 
     const shopDomain = shop?.myshopifyDomain;
-    const storeOwner = shop?.name;
 
     const res = await admin.graphql(`
         query {
