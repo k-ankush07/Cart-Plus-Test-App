@@ -70,14 +70,15 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
             <!-- ===================== FEATURES STRIP ===================== -->
             <!-- background-image replaced with solid bgcolor fallback -->
             <tr>
-              <td bgcolor="#1a0040" style="background-color:#1a0040; padding:50px 30px;">
+             <td style="background-image:url('https://hubsyntax.com/cart-images/featureBg.svg'); padding:50px 30px;
+              background-repeat:no-repeat; background-position:center center;  background-size:cover;">
 
                 <!-- Feature icons row -->
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                  style="width:100%; border:1px solid rgba(255,255,255,0.2); border-radius:20px;">
+                  style="width:100%; border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:20px 15px;">
                   <tr>
                     <!-- Premium Features -->
-                    <td width="33%" style="padding:20px 15px; text-align:center; vertical-align:top;">
+                    <td width="33%" style="text-align:center; vertical-align:top;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
                         <tr>
                           <td>
@@ -93,7 +94,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
                       </p>
                     </td>
                     <!-- Higher Limits -->
-                    <td width="33%" style="padding:20px 15px; text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2);">
+                    <td width="33%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2);">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
                         <tr>
                           <td>
@@ -109,7 +110,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
                       </p>
                     </td>
                     <!-- Priority Support -->
-                    <td width="34%" style="padding:20px 15px; text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2);">
+                    <td width="34%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2);">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
                         <tr>
                           <td>
