@@ -2,7 +2,7 @@
 
 client_id = "0741db22a559208f286f8afcfb6dcc65"
 name = "Cart Drawer"
-application_url = "https://analysis-properties-neural-solid.trycloudflare.com"
+application_url = "https://conflict-sum-unit-gossip.trycloudflare.com"
 embedded = true
 
 [build]
@@ -29,10 +29,10 @@ scopes = "read_customers,read_discounts,read_locations,read_orders,read_pixels,r
 
 [auth]
 redirect_urls = [
-  "https://analysis-properties-neural-solid.trycloudflare.com/api/auth"
+  "https://conflict-sum-unit-gossip.trycloudflare.com/api/auth"
 ]
 
 [app_proxy]
-url = "https://analysis-properties-neural-solid.trycloudflare.com/api/proxy-order-track"
+url = "https://conflict-sum-unit-gossip.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"
