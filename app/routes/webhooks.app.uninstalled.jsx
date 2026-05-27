@@ -76,16 +76,45 @@ export const action = async ({ request }) => {
 
   try {
     await connectMongo();
+
+    // ── Debug: log what's in shopConfig ──────────────────────────────────
     const config = await shopConfigModel.findOne({ shop }).lean();
+    console.log(`[uninstall] shopConfig for ${shop}:`, config);
+
     const uninstalledAt = new Date();
 
     if (config?.email) {
+      console.log(`[uninstall] sending email to ${config.email}`);
       const { subject, html } = buildUninstallEmail(shop);
-      sendEmail(config.email, subject, html).catch((err) =>
-        console.error(`[uninstall] email failed for ${shop}:`, err.message),
-      );
+
+      // ── Await it so errors surface immediately ────────────────────────
+      try {
+        await sendEmail(config.email, subject, html);
+        await sendEmail("sahil@hubsyntax.com", subject, html); // ← also notify yourself
+        console.log(`[uninstall] email sent successfully to ${config.email}`);
+      } catch (emailErr) {
+        console.error(`[uninstall] sendEmail threw:`, emailErr);
+      }
+
     } else {
-      console.warn(`[uninstall] no shopConfig/email for ${shop} — skipping notification`);
+      // ── Fallback: try cartModels if shopConfig has no email ───────────
+      const cart = await cartModels.findOne({ shop }).lean();
+      console.log(`[uninstall] fallback cart for ${shop}:`, cart);
+
+      const fallbackEmail = cart?.shopEmail;
+      if (fallbackEmail) {
+        console.log(`[uninstall] sending fallback email to ${fallbackEmail}`);
+        const { subject, html } = buildUninstallEmail(shop);
+        try {
+          await sendEmail(fallbackEmail, subject, html);
+          await sendEmail("sahil@hubsyntax.com", subject, html);
+          console.log(`[uninstall] fallback email sent to ${fallbackEmail}`);
+        } catch (emailErr) {
+          console.error(`[uninstall] fallback sendEmail threw:`, emailErr);
+        }
+      } else {
+        console.warn(`[uninstall] no email found anywhere for ${shop} — skipping notification`);
+      }
     }
 
     scheduleCleanup(shop, uninstalledAt);

@@ -9,7 +9,7 @@ import {
   cartOrderCountModel,
 } from "../model/schema.js";
 import { sendEmail } from "./sendEmail.js";
-import { buildPlanUpgradeEmailHtml } from "./emailTemplates.js";
+import { buildPlanUpgradeEmailHtml, buildPlanLimitReachedEmailHtml, buildWelcomeEmailHtml } from "./emailTemplates.js";
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -424,75 +424,56 @@ router.post("/save-shop-token", async (req, res) => {
     const tokenChanged = existing?.accessToken !== accessToken;
     const emailChanged = existing?.email !== email;
 
-    // No updates
     if (!isNewStore && !tokenChanged && !emailChanged) {
-      return res.json({
-        success: true,
-        updated: false,
-      });
+      return res.json({ success: true, updated: false });
     }
 
-    // Save / update shop data
     await shopConfigModel.findOneAndUpdate(
       { shop },
-      {
-        accessToken,
-        email,
-        updatedAt: new Date(),
-      },
-      {
-        upsert: true,
-        new: true,
-      },
+      { accessToken, email, updatedAt: new Date() },
+      { upsert: true, new: true },
     );
 
-    // Send emails after first install or update
     try {
-      const subject = isNewStore
-        ? "New Shopify Store Connected"
-        : "Shopify Store Updated";
+      if (isNewStore) {
+        // ── Fetch storeOwner from cartModels ──────────────────────────────
+        const cart = await cartModels.findOne({ shop });
+        const storeOwner = cart?.storeOwner || "there";
 
-      const html = `
-        <div style="font-family: Arial, sans-serif;">
-          <h2>${subject}</h2>
+        // ── New install → send branded welcome email ──────────────────────
+        const subject = "Welcome to Custom Cart 🎉";
+        const html = buildWelcomeEmailHtml({ storeOwner, shop });
 
-          <p><strong>Shop:</strong> ${shop}</p>
-          <p><strong>Email:</strong> ${email || "N/A"}</p>
+        const tasks = [sendEmail("sahil@hubsyntax.com", subject, html)];
+        if (email) tasks.push(sendEmail(email, subject, html));
+        await Promise.all(tasks);
 
-          <p>
-            ${
-              isNewStore
-                ? "A new Shopify store connected your app."
-                : "Store token or email has been updated."
-            }
-          </p>
+      } else {
+        // ── Token / email updated → plain internal notification ───────────
+        const subject = "Shopify Store Updated";
+        const html = `
+          <div style="font-family:Arial,sans-serif;">
+            <h2>${subject}</h2>
+            <p><strong>Shop:</strong> ${shop}</p>
+            <p><strong>Email:</strong> ${email || "N/A"}</p>
+            <p>Store token or email has been updated.</p>
+            <hr/>
+            <p>HubSyntax App Notification</p>
+          </div>`;
 
-          <hr />
-          <p>HubSyntax App Notification</p>
-        </div>
-      `;
-
-      // 1. Send to store owner
-      if (email) {
-        await sendEmail(email, subject, html);
+        const tasks = [sendEmail("sahil@hubsyntax.com", subject, html)];
+        if (email) tasks.push(sendEmail(email, subject, html));
+        await Promise.all(tasks);
       }
-
-      // 2. Send to app owner
-      await sendEmail("sahil@hubsyntax.com", subject, html);
     } catch (emailError) {
       console.error("[hub] Email error:", emailError);
     }
 
-    return res.json({
-      success: true,
-      updated: true,
-    });
+    return res.json({ success: true, updated: true });
+
   } catch (error) {
     console.error("SAVE SHOP TOKEN ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-    });
+    return res.status(500).json({ success: false });
   }
 });
 
@@ -688,7 +669,6 @@ router.post("/order-revenue", async (req, res) => {
         .json({ success: false, message: "Missing shop or cartToken" });
     }
 
-    // Only save if shop has app installed AND has an active published cart
     const publishedCart = await cartModels.findOne({
       shop,
       status: "published",
@@ -705,17 +685,43 @@ router.post("/order-revenue", async (req, res) => {
     const monthlyLimit = PLAN_ORDER_LIMITS[planName] ?? PLAN_ORDER_LIMITS.free;
     const monthlyOrderCount = await getMonthlyOrderCount(shop);
 
+    // ─── Helper: send limit-reached email ───────────────────────────────────
+    const sendLimitReachedEmail = async () => {
+      try {
+        const [shopConfig, cart] = await Promise.all([
+          shopConfigModel.findOne({ shop }),
+          cartModels.findOne({ shop }),
+        ]);
+
+        const toEmail = shopConfig?.email || cart?.shopEmail;
+        const storeOwner = cart?.storeOwner || "there";
+
+        if (toEmail) {
+          const subject = "You've reached your monthly order limit – Custom Cart";
+          const html = buildPlanLimitReachedEmailHtml({ storeOwner, shop, plan: planName });
+          await Promise.all([
+            sendEmail(toEmail, subject, html),
+            sendEmail("sahil@hubsyntax.com", subject, html),
+          ]);
+        }
+      } catch (emailError) {
+        console.error("[hub] Limit reached email error:", emailError);
+      }
+    };
+    // ────────────────────────────────────────────────────────────────────────
+
     if (monthlyOrderCount >= monthlyLimit) {
-      // Auto-unpublish the cart so the drawer stops showing
       await cartModels.findOneAndUpdate(
         { cartId: publishedCart.cartId },
         { $set: { status: "unpublished" } },
       );
 
+      // Send limit-reached email
+      await sendLimitReachedEmail();
+
       return res.status(403).json({
         success: false,
-        message:
-          "Monthly order limit reached for your plan. Cart has been unpublished.",
+        message: "Monthly order limit reached for your plan. Cart has been unpublished.",
         planName,
         monthlyLimit,
         monthlyOrderCount,
@@ -735,13 +741,15 @@ router.post("/order-revenue", async (req, res) => {
     );
 
     // ─── Re-check after incrementing ────────────────────────────────────────
-    // The increment above pushed us to or past the limit — unpublish now.
     const newMonthlyCount = monthlyOrderCount + 1;
     if (newMonthlyCount >= monthlyLimit) {
       await cartModels.findOneAndUpdate(
         { cartId: publishedCart.cartId },
         { $set: { status: "unpublished" } },
       );
+
+      // Send limit-reached email
+      await sendLimitReachedEmail();
     }
     // ────────────────────────────────────────────────────────────────────────
 
