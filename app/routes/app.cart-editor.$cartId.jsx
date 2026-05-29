@@ -384,6 +384,8 @@ export default function CartEditor() {
         MainContent={MainContent}
         CartPreview={CartPreview}
         isDirty={isDirty}
+        onSave={handleSave}
+        onDiscard={handleDiscard}
       />
     </AppProvider>
   );

@@ -1,7 +1,7 @@
 import { Page, Button, Modal, TextField, InlineStack, Badge, Popover, ActionList, Icon } from "@shopify/polaris";
 import { EditIcon, ArrowLeftIcon, InfoIcon, CheckIcon, CaretDownIcon } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useNavigation } from "react-router-dom";
 import "../../index.css";
 import { renameCart, togglePublishCart, getCarts } from "../../services/apiRoutes";
 
@@ -33,16 +33,22 @@ export default function CartLayout({
   trustBadgesSettings,
   cartSettings,
   triggeredRewardsSettings,
-  isDirty
+  isDirty,
+  onSave,
+  onDiscard
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const navigation = useNavigation();
 
   const [cartName, setCartName] = useState(initialCartName || "Untitled cart");
   const [cartStatus, setCartStatus] = useState(cart?.status || "unpublished");
   const [previewPopoverOpen, setPreviewPopoverOpen] = useState(false);
   const [publishModal, setPublishModal] = useState(false);
   const [previewMode, setPreviewMode] = useState("items");
+  const [leaveModal, setLeaveModal] = useState(false);
+  const [leaveSaving, setLeaveSaving] = useState(false);
+
   // Sync state when cart prop changes (after switching carts via dropdown)
   useEffect(() => {
     setCartName(initialCartName || "Untitled cart");
@@ -182,6 +188,13 @@ export default function CartLayout({
   const fromPage = searchParams.get("from");
   const backPath = fromPage === "home" ? "/app" : "/app/carts";
 
+  // Pending state so the back button gives instant feedback while the
+  // destination route's loader (shopLoader → authenticate.admin) resolves,
+  // instead of the screen appearing frozen for 2-3s after the click.
+  const isNavigatingBack =
+    navigation.state === "loading" &&
+    navigation.location?.pathname === backPath;
+
   return (
     <>
       <Page fullWidth>
@@ -193,7 +206,14 @@ export default function CartLayout({
             <Button
               icon={ArrowLeftIcon}
               variant="plain"
-              onClick={() => navigate(backPath)}
+              loading={isNavigatingBack}
+              onClick={() => {
+                if (isDirty) {
+                  setLeaveModal(true);
+                } else {
+                  navigate(backPath);
+                }
+              }}
               accessibilityLabel="Go back"
             />
             <Popover
@@ -456,6 +476,44 @@ export default function CartLayout({
           </Modal.Section>
         </Modal>
 
+        <Modal
+          open={leaveModal}
+          onClose={() => setLeaveModal(false)}
+          title="Save before leaving?"
+          size="small"
+          primaryAction={{
+            content: "Save",
+            loading: leaveSaving,
+            onAction: async () => {
+              try {
+                setLeaveSaving(true);
+                await onSave?.();
+                setLeaveModal(false);
+                navigate(backPath);
+              } catch (e) {
+                shopify.toast.show("Failed to save changes", { isError: true });
+              } finally {
+                setLeaveSaving(false);
+              }
+            },
+          }}
+          secondaryActions={[
+            {
+              content: "Discard",
+              onAction: () => {
+                onDiscard?.();
+                setLeaveModal(false);
+                navigate(backPath);
+              },
+            },
+           
+          ]}
+        >
+          <Modal.Section>
+            Save or discard changes to exit.
+          </Modal.Section>
+        </Modal>
+        
       </Page>
 
       {/* Toggle arrow — fixed outside wrapper so overflow:hidden never clips it */}
