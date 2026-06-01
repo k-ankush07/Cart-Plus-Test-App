@@ -324,7 +324,8 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                             "--btn-hover-text": designSettings.buttonHoverColor,
                             "--btn-text": designSettings.buttonTextColor,
                         }}>
-                            <a href={recommendationsSettings.buttonUrl} className="upcart-recommendations-shop-now-button">
+                            <a href={recommendationsSettings.buttonUrl} onClick={(e) => e.preventDefault()}
+                                className="upcart-recommendations-shop-now-button">
                                 {recommendationsSettings.buttonText}
                             </a>
                         </div>
