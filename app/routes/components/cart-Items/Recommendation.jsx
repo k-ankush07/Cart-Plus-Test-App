@@ -305,7 +305,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                 <div className="styles_CartPreview__empty__">
                     <div className="empty-cart-custom-text"> <CustomHtml cartSettings={cartSettings} position="empty_cart" /></div>
 
-                    <h3>{cartSettings.emptyCartMessage}</h3>
+                    <h3 className="custom-cart-recommendations-title">{cartSettings.emptyCartMessage}</h3>
                     {/* HEADER */}
                     {!recommendationsSettings.enabled && (
                         <div
@@ -318,7 +318,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
 
                     {/* BUTTON */}
                     {!recommendationsSettings.enabled && recommendationsSettings.showShopNowButton && (
-                        <div className="custom-cart-internal-style__title-large_button" style={{
+                        <div className="custom-cart-internal-style__title-large_button custom-cart-recommendations-shop-now-button" style={{
                             borderRadius: `${designSettings.buttonRadius}px`,
                             backgroundColor: designSettings.buttonColor,
                             "--btn-hover-text": designSettings.buttonHoverColor,

@@ -27,7 +27,7 @@ const Toggle = ({ on, onChange }) => (
         }}
     >
         <div
-            className="custom-cart-public-addons__toggle-slider"
+            className="custom-cart-public-addons__toggle-slider custom-cart-public-addons__toggle-switch"
             style={{
                 width: 16,
                 height: 16,
@@ -57,11 +57,11 @@ export default function AddOns({ addonsSettings, currency }) {
     };
 
     return (
-        <div className="cart-addon-tile upcart-addons custom-cart-public-addons">
+        <div className="cart-addon-tile upcart-addons custom-cart-public-addons custom-cart-addons">
             {isShipping ? (
                 <ShippingIcon />
             ) : (
-                <div className="upcart-addons-image-wrapper custom-cart-public-addons__image-wrapper" style={{
+                <div className="upcart-addons-image-wrapper custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper" style={{
                     width: 44,
                     height: 44,
                     borderRadius: 6,
@@ -81,7 +81,7 @@ export default function AddOns({ addonsSettings, currency }) {
 
             {/* INFO */}
             <div className="cart-addon-tile__info custom-cart-public-addons__content-wrapper">
-                <div className="cart-addon-tile__title-row custom-cart-public-addons__content-title-wrapper">
+                <div className="cart-addon-tile__title-row custom-cart-public-addons__content-title-wrapper custom-cart-addons-title">
                     <span className="cart-addon-tile__title upcart-addons-title custom-cart-public-addons__content-title">
                         {isShipping ? addonsSettings.title : product?.title || "Product add-on"}
                     </span>
@@ -91,23 +91,23 @@ export default function AddOns({ addonsSettings, currency }) {
                         ) : (
                             <>
                                 {product?.compareAtPrice && (
-                                    <span className="cart-addon-tile__compare">${product.compareAtPrice}</span>
+                                    <span className="cart-addon-tile__compare custom-cart-addons-compare-price custom-cart-public-addons__compare-at-price">${product.compareAtPrice}</span>
                                 )}
                                 <span>{product?.price || ""} {currency}</span>
                             </>
                         )}
                     </span>
                 </div>
-                <p className="cart-addon-tile__desc upcart-addons-product-description upcart-public-addons__content-description">
+                <p className="cart-addon-tile__desc custom-cart-addons-product-description custom-cart-public-addons__content-description upcart-addons-product-description upcart-public-addons__content-description">
                     {isShipping
                         ? addonsSettings.description
                         : product?.description || ""}
                 </p>
             </div>
-            {isShipping && (<span className="cart-addon-tile__price">{addonsSettings.price} {currency}</span>)}
+            {isShipping && (<span className="cart-addon-tile__price custom-cart-addons-price custom-cart-public-addons__price">{addonsSettings.price} {currency}</span>)}
 
             {/* TOGGLE */}
-            <div className="upcart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
+            <div className="upcart-addons-toggle  custom-cart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
                 <Toggle on={toggled} onChange={handleToggle} />
             </div>
         </div>

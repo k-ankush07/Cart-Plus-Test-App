@@ -4,12 +4,12 @@ export default function TrustBadges({ trustBadgesSettings }) {
     const activeImage = trustBadgesSettings.customImage || trustBadgesSettings.presetImage;
 
     return (
-        <div className="cart-trust-badges upcart-trust-badge custom-cart-public-trust-badges">
+        <div className="cart-trust-badges custom-cart-trust-badge upcart-trust-badge custom-cart-public-trust-badges">
             {activeImage ? (
                 <img
                     src={activeImage}
                     alt="Trust badges"
-                    className="cart-trust-badges__img upcart-trust-badge-image custom-cart-public-trust-badges__image"
+                    className="cart-trust-badges__img upcart-trust-badge-image custom-cart-public-trust-badges__image custom-cart-trust-badge-image"
                 />
             ) : (
                 <div className="cart-trust-badges__placeholder custom-cart-public-trust-badges__image">

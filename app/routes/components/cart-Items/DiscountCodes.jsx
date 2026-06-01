@@ -105,24 +105,24 @@ export default function DiscountCode({
   return (
     <>
       {/* ── Inline discount row ── */}
-      <div className="cart-discount-row upcart-discount-code-row upcart-discount-code-module custom-cart-public-discount-code">
-        <div className="upcart-discount-code-input-wrapper custom-cart-public-discount-code__input-wrapper">
+      <div className="cart-discount-row custom-cart-discount-code-row upcart-discount-code-row upcart-discount-code-module custom-cart-public-discount-code">
+        <div className="upcart-discount-code-input-wrapper custom-cart-discount-code-input-wrapper custom-cart-discount-code-module custom-cart-public-discount-code__input-wrapper">
           <div className="hub-discount-heading" style={{ color: designSettings.textColor }}>Coupon Code</div>
 
           <div className="hub-discount-input-row">
             <div className="hub-discount-input-wrapped">
-              <div className="hub-discount-input-btn">
+              <div className="hub-discount-input-btn custom-cart-discount-code-icon">
                 <Icon source={DiscountIcon} />
                 <input
                   type="text"
-                  className="cart-discount-row__input hub-discount-input upcart-discount-code-input custom-cart-public-discount-code__input"
+                  className="cart-discount-row__input custom-cart-discount-code-text custom-cart-discount-code-input hub-discount-input upcart-discount-code-input custom-cart-public-discount-code__input"
                   placeholder={placeholder}
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                 />
                 <button
                   type="button"
-                  className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button"
+                  className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button custom-cart-discount-code-button"
                   onClick={handleDiscount}
                 >
                   {loading ? <span className="loader" /> : buttonText}
@@ -192,7 +192,7 @@ export default function DiscountCode({
                   <CouponBadgeIcon />
                   <input
                     type="text"
-                    className="hub-offers-code-input"
+                    className="hub-offers-code-input custom-cart-discount-code-text custom-cart-discount-code-input"
                     placeholder={placeholder}
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
@@ -201,7 +201,7 @@ export default function DiscountCode({
 
                 <button
                   type="button"
-                  className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button"
+                  className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button custom-cart-discount-code-button"
                   onClick={handleDiscount}
                 >
                   {loading ? <span className="loader" /> : buttonText}

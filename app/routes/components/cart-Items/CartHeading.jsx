@@ -25,7 +25,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                 }}
             >
                 <svg
-                    className="upcart-internal-header__close-button-icon custom-cart-public-header__close-button-icon"
+                    className="upcart-internal-header__close-button-icon custom-cart-public-header__close-button-icon custom-cart-header-close-button-icon"
                     width={getIconSize(headerSettings.iconSize)}
                     height={getIconSize(headerSettings.iconSize)}
                     viewBox="0 0 20 20"
@@ -45,7 +45,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
 
     return (
         <div
-            className="cart-app__header-top custom-cart-public-header"
+            className="cart-app__header-top custom-cart-public-header custom-cart-header"
             style={{
                 padding:
                     headerSettings.height === "slim"
@@ -55,7 +55,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
             }}
         >
             <div
-                className="cart-app__row-between"
+                className="cart-app__row-between custom-cart-header-text"
                 style={{
                     display: "flex",
                     alignItems: "center",
@@ -76,6 +76,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                                     ? "right"
                                     : "left",
                     }}
+                    className ="custom-cart-header-logo"
                 >
                     {headerSettings.titleType === "logo" ? (
                         <img

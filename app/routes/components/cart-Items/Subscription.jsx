@@ -20,9 +20,9 @@ export default function Subscription({
   }
 
   return (
-    <div className="subscription-upgrade-preview upcart-subscription-upgrade-section upcart-public-component-product-tile__subscription-upgrade">
+    <div className="custom-cart-subscription-upgrade-dropdown subscription-upgrade-preview custom-cart-subscription-upgrade-section upcart-subscription-upgrade-section upcart-public-component-product-tile__subscription-upgrade">
       <button
-        className="subscription-upgrade-btn upcart-subscription-upgrade-button"
+        className="subscription-upgrade-btn upcart-subscription-upgrade-button custom-cart-subscription-upgrade-button custom-cart-public-component-product-tile__subscription-upgrade"
         style={{
           borderRadius: `${designSettings?.buttonRadius || 8}px`,
           backgroundColor: designSettings?.buttonColor || "#000",

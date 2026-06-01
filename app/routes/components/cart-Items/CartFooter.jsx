@@ -42,11 +42,11 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 <AddOns addonsSettings={addonsSettings} currency={currency} />
                 <DiscountCode discountCodesSettings={discountCodesSettings}
                     setOfferOpen={setOfferOpen}
-                    offerOpen={offerOpen} 
-                    designSettings={designSettings}/>
+                    offerOpen={offerOpen}
+                    designSettings={designSettings} />
 
                 {designSettings.enableSubtotal && (
-                    <div className="hub-total-summary" onClick={() => setBreakdownOpen(prev => !prev)} style={{ cursor: "pointer" }}>
+                    <div className="hub-total-summary custom-cart-savings-row custom-cart-savings-amount" onClick={() => setBreakdownOpen(prev => !prev)} style={{ cursor: "pointer" }}>
                         <div className="hub-total-header">
                             <div className="hub-total-header-left">
                                 <span className="hub-total-label" style={{ color: designSettings.subtotalColor }}>Estimated Total</span>
@@ -65,14 +65,14 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 )}
 
                 <div className={`hub-total-breakdown ${breakdownOpen ? "hub-breakdown-open" : ""}`}>
-                    <div className="custom-cart-breakdown-header">
-                        <div className="hub-breakdown-row">
+                    <div className="custom-cart-breakdown-header custom-cart-public-cart-summary__slide-codes">
+                        <div className="hub-breakdown-row custom-cart-public-cart-summary__total-discount">
                             <span style={{ color: designSettings.textColor }}>Total MRP</span>
                             <span style={{ color: designSettings.textColor }}>$200.00</span>
                         </div>
-                        <div className="hub-breakdown-row">
+                        <div className="hub-breakdown-row custom-cart-public-cart-summary__discount-label">
                             <span style={{ color: designSettings.textColor }}>{cartSettings.discountsSavingsText}</span>
-                            <span style={{ color: '#10812F' }}>MEGA20</span>
+                            <span className="custom-cart-public-cart-summary__discount-codes" style={{ color: '#10812F' }}>MEGA20</span>
                         </div>
                         <div className="hub-breakdown-row">
                             <span style={{ color: designSettings.textColor }}>Shipping</span>
@@ -88,9 +88,9 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 {/* above_checkout */}
                 <CustomHtml cartSettings={cartSettings} position="above_checkout" />
 
-                <div className="upcart-checkout-button-container">
+                <div className="upcart-checkout-button-container custom-cart-checkout-button">
                     <button
-                        className="cart-app__checkout upcart-checkout-button"
+                        className="cart-app__checkout upcart-checkout-button custom-cart-checkout-button-container"
                         style={{
                             borderRadius: `${designSettings.buttonRadius}px`,
                             backgroundColor: designSettings.buttonColor,
