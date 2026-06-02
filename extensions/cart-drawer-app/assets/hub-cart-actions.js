@@ -154,6 +154,8 @@ const _hubPendingRemovals = {};
 const UNDO_DURATION_MS = 4000;
 
 async function removeItem(key, title) {
+  const deleteBehavior =
+    window.__HUB_ACTIVE_CART__?.cartSettings?.deleteBehavior || "undo";
   const drawer = getDrawer();
   const el = drawer.querySelector(`[data-item-key="${key}"]`);
   if (!el) return;
@@ -164,15 +166,8 @@ async function removeItem(key, title) {
   }
 
   const inner = el.querySelector(".hub-cart-item");
-  if (inner) {
-    inner.style.opacity = "0.4";
-    inner.style.transition = "opacity 0.25s ease";
-    inner.style.pointerEvents = "none";
-  }
 
-  // ── Immediately decrement badge ──────────────────────────────────────────
   const removedQty = Number(el.querySelector(".hub-qty-input")?.value || 1);
-
   const badgeText = document.querySelector(
     ".custom-cart-sticky-cart-quantity-icon-text",
   );
@@ -194,7 +189,6 @@ async function removeItem(key, title) {
 
   const countBefore = parseInt(badgeText?.textContent || "0", 10) || 0;
   _applyBadgeCount(countBefore - removedQty);
-  // ────────────────────────────────────────────────────────────────────────
 
   const willEmpty =
     Array.from(drawer.querySelectorAll("[data-item-key]")).filter((row) => {
@@ -216,6 +210,36 @@ async function removeItem(key, title) {
       rInner.style.opacity = "0.4";
       rInner.style.pointerEvents = "none";
     });
+  }
+
+  // ── Direct: loader only, no fade, no toast ───────────────────────────────
+  if (deleteBehavior === "direct") {
+    const deleteBtn = el.querySelector(".hub-delete-btn");
+    if (deleteBtn) {
+      deleteBtn.innerHTML = `<span class="loader"></span>`;
+      deleteBtn.disabled = true;
+    }
+
+    _hubPendingRemovals[key] = {
+      toastEl: null,
+      itemEl: el,
+      innerEl: inner,
+      fadedRewardInners,
+      removedQty,
+      timer: null,
+      isDirect: true,
+    };
+
+    await new Promise((r) => setTimeout(r, 1500));
+    await _commitRemoval(key);
+    return;
+  }
+
+  // ── Undo toast: fade inner, show toast ───────────────────────────────────
+  if (inner) {
+    inner.style.opacity = "0.4";
+    inner.style.transition = "opacity 0.25s ease";
+    inner.style.pointerEvents = "none";
   }
 
   const toastEl = _createUndoToast(key, title || "item");
