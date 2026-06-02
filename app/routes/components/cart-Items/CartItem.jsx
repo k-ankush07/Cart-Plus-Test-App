@@ -74,40 +74,40 @@ function UndoToast({ message, onUndo, onDismiss }) {
 }
 
 // ─── Qty Stepper ──────────────────────────────────────────────────────────────
-function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) { 
-  return ( 
-    <div className="cart-app-item__qty custom-cart-public-component-product-tile__quantity-selector"> 
-      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus custom-cart-public-component-product-tile__quantity-minus"> 
-        {loadingType === "dec" 
-          ? <span className="loader"></span> 
+function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
+  return (
+    <div className="cart-app-item__qty custom-cart-public-component-product-tile__quantity-selector">
+      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus custom-cart-public-component-product-tile__quantity-minus">
+        {loadingType === "dec"
+          ? <span className="loader"></span>
           : <span className="svg-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-minus" viewBox="0 0 10 2">
-                <path fill="currentColor" fillRule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clipRule="evenodd"></path>
-              </svg>
-            </span>
-        } 
-      </button> 
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-minus" viewBox="0 0 10 2">
+              <path fill="currentColor" fillRule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clipRule="evenodd"></path>
+            </svg>
+          </span>
+        }
+      </button>
 
       <span className="cart-app-item__qty-value upcart-product-quantity-input custom-cart-public-component-product-tile__quantity-plus">
         {qty}
-      </span> 
+      </span>
 
-      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus custom-cart-public-component-product-tile__quantity-plus"> 
-        {loadingType === "inc" 
-          ? <span className="loader"></span> 
+      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus custom-cart-public-component-product-tile__quantity-plus">
+        {loadingType === "inc"
+          ? <span className="loader"></span>
           : <span className="svg-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-plus" viewBox="0 0 10 10">
-                <path fill="currentColor" fillRule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clipRule="evenodd"></path>
-              </svg>
-            </span>
-        } 
-      </button> 
-    </div> 
-  ); 
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-plus" viewBox="0 0 10 10">
+              <path fill="currentColor" fillRule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clipRule="evenodd"></path>
+            </svg>
+          </span>
+        }
+      </button>
+    </div>
+  );
 }
 
 // ─── Classic Layout ───────────────────────────────────────────────────────────
-function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings }) {
+function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings, deleteLoading }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile" style={{ flexDirection: "column" }}>
       <div style={{ display: "flex", gap: "10px", width: "100%" }}>
@@ -121,7 +121,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
             <div className="cart-app-item__title custom-cart-product-title upcart-product-title custom-cart-bundle-item-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, wordBreak: "break-word", overflowWrap: "break-word" }}>
               <a href="#" className="custom-cart-product-title-link" onclick={(e) => e.preventDefault()} style={{ color: textColor, textDecoration: "none" }}>
-                {productName} 
+                {productName}
               </a>
             </div>
             <div className=" custom-cart-bundle-item-variant-title cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
@@ -179,7 +179,11 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
                 className="cart-app-item__remove custom-cart-public-component-product-tile__remove-button"
                 onClick={onRemoveClick}
               >
-                <TrashIcon />
+                {deleteLoading ? (
+                  <span className="loader"></span>
+                ) : (
+                  <TrashIcon />
+                )}
               </button>
             </div>
           </div>
@@ -197,7 +201,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
 }
 
 // ─── Subscription Layout ──────────────────────────────────────────────────────
-function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings }) {
+function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings, deleteLoading }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile upcart-layout-subscription">
       <div className="cart-app-item__image custom-cart-bundle-item-image-wrapper upcart-product-image-wrapper custom-cart-public-component-product-tile__image-wrapper" style={{ width: "72px", height: "72px", flexShrink: 0 }}>
@@ -208,7 +212,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div className="cart-app-item__title custom-cart-product-title custom-cart-bundle-item-product-title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
-             <a href="#" className="custom-cart-product-title-link" onclick={(e) => e.preventDefault()} style={{ color: textColor, textDecoration: "none" }}>
+              <a href="#" className="custom-cart-product-title-link" onclick={(e) => e.preventDefault()} style={{ color: textColor, textDecoration: "none" }}>
                 {productName}
               </a>
             </div>
@@ -223,7 +227,11 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
               className="cart-app-item__remove"
               onClick={onRemoveClick}
             >
-              <TrashIcon />
+              {deleteLoading ? (
+                <span className="loader"></span>
+              ) : (
+                <TrashIcon />
+              )}
             </button>
             <span className="custom-cart-public-component-product-tile__discount-codes" style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "10px", fontWeight: 700 }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -265,7 +273,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
 }
 
 // ─── Modern Layout ────────────────────────────────────────────────────────────
-function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings }) {
+function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings, deleteLoading }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile upcart-layout-modern">
 
@@ -283,8 +291,8 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", lineHeight: '8px', }}>
           <div>
-            <div className="cart-app-item__title custom-cart-product-title custom-cart-bundle-item-product-title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, lineHeight:1 }}>
-              <span dangerouslySetInnerHTML={{ __html: productName }} className="custom-cart-product-title-link"/>
+            <div className="cart-app-item__title custom-cart-product-title custom-cart-bundle-item-product-title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, lineHeight: 1 }}>
+              <span dangerouslySetInnerHTML={{ __html: productName }} className="custom-cart-product-title-link" />
             </div>
             <div
               className="custom-cart-public-component-product-tile__variant custom-cart-bundle-item-variant-title"
@@ -310,7 +318,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
                     borderRadius: "4px",
                     padding: "1px 4px",
                     fontSize: "10px",
-                     marginLeft: "4px",
+                    marginLeft: "4px",
                     background: "transparent",
                     color: textColor,
                     cursor: "pointer",
@@ -357,7 +365,11 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
               className="cart-app-item__remove"
               onClick={onRemoveClick}
             >
-              <TrashIcon />
+              {deleteLoading ? (
+                <span className="loader"></span>
+              ) : (
+                <TrashIcon />
+              )}
             </button>
             {showStrikethrough && (
               <span className="custom-cart-public-component-product-tile__product-pricing custom-cart-item-compare-price" style={{ color: "#999", textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
@@ -406,8 +418,11 @@ export default function CartItem({
   const [isRemoved, setIsRemoved] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const layout = cartSettings.cartItemLayout || "classic";
+  const deleteBehavior = cartSettings.deleteBehavior || "undo";
+
   const undoTimerRef = useRef(null);
 
   const updateQty = async (type) => {
@@ -435,17 +450,24 @@ export default function CartItem({
   };
 
   const handleRemoveClick = () => {
-    setIsRemoved(true);
-    setShowToast(true);
+    if (deleteBehavior === "direct") {
+      setDeleteLoading(true);
 
-    clearTimeout(undoTimerRef.current);
+      setTimeout(() => {
+        setDeleteLoading(false);
+        console.log("Item deleted directly");
+      }, 3000);
+    } else {
+      setIsRemoved(true);
+      setShowToast(true);
 
-    undoTimerRef.current = setTimeout(() => {
-      setShowToast(false);
+      clearTimeout(undoTimerRef.current);
 
-      setIsRemoved(false);
-
-    }, 4000);
+      undoTimerRef.current = setTimeout(() => {
+        setShowToast(false);
+        setIsRemoved(false);
+      }, 4000);
+    }
   };
 
   const handleUndo = () => {
@@ -468,7 +490,8 @@ export default function CartItem({
     subscriptionUpgradesSettings,
     Subscription,
     productName,
-    designSettings
+    designSettings,
+    deleteLoading
   };
 
   return (

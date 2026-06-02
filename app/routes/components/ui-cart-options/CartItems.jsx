@@ -88,13 +88,51 @@ function LayoutWrapper({ value, selected, onSelect, children }) {
     );
 }
 
+// ─── Delete Behavior Option ───────────────────────────────────────────────────
+function DeleteBehaviorOption() {
+    return (
+        <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            padding: "12px",
+            background: "#f5f5f5",
+            borderRadius: "8px",
+            marginBottom: "16px",
+        }}>
+            <div style={{ flex: 1 }}>
+                <Text variant="bodySm" fontWeight="semibold">Delete Behavior</Text>
+                <Text variant="bodySm" tone="subdued">Choose how items are removed</Text>
+            </div>
+            <ButtonGroup>
+                <Button
+                    onClick={() => console.log("Set to undo")}
+                    variant="primary"
+                    size="slim"
+                >
+                    Undo Toast
+                </Button>
+                <Button
+                    onClick={() => console.log("Set to direct")}
+                    size="slim"
+                >
+                    Direct Delete
+                </Button>
+            </ButtonGroup>
+        </div>
+    );
+}
+
 export default function CartItems({ handleChange, cartSettings }) {
     const selected = cartSettings.cartItemLayout || "classic";
+    const deleteBehavior = cartSettings.deleteBehavior || "undo";
 
     const onSelect = (value) => handleChange("cartSettings", (prev) => ({ ...prev, cartItemLayout: value }));
 
+    const onDeleteBehaviorChange = (behavior) => handleChange("cartSettings", (prev) => ({ ...prev, deleteBehavior: behavior }));
+
     return (
-        <BlockStack gap="400">
+        <BlockStack gap="100">
             <Box paddingBlockEnd="50">
                 <BlockStack gap="400">
                     <InlineStack gap="300" align="space-between" blockAlign="center">
@@ -110,9 +148,10 @@ export default function CartItems({ handleChange, cartSettings }) {
                     </InlineStack>
                 </BlockStack>
             </Box>
+
             <LegacyCard sectioned>
                 {/* ── Layout 1: Classic ── */}
-                <Box paddingBlockEnd="400">
+                <Box paddingBlockEnd="100">
                     <LayoutWrapper value="classic" selected={selected === "classic"} onSelect={onSelect}>
                         <Card>
                             <InlineStack gap="300" align="start" blockAlign="start" wrap={false}>
@@ -366,6 +405,43 @@ export default function CartItems({ handleChange, cartSettings }) {
                     </LayoutWrapper>
                 </Box>
             </LegacyCard>
+
+            <LegacyCard sectioned>
+                <Box paddingBlockEnd="100">
+                    <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "16px",
+                        padding: "12px",
+                        background: "#f9f9f9",
+                        borderRadius: "8px",
+                        border: "1px solid #e0e0e0",
+                    }}>
+                        <div>
+                            <Text variant="bodySm" fontWeight="semibold">Delete Behavior</Text>
+                            <Text variant="bodySm" tone="subdued">Choose how items are removed</Text>
+                        </div>
+                        <ButtonGroup>
+                            <Button
+                                onClick={() => onDeleteBehaviorChange("undo")}
+                                variant={deleteBehavior === "undo" ? "primary" : "secondary"}
+                                size="slim"
+                            >
+                                Undo Toast
+                            </Button>
+                            <Button
+                                onClick={() => onDeleteBehaviorChange("direct")}
+                                variant={deleteBehavior === "direct" ? "primary" : "secondary"}
+                                size="slim"
+                            >
+                                Direct Delete
+                            </Button>
+                        </ButtonGroup>
+                    </div>
+                </Box>
+            </LegacyCard>
+
         </BlockStack>
     );
 }
