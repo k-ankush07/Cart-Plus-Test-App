@@ -504,7 +504,7 @@ export default function StickyCart() {
               variant="secondary"
               onClick={handleSave}
               loading={loading}
-              disabled={loading}
+              disabled={loading || !isDirty}
               className={isDirty ? "black-btn" : ""}
             >
               Save
