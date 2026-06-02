@@ -27,7 +27,7 @@ function UndoToast({ message, onUndo, onDismiss }) {
       transform: "translateX(-50%)",
       background: "#222",
       color: "#fff",
-      borderRadius: 8,
+      borderRadius: 4,
       padding: "10px 16px",
       display: "flex",
       alignItems: "center",
