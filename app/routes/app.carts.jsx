@@ -239,7 +239,7 @@ function AppCartsInner({
         fetchStats();
     }, [range.start, range.end]);
 
-   const handleCreateCart = (from = "scratch") => {
+    const handleCreateCart = (from = "scratch") => {
         setCreatingFrom(from);
         setPopoverActive(false);
         const tempCartId = "cart_" + Date.now() + "_" + Math.random().toString(36).slice(2, 11);
