@@ -440,12 +440,19 @@ async function _commitRemoval(key) {
         }
       }
 
-      // ── THEN PRODUCT HIDE ANIMATION ─────────────────────
       el.style.overflow = "hidden";
-      el.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+      el.style.maxHeight = el.offsetHeight + "px";
+      void el.offsetHeight;
+      el.style.transition =
+        "transform 0.3s ease, opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease";
       el.style.transform = "translateX(-100%)";
       el.style.opacity = "0";
-
+      el.style.maxHeight = "0px";
+      el.style.marginTop = "0px";
+      el.style.marginBottom = "0px";
+      el.style.paddingTop = "0px";
+      el.style.paddingBottom = "0px";
+      
       await new Promise((r) => setTimeout(r, 300));
     }
 
