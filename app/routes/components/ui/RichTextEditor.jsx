@@ -92,7 +92,7 @@ function RichTextEditor({ value, onChange }) {
                     }}
                 >
                     {[
-                        { cmd: "bold", icon: "https://www.hubsyntax.com/cart-images/bold-1.png", alt: "Bold" },
+                        { cmd: "bold", icon: "https://slide.upcart.app/icons/bold-1.png", alt: "Bold" },
                         { cmd: "italic", icon: "https://www.hubsyntax.com/cart-images/italic-1.png", alt: "Italic" },
                         { cmd: "underline", icon: "https://www.hubsyntax.com/cart-images/underline-1.png", alt: "Underline" },
                     ].map(({ cmd, icon, alt }) => (
