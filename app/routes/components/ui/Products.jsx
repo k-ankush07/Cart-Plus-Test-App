@@ -370,7 +370,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                                                 {!v.available && (
                                                     <Badge tone="warning">Out of stock</Badge>
                                                 )}
-                                                <Text>{v.price} USD</Text>
+                                                <Text>{v.price} {currency} </Text>
                                             </InlineStack>
                                         </InlineStack>
                                     </div>
