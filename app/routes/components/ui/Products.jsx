@@ -75,7 +75,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
         setLoading(true);
         try {
             const q = searchQuery !== undefined ? searchQuery : currentSearchRef.current;
-            const res = await authenticatedFetch(`/api/products?cursor=${cursorValue || ""}&query=${encodeURIComponent(q)}`);
+            const res = await authenticatedFetch(`/shopify/products?cursor=${cursorValue || ""}&query=${encodeURIComponent(q)}`);
             const data = await res.json();
 
             const edges = data?.data?.products?.edges || [];

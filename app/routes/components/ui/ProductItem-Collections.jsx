@@ -200,7 +200,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
 
         try {
             const q = searchQuery !== undefined ? searchQuery : currentSearchRef.current;
-            const res = await authenticatedFetch(`/api/products?cursor=${cursorValue || ""}&query=${encodeURIComponent(q)}`);
+            const res = await authenticatedFetch(`/shopify/products?cursor=${cursorValue || ""}&query=${encodeURIComponent(q)}`);
             const data = await res.json();
 
             const edges = data?.data?.products?.edges || [];
@@ -247,7 +247,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
         setCollectionsLoading(true);
 
         try {
-            const res = await authenticatedFetch(`/api/collections`, {
+            const res = await authenticatedFetch(`/shopify/collections`, {
                 credentials: "include",
             });
 

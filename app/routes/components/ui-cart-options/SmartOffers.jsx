@@ -460,7 +460,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
     const existingDiscountId = triggeredRewardsSettings?.shopifyDiscountId || null;
     const discountCombinations = triggeredRewardsSettings?.discountCombinations || {};
     try {
-      await authenticatedFetch("/api/create-discount", {
+      await authenticatedFetch("/shopify/create-discount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rewards: newRewards, discountCombinations, existingDiscountId }),
