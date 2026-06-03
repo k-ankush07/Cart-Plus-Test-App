@@ -1,12 +1,5 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "0741db22a559208f286f8afcfb6dcc65"
-name = "Cart Drawer"
-application_url = "https://luis-marking-navigation-raleigh.trycloudflare.com"
-embedded = true
-
-[build]
-automatically_update_urls_on_dev = true
 
 [webhooks]
 api_version = "2026-01"
