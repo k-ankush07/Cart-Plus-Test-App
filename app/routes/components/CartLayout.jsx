@@ -70,11 +70,11 @@ export default function CartLayout({
 
   // Fetch all carts when popover opens
   useEffect(() => {
-    if (!switcherOpen || !shop?.myshopifyDomain) return;
+    if (!shop?.myshopifyDomain) return;
     getCarts(apiUrl, shop.myshopifyDomain).then((data) => {
       setAllCarts(data.data || []);
     });
-  }, [switcherOpen]);
+  }, []);
 
   const handleRenameSubmit = async () => {
     if (!newCartName.trim()) return;
@@ -506,14 +506,14 @@ export default function CartLayout({
                 navigate(backPath);
               },
             },
-           
+
           ]}
         >
           <Modal.Section>
             Save or discard changes to exit.
           </Modal.Section>
         </Modal>
-        
+
       </Page>
 
       {/* Toggle arrow — fixed outside wrapper so overflow:hidden never clips it */}
