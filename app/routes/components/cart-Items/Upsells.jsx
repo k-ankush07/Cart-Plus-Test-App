@@ -123,7 +123,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
             return;
         }
 
-        fetch("/app/get-products", {
+        fetch("/shopify/get-products", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

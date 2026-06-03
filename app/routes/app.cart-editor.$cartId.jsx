@@ -255,7 +255,7 @@ export default function CartEditor() {
       let shopifyDiscountId = existingDiscountId;
 
       if (rewards.length > 0) {
-        const syncRes = await fetch("/api/create-discount", {
+        const syncRes = await fetch("/shopify/create-discount", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

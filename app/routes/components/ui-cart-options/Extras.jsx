@@ -103,7 +103,7 @@ export default function Extras({ addonsSettings, handleChange, currency, }) {
 
     const createOrUpdateShippingProduct = async () => {
         try {
-            const res = await authenticatedFetch(`/api/create-or-update-shipping`, {
+            const res = await authenticatedFetch(`/shopify/create-or-update-shipping`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

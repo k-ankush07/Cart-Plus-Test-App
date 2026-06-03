@@ -81,7 +81,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
             return;
         }
 
-        fetch("/app/get-products", {
+        fetch("/shopify/get-products", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
