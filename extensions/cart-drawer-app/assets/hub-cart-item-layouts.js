@@ -215,7 +215,7 @@ function subscriptionItemHTML(ctx) {
         <img src="${item.image}" alt="${item.product_title}" class="hub-item-img custom-cart-public-component-product-tile__image" />
       </div>
       <div class="hub-item-info custom-cart-public-component-product-tile__info">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="width: 100%; display:flex;justify-content:space-between;align-items:flex-start">
           <a href="/products/${item.handle}" class="hub-item-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
             ${_deleteBtn(item.key, item.product_title)}
@@ -372,7 +372,7 @@ function modernItemHTML(ctx) {
         </div>
       </div>
       <div class="hub-item-info custom-cart-public-component-product-tile__info">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px" class="custom-cart-public-component-product-title-container">
+        <div style="width: 100%; display:flex;justify-content:space-between;align-items:flex-start;gap:8px" class="custom-cart-public-component-product-title-container">
           <div class="hub-cart-item--modern-title">
             <a href="/products/${item.handle}" class="hub-item-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
             ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}

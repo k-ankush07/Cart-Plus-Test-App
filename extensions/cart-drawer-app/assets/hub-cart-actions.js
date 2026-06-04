@@ -74,22 +74,6 @@ function _hubHideAllCartSections(blockId) {
       0,
     );
   }
-
-  document.querySelectorAll(".cart-count-bubble").forEach((bubble) => {
-    const numEl = bubble.querySelector('[aria-hidden="true"]');
-    const lblEl = bubble.querySelector(".visually-hidden");
-    if (numEl) numEl.textContent = "0";
-    if (lblEl) lblEl.textContent = "0 items";
-  });
-
-  const badgeText = document.querySelector(
-    ".custom-cart-sticky-cart-quantity-icon-text",
-  );
-  const badgeWrapper = document.querySelector(
-    ".custom-cart-sticky-cart-quantity-icon",
-  );
-  if (badgeText) badgeText.textContent = "0";
-  if (badgeWrapper) badgeWrapper.style.display = "flex";
 }
 
 function _hubRestoreAllCartSections(blockId) {
@@ -187,7 +171,12 @@ async function removeItem(key, title) {
     });
   }
 
-  const countBefore = parseInt(badgeText?.textContent || "0", 10) || 0;
+  const bubbleNumEl = document.querySelector(
+    '.cart-count-bubble [aria-hidden="true"]',
+  );
+  const countBefore =
+    parseInt(bubbleNumEl?.textContent || badgeText?.textContent || "0", 10) ||
+    0;
   _applyBadgeCount(countBefore - removedQty);
 
   const willEmpty =
@@ -476,7 +465,7 @@ async function _commitRemoval(key) {
       el.style.marginBottom = "0px";
       el.style.paddingTop = "0px";
       el.style.paddingBottom = "0px";
-      
+
       await new Promise((r) => setTimeout(r, 300));
     }
 

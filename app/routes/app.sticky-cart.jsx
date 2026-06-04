@@ -262,7 +262,7 @@ const positionStyles = {
 
 function buildSettings(data) {
   return {
-    enabled: data?.enabled ?? true,
+    enabled: data?.enabled ?? false,
     selectedIcon: data?.selectedIcon ?? "bag",
     bgColor: data?.bgColor ?? "#000000",
     iconColor: data?.iconColor ?? "#ffffff",
