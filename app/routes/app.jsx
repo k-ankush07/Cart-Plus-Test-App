@@ -12,10 +12,6 @@ import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
 import enTranslations from "@shopify/polaris/locales/en.json";
 import "@shopify/polaris/build/esm/styles.css";
 
-import { authenticate, sessionStorage } from "../shopify.server";
-
-const TOKEN_SYNC_TIMEOUT_MS = 10_000;
-
 const PROGRESS_BAR_KEYFRAMES = `
   @keyframes upcart-slide {
     0%   { transform: translateX(-100%); }
@@ -33,8 +29,6 @@ const NAV_LINKS = [
   { href: "/app/help&support", label: "Help & Support" },
 ];
 
-const _lastSentToken = new Map();
-
 /**
  * Saves the shop's offline access token to the external API hub.
  * Failures are intentionally swallowed — this must never block the loader.
@@ -42,55 +36,11 @@ const _lastSentToken = new Map();
  * @param {import("@shopify/shopify-api").Session} session  Online session.
  * @param {object} admin  Shopify Admin API client.
  */
-async function syncShopToken(session, admin) {
-  try {
-    const offlineSession = await sessionStorage.loadSession(
-      `offline_${session.shop}`
-    );
-    const accessToken = offlineSession?.accessToken;
-
-    if (!accessToken || _lastSentToken.get(session.shop) === accessToken) {
-      return;
-    }
-
-    const graphqlResponse = await admin.graphql(
-      `query ShopInfo { shop { email name myshopifyDomain } }`
-    );
-    const { data } = await graphqlResponse.json();
-    const storeEmail = data?.shop?.email ?? null;
-
-    const apiBaseUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
-    if (!apiBaseUrl) {
-      console.warn("[hub] PUBLIC_REACT_APP_API_URL is not set — skipping token sync.");
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TOKEN_SYNC_TIMEOUT_MS);
-
-    await fetch(`${apiBaseUrl}/api/save-shop-token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        shop: session.shop,
-        accessToken,
-        email: storeEmail,
-      }),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timeoutId));
-
-    _lastSentToken.set(session.shop, accessToken);
-  } catch (err) {
-    console.warn("[hub] Could not sync shop token:", err.message);
-  }
-}
 
 export const ssr = false;
 
 export async function loader({ request }) {
-  const { session, admin } = await authenticate.admin(request);
-  syncShopToken(session, admin);
-
+ 
   return {
     apiKey: process.env.SHOPIFY_API_KEY ?? "",
   };
