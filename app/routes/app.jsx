@@ -6,7 +6,6 @@ import {
   useNavigation,
 } from "react-router";
 
-import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
 import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
 import enTranslations from "@shopify/polaris/locales/en.json";
@@ -29,21 +28,19 @@ const NAV_LINKS = [
   { href: "/app/help&support", label: "Help & Support" },
 ];
 
-/**
- * Saves the shop's offline access token to the external API hub.
- * Failures are intentionally swallowed — this must never block the loader.
- *
- * @param {import("@shopify/shopify-api").Session} session  Online session.
- * @param {object} admin  Shopify Admin API client.
- */
-
 export const ssr = false;
 
 export async function loader({ request }) {
- 
+  const { authenticate } = await import("../shopify.server");
+  await authenticate.admin(request);
   return {
     apiKey: process.env.SHOPIFY_API_KEY ?? "",
   };
+}
+
+export async function headers(headersArgs) {
+  const { boundary } = await import("@shopify/shopify-app-react-router/server");
+  return boundary.headers(headersArgs);
 }
 
 export function shouldRevalidate() {
@@ -67,33 +64,16 @@ function NavigationProgressBar() {
         aria-label="Page loading"
         aria-busy="true"
         style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 2_147_483_647,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          position: "fixed", inset: 0, zIndex: 2_147_483_647,
+          display: "flex", alignItems: "center", justifyContent: "center",
           background: "#f1f1f1",
         }}
       >
-        <div
-          style={{
-            width: 300,
-            height: 8,
-            background: "#e1e3e5",
-            borderRadius: 4,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              width: "40%",
-              background: "#111111",
-              borderRadius: 4,
-              animation: "upcart-slide 1.2s ease-in-out infinite",
-            }}
-          />
+        <div style={{ width: 300, height: 8, background: "#e1e3e5", borderRadius: 4, overflow: "hidden" }}>
+          <div style={{
+            height: "100%", width: "40%", background: "#111111",
+            borderRadius: 4, animation: "upcart-slide 1.2s ease-in-out infinite",
+          }} />
         </div>
       </div>
     </>
@@ -104,11 +84,7 @@ function AppNav() {
   return (
     <s-app-nav>
       {NAV_LINKS.map(({ href, label }, index) => (
-        <s-link
-          key={href}
-          href={href}
-          {...(index === 0 ? { rel: "home" } : {})}
-        >
+        <s-link key={href} href={href} {...(index === 0 ? { rel: "home" } : {})}>
           {label}
         </s-link>
       ))}
@@ -122,10 +98,7 @@ export default function App() {
   const isNavigating = navigation.state !== "idle";
   const initialLoadDoneRef = useRef(false);
 
-  if (!isNavigating) {
-    initialLoadDoneRef.current = true;
-  }
-
+  if (!isNavigating) initialLoadDoneRef.current = true;
   const showInitialLoader = isNavigating && !initialLoadDoneRef.current;
 
   return (
@@ -141,12 +114,12 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-
   return (
     <PolarisProvider>
-      {boundary.error(error)}
+      <div style={{ padding: 20 }}>
+        <h2>Something went wrong</h2>
+        <pre>{error?.message ?? "Unknown error"}</pre>
+      </div>
     </PolarisProvider>
   );
 }
-
-export const headers = (headersArgs) => boundary.headers(headersArgs);

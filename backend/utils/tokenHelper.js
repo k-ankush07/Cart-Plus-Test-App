@@ -1,5 +1,5 @@
 import { shopConfigModel } from "../model/schema.js";
-import { sessionStorage } from "../../app/shopify.server.js";
+import prisma from "../../app/db.server.js";
 
 // ─── Custom Error ────────────────────────────────────────────────────────────
 
@@ -13,21 +13,18 @@ export class InvalidTokenError extends Error {
 
 // ─── Token Helper ────────────────────────────────────────────────────────────
 
-/**
- * Loads the offline access token for a shop from Shopify's session storage.
- * Offline tokens do NOT expire but CAN be revoked (e.g. merchant uninstalls).
- * If the token is missing or later found invalid, throws InvalidTokenError.
- */
 export async function getValidAccessToken(shop) {
   const sessionId = `offline_${shop}`;
-  const session = await sessionStorage.loadSession(sessionId);
+
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+  });
 
   if (!session?.accessToken) {
     console.error(`[TokenHelper] No session found for shop: ${shop}`);
     throw new InvalidTokenError(shop);
   }
 
-  // Keep DB in sync (best-effort — do not block on failure)
   shopConfigModel
     .findOneAndUpdate(
       { shop },
