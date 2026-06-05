@@ -206,7 +206,7 @@ export default function Extras({ addonsSettings, handleChange, currency, }) {
                                     label="Price"
                                     value={addonsSettings.price}
                                     onChange={(val) => update("price", val)}
-                                    suffix="USD"
+                                    suffix={currency}
                                     autoComplete="off"
                                 />
 

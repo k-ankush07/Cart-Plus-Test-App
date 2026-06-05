@@ -17,9 +17,12 @@ const shopify = shopifyApp({
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
   useOnlineTokens: true,
-  future: {
-    expiringOfflineAccessTokens: true,
-  },
+  // NOTE: `expiringOfflineAccessTokens` is intentionally NOT enabled.
+  // The standalone Express backend reads a snapshot of the offline token from
+  // MongoDB (shopConfig) and has no way to refresh a rotating token, so an
+  // expiring/rotating offline token would go stale there → INVALID_TOKEN on
+  // storefront-facing endpoints. Long-lived offline tokens keep the Mongo
+  // snapshot valid for the lifetime of the install.
   hooks: {
     afterAuth: async ({ session, admin }) => {
       await shopify.registerWebhooks({ session });

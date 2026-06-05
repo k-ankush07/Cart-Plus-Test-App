@@ -109,7 +109,7 @@ export const defaultUpsellsSettings = {
   showSuggestedProduct: false,
   suggestedProduct: null,
   showReviews: false,
-  reviewCountText:"({{review_count}} reviews)",
+  reviewCountText: "({{review_count}} reviews)",
   title: "You'll love these",
   buttonText: "Add",
   position: "bottom",
@@ -146,7 +146,10 @@ export const defaultDiscountCodesSettings = {
   placeholder: "Discount code",
   buttonText: "Apply",
   customTemplate: "",
-  showViewAllOffers :false
+  showViewAllOffers: false,
+  couponHeadingColor: "#000000", 
+  viewAllOffersColor: "#000000",
+  viewAllOffersBgColor: "#ffffff", 
 };
 
 export const defaultExpressPaymentsSettings = {
@@ -220,7 +223,7 @@ export const defaultCartSettings = {
   customCss: "",
   // Cart item layout
   cartItemLayout: "classic",
-  deleteBehavior:"undo"
+  deleteBehavior: "undo",
 };
 
 export const defaultTriggeredRewardsSettings = {

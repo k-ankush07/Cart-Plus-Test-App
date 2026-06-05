@@ -1338,13 +1338,13 @@ span.upcart-rewards-tier-icon {
 .hub-discount-input-row {
     display: flex;
     flex-wrap: wrap;
-    border: 1px solid #E8E8E8;
     border-radius: 5px;
 }
 
 .hub-discount-input-wrapped {
     width: 100%;
     background: white;
+    border-radius: 5px 5px 0 0;
 }
 
 .hub-discount-input {
@@ -1375,6 +1375,7 @@ span.upcart-rewards-tier-icon {
     border-width: 1px 0px 0px 0px;
     cursor: pointer;
     background: #f2f2f2;
+    border-radius:0 0 5px 5px
 }
 
 span.hub-coupon-code {

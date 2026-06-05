@@ -13,6 +13,7 @@ import {
     Box,
     Icon,
 } from "@shopify/polaris";
+import ColorInput from "../ui/ColorInput";
 
 import {
     DiscountIcon,             // Discount codes
@@ -83,6 +84,27 @@ export default function PromoCodes({ discountCodesSettings, handleChange }) {
                                 onChange={(val) => update("showOfferBox", val)}
                             />
                         </InlineStack>
+
+                        <ColorInput
+                            label="Coupon heading color"
+                            value={discountCodesSettings.couponHeadingColor ?? "#000000"}
+                            onChange={(val) => update("couponHeadingColor", val)}
+                            autoComplete="off"
+                        />
+                        {discountCodesSettings.showOfferBox && (
+                            <BlockStack gap="300">
+                                <ColorInput
+                                    label="View all offers button text color"
+                                    value={discountCodesSettings.viewAllOffersColor ?? "#000000"}
+                                    onChange={(val) => update("viewAllOffersColor", val)}
+                                />
+                                <ColorInput
+                                    label="View all offers button background color"
+                                    value={discountCodesSettings.viewAllOffersBgColor ?? "#ffffff"}
+                                    onChange={(val) => update("viewAllOffersBgColor", val)}
+                                />
+                            </BlockStack>
+                        )}
 
                         <Banner tone="warning">
                             <BlockStack gap="200">
