@@ -1348,6 +1348,18 @@ span.upcart-rewards-tier-icon {
     border-radius: 5px 5px 0 0;
 }
 
+span.custom-cart-item-compare-price {
+    opacity: .4;
+}
+
+.custom-cart-bundle-item-variant-title.cart-app-item__variant.custom-cart-public-component-product-tile__variant {
+    opacity: 0.7;
+}
+
+.custom-cart-bundle-item-variant-title.custom-cart-public-component-product-tile__variant {
+    opacity: 0.7;
+}
+
 .hub-discount-input {
     flex: 1;
     flex-grow: 1;
