@@ -54,6 +54,10 @@ window.injectCartHTML = function (blockId, root) {
   const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
   const discountCodesSettings = window.__HUB_ACTIVE_CART__?.discountCodesSettings || {};
   const showOfferBox = discountCodesSettings.showOfferBox ?? false;
+  const couponHeadingColor = discountCodesSettings.couponHeadingColor ?? '#000000';
+  const viewAllOffersBgColor = discountCodesSettings.viewAllOffersBgColor ?? '#000000';
+  const viewAllOffersColor = discountCodesSettings.viewAllOffersColor ?? '#ffff';
+
   const enableSubtotal = designSettings.enableSubtotal ?? false;
   const subtotalColor = designSettings.subtotalColor || '';
 
@@ -357,7 +361,7 @@ window.injectCartHTML = function (blockId, root) {
         <!-- DISCOUNT -->
         
         <div class="hub-discount-input-row-items"id="hub-discount-row-${blockId}">
-         <div class="hub-discount-heading" style="color:${textColorAll}">Coupon Code</div>
+         <div class="hub-discount-heading" style="color:${couponHeadingColor}">Coupon Code</div>
         <div class="hub-discount-input-row">
         <div id="hub-discount-status-${blockId}" class="hub-discount-status-code"></div>
          <div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}">
@@ -372,8 +376,8 @@ window.injectCartHTML = function (blockId, root) {
           <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn">Apply</button>
           </div>
           <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
-         ${showOfferBox ? ` <div class="discount-offer-btn" onclick="hubOpenOffersPanel('${blockId}')">
-          <button class="hub-view-offers-btn" style="color:${textColorAll}">View all offers</button>
+         ${showOfferBox ? ` <div class="discount-offer-btn" style="background:${viewAllOffersBgColor}; color:${viewAllOffersColor}" onclick="hubOpenOffersPanel('${blockId}')">
+          <button class="hub-view-offers-btn" style="color:${viewAllOffersColor}">View all offers</button>
           <svg viewBox="0 0 20 20" style="width: 20px; height: 20px; fill: #111;">
                    <path fill-rule="evenodd" d="M7.72 14.53a.75.75 0 0 1 0-1.06l3.47-3.47-3.47-3.47a.75.75 0 0 1 1.06-1.06l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 0 1-1.06 0Z"/>
           </svg>
@@ -463,7 +467,7 @@ window.injectCartHTML = function (blockId, root) {
          </svg>
           </div>
           <p class="hub-coupon-success-applied" id="hub-coupon-success-applied-${blockId}"></p>
-          <p class="hub-coupon-success-headline" id="hub-coupon-success-headline-${blockId}" style="color:${designSettings.textColor}"></p>
+          <p class="hub-coupon-success-headline" id="hub-coupon-success-headline-${blockId}"></p>
           <p class="hub-coupon-success-desc" id="hub-coupon-success-desc-${blockId}"></p>
           <button class="hub-coupon-success-yay" onclick="hubCloseCouponSuccess('${blockId}')"
           style="
