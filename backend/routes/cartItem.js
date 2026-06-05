@@ -1041,22 +1041,37 @@ router.get("/cart-stats", async (req, res) => {
 
 router.get("/revenue-stats", async (req, res) => {
   try {
-    const { shop } = req.query;
+    const { shop, startDate, endDate } = req.query;
 
     const cleanShop = shop
       ?.replace("https://", "")
       .replace("http://", "")
       .replace(/\/$/, "");
 
-    if (!shop) {
+    if (!cleanShop) {
       return res.status(400).json({ success: false, message: "Missing shop" });
     }
 
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    // Build date filter from query params; fall back to last 30 days
+    const dateFilter = {};
+    if (startDate) {
+      dateFilter.$gte = new Date(startDate);
+    } else {
+      dateFilter.$gte = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateFilter.$lte = end;
+    } else {
+      dateFilter.$lte = new Date();
+    }
 
-    // ───── Revenue Totals ─────
+    const rangeStart = dateFilter.$gte;
+
+    // ───── Revenue Totals (scoped to date range) ─────
     const [totals] = await orderRevenueModel.aggregate([
-      { $match: { shop: cleanShop } },
+      { $match: { shop: cleanShop, createdAt: dateFilter } },
       {
         $group: {
           _id: null,
@@ -1071,9 +1086,9 @@ router.get("/revenue-stats", async (req, res) => {
       },
     ]);
 
-    // ───── Last 30 days revenue ─────
+    // ───── Daily revenue (scoped to date range) ─────
     const dailyRevenue = await orderRevenueModel.aggregate([
-      { $match: { shop: cleanShop, createdAt: { $gte: thirtyDaysAgo } } },
+      { $match: { shop: cleanShop, createdAt: dateFilter } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -1087,15 +1102,10 @@ router.get("/revenue-stats", async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
-    // ───── Analytics Totals ─────
+    // ───── Analytics Totals (scoped to date range) ─────
     const analyticsStats = await analyticsModel.aggregate([
-      { $match: { shop: cleanShop } },
-      {
-        $group: {
-          _id: "$eventType",
-          count: { $sum: 1 },
-        },
-      },
+      { $match: { shop: cleanShop, createdAt: dateFilter } },
+      { $group: { _id: "$eventType", count: { $sum: 1 } } },
     ]);
 
     const analyticsFormatted = {};
@@ -1103,14 +1113,9 @@ router.get("/revenue-stats", async (req, res) => {
       analyticsFormatted[item._id] = item.count;
     });
 
-    // ───── Daily Analytics (last 30 days) ─────
+    // ───── Daily Analytics (scoped to date range) ─────
     const dailyAnalytics = await analyticsModel.aggregate([
-      {
-        $match: {
-          shop: cleanShop,
-          createdAt: { $gte: thirtyDaysAgo },
-        },
-      },
+      { $match: { shop: cleanShop, createdAt: dateFilter } },
       {
         $group: {
           _id: {
@@ -1130,12 +1135,17 @@ router.get("/revenue-stats", async (req, res) => {
       dailyAnalyticsMap[date][eventType] = count;
     });
 
-    // ───── Checkouts Completed (date-wise + total) ─────
+    // ───── Checkouts Completed (scoped to date range) ─────
+    const rangeStartDate = rangeStart.toISOString().slice(0, 10);
+    const rangeEndDate = dateFilter.$lte.toISOString().slice(0, 10);
+
     const cartOrderCounts = await cartOrderCountModel
-      .find({ shop: cleanShop })
+      .find({
+        shop: cleanShop,
+        date: { $gte: rangeStartDate, $lte: rangeEndDate },
+      })
       .lean();
 
-    const thirtyDaysAgoDate = thirtyDaysAgo.toISOString().slice(0, 10);
     let checkoutsCompleted = 0;
     const checkoutsByDate = {};
 
@@ -1145,10 +1155,8 @@ router.get("/revenue-stats", async (req, res) => {
 
       const bucketDate =
         doc.date ||
-        (doc.createdAt
-          ? new Date(doc.createdAt).toISOString().slice(0, 10)
-          : null);
-      if (!bucketDate || bucketDate < thirtyDaysAgoDate) return;
+        (doc.createdAt ? new Date(doc.createdAt).toISOString().slice(0, 10) : null);
+      if (!bucketDate) return;
 
       checkoutsByDate[bucketDate] = (checkoutsByDate[bucketDate] || 0) + count;
       if (!dailyAnalyticsMap[bucketDate]) dailyAnalyticsMap[bucketDate] = {};
@@ -1158,18 +1166,13 @@ router.get("/revenue-stats", async (req, res) => {
 
     analyticsFormatted.checkout_completed = checkoutsCompleted;
 
-    // ───── FINAL RESPONSE ─────
     return res.json({
       success: true,
       data: {
         revenue: {
           totals: totals || {
-            totalRevenue: 0,
-            upsellRevenue: 0,
-            addonRevenue: 0,
-            subscriptionRevenue: 0,
-            baseRevenue: 0,
-            orderCount: 0,
+            totalRevenue: 0, upsellRevenue: 0, addonRevenue: 0,
+            subscriptionRevenue: 0, baseRevenue: 0, orderCount: 0,
           },
           daily: dailyRevenue,
         },

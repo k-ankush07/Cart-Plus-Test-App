@@ -8,13 +8,11 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale,
   PointElement, LineElement, Filler, Tooltip as ChartTooltip,
 } from "chart.js";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import DateRangePicker from "./components/ui/DateRangePicker";
 import { shopLoader } from "./components/shop.server";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, ChartTooltip);
-
-// ─── helpers ─────────────────────────────────────────────────────────────────
 
 function fmt(n, currency = "USD") {
   return new Intl.NumberFormat("en-US", {
@@ -32,15 +30,12 @@ function buildDailyMap(daily = []) {
 function getLabelsFromRange(start, end) {
   const labels = [];
   const current = new Date(start);
-
   while (current <= end) {
     labels.push(
       `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`
     );
-
     current.setDate(current.getDate() + 1);
   }
-
   return labels;
 }
 
@@ -53,8 +48,6 @@ function FlatIcon() {
     </svg>
   );
 }
-
-// ─── filter pill ──────────────────────────────────────────────────────────────
 
 const pillStyles = {
   addons: { active: { background: "#FBE8FD", color: "#93319B" }, inactive: { background: "#F6F6F7", color: "#6D7175" } },
@@ -80,8 +73,6 @@ function FilterPill({ type, label, active, onToggle }) {
   );
 }
 
-// ─── chart options ────────────────────────────────────────────────────────────
-
 function getChartOpts(currency = "USD") {
   const currencySymbol = new Intl.NumberFormat("en-US", { style: "currency", currency })
     .formatToParts(0)
@@ -93,47 +84,29 @@ function getChartOpts(currency = "USD") {
     plugins: {
       legend: { display: false },
       tooltip: {
-        mode: "index",
-        intersect: false,
-        position: "nearest",
-        backgroundColor: "#ffffff",
-        titleColor: "#202223",
-        bodyColor: "#202223",
-        borderColor: "#e1e3e5",
-        borderWidth: 1,
-        padding: 10,
-        boxPadding: 4,
+        mode: "index", intersect: false, position: "nearest",
+        backgroundColor: "#ffffff", titleColor: "#202223", bodyColor: "#202223",
+        borderColor: "#e1e3e5", borderWidth: 1, padding: 10, boxPadding: 4,
         usePointStyle: true,
         filter: (item) => item.dataset.label !== "Previous Period",
         callbacks: {
           title: (items) => items[0]?.label ?? "",
-          label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y, currency)}`,  
+          label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y, currency)}`,
         },
       },
     },
     interaction: { mode: "index", intersect: false },
     scales: {
       x: {
-        ticks: {
-          color: "#70707b",
-          font: { size: 12 },
-          maxTicksLimit: 6,
-          padding: 10,
-          callback: function (val) { return this.getLabelForValue(val); },
-        },
-        grid: { display: false },
-        border: { display: false },
+        ticks: { color: "#70707b", font: { size: 12 }, maxTicksLimit: 6, padding: 10,
+          callback: function (val) { return this.getLabelForValue(val); } },
+        grid: { display: false }, border: { display: false },
       },
       y: {
         beginAtZero: true,
-        ticks: {
-          color: "#70707b",
-          font: { size: 12 },
-          stepSize: 500,
-          callback: (v) => currencySymbol + Number(v).toLocaleString(),
-        },
-        grid: { color: "#eeeeef" },
-        border: { display: false },
+        ticks: { color: "#70707b", font: { size: 12 }, stepSize: 500,
+          callback: (v) => currencySymbol + Number(v).toLocaleString() },
+        grid: { color: "#eeeeef" }, border: { display: false },
       },
     },
   };
@@ -146,140 +119,139 @@ const convOpts = {
     legend: { display: false },
     tooltip: {
       mode: "index", intersect: false,
-      backgroundColor: "#ffffff",
-      titleColor: "#202223", bodyColor: "#202223",
-      borderColor: "#e1e3e5", borderWidth: 1,
-      padding: 10, boxPadding: 4, usePointStyle: true,
-      callbacks: {
-        label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`,
-      },
+      backgroundColor: "#ffffff", titleColor: "#202223", bodyColor: "#202223",
+      borderColor: "#e1e3e5", borderWidth: 1, padding: 10, boxPadding: 4, usePointStyle: true,
+      callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%` },
     },
   },
   interaction: { mode: "index", intersect: false },
   scales: {
     x: {
       ticks: { color: "#70707b", font: { size: 12 }, maxTicksLimit: 6 },
-      grid: { display: false },
-      border: { display: false },
-      stepSize: 500,
-      padding: 10,
+      grid: { display: false }, border: { display: false }, stepSize: 500, padding: 10,
     },
     y: {
-      min: 0,
-      max: 100,
-      ticks: {
-        color: "#70707b",
-        font: { size: 12 },
-        stepSize: 100,
-        callback: (v) => v.toFixed(2) + "%",
-      },
-      grid: { color: "#eeeeef" },
-      border: { display: false },
+      min: 0, max: 100,
+      ticks: { color: "#70707b", font: { size: 12 }, stepSize: 100,
+        callback: (v) => v.toFixed(2) + "%" },
+      grid: { color: "#eeeeef" }, border: { display: false },
     },
   },
 };
 
-// ─── SmallCard ────────────────────────────────────────────────────────────────
-
 function SmallCard({ title, value, tooltip, valueTooltip, icon }) {
   return (
     <Card>
-      <Box
-        paddingBlockStart="100"
-        paddingBlockEnd="100"
-        paddingInlineStart="300"
-        paddingInlineEnd="300">
+      <Box paddingBlockStart="100" paddingBlockEnd="100" paddingInlineStart="300" paddingInlineEnd="300">
         <InlineStack align="space-between" blockAlign="center" wrap={false}>
-
-          {/* Left: title + value */}
           <BlockStack gap="100">
             <Tooltip content={valueTooltip} hasUnderline activatorWrapper="span">
               <Text variant="bodyMd" tone="subdued" as="span">{title}</Text>
             </Tooltip>
             <InlineStack align="left" gap="200" blockAlign="center">
               <Text variant="headingLg" as="h5">{value}</Text>
-              {/* <Tooltip content={tooltip} hasUnderline activatorWrapper="span">
-                <FlatIcon />
-              </Tooltip> */}
             </InlineStack>
           </BlockStack>
-
-          {/* Right: icon */}
           {icon && (
-            <img
-              src={icon}
-              alt=""
-              style={{ height: "50px", width: "50px", objectFit: "contain" }}
-            />
+            <img src={icon} alt="" style={{ height: "50px", width: "50px", objectFit: "contain" }} />
           )}
-
         </InlineStack>
       </Box>
     </Card>
   );
 }
+
 // ─── loader ───────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
-
   const { shop, apiUrl } = await shopLoader(request);
-
   const shopDomain = shop?.myshopifyDomain;
 
+  const today = new Date();
+  const defaultStart = new Date();
+  defaultStart.setDate(today.getDate() - 29);
+
   try {
-    const res = await fetch(`${apiUrl}/api/revenue-stats?shop=${shopDomain}`);
+    const url = new URL(`${apiUrl}/api/revenue-stats`);
+    url.searchParams.set("shop", shopDomain);
+    url.searchParams.set("startDate", defaultStart.toISOString());
+    url.searchParams.set("endDate", today.toISOString());
+
+    const res = await fetch(url.toString());
     const json = await res.json();
-    return { stats: json.data || null, shop: shopDomain, currency: shop?.currencyCode || "USD" };
+    return {
+      stats: json.data || null,
+      shop: shopDomain,
+      apiUrl,
+      currency: shop?.currencyCode || "USD",
+    };
   } catch {
-    return { stats: null, shop: shopDomain, currency: shop?.currencyCode || "USD" };
+    return { stats: null, shop: shopDomain, apiUrl, currency: shop?.currencyCode || "USD" };
   }
 };
 
 // ─── main component ───────────────────────────────────────────────────────────
 
 export default function Analytics() {
-  const { stats } = useLoaderData();
+  const { stats: initialStats, shop, apiUrl } = useLoaderData();
   const navigate = useNavigate();
 
   const today = new Date();
-
-  const currency = stats?.revenue?.totals?.currency ?? "USD";
-  const chartOpts = getChartOpts(currency);
-
   const defaultStart = new Date();
   defaultStart.setDate(today.getDate() - 29);
 
-  const [range, setRange] = useState({
-    start: defaultStart,
-    end: today,
-  });
+  const [range, setRange] = useState({ start: defaultStart, end: today });
+  const [stats, setStats] = useState(initialStats);
+  const [loading, setLoading] = useState(false);
+
+  const currency = stats?.revenue?.totals?.currency ?? useLoaderData().currency ?? "USD";
+  const chartOpts = getChartOpts(currency);
+
+  // Re-fetch when date range changes
+  useEffect(() => {
+    let cancelled = false;
+    const fetchStats = async () => {
+      setLoading(true);
+      try {
+        const url = new URL(`${apiUrl}/api/revenue-stats`);
+        url.searchParams.set("shop", shop);
+        url.searchParams.set("startDate", range.start.toISOString());
+        url.searchParams.set("endDate", range.end.toISOString());
+
+        const res = await fetch(url.toString());
+        const json = await res.json();
+        if (!cancelled && json.data) setStats(json.data);
+      } catch (e) {
+        console.error("Analytics fetch error:", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchStats();
+    return () => { cancelled = true; };
+  }, [range.start, range.end]);
 
   const totals = stats?.revenue?.totals ?? {};
   const daily = stats?.revenue?.daily ?? [];
-  const analytics = stats?.analytics ?? {};
   const dailyAnalytics = stats?.dailyAnalytics ?? {};
 
   const labels = getLabelsFromRange(range.start, range.end);
   const dayMap = buildDailyMap(daily);
 
-  const cartImpressions = labels.reduce((sum, label) => {
-    return sum + (dailyAnalytics[label]?.cart_impression ?? 0);
-  }, 0);
+  const cartImpressions = labels.reduce((sum, label) =>
+    sum + (dailyAnalytics[label]?.cart_impression ?? 0), 0);
 
-  const checkouts = labels.reduce((sum, label) => {
-    return sum + (dailyAnalytics[label]?.checkout_initiated ?? 0);
-  }, 0);
+  const checkouts = labels.reduce((sum, label) =>
+    sum + (dailyAnalytics[label]?.checkout_initiated ?? 0), 0);
 
-  const checkoutComplate = labels.reduce((sum, label) => {
-    return sum + (dailyAnalytics[label]?.checkout_completed ?? 0);
-  }, 0);
+  const checkoutComplete = labels.reduce((sum, label) =>
+    sum + (dailyAnalytics[label]?.checkout_completed ?? 0), 0);
 
   const [filters, setFilters] = useState({ addons: true, upsells: true, subscriptions: true });
   const toggleFilter = (key) => setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const totalRevenue = labels.reduce((sum, label) => {
     const day = dayMap[label] ?? {};
-
     return (
       sum +
       (filters.upsells ? (day.upsellRevenue ?? 0) : 0) +
@@ -292,14 +264,18 @@ export default function Analytics() {
   const addonSeries = labels.map((l) => dayMap[l]?.addonRevenue ?? 0);
   const subSeries = labels.map((l) => dayMap[l]?.subscriptionRevenue ?? 0);
 
-  // Conversion rate ko 100% pe cap karo
-  const checkoutConvRate = cartImpressions > 0
-    ? Math.min((checkouts / cartImpressions) * 100, 100)
+  const rangeCartImpressions = labels.reduce((sum, label) =>
+    sum + (dailyAnalytics[label]?.cart_impression ?? 0), 0);
+
+  const rangeCheckoutInitiated = labels.reduce((sum, label) =>
+    sum + (dailyAnalytics[label]?.checkout_initiated ?? 0), 0);
+
+  const rangeConversionRate = rangeCartImpressions > 0
+    ? Math.min((rangeCheckoutInitiated / rangeCartImpressions) * 100, 100)
     : 0;
 
-  const abandonedCart = cartImpressions - checkouts; // carts that didn't reach checkout
+  const conversionRate = rangeConversionRate.toFixed(2) + "%";
 
-  // Per-day conversion rates from dailyAnalytics
   const checkoutConv = labels.map((l) => {
     const day = dailyAnalytics[l] ?? {};
     const impressions = day.cart_impression ?? 0;
@@ -314,26 +290,6 @@ export default function Analytics() {
     return initiated > 0 ? Math.min((completed / initiated) * 100, 100) : 0;
   });
 
-  // Displayed conversion rate (checkout conversion)
-  const rangeCartImpressions = labels.reduce((sum, label) => {
-    return sum + (dailyAnalytics[label]?.cart_impression ?? 0);
-  }, 0);
-
-  const rangeCheckoutInitiated = labels.reduce((sum, label) => {
-    return sum + (dailyAnalytics[label]?.checkout_initiated ?? 0);
-  }, 0);
-
-  const rangeConversionRate =
-    rangeCartImpressions > 0
-      ? Math.min(
-        (rangeCheckoutInitiated / rangeCartImpressions) * 100,
-        100
-      )
-      : 0;
-
-  const conversionRate = rangeConversionRate.toFixed(2) + "%";
-
-  // full date labels: "Apr 3, 2026"
   const shortLabels = labels.map((l) => {
     const d = new Date(l + "T00:00:00");
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -343,24 +299,18 @@ export default function Analytics() {
     labels: shortLabels,
     datasets: [
       filters.upsells && {
-        label: "Upsells",
-        data: upsellSeries,
-        borderColor: "#01679B",
-        backgroundColor: "rgba(1,103,155,0.12)",
+        label: "Upsells", data: upsellSeries,
+        borderColor: "#01679B", backgroundColor: "rgba(1,103,155,0.12)",
         fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2, order: 1,
       },
       filters.subscriptions && {
-        label: "Subscriptions",
-        data: subSeries,
-        borderColor: "#0B710E",
-        backgroundColor: "rgba(11,113,14,0.09)",
+        label: "Subscriptions", data: subSeries,
+        borderColor: "#0B710E", backgroundColor: "rgba(11,113,14,0.09)",
         fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2, order: 2,
       },
       filters.addons && {
-        label: "Add-ons",
-        data: addonSeries,
-        borderColor: "#93319B",
-        backgroundColor: "rgba(147,49,155,0.10)",
+        label: "Add-ons", data: addonSeries,
+        borderColor: "#93319B", backgroundColor: "rgba(147,49,155,0.10)",
         fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2, order: 3,
       },
     ].filter(Boolean),
@@ -370,17 +320,13 @@ export default function Analytics() {
     labels: shortLabels,
     datasets: [
       {
-        label: "Checkout",
-        data: checkoutConv,
-        borderColor: "#93319B",
-        backgroundColor: "rgba(147,49,155,0.08)",
+        label: "Checkout", data: checkoutConv,
+        borderColor: "#93319B", backgroundColor: "rgba(147,49,155,0.08)",
         fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2,
       },
       {
-        label: "Order",
-        data: orderConv,
-        borderColor: "#01679B",
-        backgroundColor: "rgba(1,103,155,0.07)",
+        label: "Order", data: orderConv,
+        borderColor: "#01679B", backgroundColor: "rgba(1,103,155,0.07)",
         fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2,
       },
     ],
@@ -390,7 +336,6 @@ export default function Analytics() {
     p.name, p.quantity, fmt(p.revenue, currency), p.module,
   ]);
 
-  // ─── Download helper ──────────────────────────────────────────────────────────
   function downloadCSV(data, filename, isPercentage = false) {
     const headers = ["Date", ...data.datasets.map((d) => d.label)];
     const rows = data.labels.map((label, i) =>
@@ -399,7 +344,7 @@ export default function Analytics() {
         ...data.datasets.map((d) => {
           const val = d.data[i] ?? 0;
           return isPercentage ? val.toFixed(2) + "%" : val;
-        })
+        }),
       ]
     );
     const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
@@ -420,7 +365,6 @@ export default function Analytics() {
         primaryAction={
           <InlineStack gap="200">
             <DateRangePicker value={range} onChange={setRange} />
-            {/* <Button icon={CalendarCheckIcon} disclosure>Compare: None</Button> */}
           </InlineStack>
         }
       >
@@ -430,10 +374,7 @@ export default function Analytics() {
           <Card padding="0">
             <Box padding="400">
               <InlineStack gap="600" wrap={false} blockAlign="start">
-
-                {/* Chart — left, with download button top-right */}
                 <Box style={{ flexGrow: 1, minWidth: 0, height: 260, position: "relative" }}>
-                  {/* ← Download button top-right of chart */}
                   <div style={{ position: "absolute", top: 0, right: 0, zIndex: 10 }}>
                     <Button
                       icon={DownloadIcon}
@@ -442,10 +383,15 @@ export default function Analytics() {
                       onClick={() => downloadCSV(revenueChartData, "revenue.csv", false)}
                     />
                   </div>
-                  <Line data={revenueChartData} options={chartOpts} />
+                  {loading ? (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#70707b" }}>
+                      <Text tone="subdued">Loading…</Text>
+                    </div>
+                  ) : (
+                    <Line data={revenueChartData} options={chartOpts} />
+                  )}
                 </Box>
 
-                {/* Right info panel — same as before */}
                 <Box width="180px">
                   <BlockStack gap="400">
                     <BlockStack gap="100">
@@ -458,8 +404,7 @@ export default function Analytics() {
                         <Text variant="headingLg" as="h4">{fmt(totalRevenue, currency)}</Text>
                         <Tooltip
                           content={`Change in revenue compared to previous period. Previous revenue: ${fmt(0, currency)}`}
-                          hasUnderline
-                          activatorWrapper="span"
+                          hasUnderline activatorWrapper="span"
                         >
                           <FlatIcon />
                         </Tooltip>
@@ -475,7 +420,6 @@ export default function Analytics() {
                     </BlockStack>
                   </BlockStack>
                 </Box>
-
               </InlineStack>
             </Box>
           </Card>
@@ -493,17 +437,11 @@ export default function Analytics() {
                 />
                 <SmallCard
                   title="Checkouts completed"
-                  value={checkoutComplate}
+                  value={checkoutComplete}
                   icon="https://hubsyntax.com/cart-images/Layer_1%20(1).png"
                   valueTooltip="This is the number of items orders completed."
-                  tooltip={`Change in checkouts compared to previous period. Previous checkouts: ${checkoutComplate}`}
+                  tooltip={`Change in checkouts compared to previous period. Previous checkouts: ${checkoutComplete}`}
                 />
-                {/* <SmallCard
-                  title="Abandoned cart"
-                  value={abandonedCart}
-                  valueTooltip="Number of carts that were opened but did not proceed to checkout."
-                  tooltip="Change in abandoned carts compared to previous period. Previous abandoned carts: 0"
-                /> */}
                 <SmallCard
                   title="Cart Checkout"
                   value={checkouts}
@@ -524,14 +462,23 @@ export default function Analytics() {
                       </Tooltip>
                       <InlineStack gap="100" blockAlign="center">
                         <Text variant="headingLg" as="h5">{conversionRate}</Text>
-                        {/* <FlatIcon /> */}
                       </InlineStack>
                     </BlockStack>
-                    <Button icon={DownloadIcon} size="slim" onClick={() => downloadCSV(convChartData, "conversion.csv", true)}
-                      accessibilityLabel="Download conversion data" />
+                    <Button
+                      icon={DownloadIcon}
+                      size="slim"
+                      onClick={() => downloadCSV(convChartData, "conversion.csv", true)}
+                      accessibilityLabel="Download conversion data"
+                    />
                   </InlineStack>
                   <Box style={{ height: 208 }}>
-                    <Line data={convChartData} options={convOpts} />
+                    {loading ? (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#70707b" }}>
+                        <Text tone="subdued">Loading…</Text>
+                      </div>
+                    ) : (
+                      <Line data={convChartData} options={convOpts} />
+                    )}
                   </Box>
                 </BlockStack>
               </Card>
@@ -555,14 +502,6 @@ export default function Analytics() {
         </BlockStack>
       </Page>
     </>
-  );
-}
-
-function CompareIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
-      <path d="M17.28 12.72a.75.75 0 0 1 0 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-1.75-1.75a.75.75 0 1 1 1.06-1.06l1.22 1.22 2.97-2.97a.75.75 0 0 1 1.06 0Z" />
-    </svg>
   );
 }
 
