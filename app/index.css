@@ -280,7 +280,7 @@ body,
     border: 1px solid var(--p-color-border);
     border-radius: 5px;
     overflow: hidden;
-    background: transparent;
+    background: white;
     /* inline me bg nahi hai */
 }
 
@@ -300,12 +300,20 @@ body,
     transition: background 0.15s;
 }
 
+button.cart-app-item__qty-btn.upcart-product-quantity-plus.custom-cart-public-component-product-tile__quantity-plus {
+    border-left: 1px solid #ddd;
+}
+
+button.cart-app-item__qty-btn.upcart-product-quantity-minus.custom-cart-public-component-product-tile__quantity-minus {
+     border-right: 1px solid #ddd;
+}
+
 /* Value */
 .cart-app-item__qty-value {
     border-left: 1px solid var(--p-color-border);
     border-right: 1px solid var(--p-color-border);
     text-align: center;
-    width: 26px;
+    width: 30px;
     height: 26px;
     border: none;
     text-align: center;

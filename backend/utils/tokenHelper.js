@@ -1,5 +1,4 @@
 import { shopConfigModel } from "../model/schema.js";
-import prisma from "../../app/db.server.js";
 
 // ─── Custom Error ────────────────────────────────────────────────────────────
 
@@ -13,27 +12,21 @@ export class InvalidTokenError extends Error {
 
 // ─── Token Helper ────────────────────────────────────────────────────────────
 
+/**
+ * Resolves the offline Admin API access token for a shop.
+ *
+ * The standalone Express backend runs as a separate process from the Shopify
+ * embedded app and does NOT share the app's Prisma/SQLite session store. The
+ * embedded app pushes fresh tokens into MongoDB (`shopConfig`) on every load
+ * via POST /api/save-shop-token, so MongoDB is the single source of truth here.
+ */
 export async function getValidAccessToken(shop) {
-  const sessionId = `offline_${shop}`;
+  const config = await shopConfigModel.findOne({ shop }).lean();
 
-  const session = await prisma.session.findUnique({
-    where: { id: sessionId },
-  });
-
-  if (!session?.accessToken) {
-    console.error(`[TokenHelper] No session found for shop: ${shop}`);
+  if (!config?.accessToken) {
+    console.error(`[TokenHelper] No access token in shopConfig for shop: ${shop}`);
     throw new InvalidTokenError(shop);
   }
 
-  shopConfigModel
-    .findOneAndUpdate(
-      { shop },
-      { accessToken: session.accessToken, updatedAt: new Date() },
-      { upsert: true }
-    )
-    .catch((err) =>
-      console.warn(`[TokenHelper] DB sync failed for ${shop}:`, err.message)
-    );
-
-  return session.accessToken;
+  return config.accessToken;
 }

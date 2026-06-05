@@ -150,7 +150,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
             <div className="custom-cart-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$200.00</span>
               {showStrikethrough && (
-                <span className="custom-cart-item-compare-price" style={{ color: "#999", textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
+                <span className="custom-cart-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
               )}
             </div>
             {cartSettings.showSavingsBelowPrices && (
@@ -246,7 +246,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
         <div className="custom-cart-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
           <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$27.00</span>
           {showStrikethrough && (
-            <span style={{ color: "#999", textDecoration: "line-through", fontSize: "9px" }} className="custom-cart-item-compare-price">$40.00</span>
+            <span style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }} className="custom-cart-item-compare-price">$40.00</span>
           )}
           {cartSettings.showSavingsBelowPrices && (
             <span className="custom-cart-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>
@@ -372,7 +372,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
               )}
             </button>
             {showStrikethrough && (
-              <span className="custom-cart-public-component-product-tile__product-pricing custom-cart-item-compare-price" style={{ color: "#999", textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
+              <span className="custom-cart-public-component-product-tile__product-pricing custom-cart-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
             )}
             <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$200.00</span>
             <span className="custom-cart-public-component-product-tile__discount-codes" style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34", fontSize: "10px", fontWeight: 600 }}>

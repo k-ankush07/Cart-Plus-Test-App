@@ -228,6 +228,7 @@
   border: 1px solid #d0d0d0;
   border-radius: 5px;
   overflow: hidden;
+  background: white;
 }
 
 .hub-qty-btn {
@@ -244,6 +245,14 @@
   transition: background 0.15s;
 }
 
+button.hub-qty-btn.minus {
+    border-right: 1px solid #ddd;
+}
+
+button.hub-qty-btn.plus {
+    border-left: 1px solid #ddd;
+}
+
 .hub-qty-btn:hover {
   background: #f5f5f5;
 }
@@ -254,7 +263,7 @@
 }
 
 .hub-qty-input {
-  width: 26px;
+  width: 30px;
   height: 26px;
   border: none;
   text-align: center;
