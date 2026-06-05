@@ -11,13 +11,17 @@ import {
     Box,
     Icon,
     Banner,
+    SkeletonBodyText,
+    SkeletonDisplayText,
 } from "@shopify/polaris";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { CheckIcon } from "@shopify/polaris-icons";
-import { useLoaderData, useFetcher } from "react-router-dom";
+import { useLoaderData, useFetcher, Await } from "react-router-dom";
 import { authenticate } from "../shopify.server";
 import "../index.css";
 import { shopLoader } from "./components/shop.server";
+
+// ─── Plan definitions ─────────────────────────────────────────────────────────
 
 const PLANS = [
     {
@@ -76,7 +80,26 @@ const PLANS = [
     },
 ];
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
+const FAQ = [
+    {
+        q: "Can I change plans at any time?",
+        a: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated.",
+    },
+    {
+        q: "Is there a free trial?",
+        a: "All paid plans come with a 7-day free trial. No credit card required to start.",
+    },
+    {
+        q: "What happens to my carts if I downgrade?",
+        a: "Your carts remain intact but only the number allowed by your plan will be active. The rest will be paused.",
+    },
+    {
+        q: "Do you offer annual billing?",
+        a: "Yes, annual billing is available with a 20% discount. Contact support to switch.",
+    },
+];
+
+// ─── Helper ───────────────────────────────────────────────────────────────────
 
 const savePlan = (apiUrl, shop, plan, price, subscriptionId, status) =>
     fetch(`${apiUrl}/api/shop-plan`, {
@@ -85,71 +108,80 @@ const savePlan = (apiUrl, shop, plan, price, subscriptionId, status) =>
         body: JSON.stringify({ shop, plan, price, subscriptionId, status }),
     });
 
-// ─── Loader ──────────────────────────────────────────────────────────────────
+// ─── Loader ───────────────────────────────────────────────────────────────────
+// FIX: All heavy work (GraphQL + savePlan + DB fetch) is wrapped in a deferred
+// promise so the page shell renders immediately. Only shopLoader (auth) blocks.
 
 export const loader = async ({ request }) => {
     const { shop, apiUrl, admin } = await shopLoader(request);
-
     const shopDomain = shop?.myshopifyDomain;
 
-    const res = await admin.graphql(`
-        query {
-            currentAppInstallation {
-                activeSubscriptions {
-                    id
-                    name
-                    status
-                    lineItems {
-                        plan {
-                            pricingDetails {
-                                ... on AppRecurringPricing {
-                                    price { amount }
+    // Return a promise — NOT awaited — so React Router defers it
+    const dataPromise = (async () => {
+        const res = await admin.graphql(`
+            query {
+                currentAppInstallation {
+                    activeSubscriptions {
+                        id
+                        name
+                        status
+                        lineItems {
+                            plan {
+                                pricingDetails {
+                                    ... on AppRecurringPricing {
+                                        price { amount }
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+        `);
+
+        const data = await res.json();
+        const subscriptions =
+            data?.data?.currentAppInstallation?.activeSubscriptions || [];
+        const active = subscriptions.find((s) => s.status === "ACTIVE");
+
+        let activePlan         = "free";
+        let activePrice        = 0;
+        let activeSubscriptionId = null;
+
+        if (active) {
+            const amount = parseFloat(
+                active.lineItems?.[0]?.plan?.pricingDetails?.price?.amount || 0
+            );
+            activePlan           = amount <= 9 ? "starter" : "growth";
+            activePrice          = amount;
+            activeSubscriptionId = active.id;
         }
-    `);
 
-    const data = await res.json();
-    const subscriptions = data?.data?.currentAppInstallation?.activeSubscriptions || [];
-    const active = subscriptions.find((s) => s.status === "ACTIVE");
+        // Fire-and-forget — don't block the deferred promise on the DB write
+        savePlan(apiUrl, shopDomain, activePlan, activePrice, activeSubscriptionId, "active")
+            .catch((e) => console.error("savePlan error:", e));
 
-    let activePlan = "free";
-    let activePrice = 0;
-    let activeSubscriptionId = null;
+        const dbRes  = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`);
+        const dbData = await dbRes.json();
 
-    if (active) {
-        const amount = parseFloat(
-            active.lineItems?.[0]?.plan?.pricingDetails?.price?.amount || 0
-        );
-        activePlan = amount <= 9 ? "starter" : "growth";
-        activePrice = amount;
-        activeSubscriptionId = active.id;
-    }
+        return { activePlan, apiUrl, dbRecord: dbData.data };
+    })();
 
-    await savePlan(apiUrl, shopDomain, activePlan, activePrice, activeSubscriptionId, "active");
-
-    const dbRes = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`);
-    const dbData = await dbRes.json();
-
-    return Response.json({ activePlan, apiUrl, dbRecord: dbData.data });
+    return { dataPromise };
 };
 
-// ─── Action ──────────────────────────────────────────────────────────────────
+// ─── Action ───────────────────────────────────────────────────────────────────
+// Unchanged — actions are not part of the navigation delay
 
 export const action = async ({ request }) => {
-   
     const { admin, session } = await authenticate.admin(request);
-    const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
-    const formData = await request.formData();
+    const apiUrl     = process.env.PUBLIC_REACT_APP_API_URL?.trim();
+    const formData   = await request.formData();
     const actionType = formData.get("_action");
 
     // ── Cancel current plan ──────────────────────────────────────────
     if (actionType === "cancel") {
-        const existingRes = await admin.graphql(`
+        const existingRes  = await admin.graphql(`
             query {
                 currentAppInstallation {
                     activeSubscriptions { id status }
@@ -157,7 +189,7 @@ export const action = async ({ request }) => {
             }
         `);
         const existingData = await existingRes.json();
-        const toCancel =
+        const toCancel     =
             existingData?.data?.currentAppInstallation?.activeSubscriptions?.filter(
                 (s) => s.status === "ACTIVE"
             ) || [];
@@ -180,14 +212,14 @@ export const action = async ({ request }) => {
 
     // ── Upgrade / switch plan ────────────────────────────────────────
     const selectedPlan = formData.get("plan");
-    const priceMap = { starter: "9.00", growth: "29.00" };
-    const price = priceMap[selectedPlan];
+    const priceMap     = { starter: "9.00", growth: "29.00" };
+    const price        = priceMap[selectedPlan];
     if (!price) return Response.json({ error: "Invalid plan" }, { status: 400 });
 
     const returnUrl = `https://${session.shop}/admin/apps/cart-drawer-52/app/pricing`;
 
     // Cancel any existing active subscriptions first
-    const existingRes = await admin.graphql(`
+    const existingRes  = await admin.graphql(`
         query {
             currentAppInstallation {
                 activeSubscriptions { id status }
@@ -253,15 +285,15 @@ export const action = async ({ request }) => {
     );
 
     const createData = await createRes.json();
-    const result = createData?.data?.appSubscriptionCreate;
+    const result     = createData?.data?.appSubscriptionCreate;
 
     if (result?.userErrors?.length > 0) {
         console.error("Subscription errors:", result.userErrors);
         return Response.json({ error: result.userErrors }, { status: 500 });
     }
 
-    const confirmationUrl = result?.confirmationUrl;
-    const subscriptionId = result?.appSubscription?.id;
+    const confirmationUrl  = result?.confirmationUrl;
+    const subscriptionId   = result?.appSubscription?.id;
 
     if (confirmationUrl) {
         await savePlan(apiUrl, session.shop, selectedPlan, parseFloat(price), subscriptionId, "pending");
@@ -271,11 +303,61 @@ export const action = async ({ request }) => {
     return Response.json({ error: "No confirmation URL returned" }, { status: 500 });
 };
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function PricingSkeleton() {
+    return (
+        <Page title="Pricing" subtitle="Choose the plan that works best for your store">
+            <Layout>
+                <Layout.Section>
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                            gap: "16px",
+                        }}
+                    >
+                        {[0, 1, 2].map((i) => (
+                            <div
+                                key={i}
+                                style={{
+                                    border: "1px solid #e1e3e5",
+                                    borderRadius: "12px",
+                                    padding: "24px",
+                                    backgroundColor: "#fff",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "16px",
+                                }}
+                            >
+                                <SkeletonDisplayText size="small" />
+                                <SkeletonBodyText lines={5} />
+                            </div>
+                        ))}
+                    </div>
+                </Layout.Section>
+            </Layout>
+        </Page>
+    );
+}
+
+// ─── Page component ───────────────────────────────────────────────────────────
 
 export default function Pricing() {
-    const { activePlan } = useLoaderData();
+    const { dataPromise } = useLoaderData();
 
+    return (
+        <Suspense fallback={<PricingSkeleton />}>
+            <Await resolve={dataPromise} errorElement={<PricingSkeleton />}>
+                {(data) => <PricingInner activePlan={data.activePlan} />}
+            </Await>
+        </Suspense>
+    );
+}
+
+// ─── Inner component (renders once data resolves) ─────────────────────────────
+
+function PricingInner({ activePlan }) {
     return (
         <Page
             title="Pricing"
@@ -335,14 +417,17 @@ export default function Pricing() {
     );
 }
 
-function PricingCard({ plan, activePlan }) {
-    const fetcher = useFetcher();
-    const [redirecting, setRedirecting] = useState(false);
-    const isActive = activePlan === plan.id;
-    const isHighlighted = plan.badge === "Popular";
-    const isLoading = fetcher.state !== "idle" || redirecting;
-    const onPaidPlan = activePlan !== "free";
+// ─── Pricing card ─────────────────────────────────────────────────────────────
 
+function PricingCard({ plan, activePlan }) {
+    const fetcher      = useFetcher();
+    const [redirecting, setRedirecting] = useState(false);
+    const isActive      = activePlan === plan.id;
+    const isHighlighted = plan.badge === "Popular";
+    const isLoading     = fetcher.state !== "idle" || redirecting;
+    const onPaidPlan    = activePlan !== "free";
+
+    // Redirect to Shopify billing confirmation page
     if (fetcher.data?.confirmationUrl && !redirecting) {
         setRedirecting(true);
         window.top.location.href = fetcher.data.confirmationUrl;
@@ -399,7 +484,7 @@ function PricingCard({ plan, activePlan }) {
             </BlockStack>
 
             <div style={{ marginTop: "auto" }}>
-                {/* Free plan card */}
+                {/* Free plan */}
                 {plan.id === "free" && (
                     onPaidPlan ? (
                         <fetcher.Form method="post">
@@ -413,12 +498,12 @@ function PricingCard({ plan, activePlan }) {
                     )
                 )}
 
-                {/* Paid plan card — currently active */}
+                {/* Paid plan — currently active */}
                 {plan.id !== "free" && isActive && (
                     <Button fullWidth disabled>Current plan</Button>
                 )}
 
-                {/* Paid plan card — not active */}
+                {/* Paid plan — not active */}
                 {plan.id !== "free" && !isActive && (
                     <fetcher.Form method="post">
                         <input type="hidden" name="_action" value="upgrade" />
@@ -437,22 +522,3 @@ function PricingCard({ plan, activePlan }) {
         </div>
     );
 }
-
-const FAQ = [
-    {
-        q: "Can I change plans at any time?",
-        a: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated.",
-    },
-    {
-        q: "Is there a free trial?",
-        a: "All paid plans come with a 7-day free trial. No credit card required to start.",
-    },
-    {
-        q: "What happens to my carts if I downgrade?",
-        a: "Your carts remain intact but only the number allowed by your plan will be active. The rest will be paused.",
-    },
-    {
-        q: "Do you offer annual billing?",
-        a: "Yes, annual billing is available with a 20% discount. Contact support to switch.",
-    },
-];
