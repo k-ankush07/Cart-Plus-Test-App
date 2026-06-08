@@ -575,7 +575,6 @@ button.cart-app-item__qty-btn.upcart-product-quantity-minus.custom-cart-public-c
     flex-direction: column;
     row-gap: 15px;
     justify-content: space-between;
-    padding: 15px 30px;
 }
 
 span.svg-wrapper {
@@ -595,7 +594,6 @@ span.svg-wrapper {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    padding: 15px 20px;
 }
 
 /* ===== CARD ===== */
@@ -604,8 +602,6 @@ span.svg-wrapper {
     padding: 15px;
     width: 100%;
     box-sizing: border-box;
-    border: 1px solid #E8E8E8;
-    background: #f6f6f7;
 }
 
 /* ===== INNER ROW ===== */

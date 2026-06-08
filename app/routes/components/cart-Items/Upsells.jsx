@@ -187,7 +187,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
         }
 
         return (
-            <div className="upcart-internal-component-upsell-tile upcart-upsell-item-card">
+            <div className="upcart-internal-component-upsell-tile upcart-upsell-item-card" style={{backgroundColor: designSettings.accentColor,}}>
                 <div className="upcart-internal-component-upsell-tile__info_count custom-cart-public-component-upsell-tile">
                     <div className="upcart-internal-component-upsell-tile__image-container upcart-upsell-item-image-wrapper custom-cart-public-component-upsell-tile__image-container">
                         <img className="upcart-upsell-item-image" src={selectedVariant.image || product.image} alt={product.title} />

@@ -232,7 +232,7 @@ window.hubUtils = {
     const textColor = designSettings.buttonTextColor || "#ffffff";
 
     return `
-    <div class="hub-rec-product upcart-internal-component-upsell-tile">
+    <div class="hub-rec-product upcart-internal-component-upsell-tile" style="background-color: ${designSettings.accentColor};">
       <div class="upcart-internal-component-upsell-tile__info_count">
         <div class="upcart-internal-component-upsell-tile__image-container">
           <img class="hub-product-img"

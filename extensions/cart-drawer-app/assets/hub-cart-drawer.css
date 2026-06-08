@@ -787,10 +787,10 @@ h3.styles_CartPreview__empty__ {
 }
 
 .hub-cart-recommendations {
-  margin: 20px;
+  /* margin: 20px; */
   /* border-top: 1px solid #e5e5e5; */
   border-radius: 5px;
-  padding: 15px;
+  padding: 20px;
   max-height: 60vh;
   overflow: hidden;
   overflow-y: auto;
@@ -1199,9 +1199,7 @@ span.hub-total-arrow svg {
   border-radius: 5px;
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid #E8E8E8;
   padding: 15px;
-  background: #f6f6f7;
 }
 
 .upcart-internal-upsell__vertical-layout-wrapper {

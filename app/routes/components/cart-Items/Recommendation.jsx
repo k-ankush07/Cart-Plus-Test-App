@@ -143,7 +143,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
         }
 
         return (
-            <div className="upcart-internal-component-upsell-tile custom-cart-public-component-upsell-tile">
+            <div className="upcart-internal-component-upsell-tile custom-cart-public-component-upsell-tile" style={{backgroundColor: designSettings.accentColor,}}>
                 <div className="upcart-internal-component-upsell-tile__info_count custom-cart-public-component-upsell-tile">
 
                     {/* IMAGE */}
