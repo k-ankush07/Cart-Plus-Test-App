@@ -29,7 +29,7 @@ function hexToRGBA(hex = "#16a34a", opacity = 1) {
 const DEFAULT_PRODUCTS = [
     {
         id: "default-upsell-1",
-        title: "Recommended Product",
+        title: "Premium Wireless Headphones",
         image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg?v=1748430488&height=180",
         price: "19.99",
         compareAtPrice: "29.99",
@@ -38,9 +38,17 @@ const DEFAULT_PRODUCTS = [
         variants: [
             {
                 id: "default-variant-1",
-                title: "Default",
+                title: "Black",
                 price: "19.99",
                 compareAtPrice: "29.99",
+                available: true,
+                image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg?v=1748430488&height=180",
+            },
+            {
+                id: "default-variant-2",
+                title: "White",
+                price: "21.99",
+                compareAtPrice: "31.99",
                 available: true,
                 image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg?v=1748430488&height=180",
             },
@@ -48,7 +56,7 @@ const DEFAULT_PRODUCTS = [
     },
     {
         id: "default-upsell-2",
-        title: "You Might Also Like",
+        title: "Comfort Leather Shoes",
         image: "https://cdn.shopify.com/s/files/1/0642/9435/5203/products/derbytier_nutmeg_810294de-9152-4bf7-b5e0-b88fc94a1ff8.jpg?v=1651950701&height=180",
         price: "24.99",
         compareAtPrice: "34.99",
@@ -56,8 +64,16 @@ const DEFAULT_PRODUCTS = [
         reviewCount: 85,
         variants: [
             {
-                id: "default-variant-2",
-                title: "Default",
+                id: "default-variant-3",
+                title: "Size 8",
+                price: "24.99",
+                compareAtPrice: "34.99",
+                available: true,
+                image: "https://cdn.shopify.com/s/files/1/0642/9435/5203/products/derbytier_nutmeg_810294de-9152-4bf7-b5e0-b88fc94a1ff8.jpg?v=1651950701&height=180",
+            },
+            {
+                id: "default-variant-4",
+                title: "Size 9",
                 price: "24.99",
                 compareAtPrice: "34.99",
                 available: true,

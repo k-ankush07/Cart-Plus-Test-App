@@ -28,23 +28,31 @@ function hexToRGBA(hex = "#16a34a", opacity = 1) {
 }
 
 const DEFAULT_PRODUCT = {
-    id: "default-product",
-    title: "Recommended Product",
-    image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg",
+    id: "default-upsell-1",
+    title: "Premium Wireless Headphones",
+    image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg?v=1748430488&height=180",
     price: "19.99",
     compareAtPrice: "29.99",
     rating: "4.5",
     reviewCount: 120,
     variants: [
         {
-            id: "default-variant",
-            title: "Default",
+            id: "default-variant-1",
+            title: "Black",
             price: "19.99",
             compareAtPrice: "29.99",
             available: true,
-            image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg"
-        }
-    ]
+            image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg?v=1748430488&height=180",
+        },
+        {
+            id: "default-variant-2",
+            title: "White",
+            price: "21.99",
+            compareAtPrice: "31.99",
+            available: true,
+            image: "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/71gaxSw_UAL._SL1500.jpg?v=1748430488&height=180",
+        },
+    ],
 };
 
 export default function Recommendation({ recommendationsSettings, currency, cartSettings, upsellsSettings, designSettings }) {
