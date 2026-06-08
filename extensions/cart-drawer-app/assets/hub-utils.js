@@ -69,16 +69,16 @@ window.hubUtils = {
     if (settings?.enabled !== false) return "";
 
     return `
-    <div class="hub-additional-notes ${settings.placement}">
-      <p class="hub-notes-title">
+    <div class="custom-cart-public-notes hub-additional-notes ${settings.placement}">
+      <p class="hub-notes-title custom-cart-public-component-collapse__dropdown-container">
         <img src="https://hubsyntax.com/cart-images/Group.svg" alt="icon">
         ${settings.title}
-        <span class="drop-icon">
+        <span class="drop-icon custom-cart-public-component-collapse__expand-icon">
           <img src="https://hubsyntax.com/cart-images/Vector%20(3).svg" alt="icon">
         </span>
       </p>
 
-      <div class="hub-notes-content">
+      <div class="hub-notes-content custom-cart-public-notes__textarea">
         <textarea 
           id="hub-cart-note-${blockId}" 
           class="hub-notes-textarea"
