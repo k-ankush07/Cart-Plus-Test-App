@@ -74,7 +74,7 @@ function UndoToast({ message, onUndo, onDismiss }) {
 }
 
 // ─── Qty Stepper ──────────────────────────────────────────────────────────────
-function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
+function QtyStepper({ qty, onDecrement, onIncrement, onQtyChange, loadingType }) {
   return (
     <div className="cart-app-item__qty custom-cart-public-component-product-tile__quantity-selector">
       <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus custom-cart-public-component-product-tile__quantity-minus">
@@ -88,10 +88,13 @@ function QtyStepper({ qty, onDecrement, onIncrement, loadingType }) {
         }
       </button>
 
-      <span className="cart-app-item__qty-value upcart-product-quantity-input custom-cart-public-component-product-tile__quantity-plus">
-        {qty}
-      </span>
-
+      <input
+        type="text"
+        min="1"
+        value={qty}
+        onChange={(e) => onQtyChange && onQtyChange(Number(e.target.value))}
+        className="cart-app-item__qty-value upcart-product-quantity-input custom-cart-public-component-product-tile__quantity-plus"
+      />
       <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus custom-cart-public-component-product-tile__quantity-plus">
         {loadingType === "inc"
           ? <span className="loader"></span>
@@ -173,6 +176,9 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
                 loadingType={loadingType}
                 onDecrement={() => updateQty("dec")}
                 onIncrement={() => updateQty("inc")}
+                onQtyChange={(newQty) => {
+                  if (newQty >= 1) setQty(newQty);
+                }}
               />
               <button
                 className="cart-app-item__remove custom-cart-public-component-product-tile__remove-button"
@@ -233,10 +239,10 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
               )}
             </button>
             <span className="custom-cart-public-component-product-tile__discount-codes" style={{
-                display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34",
-                fontSize: "11px", fontWeight: 600,
-                padding: "3px 8px", borderRadius: "20px", width: "fit-content",
-              }}>
+              display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34",
+              fontSize: "11px", fontWeight: 600,
+              padding: "3px 8px", borderRadius: "20px", width: "fit-content",
+            }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                 <line x1="7" y1="7" x2="7.01" y2="7" />
@@ -264,6 +270,9 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
             loadingType={loadingType}
             onDecrement={() => updateQty("dec")}
             onIncrement={() => updateQty("inc")}
+            onQtyChange={(newQty) => {
+              if (newQty >= 1) setQty(newQty);
+            }}
           />
         </div>
 
@@ -379,10 +388,10 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
             )}
             <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$200.00</span>
             <span className="custom-cart-public-component-product-tile__discount-codes" style={{
-                display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34",
-                fontSize: "11px", fontWeight: 600,
-                padding: "8px 8px", borderRadius: "20px", width: "fit-content",
-              }}>
+              display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34",
+              fontSize: "11px", fontWeight: 600,
+              padding: "8px 8px", borderRadius: "20px", width: "fit-content",
+            }}>
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
                 <line x1="7" y1="7" x2="7.01" y2="7" />
@@ -395,6 +404,9 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
                 loadingType={loadingType}
                 onDecrement={() => updateQty("dec")}
                 onIncrement={() => updateQty("inc")}
+                onQtyChange={(newQty) => {
+                  if (newQty >= 1) setQty(newQty);
+                }}
               />
             </div>
           </div>

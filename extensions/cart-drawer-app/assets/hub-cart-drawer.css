@@ -189,11 +189,11 @@
   color: #626262;
   font-weight: 400;
   width: 100%;
-   opacity: 0.7;
+  opacity: 0.7;
 }
 
 .hub-item-variant-select-wrap {
-    opacity: 0.7;
+  opacity: 0.7;
 }
 
 .hub-item-price-row {
@@ -248,15 +248,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding:0;
   transition: background 0.15s;
 }
 
 button.hub-qty-btn.minus {
-    border-right: 1px solid #ddd;
+  border-right: 1px solid #ddd;
 }
 
 button.hub-qty-btn.plus {
-    border-left: 1px solid #ddd;
+  border-left: 1px solid #ddd;
 }
 
 .hub-qty-btn:hover {
@@ -1190,7 +1191,7 @@ span.hub-total-arrow svg {
   margin: 0 20px !important;
 }
 
-.hub-continue-shopping:hover{
+.hub-continue-shopping:hover {
   opacity: 0.8;
 }
 
@@ -1838,10 +1839,10 @@ span.hub-total-arrow svg {
 
 /* ── Suggested product ── */
 .upsell-suggestion {
-  border: 1px solid #e5e5e5;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(232, 232, 232, 0.5);
   border-radius: 10px;
   padding: 14px;
-  background: #f9f9f9;
   margin: 15px 20px;
 }
 
@@ -1986,13 +1987,13 @@ span.upsell-text.suggestion-product {
 }
 
 .loader {
-    width: 15px;
-    height: 15px;
-    border: 2px solid rgba(170, 170, 170, 0.15);
-    border-top: 2px solid #c7c7c7;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(170, 170, 170, 0.15);
+  border-top: 2px solid #c7c7c7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
 }
 
 .hub-qty-btn.loading {
@@ -2195,7 +2196,7 @@ span.upsell-text.suggestion-product {
 .hub-discount-input-row {
   display: flex;
   flex-wrap: wrap;
-  border: 1px solid #E8E8E8; 
+  border: 1px solid #E8E8E8;
   border-radius: 5px;
 }
 
@@ -2330,7 +2331,7 @@ button.remove-btn {
 span.hub-item-discount-badge {
   display: inline-flex;
   gap: 5px;
-   background: rgba(0, 0, 0, .05);
+  background: rgba(0, 0, 0, .05);
   font-size: 10px;
   color: #10812F;
   font-weight: 500;
@@ -2391,15 +2392,15 @@ button.hub-qty-btn span.svg-wrapper {
   width: 1rem;
 }
 
-select.hub-variant-option-select{
+select.hub-variant-option-select {
   outline: none;
   box-shadow: none;
 }
 
 .hub-cart-checkout-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .discount-loader {
