@@ -75,9 +75,9 @@
 }
 
 /* ── Items (scrollable) ── */
-.hub-cart-items {
+/* .hub-cart-items {
   padding: 0 20px;
-}
+} */
 
 /* Chrome, Safari, Opera */
 .hub-cart-items::-webkit-scrollbar {
@@ -106,7 +106,7 @@
 .hub-cart-item {
   display: flex;
   gap: 10px;
-  padding: 20px 0;
+  padding: 20px 20px;
   border-bottom: 1px solid #f0f0f0;
   align-items: flex-start;
   text-align: left;
