@@ -330,7 +330,7 @@ export default function CartItems({ handleChange, cartSettings }) {
                                                                         border: "1px solid #d1d5db",
                                                                         borderRadius: "4px",
                                                                         padding: "2px 4px",
-                                                                        fontSize: "12px",
+                                                                        fontSize: "10px",
                                                                         cursor: "pointer",
                                                                     }}
                                                                 >
@@ -352,7 +352,7 @@ export default function CartItems({ handleChange, cartSettings }) {
                                                                         border: "1px solid #d1d5db",
                                                                         borderRadius: "4px",
                                                                         padding: "2px 4px",
-                                                                        fontSize: "12px",
+                                                                        fontSize: "10px",
                                                                         cursor: "pointer",
                                                                     }}
                                                                 >

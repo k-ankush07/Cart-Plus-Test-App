@@ -347,7 +347,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
                   style={{
                     border: "1px solid #d1d5db",
                     borderRadius: "4px",
-                    padding: "1px 4px",
+                    padding: "2px 4px",
                     fontSize: "10px",
                     marginLeft: "4px",
                     background: "transparent",
