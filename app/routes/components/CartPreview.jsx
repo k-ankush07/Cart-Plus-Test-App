@@ -102,13 +102,18 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                     overflowY: cartSettings?.disableFixedFooter ? "unset" : "auto",
                 }}>
                     {emptyCart ? (
-                        <Recommendation
-                            recommendationsSettings={recommendationsSettings}
-                            currency={currency}
-                            cartSettings={cartSettings}
-                            upsellsSettings={upsellsSettings}
-                            designSettings={designSettings}
-                        />
+                        <>
+                            {!rewardsSettings.enabled && rewardsSettings.showOnEmptyCart && (
+                                <TieredReward rewardsSettings={rewardsSettings} />
+                            )}
+                            <Recommendation
+                                recommendationsSettings={recommendationsSettings}
+                                currency={currency}
+                                cartSettings={cartSettings}
+                                upsellsSettings={upsellsSettings}
+                                designSettings={designSettings}
+                            />
+                        </>
                     ) : (
                         <>
                             {!emptyCart && activeTab !== "Suggested Products" && (

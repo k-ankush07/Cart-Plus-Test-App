@@ -513,7 +513,7 @@ button.cart-app-item__qty-btn.upcart-product-quantity-minus.custom-cart-public-c
 .cart_CartPreview__empty__ h3 {
     font-size: 32px;
     font-weight: 600;
-    line-height: 16px;
+    line-height: 36px;
     text-align: center;
     width: 100%;
 }
