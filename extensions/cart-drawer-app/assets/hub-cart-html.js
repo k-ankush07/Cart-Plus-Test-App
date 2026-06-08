@@ -299,7 +299,7 @@ window.injectCartHTML = function (blockId, root) {
         <div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>
 
         <!-- TRUST BADGES (position: top of cart) -->
-        <div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges" style="display:none;"></div>
+        <div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges custom-cart-trust-badge upcart-trust-badge custom-cart-public-trust-badges" style="display:none;"></div>
 
         <!-- REWARDS -->
         <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;" class="custom-cart-internal-rewards custom-cart-public-rewards tier-card upcart-rewards"></div>
@@ -447,7 +447,7 @@ window.injectCartHTML = function (blockId, root) {
         }
 
         <!-- TRUST BADGES (position: top of footer) -->
-        <div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges" style="display:none;"></div>
+        <div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges custom-cart-trust-badge upcart-trust-badge custom-cart-public-trust-badges" style="display:none;"></div>
       </div>
 
      <div class="hub-bottom-of-cart">${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>

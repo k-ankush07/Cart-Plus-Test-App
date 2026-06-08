@@ -174,7 +174,7 @@ window.hubUtils = {
     el.style.display = "block";
 
     el.innerHTML = `
-    <div class="hub-trust-badges-inner">
+    <div class="hub-trust-badges-inner cart-trust-badges__img upcart-trust-badge-image custom-cart-public-trust-badges__image custom-cart-trust-badge-image">
       <img src="${img}" alt="Trust badges" class="hub-trust-badges-img"/>
     </div>
   `;
