@@ -773,6 +773,7 @@ span.hub-offers-title {
   align-items: center;
   justify-content: center;
   gap: 25px;
+  padding:20px;
 }
 
 h3.styles_CartPreview__empty__ {
@@ -1200,6 +1201,7 @@ span.hub-total-arrow svg {
   width: 100%;
   box-sizing: border-box;
   padding: 15px;
+  border: 1px solid #E8E8E8
 }
 
 .upcart-internal-upsell__vertical-layout-wrapper {

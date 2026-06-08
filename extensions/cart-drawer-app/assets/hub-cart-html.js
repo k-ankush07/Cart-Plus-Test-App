@@ -302,7 +302,7 @@ window.injectCartHTML = function (blockId, root) {
         <div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges" style="display:none;"></div>
 
         <!-- REWARDS -->
-        <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;"></div>
+        <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;" class="custom-cart-internal-rewards custom-cart-public-rewards tier-card upcart-rewards"></div>
 
         <!-- UPSELLS (position: top of cart) -->
         <div id="hub-upsell-top-${blockId}" class="hub-upsell"></div>

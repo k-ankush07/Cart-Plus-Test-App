@@ -205,7 +205,8 @@ window.hubUtils = {
 
     // Only render rating slot if merchant enabled showReviews
     const ratingHTML = settings.showReviews
-      ? `<div class="upcart-internal-component-upsell-tile__rating hub-rating-slot" data-pid="${product.id}"></div>`
+      ? `<div class="upcart-internal-component-upsell-tile__rating hub-rating-slot custom-cart-public-component-upsell-tile__rating-row"
+       data-pid="${product.id}"></div>`
       : "";
 
     const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
@@ -219,7 +220,7 @@ window.hubUtils = {
       : 0;
       
     const comparePriceHTML = hasDiscount
-      ? `<span class="hub-compare-price">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
+      ? `<span class="hub-compare-price custom-cart-public-component-upsell-tile__price-compare-at">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
      <span class="hub-item-save" style="background: ${hexToRGBA(designSettings?.savingsColor, 0.1)}; color: ${designSettings.savingsColor};">
        ${hubUtils.formatMoney(Math.round((comparePrice - salePrice) * 100))} 
      </span>`
@@ -232,23 +233,23 @@ window.hubUtils = {
     const textColor = designSettings.buttonTextColor || "#ffffff";
 
     return `
-    <div class="hub-rec-product upcart-internal-component-upsell-tile" style="background-color: ${designSettings.accentColor};">
-      <div class="upcart-internal-component-upsell-tile__info_count">
-        <div class="upcart-internal-component-upsell-tile__image-container">
-          <img class="hub-product-img"
+    <div class="hub-rec-product upcart-internal-component-upsell-tile custom-cart-public-component-upsell-tile" style="background-color: ${designSettings.accentColor};">
+      <div class="upcart-internal-component-upsell-tile__info_count custom-cart-public-component-upsell-tile">
+        <div class="upcart-internal-component-upsell-tile__image-container custom-cart-public-component-upsell-tile__image-container">
+          <img class="hub-product-img custom-cart-public-component-upsell-tile__image"
                src="${mainImage}"
                alt="${product.title}" />
         </div>
-        <div class="upcart-internal-component-upsell-tile__info">
+        <div class="upcart-internal-component-upsell-tile__info custom-cart-internal-component-upsell-tile__info">
           <a href="/products/${product.handle}"
-            class="upcart-internal-component-upsell-tile__title-link" style="color:${designSettings.textColor};">
-            <h4 class="upcart-internal-component-upsell-tile__title" style="color:${designSettings.textColor};">
+            class="upcart-internal-component-upsell-tile__title-link custom-cart-internal-component-upsell-tile__title-link" style="color:${designSettings.textColor};">
+            <h4 class="upcart-internal-component-upsell-tile__title custom-cart-public-component-upsell-tile__title" style="color:${designSettings.textColor};">
               ${product.title}
             </h4>
           </a>
           ${ratingHTML}
-          <div class="price" style="color:${designSettings.textColor};">
-            <span class="sale-price" style="color:${designSettings.textColor};">
+          <div class="price custom-cart-public-component-upsell-tile__price-row" style="color:${designSettings.textColor};">
+            <span class="sale-price custom-cart-public-component-upsell-tile__price" style="color:${designSettings.textColor};">
               ${hubUtils.formatMoney(Math.round(salePrice * 100))}
             </span>
             ${comparePriceHTML}
@@ -258,12 +259,12 @@ window.hubUtils = {
       <div class="upcart-internal-component-upsell-tile__variant-row">
            ${
              hasMultipleVariants
-               ? `<select class="hub-variant-select" style="color:${designSettings.textColor};">
+               ? `<select class="hub-variant-select custom-cart-public-component-upsell-tile__variant-row" style="color:${designSettings.textColor};">
                      ${variantOptions}
                    </select>`
                : ""
            }
-          <button class="hub-add-btn" data-variant="${firstVariant?.id}" 
+          <button class="hub-add-btn custom-cart-public-component__button" data-variant="${firstVariant?.id}" 
           style="
           --btn-bg:${btnColor};
           --btn-hover:${btnHoverColor};
@@ -725,14 +726,14 @@ window.hubUtils = {
 
     let titleHtml = "";
     if (cartTotal >= maxAmount) {
-      titleHtml = `<p class="hub-rewards-title">${rewards.successText || "All rewards unlocked!"}</p>`;
+      titleHtml = `<p class="hub-rewards-title custom-cart-public-rewards__message">${rewards.successText || "All rewards unlocked!"}</p>`;
     } else if (currentTier) {
       const remaining = getTierValue(currentTier) - cartTotal;
       const amountStr = isQuantity
         ? `${remaining} items`
         : hubUtils.formatMoney(remaining * 100);
       const raw = currentTier.title || "You're {AMOUNT} away!";
-      titleHtml = `<p class="hub-rewards-title">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
+      titleHtml = `<p class="hub-rewards-title custom-cart-public-rewards__message">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
     }
 
     const fillPctNum = parseFloat(fillPct);
@@ -752,19 +753,19 @@ window.hubUtils = {
           : rewards.incompleteIconColor || "#000000";
         const dotBg = done ? fillColor : trackColor;
 
-        return `<div class="hub-tier-cell">
-  <div class="hub-cell-bar" style="background:${trackColor};height:${barLength}px">
-    <div class="hub-cell-fill" style="width:${segFill.toFixed(2)}%;background:${fillColor}"></div>
+        return `<div class="hub-tier-cell custom-cart-public-component-segmented-progress-bar__segments-container">
+  <div class="hub-cell-bar custom-cart-public-component-segmented-progress-bar__segment" style="background:${trackColor};height:${barLength}px">
+    <div class="hub-cell-fill custom-cart-public-rewards__bar custom-cart-public-component-segmented-progress-bar" style="width:${segFill.toFixed(2)}%;background:${fillColor}"></div>
   </div>
 
   ${
     tier.showIcon
       ? `
-    <div class="hub-circle-wrap" style="padding:0 ${barGap}px">
-      <div class="hub-rewards-dot" style="background:${dotBg};width:${dotSize}px;height:${dotSize}px">
+    <div class="hub-circle-wrap custom-cart-public-component-segmented-progress-bar__milestone--middle icon-circle" style="padding:0 ${barGap}px">
+      <div class="hub-rewards-dot custom-cart-public-component-segmented-progress-bar__segment" style="background:${dotBg};width:${dotSize}px;height:${dotSize}px">
         ${hubUtils.getTierIcon(tier.type, iconColor)}
       </div>
-      <span class="hub-rewards-dot-label">${tier.description || ""}</span>
+      <span class="hub-rewards-dot-label custom-cart-public-component-segmented-progress-bar__milestone-label--align-center">${tier.description || ""}</span>
     </div>
   `
       : ""

@@ -202,6 +202,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         const height = paddingMap[ann.height] || "10px 33px";
         const timerText = ann.timer || "10:00";
         const isAfter = ann.position === "after";
+        target.className = "custom-cart-public-announcement custom-cart-announcement upcart-announcement";
         target.style.cssText = `
           display: block;
           background-color: ${ann.backgroundColor || "#ffffff"};
@@ -582,7 +583,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (!recommendations?.enabled) {
         recHTML = `
           <div class="hub-cart-recommendations">
-            <h3 class="hub-rec-title hub-public-upsell__title" style="color:${designSettings.textColor};">
+            <h3 class="hub-rec-title hub-public-upsell__title custom-cart-internal-style__title-large" style="color:${designSettings.textColor};">
               ${recommendations.productHeaderText || "You may also like"}
             </h3>
             <div id="hub-rec-products"></div>
@@ -590,19 +591,19 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }
 
       container.innerHTML = `
-        <div class="hub-cart-empty">
+        <div class="hub-cart-empty cart_CartPreview__empty__body custom-cart-recommendation-module">
           <div>${hubUtils.renderCustomHTML(customHtmlBlocks.empty_cart)}</div>
-          <h3 class="hub-empty-title styles_CartPreview__empty__">${emptyCartMessage}</h3>
+          <h3 class="hub-empty-title styles_CartPreview__empty__ custom-cart-recommendations-title">${emptyCartMessage}</h3>
           ${
             !recommendations?.enabled
               ? `
-            <p class="hub-rec-subtitle hub-public-upsell__header" style="color:${designSettings.textColor};">
+            <p class="hub-rec-subtitle hub-public-upsell__header custom-cart-internal-upsell__header" style="color:${designSettings.textColor};">
               ${recommendations?.headerText || ""}
             </p>
             ${
               recommendations?.showShopNowButton
                 ? `
-              <a href="${recommendations.buttonUrl}" class="hub-rec-btn hub-public-upsell__shop-now-button"
+              <a href="${recommendations.buttonUrl}" class="hub-rec-btn hub-public-upsell__shop-now-button custom-cart-internal-style__title-large_button custom-cart-recommendations-shop-now-button"
                 style="--btn-bg:${btnColor};--btn-hover:${btnHoverColor};--btn-text:${textColor};border-radius:${designSettings.buttonRadius}px;">
                 ${recommendations.buttonText || "Shop Now"}
               </a>`
