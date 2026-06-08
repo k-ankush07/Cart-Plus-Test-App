@@ -1391,6 +1391,10 @@ span.custom-cart-item-compare-price {
     border-radius:0 0 5px 5px
 }
 
+span.custom-cart-public-component-product-tile__discount-codes {
+    background: rgba(0, 0, 0, .05);
+}
+
 span.hub-coupon-code {
     font-size: 22px;
     font-weight: 700;
