@@ -52,14 +52,18 @@ window.injectCartHTML = function (blockId, root) {
   const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
   const headerSettings = window.__HUB_ACTIVE_CART__?.headerSettings || {};
   const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
-  const discountCodesSettings = window.__HUB_ACTIVE_CART__?.discountCodesSettings || {};
+  const discountCodesSettings =
+    window.__HUB_ACTIVE_CART__?.discountCodesSettings || {};
   const showOfferBox = discountCodesSettings.showOfferBox ?? false;
-  const couponHeadingColor = discountCodesSettings.couponHeadingColor ?? '#000000';
-  const viewAllOffersBgColor = discountCodesSettings.viewAllOffersBgColor ?? '#000000';
-  const viewAllOffersColor = discountCodesSettings.viewAllOffersColor ?? '#ffff';
+  const couponHeadingColor =
+    discountCodesSettings.couponHeadingColor ?? "#000000";
+  const viewAllOffersBgColor =
+    discountCodesSettings.viewAllOffersBgColor ?? "#000000";
+  const viewAllOffersColor =
+    discountCodesSettings.viewAllOffersColor ?? "#ffff";
 
   const enableSubtotal = designSettings.enableSubtotal ?? false;
-  const subtotalColor = designSettings.subtotalColor || '';
+  const subtotalColor = designSettings.subtotalColor || "";
 
   const cartCount =
     window.__HUB_ACTIVE_CART__?.cart?.item_count ??
@@ -194,7 +198,7 @@ window.injectCartHTML = function (blockId, root) {
     cartSettings.checkoutButtonText || "Proceed to checkout";
   const continueShoppingText =
     cartSettings.continueShoppingText || "Or continue shopping";
-  
+
   const btnColor = designSettings.buttonColor || "#000000";
   const btnHoverColor = designSettings.buttonHoverColor || "#333333";
   const textColor = designSettings.buttonTextColor || "#000";
@@ -268,7 +272,7 @@ window.injectCartHTML = function (blockId, root) {
   class="hub-cart-drawer cart-app upcart-cart ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"}"
   style="background-color:${designSettings.backgroundColor || ""};
   width:${designSettings.desktopWidth === "wide" ? "500px" : "440px"};
-  overflow-y:${disableFixedFooter ? 'auto' : 'unset'};
+  overflow-y:${disableFixedFooter ? "auto" : "unset"};
   scrollbar-width:none;
   -ms-overflow-style:none;">
 
@@ -293,7 +297,7 @@ window.injectCartHTML = function (blockId, root) {
       <div>${renderCustomHTML(customHtmlBlocks.below_header)}</div>
 
       <!-- ITEMS (scrollable) -->
-      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview ${disableFixedFooter ? 'scroll-auto' : 'scroll-unset'} custom-cart-body">
+      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview ${disableFixedFooter ? "scroll-auto" : "scroll-unset"} custom-cart-body">
         <!-- ANNOUNCEMENT (position: before) -->
         <div>${renderCustomHTML(customHtmlBlocks.above_announcements)}</div>
         <div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>
@@ -360,7 +364,8 @@ window.injectCartHTML = function (blockId, root) {
         <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
         <!-- DISCOUNT -->
         
-        <div class="hub-discount-input-row-items"id="hub-discount-row-${blockId}">
+        <div class="hub-discount-input-row-items custom-cart-discount-code-row custom-cart-public-discount-code custom-cart-discount-code-input-wrapper custom-cart-discount-code-module custom-cart-public-discount-code__input-wrapper" 
+         id="hub-discount-row-${blockId}">
          <div class="hub-discount-heading" style="color:${couponHeadingColor}">Coupon Code</div>
         <div class="hub-discount-input-row">
         <div id="hub-discount-status-${blockId}" class="hub-discount-status-code"></div>
@@ -372,21 +377,27 @@ window.injectCartHTML = function (blockId, root) {
          <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
          </svg>
             
-          <input type="text" id="discount-code-input-${blockId}" placeholder="Discount code" class="hub-discount-input" />
-          <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn">Apply</button>
+          <input type="text" id="discount-code-input-${blockId}" placeholder="Discount code" class="hub-discount-input custom-cart-discount-code-text custom-cart-discount-code-input" />
+          <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn custom-cart-public-discount-code__button custom-cart-discount-code-button">Apply</button>
           </div>
           <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
-         ${showOfferBox ? ` <div class="discount-offer-btn" style="background:${viewAllOffersBgColor}; color:${viewAllOffersColor}" onclick="hubOpenOffersPanel('${blockId}')">
+         ${
+           showOfferBox
+             ? ` <div class="discount-offer-btn" style="background:${viewAllOffersBgColor}; color:${viewAllOffersColor}" onclick="hubOpenOffersPanel('${blockId}')">
           <button class="hub-view-offers-btn" style="color:${viewAllOffersColor}">View all offers</button>
           <svg viewBox="0 0 20 20" style="width: 20px; height: 20px; fill: #111;">
                    <path fill-rule="evenodd" d="M7.72 14.53a.75.75 0 0 1 0-1.06l3.47-3.47-3.47-3.47a.75.75 0 0 1 1.06-1.06l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 0 1-1.06 0Z"/>
           </svg>
-          </div>   ` : ""}
+          </div>   `
+             : ""
+         }
         </div>
         </div>
 
         <!-- TOTAL SUMMARY -->
-       ${enableSubtotal ? ` <div class="hub-total-summary">
+       ${
+         enableSubtotal
+           ? ` <div class="hub-total-summary">
           <div class="hub-total-header"
            onclick="hubToggleTotalBreakdown(this, '${blockId}')">
             <div class="hub-total-header-left">
@@ -426,7 +437,9 @@ window.injectCartHTML = function (blockId, root) {
               <span id="hub-grand-total-${blockId}" style="color:${textColorAll}"></span>
             </div>
           </div>
-        </div> ` : ""}
+        </div> `
+           : ""
+       }
 
         <div id="hub-express-payments-${blockId}" class="hub-express-payments"></div>
 
@@ -507,9 +520,9 @@ window.injectCartHTML = function (blockId, root) {
          <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
          <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
          </svg>
-            <input type="text" id="hub-offers-input-${blockId}" placeholder="Enter Coupon Code" class="hub-offers-code-input" />
+            <input type="text" id="hub-offers-input-${blockId}" placeholder="Enter Coupon Code" class="hub-offers-code-input custom-cart-discount-code-text custom-cart-discount-code-input" />
           </div>
-           <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn">APPLY</button>
+           <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn custom-cart-public-discount-code__button custom-cart-discount-code-button">APPLY</button>
            </div>
         </div>
          <div id="hub-offers-msg-${blockId}" class="hub-discount-message"></div>
