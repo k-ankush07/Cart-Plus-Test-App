@@ -14,12 +14,12 @@ const _trashIcon = `
 
 function _qtyControl(key, quantity) {
   return `
-    <div class="hub-qty-control">
-      <button class="hub-qty-btn minus" data-type="minus" onclick="updateQty('${key}', ${quantity - 1}, this); _hubDisableQtySiblings(this)"${quantity <= 1 ? " disabled" : ""}>
+    <div class="hub-qty-control custom-cart-public-component-product-tile__quantity-selector">
+      <button class="hub-qty-btn minus custom-cart-public-component-product-tile__quantity-minus" data-type="minus" onclick="updateQty('${key}', ${quantity - 1}, this); _hubDisableQtySiblings(this)"${quantity <= 1 ? " disabled" : ""}>
         <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"></path></svg></span>
       </button>
       <input type="text" value="${quantity}" class="hub-qty-input" oninput="handleQtyInput('${key}', this.value)" />
-      <button class="hub-qty-btn plus" data-type="plus" onclick="updateQty('${key}', ${quantity + 1}, this); _hubDisableQtySiblings(this)">
+      <button class="hub-qty-btn plus custom-cart-public-component-product-tile__quantity-plus" data-type="plus" onclick="updateQty('${key}', ${quantity + 1}, this); _hubDisableQtySiblings(this)">
         <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"></path></svg></span>
       </button>
     </div>`;
