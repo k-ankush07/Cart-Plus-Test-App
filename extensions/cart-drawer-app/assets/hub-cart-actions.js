@@ -15,8 +15,9 @@ function _hubDisableQtySiblings(clickedBtn) {
   control.querySelectorAll(".hub-qty-btn, .hub-qty-input").forEach((el) => {
     if (el !== clickedBtn) {
       el.disabled = true;
-      el.style.pointerEvents = "none";
+      el.style.pointerEvents = "auto";
       el.style.opacity = "0.4";
+      el.style.cursor = "not-allowed";
     }
   });
 }
