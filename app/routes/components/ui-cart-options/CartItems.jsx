@@ -43,19 +43,29 @@ function QtyStepper() {
     return (
         <div
             style={{
-                display: "flex",
-                alignItems: "center",
-                border: "1px solid var(--p-color-border)",
-                borderRadius: "6px",
                 overflow: "hidden",
                 width: "fit-content",
             }}
-        >
-            <button style={{ padding: "4px 10px", border: "none", background: "none", cursor: "pointer" }}>−</button>
-            <span style={{ padding: "4px 10px" }}>
+            className="cart-app-item__qty custom-cart-public-component-product-tile__quantity-selector">
+
+            <button className="cart-app-item__qty-btn upcart-product-quantity-minus custom-cart-public-component-product-tile__quantity-minus">
+                <span className="svg-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-minus" viewBox="0 0 10 2">
+                        <path fill="currentColor" fillRule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clipRule="evenodd"></path>
+                    </svg>
+                </span>
+            </button>
+            <span className="cart-app-item__qty-value upcart-product-quantity-input custom-cart-public-component-product-tile__quantity-plus"
+            >
                 1
             </span>
-            <button style={{ padding: "4px 10px", border: "none", background: "none", cursor: "pointer" }}>+</button>
+            <button className="cart-app-item__qty-btn upcart-product-quantity-plus custom-cart-public-component-product-tile__quantity-plus">
+                <span className="svg-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-plus" viewBox="0 0 10 10">
+                        <path fill="currentColor" fillRule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clipRule="evenodd"></path>
+                    </svg>
+                </span>
+            </button>
         </div>
     );
 }

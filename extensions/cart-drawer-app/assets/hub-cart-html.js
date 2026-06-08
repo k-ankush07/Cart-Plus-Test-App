@@ -343,7 +343,7 @@ window.injectCartHTML = function (blockId, root) {
       <!-- FOOTER (fixed bottom) -->
       <div id="hub-footer-rec-${blockId}"></div>
 
-      <div class="hub-cart-footer" style="background-color:${designSettings.accentColor || ""};">
+      <div class="hub-cart-footer cart-app__footer custom-cart-footer" style="background-color:${designSettings.accentColor || ""};">
 
         <!-- skeleton shown while cart data loads -->
         <div id="hub-footer-skeleton-${blockId}" class="hub-footer-skeleton" style="display:none;">
