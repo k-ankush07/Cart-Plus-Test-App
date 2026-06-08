@@ -95,7 +95,7 @@ window.injectCartHTML = function (blockId, root) {
       style="flex-shrink:0;${closeBtnVars};"
     >
       <svg
-        class="upcart-header-close-button-icon custom-cart-public-header__close-button-icon"
+        class="upcart-header-close-button-icon custom-cart-public-header__close-button-icon custom-cart-header-close-button-icon" 
         width="${iconSizePx}" height="${iconSizePx}"
         viewBox="0 0 24 24" fill="none"
         stroke="currentColor"
@@ -136,7 +136,7 @@ window.injectCartHTML = function (blockId, root) {
             ? "margin:0 0 0 auto;"
             : "margin:0;";
       return `
-        <div style="${wrapperStyle}">
+        <div style="${wrapperStyle}" class="custom-cart-header-logo">
           <img
             class="upcart-header-logo"
             src="${src}"
@@ -274,11 +274,11 @@ window.injectCartHTML = function (blockId, root) {
 
       <!-- HEADER -->
       <div
-        class="cart-app__header-top upcart-header hub-cart-header custom-cart-public-header"
+        class="cart-app__header-top upcart-header hub-cart-header custom-cart-public-header custom-cart-header"
         style="padding:${headerPadding}; background:${headerSettings.backgroundColor};"
       >
         <div
-          class="cart-app__row-between"
+          class="cart-app__row-between custom-cart-header-text"
           style="display:flex;align-items:center;justify-content:space-between;"
         >
           ${headerInner}
