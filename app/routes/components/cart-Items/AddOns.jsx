@@ -107,7 +107,7 @@ export default function AddOns({ addonsSettings, currency }) {
             {isShipping && (<span className="cart-addon-tile__price custom-cart-addons-price custom-cart-public-addons__price">{addonsSettings.price} {currency}</span>)}
 
             {/* TOGGLE */}
-            <div className="upcart-addons-toggle  custom-cart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
+            <div className="upcart-addons-toggle custom-cart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
                 <Toggle on={toggled} onChange={handleToggle} />
             </div>
         </div>

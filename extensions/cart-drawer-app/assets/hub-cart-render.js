@@ -988,13 +988,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
         } else {
           const selected = addonsSettings.selectedProduct;
           addonsEl.innerHTML = `
-    <div class="hub-addon-product">
-      ${selected.image ? `<img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img"/>` : ""}
-      <div class="hub-addon-product-info">
-        <p class="hub-addon-product-title">${selected.title || ""}</p>
-        <span class="hub-addon-product-price">${price}</span>
+    <div class="hub-addon-product custom-cart-public-addons custom-cart-addons">
+      ${selected.image ? `<img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper"/>` : ""}
+      <div class="hub-addon-product-info custom-cart-public-addons__content-wrapper">
+        <p class="hub-addon-product-title custom-cart-public-addons__content-title-wrapper custom-cart-addons-title">${selected.title || ""}</p>
+        <span class="hub-addon-product-price custom-cart-public-addons__content-price">${price}</span>
       </div>
-      <label class="hub-addon-sp-toggle">
+      <label class="hub-addon-sp-toggle custom-cart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
         <input type="checkbox" id="hub-addon-toggle-${blockId}" class="hub-addon-checkbox" data-variant="${variantId}" data-line-key="${addonLineKey}" data-price-cents="${addonPriceCents}" ${shouldBeChecked ? "checked" : ""}/>
         <span class="hub-addon-sp-slider"></span>
       </label>
