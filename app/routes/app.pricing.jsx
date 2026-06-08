@@ -109,14 +109,11 @@ const savePlan = (apiUrl, shop, plan, price, subscriptionId, status) =>
     });
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
-// FIX: All heavy work (GraphQL + savePlan + DB fetch) is wrapped in a deferred
-// promise so the page shell renders immediately. Only shopLoader (auth) blocks.
 
 export const loader = async ({ request }) => {
     const { shop, apiUrl, admin } = await shopLoader(request);
     const shopDomain = shop?.myshopifyDomain;
 
-    // Return a promise — NOT awaited — so React Router defers it
     const dataPromise = (async () => {
         const res = await admin.graphql(`
             query {
@@ -144,8 +141,8 @@ export const loader = async ({ request }) => {
             data?.data?.currentAppInstallation?.activeSubscriptions || [];
         const active = subscriptions.find((s) => s.status === "ACTIVE");
 
-        let activePlan         = "free";
-        let activePrice        = 0;
+        let activePlan           = "free";
+        let activePrice          = 0;
         let activeSubscriptionId = null;
 
         if (active) {
@@ -157,7 +154,6 @@ export const loader = async ({ request }) => {
             activeSubscriptionId = active.id;
         }
 
-        // Fire-and-forget — don't block the deferred promise on the DB write
         savePlan(apiUrl, shopDomain, activePlan, activePrice, activeSubscriptionId, "active")
             .catch((e) => console.error("savePlan error:", e));
 
@@ -171,7 +167,6 @@ export const loader = async ({ request }) => {
 };
 
 // ─── Action ───────────────────────────────────────────────────────────────────
-// Unchanged — actions are not part of the navigation delay
 
 export const action = async ({ request }) => {
     const { admin, session } = await authenticate.admin(request);
@@ -179,7 +174,6 @@ export const action = async ({ request }) => {
     const formData   = await request.formData();
     const actionType = formData.get("_action");
 
-    // ── Cancel current plan ──────────────────────────────────────────
     if (actionType === "cancel") {
         const existingRes  = await admin.graphql(`
             query {
@@ -210,39 +204,18 @@ export const action = async ({ request }) => {
         return Response.json({ cancelled: true });
     }
 
-    // ── Upgrade / switch plan ────────────────────────────────────────
     const selectedPlan = formData.get("plan");
     const priceMap     = { starter: "9.00", growth: "29.00" };
     const price        = priceMap[selectedPlan];
     if (!price) return Response.json({ error: "Invalid plan" }, { status: 400 });
 
-    const returnUrl = `https://${session.shop}/admin/apps/cart-drawer-52/app/pricing`;
+    // NOTE: Do NOT cancel the existing subscription before billing confirmation.
+    // If we cancel first and the user abandons the Shopify billing page,
+    // they lose their current plan and fall back to free with no subscription.
+    // Shopify automatically replaces (cancels) the old subscription when the
+    // merchant approves the new one on the billing confirmation page.
 
-    // Cancel any existing active subscriptions first
-    const existingRes  = await admin.graphql(`
-        query {
-            currentAppInstallation {
-                activeSubscriptions { id status }
-            }
-        }
-    `);
-    const existingData = await existingRes.json();
-    const activeSubscriptions =
-        existingData?.data?.currentAppInstallation?.activeSubscriptions?.filter(
-            (s) => s.status === "ACTIVE"
-        ) || [];
-
-    for (const sub of activeSubscriptions) {
-        await admin.graphql(
-            `mutation AppSubscriptionCancel($id: ID!) {
-                appSubscriptionCancel(id: $id) {
-                    userErrors { field message }
-                    appSubscription { id status }
-                }
-            }`,
-            { variables: { id: sub.id } }
-        );
-    }
+    const returnUrl = `https://${session.shop}/admin/apps/cart-drawer-52/app/pricing?upgraded=${selectedPlan}`;
 
     const createRes = await admin.graphql(
         `mutation AppSubscriptionCreate(
@@ -355,7 +328,7 @@ export default function Pricing() {
     );
 }
 
-// ─── Inner component (renders once data resolves) ─────────────────────────────
+// ─── Inner component ──────────────────────────────────────────────────────────
 
 function PricingInner({ activePlan }) {
     return (
@@ -420,7 +393,7 @@ function PricingInner({ activePlan }) {
 // ─── Pricing card ─────────────────────────────────────────────────────────────
 
 function PricingCard({ plan, activePlan }) {
-    const fetcher      = useFetcher();
+    const fetcher                       = useFetcher();
     const [redirecting, setRedirecting] = useState(false);
     const isActive      = activePlan === plan.id;
     const isHighlighted = plan.badge === "Popular";
@@ -433,10 +406,20 @@ function PricingCard({ plan, activePlan }) {
         window.top.location.href = fetcher.data.confirmationUrl;
     }
 
+    // ── Border logic ──────────────────────────────────────────────────────────
+    // Active plan  → blue border  (takes priority over everything)
+    // Popular plan → green border
+    // Default      → light grey border
+    const getBorder = () => {
+        if (isActive)      return "2px solid #005bd3"; // active — Shopify blue
+        if (isHighlighted) return "2px solid #008060"; // popular — Shopify green
+        return "1px solid #e1e3e5";
+    };
+
     return (
         <div
             style={{
-                border: isHighlighted ? "2px solid #008060" : "1px solid #e1e3e5",
+                border: getBorder(),
                 borderRadius: "12px",
                 padding: "24px",
                 backgroundColor: "#fff",
@@ -446,11 +429,19 @@ function PricingCard({ plan, activePlan }) {
                 position: "relative",
             }}
         >
+            {/* Badge — "Popular" / "Best value" */}
             {plan.badge && (
                 <div style={{ position: "absolute", top: "-12px", left: "20px" }}>
                     <Badge tone={plan.badge === "Popular" ? "success" : "info"}>
                         {plan.badge}
                     </Badge>
+                </div>
+            )}
+
+            {/* "Active plan" indicator badge */}
+            {isActive && (
+                <div style={{ position: "absolute", top: "-12px", right: "20px" }}>
+                    <Badge tone="info">Active plan</Badge>
                 </div>
             )}
 
@@ -489,8 +480,14 @@ function PricingCard({ plan, activePlan }) {
                     onPaidPlan ? (
                         <fetcher.Form method="post">
                             <input type="hidden" name="_action" value="cancel" />
-                            <Button fullWidth variant="secondary" submit loading={isLoading} tone="critical">
-                                Choose plan
+                            <Button
+                                fullWidth
+                                variant="secondary"
+                                submit
+                                loading={isLoading}
+                                tone="critical"
+                            >
+                                Downgrade to Free
                             </Button>
                         </fetcher.Form>
                     ) : (
