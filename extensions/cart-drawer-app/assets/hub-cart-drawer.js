@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // HUB DRAWER CODE
 
-const apiUrl = "http://localhost:9002";
+const apiUrl = "https://hubsyntax.online";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");

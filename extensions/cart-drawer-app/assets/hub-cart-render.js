@@ -90,8 +90,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (headerEl) {
       const headerSettings = window.__HUB_ACTIVE_CART__?.headerSettings || {};
       const nonGiftQty = cart.items
-  .filter((i) => !i.properties?._triggered_reward && !i.properties?._hub_addon && !i.properties?.__upcartAddon)
-  .reduce((sum, i) => sum + i.quantity, 0);
+        .filter(
+          (i) =>
+            !i.properties?._triggered_reward &&
+            !i.properties?._hub_addon &&
+            !i.properties?.__upcartAddon,
+        )
+        .reduce((sum, i) => sum + i.quantity, 0);
       headerEl.innerText = (
         headerSettings.titleText || "Cart • {{cart_quantity}}"
       ).replace("{{cart_quantity}}", nonGiftQty);
@@ -202,7 +207,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
         const height = paddingMap[ann.height] || "10px 33px";
         const timerText = ann.timer || "10:00";
         const isAfter = ann.position === "after";
-        target.className = "custom-cart-public-announcement custom-cart-announcement upcart-announcement";
+        target.className =
+          "custom-cart-public-announcement custom-cart-announcement upcart-announcement";
         target.style.cssText = `
           display: block;
           background-color: ${ann.backgroundColor || "#ffffff"};
@@ -216,7 +222,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         target.innerHTML = ann.text
           ? ann.text.replace(
               "{TIMER}",
-               `<strong><span id="hub-timer-${blockId}">${timerText}</span></strong>`,
+              `<strong><span id="hub-timer-${blockId}">${timerText}</span></strong>`,
             )
           : "";
         if (ann.text?.includes("{TIMER}")) startAnnTimer(blockId, timerText);
@@ -1012,24 +1018,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
             const checked = this.checked;
 
             this.disabled = true;
-
-            // Optimistic total update — no waiting on Shopify round-trips
-            const totalEl = document.getElementById(
-              `hub-cart-total-${blockId}`,
+            const slider = this.closest("label")?.querySelector(
+              ".hub-addon-sp-slider",
             );
-            const checkoutTotalEl = document.querySelector(
-              `#hub-cart-drawer-${blockId} .hub-checkout-total, #hub-cart-drawer-${blockId} [data-checkout-total]`,
-            );
-            const currentTotal = Number(window._hubCartFinalTotal) || 0;
-            const optimisticTotal = checked
-              ? currentTotal + priceCents
-              : Math.max(0, currentTotal - priceCents);
-            window._hubCartFinalTotal = optimisticTotal;
-            if (totalEl)
-              totalEl.textContent = hubUtils.formatMoney(optimisticTotal);
-            if (checkoutTotalEl)
-              checkoutTotalEl.textContent =
-                hubUtils.formatMoney(optimisticTotal);
+            if (slider) {
+              slider.style.pointerEvents = "none";
+              slider.style.opacity = "0.6";
+            }
 
             try {
               if (checked) {
@@ -1071,6 +1066,10 @@ window.hubCartRender = async function (drawer, opts = {}) {
               }
             } finally {
               this.disabled = false;
+              if (slider) {
+                slider.style.pointerEvents = "";
+                slider.style.opacity = "";
+              }
               document.dispatchEvent(new CustomEvent("cart:updated"));
             }
           });
