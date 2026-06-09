@@ -331,6 +331,11 @@ export default function Pricing() {
 // ─── Inner component ──────────────────────────────────────────────────────────
 
 function PricingInner({ activePlan }) {
+    // When the user has no paid plan, pre-highlight "starter" (the Popular plan).
+    // Once the user clicks any card, that card becomes the highlighted selection.
+    const defaultHighlight = activePlan !== "free" ? activePlan : "starter";
+    const [selectedPlan, setSelectedPlan] = useState(defaultHighlight);
+
     return (
         <Page
             title="Pricing"
@@ -360,7 +365,13 @@ function PricingInner({ activePlan }) {
                         }}
                     >
                         {PLANS.map((plan) => (
-                            <PricingCard key={plan.id} plan={plan} activePlan={activePlan} />
+                            <PricingCard
+                                key={plan.id}
+                                plan={plan}
+                                activePlan={activePlan}
+                                selectedPlan={selectedPlan}
+                                onSelect={setSelectedPlan}
+                            />
                         ))}
                     </div>
                 </Layout.Section>
@@ -392,11 +403,11 @@ function PricingInner({ activePlan }) {
 
 // ─── Pricing card ─────────────────────────────────────────────────────────────
 
-function PricingCard({ plan, activePlan }) {
+function PricingCard({ plan, activePlan, selectedPlan, onSelect }) {
     const fetcher = useFetcher();
     const [redirecting, setRedirecting] = useState(false);
     const isActive = activePlan === plan.id;
-    const isHighlighted = plan.badge === "Popular";
+    const isSelected = selectedPlan === plan.id;
     const isLoading = fetcher.state !== "idle" || redirecting;
     const onPaidPlan = activePlan !== "free";
 
@@ -406,23 +417,30 @@ function PricingCard({ plan, activePlan }) {
         window.top.location.href = fetcher.data.confirmationUrl;
     }
 
+    // Border priority:
+    // 1. Active (subscribed) plan  → orange
+    // 2. Selected / highlighted    → green
+    // 3. Default                   → subtle grey
     const getBorder = () => {
         if (isActive) return "2px solid #FD6802";
-        if (isHighlighted) return "2px solid #008060";
+        if (isSelected) return "2px solid #008060";
         return "1px solid #e1e3e5";
     };
 
     return (
         <div
+            onClick={() => onSelect(plan.id)}
             style={{
                 border: getBorder(),
                 borderRadius: "12px",
                 padding: "24px",
-                backgroundColor: "#fff",
+                backgroundColor: isSelected && !isActive ? "#f6faf8" : "#fff",
                 display: "flex",
                 flexDirection: "column",
                 gap: "16px",
                 position: "relative",
+                cursor: "pointer",
+                transition: "border 0.15s ease, background-color 0.15s ease",
             }}
         >
             {/* Badge — "Popular" / "Best value" */}
@@ -503,7 +521,7 @@ function PricingCard({ plan, activePlan }) {
                         <input type="hidden" name="plan" value={plan.id} />
                         <Button
                             fullWidth
-                            variant={isHighlighted ? "primary" : "secondary"}
+                            variant={isSelected ? "primary" : "secondary"}
                             submit
                             loading={isLoading}
                         >
