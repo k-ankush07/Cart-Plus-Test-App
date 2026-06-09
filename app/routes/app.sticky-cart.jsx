@@ -23,17 +23,27 @@ import { createStickyCart, getStickyCart } from "../services/apiRoutes";
 
 function scopeCss(css, scope) {
   if (!css) return "";
-  let result = css.replace(/([^{}@][^{}]*)\{/g, (_match, selectors) => {
-    const scoped = selectors.split(",").map(s => {
-      const t = s.trim();
-      if (!t) return t;
-      return `${scope} ${t}`;
-    }).join(", ");
-    return `${scoped} {`;
-  });
-  result = result.replace(/([\w-]+\s*:\s*)([^;!{}]+?)(\s*;)/g, (_m, prop, val, semi) => {
-    return `${prop}${val.trim()} !important${semi}`;
-  });
+
+  let result = css.replace(
+    /(@[\w-]+(?:\s+[\w-]+)?\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})|([^{}@]+)\{([^{}]*)\}/g,
+    (match, atRule, selectors, declarations) => {
+      if (atRule) return atRule;
+
+      const scoped = selectors.split(",").map(s => {
+        const t = s.trim();
+        if (!t) return t;
+        return `${scope} ${t}`;
+      }).join(", ");
+
+      const important = declarations.replace(
+        /([\w-]+\s*:\s*)([^;!{}]+?)(\s*;)/g,
+        (_m, prop, val, semi) => `${prop}${val.trim()} !important${semi}`
+      );
+
+      return `${scoped} { ${important} }`;
+    }
+  );
+
   return result;
 }
 
@@ -634,6 +644,7 @@ export default function StickyCart() {
                   )}
                   {enabled && (
                     <div
+                      className="styles_CartQuantityIcon__ upcart-sticky-cart-quantity-icon"
                       style={{
                         position: "absolute",
                         ...fabPos,
@@ -652,6 +663,7 @@ export default function StickyCart() {
                     >
                       {ICON_SVGS[selectedIcon](iconColor)}
                       <div
+                        className="styles_CartQuantityIconText__ upcart-sticky-cart-quantity-icon-text"
                         style={{
                           position: "absolute",
                           top: 4,

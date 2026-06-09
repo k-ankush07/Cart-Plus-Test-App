@@ -18,22 +18,28 @@ function applyStickyCustomCSS(blockId, css) {
 
 function scopeCss(css, scope) {
   if (!css) return "";
-  css = css.replace(/\s*!important/gi, "");
-  return css
-    .replace(/([^{}@][^{}]*)\{/g, (_match, selectors) => {
-      const scoped = selectors
-        .split(",")
-        .map((s) => {
-          const t = s.trim();
-          if (!t) return t;
-          return `${scope} ${t}`;
-        })
-        .join(", ");
-      return `${scoped} {`;
-    })
-    .replace(/([\w-]+\s*:\s*)([^;!{}]+?)(\s*;)/g, (_m, prop, val, semi) => {
-      return `${prop}${val.trim()} !important${semi}`;
-    });
+
+  let result = css.replace(
+    /(@[\w-]+(?:\s+[\w-]+)?\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})|([^{}@]+)\{([^{}]*)\}/g,
+    (match, atRule, selectors, declarations) => {
+      if (atRule) return atRule;
+
+      const scoped = selectors.split(",").map(s => {
+        const t = s.trim();
+        if (!t) return t;
+        return `${scope} ${t}`;
+      }).join(", ");
+
+      const important = declarations.replace(
+        /([\w-]+\s*:\s*)([^;!{}]+?)(\s*;)/g,
+        (_m, prop, val, semi) => `${prop}${val.trim()} !important${semi}`
+      );
+
+      return `${scoped} { ${important} }`;
+    }
+  );
+
+  return result;
 }
 
 (function () {
