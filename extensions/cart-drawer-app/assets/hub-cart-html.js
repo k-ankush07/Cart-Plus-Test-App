@@ -385,7 +385,7 @@ window.injectCartHTML = function (blockId, root) {
            showOfferBox
              ? ` <div class="discount-offer-btn" style="background:${viewAllOffersBgColor}; color:${viewAllOffersColor}" onclick="hubOpenOffersPanel('${blockId}')">
           <button class="hub-view-offers-btn" style="color:${viewAllOffersColor}">View all offers</button>
-          <svg viewBox="0 0 20 20" style="width: 20px; height: 20px; fill: #111;">
+          <svg viewBox="0 0 20 20" style="width: 20px; height: 20px; fill: ${viewAllOffersColor}">
                    <path fill-rule="evenodd" d="M7.72 14.53a.75.75 0 0 1 0-1.06l3.47-3.47-3.47-3.47a.75.75 0 0 1 1.06-1.06l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 0 1-1.06 0Z"/>
           </svg>
           </div>   `
