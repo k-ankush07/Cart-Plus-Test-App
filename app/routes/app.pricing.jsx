@@ -141,23 +141,23 @@ export const loader = async ({ request }) => {
             data?.data?.currentAppInstallation?.activeSubscriptions || [];
         const active = subscriptions.find((s) => s.status === "ACTIVE");
 
-        let activePlan           = "free";
-        let activePrice          = 0;
+        let activePlan = "free";
+        let activePrice = 0;
         let activeSubscriptionId = null;
 
         if (active) {
             const amount = parseFloat(
                 active.lineItems?.[0]?.plan?.pricingDetails?.price?.amount || 0
             );
-            activePlan           = amount <= 9 ? "starter" : "growth";
-            activePrice          = amount;
+            activePlan = amount <= 9 ? "starter" : "growth";
+            activePrice = amount;
             activeSubscriptionId = active.id;
         }
 
         savePlan(apiUrl, shopDomain, activePlan, activePrice, activeSubscriptionId, "active")
             .catch((e) => console.error("savePlan error:", e));
 
-        const dbRes  = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`);
+        const dbRes = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`);
         const dbData = await dbRes.json();
 
         return { activePlan, apiUrl, dbRecord: dbData.data };
@@ -170,12 +170,12 @@ export const loader = async ({ request }) => {
 
 export const action = async ({ request }) => {
     const { admin, session } = await authenticate.admin(request);
-    const apiUrl     = process.env.PUBLIC_REACT_APP_API_URL?.trim();
-    const formData   = await request.formData();
+    const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
+    const formData = await request.formData();
     const actionType = formData.get("_action");
 
     if (actionType === "cancel") {
-        const existingRes  = await admin.graphql(`
+        const existingRes = await admin.graphql(`
             query {
                 currentAppInstallation {
                     activeSubscriptions { id status }
@@ -183,7 +183,7 @@ export const action = async ({ request }) => {
             }
         `);
         const existingData = await existingRes.json();
-        const toCancel     =
+        const toCancel =
             existingData?.data?.currentAppInstallation?.activeSubscriptions?.filter(
                 (s) => s.status === "ACTIVE"
             ) || [];
@@ -205,8 +205,8 @@ export const action = async ({ request }) => {
     }
 
     const selectedPlan = formData.get("plan");
-    const priceMap     = { starter: "9.00", growth: "29.00" };
-    const price        = priceMap[selectedPlan];
+    const priceMap = { starter: "9.00", growth: "29.00" };
+    const price = priceMap[selectedPlan];
     if (!price) return Response.json({ error: "Invalid plan" }, { status: 400 });
 
     // NOTE: Do NOT cancel the existing subscription before billing confirmation.
@@ -258,15 +258,15 @@ export const action = async ({ request }) => {
     );
 
     const createData = await createRes.json();
-    const result     = createData?.data?.appSubscriptionCreate;
+    const result = createData?.data?.appSubscriptionCreate;
 
     if (result?.userErrors?.length > 0) {
         console.error("Subscription errors:", result.userErrors);
         return Response.json({ error: result.userErrors }, { status: 500 });
     }
 
-    const confirmationUrl  = result?.confirmationUrl;
-    const subscriptionId   = result?.appSubscription?.id;
+    const confirmationUrl = result?.confirmationUrl;
+    const subscriptionId = result?.appSubscription?.id;
 
     if (confirmationUrl) {
         await savePlan(apiUrl, session.shop, selectedPlan, parseFloat(price), subscriptionId, "pending");
@@ -393,12 +393,12 @@ function PricingInner({ activePlan }) {
 // ─── Pricing card ─────────────────────────────────────────────────────────────
 
 function PricingCard({ plan, activePlan }) {
-    const fetcher                       = useFetcher();
+    const fetcher = useFetcher();
     const [redirecting, setRedirecting] = useState(false);
-    const isActive      = activePlan === plan.id;
+    const isActive = activePlan === plan.id;
     const isHighlighted = plan.badge === "Popular";
-    const isLoading     = fetcher.state !== "idle" || redirecting;
-    const onPaidPlan    = activePlan !== "free";
+    const isLoading = fetcher.state !== "idle" || redirecting;
+    const onPaidPlan = activePlan !== "free";
 
     // Redirect to Shopify billing confirmation page
     if (fetcher.data?.confirmationUrl && !redirecting) {
@@ -406,13 +406,9 @@ function PricingCard({ plan, activePlan }) {
         window.top.location.href = fetcher.data.confirmationUrl;
     }
 
-    // ── Border logic ──────────────────────────────────────────────────────────
-    // Active plan  → blue border  (takes priority over everything)
-    // Popular plan → green border
-    // Default      → light grey border
     const getBorder = () => {
-        if (isActive)      return "2px solid #005bd3"; // active — Shopify blue
-        if (isHighlighted) return "2px solid #008060"; // popular — Shopify green
+        if (isActive) return "2px solid #FD6802";
+        if (isHighlighted) return "2px solid #008060";
         return "1px solid #e1e3e5";
     };
 
@@ -440,7 +436,7 @@ function PricingCard({ plan, activePlan }) {
 
             {/* "Active plan" indicator badge */}
             {isActive && (
-                <div style={{ position: "absolute", top: "-12px", right: "20px" }}>
+                <div style={{ position: "absolute", top: "-12px", right: "20px" }} className="badge-orange">
                     <Badge tone="info">Active plan</Badge>
                 </div>
             )}

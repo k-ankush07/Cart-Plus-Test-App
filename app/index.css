@@ -596,6 +596,11 @@ span.svg-wrapper {
     gap: 15px;
 }
 
+.badge-orange .Polaris-Badge--toneInfo {
+    background-color: #FD6802 !important;
+    color: white !important;
+}
+
 /* ===== CARD ===== */
 .upcart-internal-component-upsell-tile {
     border-radius: 5px;
