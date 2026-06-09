@@ -24,19 +24,22 @@ function scopeCss(css, scope) {
     (match, atRule, selectors, declarations) => {
       if (atRule) return atRule;
 
-      const scoped = selectors.split(",").map(s => {
-        const t = s.trim();
-        if (!t) return t;
-        return `${scope} ${t}`;
-      }).join(", ");
+      const scoped = selectors
+        .split(",")
+        .map((s) => {
+          const t = s.trim();
+          if (!t) return t;
+          return `${scope} ${t}`;
+        })
+        .join(", ");
 
       const important = declarations.replace(
         /([\w-]+\s*:\s*)([^;!{}]+?)(\s*;)/g,
-        (_m, prop, val, semi) => `${prop}${val.trim()} !important${semi}`
+        (_m, prop, val, semi) => `${prop}${val.trim()} !important${semi}`,
       );
 
       return `${scoped} { ${important} }`;
-    }
+    },
   );
 
   return result;
@@ -60,7 +63,12 @@ function scopeCss(css, scope) {
       const cart = await res.json();
 
       const count = cart.items
-        .filter((i) => !i.properties?._triggered_reward)
+        .filter(
+          (i) =>
+            !i.properties?._triggered_reward &&
+            !i.properties?._hub_addon &&
+            !i.properties?.__upcartAddon,
+        )
         .reduce((sum, i) => sum + i.quantity, 0);
 
       // ── Uses new class instead of id ──

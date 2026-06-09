@@ -227,8 +227,8 @@ function initCartDrawerAfterData() {
         const cart = await res.json();
         window._hubLastCartHadItems = (cart.items?.length || 0) > 0;
         const count = cart.items
-          .filter((i) => !i.properties?._triggered_reward)
-          .reduce((sum, i) => sum + i.quantity, 0);
+  .filter((i) => !i.properties?._triggered_reward && !i.properties?._hub_addon && !i.properties?.__upcartAddon)
+  .reduce((sum, i) => sum + i.quantity, 0);
         const label = count === 1 ? "1 item" : `${count} items`;
 
         document.querySelectorAll(".cart-count-bubble").forEach((bubble) => {

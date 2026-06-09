@@ -90,8 +90,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (headerEl) {
       const headerSettings = window.__HUB_ACTIVE_CART__?.headerSettings || {};
       const nonGiftQty = cart.items
-        .filter((i) => !i.properties?._triggered_reward)
-        .reduce((sum, i) => sum + i.quantity, 0);
+  .filter((i) => !i.properties?._triggered_reward && !i.properties?._hub_addon && !i.properties?.__upcartAddon)
+  .reduce((sum, i) => sum + i.quantity, 0);
       headerEl.innerText = (
         headerSettings.titleText || "Cart • {{cart_quantity}}"
       ).replace("{{cart_quantity}}", nonGiftQty);
