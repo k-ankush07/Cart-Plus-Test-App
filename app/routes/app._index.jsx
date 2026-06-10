@@ -473,6 +473,7 @@ function DashboardInner({
           href={`https://${shop.myshopifyDomain}/admin/themes/${mainThemeId}/editor?context=apps&activateAppId=${appEmbedId}/app-embed`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
           style={{ display: "inline-flex", alignItems: "center", gap: "2px", textDecoration: "none" }}
           onMouseEnter={(e) => { e.currentTarget.querySelector(".embed-icon").style.opacity = "1"; }}
           onMouseLeave={(e) => { e.currentTarget.querySelector(".embed-icon").style.opacity = "0"; }}
