@@ -10,8 +10,10 @@ import {
   Button,
   Select,
   Divider,
-  Banner, Collapsible,
+  Banner,
+  Collapsible,
   AppProvider,
+  Modal,
 } from "@shopify/polaris";
 import "../index.css";
 
@@ -134,7 +136,6 @@ const ICON_SVGS = {
       aria-label="Shopping bag"
     >
       <title>Shopping bag</title>
-
       <path
         d="M15.9348 18.7484C15.9348 22.3743 18.8741 25.3136 22.5 25.3136V25.3136C26.1259 25.3136 29.0652 22.3743 29.0652 18.7484"
         stroke={color}
@@ -142,7 +143,6 @@ const ICON_SVGS = {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-
       <path
         d="M15.9348 13.121V12.1832C15.9348 8.55728 18.8741 5.61792 22.5 5.61792V5.61792C26.1259 5.61792 29.0652 8.55728 29.0652 12.1832V13.121"
         stroke={color}
@@ -150,7 +150,6 @@ const ICON_SVGS = {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-
       <path
         d="M12.1158 13.1211C10.1347 13.1211 8.49519 14.6615 8.37161 16.6386L7.51063 30.4145C7.36528 32.7401 8.18772 35.0223 9.78313 36.7205C11.3785 38.4188 13.605 39.382 15.9351 39.382H29.0649C31.395 39.382 33.6215 38.4188 35.2169 36.7206C36.8124 35.0223 37.6348 32.7401 37.4895 30.4145L36.6285 16.6386C36.5049 14.6615 34.8653 13.1211 32.8843 13.1211H12.1158Z"
         stroke={color}
@@ -173,7 +172,6 @@ const ICON_SVGS = {
       aria-label="Shopping bag"
     >
       <title>Shopping bag</title>
-
       <path
         d="M7.4937 7.49365H37.5062C38.5422 7.49365 39.382 8.33347 39.382 9.36943V35.6304C39.382 37.7023 37.7023 39.3819 35.6304 39.3819H9.36948C7.29755 39.3819 5.61792 37.7023 5.61792 35.6304V9.36943C5.61792 8.33347 6.45774 7.49365 7.4937 7.49365Z"
         stroke="#000000"
@@ -184,14 +182,12 @@ const ICON_SVGS = {
         clipRule="evenodd"
         fill={color}
       />
-
       <path
         d="M5.61792 14.059H39.382Z"
         fillRule="evenodd"
         clipRule="evenodd"
         fill="white"
       />
-
       <path
         d="M5.61792 14.059H39.382"
         stroke="#000000"
@@ -199,14 +195,12 @@ const ICON_SVGS = {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-
       <path
         d="M30.0031 20.6245C30.0031 24.7684 26.6438 28.1276 22.5 28.1276C18.3561 28.1276 14.9968 24.7684 14.9968 20.6245"
         fillRule="evenodd"
         clipRule="evenodd"
         fill={color}
       />
-
       <path
         d="M30.0031 20.6245C30.0031 24.7684 26.6438 28.1276 22.5 28.1276C18.3561 28.1276 14.9968 24.7684 14.9968 20.6245"
         stroke="#000000"
@@ -227,7 +221,6 @@ const ICON_SVGS = {
       aria-label="Shopping cart"
     >
       <title>Shopping cart</title>
-
       <path
         d="M2.25 2.25C2.25 1.00736 3.26096 0 4.50805 0H7.89512C9.76575 0 11.2822 1.51104 11.2822 3.375V4.63623L39.5737 6.67839C41.5465 6.80125 42.995 8.57431 42.7154 10.5241L40.7687 24.1023C40.5304 25.765 39.1013 27 37.4157 27H11.2822V31.5H33.8788C37.6201 31.5 40.6529 34.5221 40.6529 38.25C40.6529 41.9779 37.6201 45 33.8788 45C30.1375 45 27.1046 41.9779 27.1046 38.25C27.1046 37.4611 27.2405 36.7037 27.4901 36H15.4128C15.6625 36.7037 15.7983 37.4611 15.7983 38.25C15.7983 41.9779 12.7654 45 9.02415 45C5.28289 45 2.25 41.9779 2.25 38.25C2.25 35.311 4.13504 32.8107 6.7661 31.8841V6.77078C6.766 6.75838 6.766 6.74596 6.7661 6.73352V4.5H4.50805C3.26096 4.5 2.25 3.49264 2.25 2.25ZM11.2822 9.14501V22.5H36.4365L38.0718 11.0936L11.2822 9.14501ZM31.6207 38.25C31.6207 37.0074 32.6317 36 33.8788 36C35.1259 36 36.1368 37.0074 36.1368 38.25C36.1368 39.4926 35.1259 40.5 33.8788 40.5C32.6317 40.5 31.6207 39.4926 31.6207 38.25ZM6.7661 38.25C6.7661 37.0074 7.77706 36 9.02415 36C10.2712 36 11.2822 37.0074 11.2822 38.25C11.2822 39.4926 10.2712 40.5 9.02415 40.5C7.77706 40.5 6.7661 39.4926 6.7661 38.25Z"
         fillRule="evenodd"
@@ -264,7 +257,6 @@ const positionStyles = {
   "bottom-right": { bottom: 5, right: 5 },
   "center-right": { top: "50%", right: 5, transform: "translateY(-50%)" },
   "top-right": { top: 5, right: 5 },
-
   "bottom-left": { bottom: 5, left: 5 },
   "center-left": { top: "50%", left: 5, transform: "translateY(-50%)" },
   "top-left": { top: 5, left: 5 },
@@ -301,6 +293,10 @@ export default function StickyCart() {
   const [cssListOpen, setCssListOpen] = useState(false);
   const skipDirtyCheck = useRef(false);
   const [loading, setLoading] = useState(false);
+
+  // ── Reset modal state ──
+  const [resetModal, setResetModal] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const Storeshop = shop?.myshopifyDomain;
 
@@ -386,7 +382,6 @@ export default function StickyCart() {
 
     try {
       setLoading(true);
-
       saveBtn.setAttribute("loading", "");
 
       const payload = {
@@ -404,8 +399,6 @@ export default function StickyCart() {
 
       const [res] = await Promise.all([
         createStickyCart(apiUrl, payload),
-
-        // spinner minimum 1 second
         new Promise((resolve) => setTimeout(resolve, 1000)),
       ]);
 
@@ -423,16 +416,13 @@ export default function StickyCart() {
         };
         setIsDirty(false);
         setSaved(true);
-
         setTimeout(() => setSaved(false), 3000);
       }
 
     } catch (error) {
       console.error("Save error:", error);
-
     } finally {
       setLoading(false);
-
       saveBtn.removeAttribute("loading");
     }
   };
@@ -450,20 +440,54 @@ export default function StickyCart() {
     setQTextColor(initial.qTextColor);
     setPosition(initial.position);
     setDevice(initial.device);
-
-    setCartSettings({
-      customCss: initial.customCss,
-    });
-
+    setCartSettings({ customCss: initial.customCss });
     setIsDirty(false);
 
     if (window.shopify) {
       window.shopify.saveBar.hide("my-save-bar");
     }
 
-    setTimeout(() => {
-      skipDirtyCheck.current = false;
-    }, 0);
+    setTimeout(() => { skipDirtyCheck.current = false; }, 0);
+  };
+
+  // ── Reset to default handler ──
+  const handleResetToDefault = async () => {
+    setIsResetting(true);
+    skipDirtyCheck.current = true;
+
+    const defaults = buildSettings(null); 
+
+    setEnabled(defaults.enabled);
+    setSelectedIcon(defaults.selectedIcon);
+    setBgColor(defaults.bgColor);
+    setIconColor(defaults.iconColor);
+    setQBgColor(defaults.qBgColor);
+    setQTextColor(defaults.qTextColor);
+    setPosition(defaults.position);
+    setDevice(defaults.device);
+    setCartSettings({ customCss: defaults.customCss });
+
+    const payload = { shop: Storeshop, ...defaults };
+
+    try {
+      const res = await createStickyCart(apiUrl, payload);
+
+      if (res?.success) {
+        initialSettingsRef.current = defaults;
+        setIsDirty(false);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+
+        if (window.shopify) {
+          window.shopify.saveBar.hide("my-save-bar");
+        }
+      }
+    } catch (err) {
+      console.error("Reset error:", err);
+    } finally {
+      setIsResetting(false);
+      setTimeout(() => { skipDirtyCheck.current = false; }, 0);
+    }
   };
 
   return (
@@ -474,6 +498,7 @@ export default function StickyCart() {
         </button>
         <button onClick={handleDiscard}>Discard</button>
       </ui-save-bar>
+
       <Page
         title="Sticky Cart"
         primaryAction={
@@ -510,6 +535,17 @@ export default function StickyCart() {
                 />
               </div>
             </InlineStack>
+
+            {/* Reset to default button */}
+            <Button
+              variant="secondary"
+              tone="critical"
+              onClick={() => setResetModal(true)}
+              disabled={loading || isResetting}
+            >
+              Reset to default
+            </Button>
+
             <Button
               variant="secondary"
               onClick={handleSave}
@@ -699,7 +735,6 @@ export default function StickyCart() {
                     Start by typing a dot "." to see a list of all available CSS classes.
                     Or view the full list below.
                   </Text>
-
                   <InlineStack align="start">
                     <Button variant="plain" onClick={() => setCssListOpen((o) => !o)}>
                       {cssListOpen ? "Hide list" : "Show list"}
@@ -729,6 +764,33 @@ export default function StickyCart() {
           </Card>
         </BlockStack>
       </Page>
+
+      {/* ── Reset to default confirmation modal ── */}
+      <Modal
+        open={resetModal}
+        onClose={() => setResetModal(false)}
+        title="Reset to default settings?"
+        size="small"
+        primaryAction={{
+          content: "Reset to default",
+          tone: "critical",
+          loading: isResetting,
+          onAction: async () => {
+            await handleResetToDefault();
+            setResetModal(false);
+          },
+        }}
+        secondaryActions={[
+          { content: "Cancel", onAction: () => setResetModal(false) },
+        ]}
+      >
+        <Modal.Section>
+          This restores every section of this cart — appearance, header, and
+          all modules — to the app's default settings and saves immediately.
+          Your current customizations for this cart will be lost and this
+          can't be undone.
+        </Modal.Section>
+      </Modal>
     </AppProvider>
   );
 }
