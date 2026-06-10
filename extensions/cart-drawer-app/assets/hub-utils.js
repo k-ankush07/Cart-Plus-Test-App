@@ -1,4 +1,13 @@
 window.hubUtils = {
+  authHeaders(extra = {}) {
+    const API_KEY =
+      "8f4c2a91d7e3b6f5a8c1d9e2f7b4c6a9e1d3f8b5c2a7d4e9f6b1c8a3d7e5f2";
+    return {
+      "x-api-key": API_KEY,
+      "Content-Type": "application/json",
+      ...extra,
+    };
+  },
   formatMoney(cents) {
     const currency = window.__SHOPIFY_CURRENCY__;
     const amount = (cents / 100).toLocaleString(undefined, {
@@ -218,7 +227,7 @@ window.hubUtils = {
     const savePct = hasDiscount
       ? Math.round((1 - salePrice / comparePrice) * 100)
       : 0;
-      
+
     const comparePriceHTML = hasDiscount
       ? `<span class="hub-compare-price custom-cart-public-component-upsell-tile__price-compare-at">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
      <span class="hub-item-save" style="background: ${hexToRGBA(designSettings?.savingsColor, 0.1)}; color: ${designSettings.savingsColor};">
@@ -293,7 +302,7 @@ window.hubUtils = {
     try {
       const res = await fetch(
         `${ratingsUrl}/api/product-ratings?shop=${shop}&ids=${ids}`,
-        { headers: { "ngrok-skip-browser-warning": "true" } },
+        { headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }) },
       );
       const { ratings } = await res.json();
 
@@ -336,9 +345,7 @@ window.hubUtils = {
           const url = `${ratingsUrl}/api/shipping-zones?shop=${shop}`;
 
           const res = await fetch(url, {
-            headers: {
-              "ngrok-skip-browser-warning": "true",
-            },
+            headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }),
           });
 
           if (!res.ok) return;
@@ -795,10 +802,7 @@ window.hubUtils = {
     try {
       const res = await fetch(`${ratingsUrl}/api/discounts`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
+        headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }),
         body: JSON.stringify({ shop }),
       });
       const data = await res.json();
@@ -821,8 +825,12 @@ window.hubUtils = {
     if (skeleton) skeleton.style.display = "block";
     if (items) items.style.visibility = "visible";
 
-    const footerSkel = document.getElementById(`hub-footer-skeleton-${blockId}`);
-    const footer = document.querySelector(`#hub-cart-drawer-${blockId} .hub-cart-footer`);
+    const footerSkel = document.getElementById(
+      `hub-footer-skeleton-${blockId}`,
+    );
+    const footer = document.querySelector(
+      `#hub-cart-drawer-${blockId} .hub-cart-footer`,
+    );
     if (footerSkel) footerSkel.style.display = "flex";
     if (footer) footer.classList.add("hub-footer-loading");
   },
@@ -830,8 +838,12 @@ window.hubUtils = {
     const skeleton = document.getElementById(`hub-skeleton-${blockId}`);
     if (skeleton) skeleton.style.display = "none";
 
-    const footerSkel = document.getElementById(`hub-footer-skeleton-${blockId}`);
-    const footer = document.querySelector(`#hub-cart-drawer-${blockId} .hub-cart-footer`);
+    const footerSkel = document.getElementById(
+      `hub-footer-skeleton-${blockId}`,
+    );
+    const footer = document.querySelector(
+      `#hub-cart-drawer-${blockId} .hub-cart-footer`,
+    );
     if (footerSkel) footerSkel.style.display = "none";
     if (footer) footer.classList.remove("hub-footer-loading");
   },

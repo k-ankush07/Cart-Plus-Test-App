@@ -153,7 +153,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
           {/* Left */}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
             <div className="cart-app-item__title custom-cart-product-title upcart-product-title custom-cart-bundle-item-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, wordBreak: "break-word", overflowWrap: "break-word" }}>
-              <a href="#" className="custom-cart-product-title-link" onclick={(e) => e.preventDefault()} style={{ color: textColor, textDecoration: "none" }}>
+              <a href="#" className="custom-cart-product-title-link" onClick={(e) => e.preventDefault()} style={{ color: textColor, textDecoration: "none" }}>
                 {productName}
               </a>
             </div>

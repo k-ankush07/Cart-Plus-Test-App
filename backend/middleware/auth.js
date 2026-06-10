@@ -1,7 +1,9 @@
-export function requireApiKey(req, res, next) {
+export const requireApiKey = (req, res, next) => {
   const key = req.headers["x-api-key"];
-  if (key !== process.env.API_SECRET_KEY) {
-    return res.status(401).json({ error: "Unauthorised" });
+  const validKey = process.env.API_SECRET_KEY || process.env.VITE_API_SECRET_KEY;
+  
+  if (!key || key !== validKey) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
   }
   next();
-}
+};

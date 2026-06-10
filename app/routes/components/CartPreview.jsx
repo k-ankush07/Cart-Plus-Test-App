@@ -69,7 +69,7 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
                 <style dangerouslySetInnerHTML={{ __html: scopeCss(cartSettings.customCss, ".cart-app") }} />
             )}
 
-            <div className="cart-app__container styles_CartPreview__card__" style={{ position: "relative" }} onclick={(e) => e.stopPropagation()}>
+            <div className="cart-app__container styles_CartPreview__card__" style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
                 {breakdownOpen && (
                     <div
                         onClick={() => setBreakdownOpen(true)}

@@ -763,7 +763,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
           cartSettings.showSavingsBelowPrices || false;
         const colorItems = designSettings.textColor || "#000";
         const discountColor = designSettings.discountBageColor || "#1e7e34";
-        console.log('discountColor:', discountColor);
         const showStrikethrough = designSettings.showStrikethrough || false;
         const savingsColor = designSettings.savingsColor || "#16a34a";
 

@@ -1,6 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // HUB DRAWER CODE
 
+const API_KEY = '8f4c2a91d7e3b6f5a8c1d9e2f7b4c6a9e1d3f8b5c2a7d4e9f6b1c8a3d7e5f2';
+
+const authHeaders = (extra = {}) => ({
+  "x-api-key": API_KEY,
+  "Content-Type": "application/json",
+  ...extra,
+});
+
 const apiUrl = "http://localhost:9002";
 
 function getSessionId() {
@@ -28,7 +36,7 @@ function trackCartImpressionUnique() {
 
   fetch(`${apiUrl}/api/cart-impression`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders(),
     body: JSON.stringify({
       shop: window.__SHOPIFY_SHOP__?.domain,
       cartId,
@@ -227,8 +235,13 @@ function initCartDrawerAfterData() {
         const cart = await res.json();
         window._hubLastCartHadItems = (cart.items?.length || 0) > 0;
         const count = cart.items
-  .filter((i) => !i.properties?._triggered_reward && !i.properties?._hub_addon && !i.properties?.__upcartAddon)
-  .reduce((sum, i) => sum + i.quantity, 0);
+          .filter(
+            (i) =>
+              !i.properties?._triggered_reward &&
+              !i.properties?._hub_addon &&
+              !i.properties?.__upcartAddon,
+          )
+          .reduce((sum, i) => sum + i.quantity, 0);
         const label = count === 1 ? "1 item" : `${count} items`;
 
         document.querySelectorAll(".cart-count-bubble").forEach((bubble) => {
@@ -591,10 +604,10 @@ window.startAnnTimer = function (blockId, timeStr) {
     try {
       const [cartResult, stickyResult] = await Promise.all([
         fetch(`${apiUrl}/api/get-carts?shop=${shop}`, {
-          headers: { "ngrok-skip-browser-warning": "true" },
+          headers: authHeaders(),
         }).then((r) => r.json()),
         fetch(`${apiUrl}/api/get-sticky-cart/${shop}`, {
-          headers: { "ngrok-skip-browser-warning": "true" },
+           headers: authHeaders(),
         }).then((r) => r.json()),
       ]);
 
