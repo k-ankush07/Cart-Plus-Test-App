@@ -61,8 +61,8 @@ function FlatIcon() {
 }
 
 const pillStyles = {
-  addons:        { active: { background: "#FBE8FD", color: "#93319B" }, inactive: { background: "#F6F6F7", color: "#6D7175" } },
-  upsells:       { active: { background: "#CAE6FE", color: "#01679B" }, inactive: { background: "#F6F6F7", color: "#6D7175" } },
+  addons: { active: { background: "#FBE8FD", color: "#93319B" }, inactive: { background: "#F6F6F7", color: "#6D7175" } },
+  upsells: { active: { background: "#CAE6FE", color: "#01679B" }, inactive: { background: "#F6F6F7", color: "#6D7175" } },
   subscriptions: { active: { background: "#E4FFE5", color: "#0B710E" }, inactive: { background: "#F6F6F7", color: "#6D7175" } },
 };
 
@@ -143,14 +143,18 @@ function getChartOpts(currency = "USD") {
     interaction: { mode: "index", intersect: false },
     scales: {
       x: {
-        ticks: { color: "#70707b", font: { size: 12 }, maxTicksLimit: 6, padding: 10,
-          callback: function (val) { return this.getLabelForValue(val); } },
+        ticks: {
+          color: "#70707b", font: { size: 12 }, maxTicksLimit: 6, padding: 10,
+          callback: function (val) { return this.getLabelForValue(val); }
+        },
         grid: { display: false }, border: { display: false },
       },
       y: {
         beginAtZero: true,
-        ticks: { color: "#70707b", font: { size: 12 }, stepSize: 500,
-          callback: (v) => currencySymbol + Number(v).toLocaleString() },
+        ticks: {
+          color: "#70707b", font: { size: 12 }, stepSize: 500,
+          callback: (v) => currencySymbol + Number(v).toLocaleString()
+        },
         grid: { color: "#eeeeef" }, border: { display: false },
       },
     },
@@ -177,8 +181,10 @@ const convOpts = {
     },
     y: {
       min: 0, max: 100,
-      ticks: { color: "#70707b", font: { size: 12 }, stepSize: 20,
-        callback: (v) => v.toFixed(0) + "%" },
+      ticks: {
+        color: "#70707b", font: { size: 12 }, stepSize: 20,
+        callback: (v) => v.toFixed(0) + "%"
+      },
       grid: { color: "#eeeeef" }, border: { display: false },
     },
   },
@@ -198,18 +204,18 @@ export const loader = async ({ request }) => {
   defaultStart.setDate(defaultEnd.getDate() - 29);
 
   const defaultStartISO = defaultStart.toISOString();
-  const defaultEndISO   = defaultEnd.toISOString();
+  const defaultEndISO = defaultEnd.toISOString();
 
   const statsPromise = (async () => {
     try {
       const url = new URL(`${apiUrl}/api/revenue-stats`);
       url.searchParams.set("shop", shopDomain);
       url.searchParams.set("startDate", defaultStartISO);
-      url.searchParams.set("endDate",   defaultEndISO);
-      const res  = await fetch(url.toString(), { headers: apiAuthHeaders() });
+      url.searchParams.set("endDate", defaultEndISO);
+      const res = await fetch(url.toString(), { headers: apiAuthHeaders() });
       const json = await res.json();
-      // FIX 2a: Always return something (even null) so .then() always fires
-      // and the client can clear the loading state.
+      console.log("Loader Analytics Response:", json);
+
       return json.data ?? null;
     } catch {
       return null;
@@ -223,21 +229,21 @@ export const loader = async ({ request }) => {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Analytics() {
-  const loaderData  = useLoaderData();
-  const navigate    = useNavigate();
+  const loaderData = useLoaderData();
+  const navigate = useNavigate();
 
-  const apiUrl   = loaderData.apiUrl;
-  const shop     = loaderData.shop;
+  const apiUrl = loaderData.apiUrl;
+  const shop = loaderData.shop;
   const currency = loaderData.currency;
 
   // FIX 1: Seed range from the loader's server-computed dates instead of
   // calling new Date() again on the client (different timezone = different range).
   const [range, setRange] = useState(() => ({
     start: new Date(loaderData.defaultStartISO),
-    end:   new Date(loaderData.defaultEndISO),
+    end: new Date(loaderData.defaultEndISO),
   }));
 
-  const [stats,   setStats]   = useState(null);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const chartOpts = getChartOpts(currency);
@@ -276,7 +282,7 @@ export default function Analytics() {
   // causing spurious re-fetches or missed fetches depending on how the
   // DateRangePicker creates its values.
   const startISO = range.start.toISOString();
-  const endISO   = range.end.toISOString();
+  const endISO = range.end.toISOString();
 
   const isFirstRangeRender = useRef(true);
   useEffect(() => {
@@ -290,12 +296,16 @@ export default function Analytics() {
       setLoading(true);
       try {
         const url = new URL(`${apiUrl}/api/revenue-stats`);
-        url.searchParams.set("shop",      shop);
+        url.searchParams.set("shop", shop);
         url.searchParams.set("startDate", startISO);
-        url.searchParams.set("endDate",   endISO);
-        const res  = await fetch(url.toString(), { headers: clientAuthHeaders() });
+        url.searchParams.set("endDate", endISO);
+        const res = await fetch(url.toString(), { headers: clientAuthHeaders() });
+        console.log("Status:", res.status);
+
         const json = await res.json();
-        // FIX 2c: Always update state (null is a valid value meaning "no data").
+
+        console.log("Analytics API Response:", json);
+        console.log("Analytics Data:", json.data);
         if (!cancelled) setStats(json.data ?? null);
       } catch (e) {
         console.error("Analytics fetch error:", e);
@@ -311,8 +321,8 @@ export default function Analytics() {
   // ── Derived data ──────────────────────────────────────────────────────────
 
   const resolvedCurrency = stats?.revenue?.totals?.currency ?? currency;
-  const daily            = stats?.revenue?.daily ?? [];
-  const dailyAnalytics   = stats?.dailyAnalytics ?? {};
+  const daily = stats?.revenue?.daily ?? [];
+  const dailyAnalytics = stats?.dailyAnalytics ?? {};
 
   const labels = getLabelsFromRange(range.start, range.end);
   const dayMap = buildDailyMap(daily);
@@ -333,15 +343,15 @@ export default function Analytics() {
     const day = dayMap[l] ?? {};
     return (
       sum +
-      (filters.upsells       ? (day.upsellRevenue        ?? 0) : 0) +
-      (filters.addons        ? (day.addonRevenue         ?? 0) : 0) +
-      (filters.subscriptions ? (day.subscriptionRevenue  ?? 0) : 0)
+      (filters.upsells ? (day.upsellRevenue ?? 0) : 0) +
+      (filters.addons ? (day.addonRevenue ?? 0) : 0) +
+      (filters.subscriptions ? (day.subscriptionRevenue ?? 0) : 0)
     );
   }, 0);
 
-  const upsellSeries = labels.map((l) => dayMap[l]?.upsellRevenue       ?? 0);
-  const addonSeries  = labels.map((l) => dayMap[l]?.addonRevenue        ?? 0);
-  const subSeries    = labels.map((l) => dayMap[l]?.subscriptionRevenue ?? 0);
+  const upsellSeries = labels.map((l) => dayMap[l]?.upsellRevenue ?? 0);
+  const addonSeries = labels.map((l) => dayMap[l]?.addonRevenue ?? 0);
+  const subSeries = labels.map((l) => dayMap[l]?.subscriptionRevenue ?? 0);
 
   const rangeConversionRate =
     cartImpressions > 0
@@ -417,11 +427,11 @@ export default function Analytics() {
         return isPercentage ? val.toFixed(2) + "%" : val;
       }),
     ]);
-    const csv  = [headers, ...rows].map((r) => r.join(",")).join("\n");
+    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
@@ -484,8 +494,8 @@ export default function Analytics() {
                   <BlockStack gap="200">
                     <Text variant="bodyMd" tone="subdued">Filters</Text>
                     <BlockStack gap="150">
-                      <FilterPill type="addons"        label="Add-ons"       active={filters.addons}        onToggle={() => toggleFilter("addons")} />
-                      <FilterPill type="upsells"       label="Upsells"       active={filters.upsells}       onToggle={() => toggleFilter("upsells")} />
+                      <FilterPill type="addons" label="Add-ons" active={filters.addons} onToggle={() => toggleFilter("addons")} />
+                      <FilterPill type="upsells" label="Upsells" active={filters.upsells} onToggle={() => toggleFilter("upsells")} />
                       <FilterPill type="subscriptions" label="Subscriptions" active={filters.subscriptions} onToggle={() => toggleFilter("subscriptions")} />
                     </BlockStack>
                   </BlockStack>

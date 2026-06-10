@@ -131,8 +131,12 @@ export default function DateRangePicker({ value, onChange }) {
     const handleSave = useCallback(() => {
         setAppliedRange(range);
         setAppliedPreset(preset);
-        onChange?.(range);
+
         setOpen(false);
+
+        setTimeout(() => {
+            onChange?.(range);
+        }, 0);
     }, [range, preset, onChange]);
 
     // ── button label ─────────────────────────────────────────────────────────
