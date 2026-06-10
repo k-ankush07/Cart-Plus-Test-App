@@ -226,7 +226,7 @@ export const loader = async ({ request }) => {
     }
   })();
   // Pass the ISO strings to the client so it can seed its range state.
-  return { statsPromise, shop: shopDomain, apiUrl, currency, defaultStartISO, defaultEndISO };
+  return { initialStats, shop: shopDomain, apiUrl, currency, defaultStartISO, defaultEndISO };
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
