@@ -29,13 +29,13 @@ const shopify = shopifyApp({
 
       try {
         const offlineSession = await shopify.sessionStorage.loadSession(
-          `offline_${session.shop}`
+          `offline_${session.shop}`,
         );
         const accessToken = offlineSession?.accessToken;
         if (!accessToken) return;
 
         const graphqlResponse = await admin.graphql(
-          `query ShopInfo { shop { email name myshopifyDomain } }`
+          `query ShopInfo { shop { email name myshopifyDomain } }`,
         );
         const { data } = await graphqlResponse.json();
 
@@ -50,7 +50,10 @@ const shopify = shopifyApp({
 
         await fetch(`${apiBaseUrl}/api/save-shop-token`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.VITE_API_SECRET_KEY || "",
+          },
           body: JSON.stringify({
             shop: session.shop,
             accessToken,
