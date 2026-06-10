@@ -494,52 +494,68 @@ router.get("/shop-plan", async (req, res) => {
 });
 
 router.post("/shop-plan", async (req, res) => {
-  const { shop, plan, price, subscriptionId, status } = req.body;
+  try {
+    const { shop, plan, price, subscriptionId, status } = req.body;
 
-  const previousPlan = await shopPlanModel.findOne({ shop });
+    if (!shop || !plan || price === undefined) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
 
-  const updated = await shopPlanModel.findOneAndUpdate(
-    { shop },
-    {
-      shop, plan, price, subscriptionId,
-      status: status || "active",
-      updatedAt: new Date(),
-      ...(previousPlan?.plan !== plan && { emailSent: false }),
-    },
-    { upsert: true, new: true }
-  );
+    // 1. Read previous plan BEFORE updating
+    const previousPlan = await shopPlanModel.findOne({ shop });
 
-  const finalStatus = status || "active";
-  const isNowPaidAndActive = plan !== "free" && finalStatus === "active";
-  const emailNotYetSent = !updated.emailSent;
+    // 2. Save to DB first
+    const updated = await shopPlanModel.findOneAndUpdate(
+      { shop },
+      {
+        shop,
+        plan,
+        price,
+        subscriptionId,
+        status: status || "active",
+        updatedAt: new Date(),
+      },
+      { upsert: true, new: true }
+    );
 
-  if (isNowPaidAndActive && emailNotYetSent) {
-    try {
-      const [shopConfig, cart] = await Promise.all([
-        shopConfigModel.findOne({ shop }),
-        cartModels.findOne({ shop }),
-      ]);
+    const finalStatus = status || "active";
+    const isNowPaidAndActive = plan !== "free" && finalStatus === "active";
+    const wasPreviouslyDifferent =
+      !previousPlan ||
+      previousPlan.plan !== plan ||
+      previousPlan.status !== "active"; 
 
-      const toEmail = shopConfig?.email || cart?.shopEmail;
-      const storeOwner = cart?.storeOwner || "there";
-
-      if (toEmail) {
-        const subject = "Your Custom Cart plan has been upgraded";
-        const html = buildPlanUpgradeEmailHtml({ storeOwner, shop, plan });
-
-        await Promise.all([
-          sendEmail(toEmail, subject, html),
-          sendEmail("sahil@hubsyntax.com", subject, html),
+    if (isNowPaidAndActive && wasPreviouslyDifferent) {
+      try {
+        const [shopConfig, cart] = await Promise.all([
+          shopConfigModel.findOne({ shop }),
+          cartModels.findOne({ shop }),
         ]);
 
-        await shopPlanModel.findOneAndUpdate({ shop }, { emailSent: true });
-      }
-    } catch (emailError) {
-      console.error("[hub] Plan upgrade email error:", emailError);
-    }
-  }
+        const toEmail = shopConfig?.email || cart?.shopEmail;
+        const storeOwner = cart?.storeOwner || "there";
 
-  return res.status(200).json({ success: true, data: updated });
+        if (toEmail) {
+          const subject = "Your Custom Cart plan has been upgraded";
+          const html = buildPlanUpgradeEmailHtml({ storeOwner, shop, plan });
+          await Promise.all([
+            sendEmail(toEmail, subject, html),
+            sendEmail("sahil@hubsyntax.com", subject, html),
+          ]);
+        } else {
+          console.warn(`[hub] Plan upgrade email skipped — no email on file for shop: ${shop}`);
+        }
+      } catch (emailError) {
+        console.error("[hub] Plan upgrade email error:", emailError);
+      }
+    }
+
+    return res.status(200).json({ success: true, data: updated });
+
+  } catch (error) {
+    console.error("UPSERT SHOP PLAN ERROR:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
 });
 
 router.delete("/shop-plan", async (req, res) => {

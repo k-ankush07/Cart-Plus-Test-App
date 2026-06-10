@@ -66,7 +66,6 @@ const shopPlanSchema = new mongoose.Schema({
   plan: { type: String, required: true },
   price: { type: Number, required: true },
   subscriptionId: { type: String, default: null },
-  emailSent: { type: Boolean, default: false },
   status: { type: String, enum: ["active", "pending", "cancelled"], default: "active" },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

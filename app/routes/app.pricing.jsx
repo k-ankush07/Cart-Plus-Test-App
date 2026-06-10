@@ -412,145 +412,218 @@ function PricingCard({ plan, activePlan, onCardHover, anyHovered }) {
     const fetcher = useFetcher();
     const [redirecting, setRedirecting] = useState(false);
     const [hovered, setHovered] = useState(false);
+    const [showDowngradeModal, setShowDowngradeModal] = useState(false);
     const isActive = activePlan === plan.id;
     const isLoading = fetcher.state !== "idle" || redirecting;
     const onPaidPlan = activePlan !== "free";
 
-    // Redirect to Shopify billing confirmation page
+    const activePlanData = PLANS.find((p) => p.id === activePlan);
+    const isDowngrade = plan.price < (activePlanData?.price ?? 0);
+
     if (fetcher.data?.confirmationUrl && !redirecting) {
         setRedirecting(true);
         window.top.location.href = fetcher.data.confirmationUrl;
     }
-
 
     const getBorder = () => {
         if (isActive) return (anyHovered && !hovered) ? "2px solid #e1e3e5" : "2px solid #FD6802";
         return hovered ? "2px solid #FD6802" : "2px solid #e1e3e5";
     };
 
+    // Called when user clicks a downgrade button — shows modal instead of submitting
+    const handleDowngradeClick = () => setShowDowngradeModal(true);
+
+    // Called when user confirms in modal — submits the hidden form
+    const confirmDowngrade = () => {
+        setShowDowngradeModal(false);
+        document.getElementById(`downgrade-form-${plan.id}`)?.requestSubmit();
+    };
+
     return (
-        <div
-            onMouseEnter={() => { setHovered(true); onCardHover(true); }}
-            onMouseLeave={() => { setHovered(false); }}
-            style={{
-                border: getBorder(),
-                borderRadius: "12px",
-                padding: "24px",
-                backgroundColor: "#fff",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                position: "relative",
-                cursor: "pointer",
-                transition: "border-color 0.15s ease",
-            }}
-        >
-            {/* Badge — "Popular" / "Best value" */}
-            {plan.badge && (
-                <div style={{ position: "absolute", top: "-12px", left: "20px" }}>
-                    <Badge tone={plan.badge === "Popular" ? "success" : "info"}>
-                        {plan.badge}
-                    </Badge>
+        <>
+            {/* ── Downgrade confirmation modal ── */}
+            {showDowngradeModal && (
+                <div
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.45)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 9999,
+                    }}
+                    onClick={() => setShowDowngradeModal(false)}
+                >
+                    <div
+                        style={{
+                            background: "#fff",
+                            borderRadius: "12px",
+                            padding: "24px",
+                            maxWidth: "400px",
+                            width: "90%",
+                            boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <BlockStack gap="400">
+                            <BlockStack gap="100">
+                                <Text as="h2" variant="headingMd">
+                                    Downgrade to {plan.name}?
+                                </Text>
+                                <Text as="p" variant="bodyMd" tone="subdued">
+                                    {plan.id === "free"
+                                        ? "You'll lose access to all paid features. Cart drawers beyond the free limit will be paused."
+                                        : `You'll lose access to Growth-only features. Any extras beyond the ${plan.name} plan limits will be paused.`}
+                                </Text>
+                            </BlockStack>
+                            <Divider />
+                            <InlineStack gap="200" align="end">
+                                <Button onClick={() => setShowDowngradeModal(false)}>
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    tone="critical"
+                                    onClick={confirmDowngrade}
+                                    loading={isLoading}
+                                >
+                                    Yes, downgrade
+                                </Button>
+                            </InlineStack>
+                        </BlockStack>
+                    </div>
                 </div>
             )}
 
-            {/* "Active plan" indicator badge */}
-            {isActive && (
-                <div style={{ position: "absolute", top: "-12px", right: "20px" }} className="badge-orange">
-                    <Badge tone="info">Active plan</Badge>
-                </div>
-            )}
+            {/* ── Card ── */}
+            <div
+                onMouseEnter={() => { setHovered(true); onCardHover(true); }}
+                onMouseLeave={() => setHovered(false)}
+                style={{
+                    border: getBorder(),
+                    borderRadius: "12px",
+                    padding: "24px",
+                    backgroundColor: "#fff",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                    position: "relative",
+                    cursor: "pointer",
+                    transition: "border-color 0.15s ease",
+                }}
+            >
+                {plan.badge && (
+                    <div style={{ position: "absolute", top: "-12px", left: "20px" }}>
+                        <Badge tone={plan.badge === "Popular" ? "success" : "info"}>{plan.badge}</Badge>
+                    </div>
+                )}
+                {isActive && (
+                    <div style={{ position: "absolute", top: "-12px", right: "20px" }} className="badge-orange">
+                        <Badge tone="info">Active plan</Badge>
+                    </div>
+                )}
 
-            <BlockStack gap="100">
-                <Text as="h3" variant="headingMd">{plan.name}</Text>
-                <Text as="p" variant="bodySm" tone="subdued">{plan.description}</Text>
-            </BlockStack>
+                <BlockStack gap="100">
+                    <Text as="h3" variant="headingMd">{plan.name}</Text>
+                    <Text as="p" variant="bodySm" tone="subdued">{plan.description}</Text>
+                </BlockStack>
 
-            <InlineStack gap="100" blockAlign="end">
-                <Text as="p" variant="heading2xl" fontWeight="bold">
-                    {plan.price === 0 ? "Free" : `$${plan.price}`}
-                </Text>
-                {plan.price > 0 && (
-                    <Text as="p" variant="bodySm" tone="subdued">
-                        / {plan.period}
+                <InlineStack gap="100" blockAlign="end">
+                    <Text as="p" variant="heading2xl" fontWeight="bold">
+                        {plan.price === 0 ? "Free" : `$${plan.price}`}
                     </Text>
-                )}
-            </InlineStack>
+                    {plan.price > 0 && (
+                        <Text as="p" variant="bodySm" tone="subdued">/ {plan.period}</Text>
+                    )}
+                </InlineStack>
 
-            <Divider />
+                <Divider />
 
-            <BlockStack gap="200">
-                {plan.features.map((feature) => (
-                    <InlineStack key={feature} gap="200" blockAlign="center">
-                        <Box>
-                            <span style={{
-                                background: plan.id === "free"
-                                    ? "#f0f0f0"
-                                    : plan.id === "starter"
-                                        ? "#e6f4f0"
-                                        : "#eff6ff",
-                                color: plan.id === "free"
-                                    ? "#8c9196"
-                                    : plan.id === "starter"
-                                        ? "#008060"
-                                        : "#2563eb",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: "22px",
-                                height: "22px",
-                                borderRadius: "100px",
-                            }}>
-                                <Icon source={CheckIcon} />
-                            </span>
-                        </Box>
-                        <Text as="p" variant="bodySm">{feature}</Text>
-                    </InlineStack>
-                ))}
-            </BlockStack>
+                <BlockStack gap="200">
+                    {plan.features.map((feature) => (
+                        <InlineStack key={feature} gap="200" blockAlign="center">
+                            <Box>
+                                <span style={{
+                                    background: plan.id === "free" ? "#f0f0f0" : plan.id === "starter" ? "#e6f4f0" : "#eff6ff",
+                                    color: plan.id === "free" ? "#8c9196" : plan.id === "starter" ? "#008060" : "#2563eb",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    width: "22px", height: "22px", borderRadius: "100px",
+                                }}>
+                                    <Icon source={CheckIcon} />
+                                </span>
+                            </Box>
+                            <Text as="p" variant="bodySm">{feature}</Text>
+                        </InlineStack>
+                    ))}
+                </BlockStack>
 
-            <div style={{ marginTop: "auto" }}>
-                {/* Free plan */}
-                {plan.id === "free" && (
-                    onPaidPlan ? (
-                        <fetcher.Form method="post">
-                            <input type="hidden" name="_action" value="cancel" />
-                            <Button
-                                fullWidth
-                                variant="secondary"
-                                submit
-                                loading={isLoading}
-                                tone="critical"
-                            >
-                                Downgrade to Free
-                            </Button>
-                        </fetcher.Form>
-                    ) : (
+                <div style={{ marginTop: "auto" }}>
+                    {/* Free plan */}
+                    {plan.id === "free" && (
+                        onPaidPlan ? (
+                            <>
+                                {/* Hidden form — submitted programmatically after modal confirm */}
+                                <fetcher.Form
+                                    id={`downgrade-form-${plan.id}`}
+                                    method="post"
+                                    style={{ display: "none" }}
+                                >
+                                    <input type="hidden" name="_action" value="cancel" />
+                                </fetcher.Form>
+                                <Button
+                                    fullWidth
+                                    variant="secondary"
+                                    tone="critical"
+                                    loading={isLoading}
+                                    onClick={handleDowngradeClick}
+                                >
+                                    Downgrade to Free
+                                </Button>
+                            </>
+                        ) : (
+                            <Button fullWidth disabled>Current plan</Button>
+                        )
+                    )}
+
+                    {/* Paid plan — currently active */}
+                    {plan.id !== "free" && isActive && (
                         <Button fullWidth disabled>Current plan</Button>
-                    )
-                )}
+                    )}
 
-                {/* Paid plan — currently active */}
-                {plan.id !== "free" && isActive && (
-                    <Button fullWidth disabled>Current plan</Button>
-                )}
-
-                {/* Paid plan — not active */}
-                {plan.id !== "free" && !isActive && (
-                    <fetcher.Form method="post">
-                        <input type="hidden" name="_action" value="upgrade" />
-                        <input type="hidden" name="plan" value={plan.id} />
-                        <Button
-                            fullWidth
-                            variant="primary"
-                            submit
-                            loading={isLoading}
-                        >
-                            {plan.cta}
-                        </Button>
-                    </fetcher.Form>
-                )}
+                    {/* Paid plan — not active */}
+                    {plan.id !== "free" && !isActive && (
+                        isDowngrade ? (
+                            <>
+                                <fetcher.Form
+                                    id={`downgrade-form-${plan.id}`}
+                                    method="post"
+                                    style={{ display: "none" }}
+                                >
+                                    <input type="hidden" name="_action" value="upgrade" />
+                                    <input type="hidden" name="plan" value={plan.id} />
+                                </fetcher.Form>
+                                <Button
+                                    fullWidth
+                                    variant="primary"
+                                    loading={isLoading}
+                                    onClick={handleDowngradeClick}
+                                >
+                                    {plan.cta}
+                                </Button>
+                            </>
+                        ) : (
+                            <fetcher.Form method="post">
+                                <input type="hidden" name="_action" value="upgrade" />
+                                <input type="hidden" name="plan" value={plan.id} />
+                                <Button fullWidth variant="primary" submit loading={isLoading}>
+                                    {plan.cta}
+                                </Button>
+                            </fetcher.Form>
+                        )
+                    )}
+                </div>
             </div>
-        </div>
+        </>
     );
 }
