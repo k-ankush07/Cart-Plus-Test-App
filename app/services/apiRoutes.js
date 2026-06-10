@@ -1,17 +1,29 @@
+
+const API_KEY = import.meta.env.VITE_API_SECRET_KEY || "";
+
+console.log("API Key:", API_KEY);
+ 
+const authHeaders = (extra = {}) => ({
+  "x-api-key": API_KEY,
+  ...extra,
+});
+
 export const getCartStats = async (apiUrl, shop, startDate, endDate) => {
-    const params = new URLSearchParams({ shop });
-    if (startDate) params.append("startDate", startDate);
-    if (endDate) params.append("endDate", endDate);
-    
-    const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
-        credentials: "include",
-    });
-    return res.json();
+  const params = new URLSearchParams({ shop });
+  if (startDate) params.append("startDate", startDate);
+  if (endDate) params.append("endDate", endDate);
+ 
+  const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
+    credentials: "include",
+    headers: authHeaders(),
+  });
+  return res.json();
 };
 
 export const getCart = async (apiUrl, cartId) => {
   const res = await fetch(`${apiUrl}/api/get-cart/${cartId}`, {
     credentials: "include",
+    headers: authHeaders(),
   });
   return res.json();
 };
@@ -22,6 +34,7 @@ export const createCart = async (apiUrl, data) => {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders(),
     },
     body: JSON.stringify(data),
   });
@@ -35,15 +48,17 @@ export const updateCart = async (apiUrl, cartId, data) => {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders(),
     },
     body: JSON.stringify(data),
   });
 };
-
+  
 export const getCarts = async (apiUrl, shop) => {
   const res = await fetch(`${apiUrl}/api/get-carts?shop=${shop}`, {
     method: "GET",
     credentials: "include",
+    headers: authHeaders(),
   });
 
   return res.json();
@@ -55,6 +70,7 @@ export const deleteCart = async (apiUrl, cartId) => {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders(),
     },
     body: JSON.stringify({ cartId }),
   });
@@ -73,6 +89,7 @@ export const uploadImage = async (apiUrl, file, shop, accessToken) => {
   const res = await fetch(`${apiUrl}/api/upload-image`, {
     method: "POST",
     credentials: "include",
+    headers: authHeaders(),
     body: formData,
   });
 
@@ -83,9 +100,7 @@ export const togglePublishCart = async (apiUrl, cartId) => {
   const res = await fetch(`${apiUrl}/api/toggle-publish`, {
     method: "POST",
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ cartId }),
   });
 
@@ -96,7 +111,7 @@ export const renameCart = async (apiUrl, cartId, cartName) => {
   const res = await fetch(`${apiUrl}/api/update-cart/${cartId}`, {
     method: "PUT",
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ cartName }),
   });
   return res.json();
@@ -106,9 +121,7 @@ export const duplicateCart = async (apiUrl, cartId) => {
   const res = await fetch(`${apiUrl}/api/duplicate-cart`, {
     method: "POST",
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ cartId }),
   });
 
@@ -119,9 +132,7 @@ export const createStickyCart = async (apiUrl, data) => {
   const res = await fetch(`${apiUrl}/api/save-sticky-cart`, {
     method: "POST",
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(data),
   });
   return res.json();
@@ -131,6 +142,7 @@ export const getStickyCart = async (apiUrl, shop) => {
   const res = await fetch(`${apiUrl}/api/get-sticky-cart/${shop}`, {
     method: "GET",
     credentials: "include",
+    headers: authHeaders(),
   });
   return res.json();
 };

@@ -48,6 +48,13 @@ function getDefaultRange() {
   return { start, end };
 }
 
+// ─── API key header helper (server-side: process.env) ─────────────────────────
+
+const apiAuthHeaders = (extra = {}) => ({
+  "x-api-key": process.env.API_SECRET_KEY || "",
+  ...extra,
+});
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function FlatIcon() {
@@ -115,7 +122,7 @@ function DownloadIcon() {
   );
 }
 
-// ─── Chart options (stable references — created once outside component) ───────
+// ─── Chart options ────────────────────────────────────────────────────────────
 
 function getChartOpts(currency = "USD") {
   const currencySymbol =
@@ -187,7 +194,6 @@ const convOpts = {
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
-  // Only shopLoader (auth) blocks — everything else is deferred
   const { shop, apiUrl } = await shopLoader(request);
   const shopDomain = shop?.myshopifyDomain;
   const currency = shop?.currencyCode || "USD";
@@ -196,14 +202,15 @@ export const loader = async ({ request }) => {
   const defaultStart = new Date();
   defaultStart.setDate(today.getDate() - 29);
 
-  // Return a promise — NOT awaited — so React Router defers it
   const statsPromise = (async () => {
     try {
       const url = new URL(`${apiUrl}/api/revenue-stats`);
       url.searchParams.set("shop", shopDomain);
       url.searchParams.set("startDate", defaultStart.toISOString());
       url.searchParams.set("endDate", today.toISOString());
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), {
+        headers: apiAuthHeaders(),
+      });
       const json = await res.json();
       return json.data || null;
     } catch {
@@ -211,7 +218,6 @@ export const loader = async ({ request }) => {
     }
   })();
 
-  // Stable primitives returned immediately; statsPromise resolves later
   return { statsPromise, shop: shopDomain, apiUrl, currency };
 };
 
@@ -222,15 +228,26 @@ export default function Analytics() {
   const navigate = useNavigate();
 
   const apiUrl   = loaderData.apiUrl;
-  const shop     = loaderData.shop;     
+  const shop     = loaderData.shop;
   const currency = loaderData.currency;
 
   const [range, setRange] = useState(getDefaultRange);
-
   const [stats,   setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
 
   const chartOpts = getChartOpts(currency);
+
+  // ── Client-side API key (for refetch on range change) ─────────────────────
+  // This runs in the browser, so use the Vite/CRA env var pattern.
+  const clientApiKey =
+    (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_SECRET_KEY) ||
+    (typeof process !== "undefined" && process.env?.REACT_APP_API_SECRET_KEY) ||
+    "";
+
+  const clientAuthHeaders = (extra = {}) => ({
+    "x-api-key": clientApiKey,
+    ...extra,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -241,11 +258,10 @@ export default function Analytics() {
       }
     });
     return () => { cancelled = true; };
-  }, []); 
+  }, []);
 
   const isFirstRangeRender = useRef(true);
   useEffect(() => {
-    // Skip the very first render — initial data comes from statsPromise above
     if (isFirstRangeRender.current) {
       isFirstRangeRender.current = false;
       return;
@@ -259,7 +275,9 @@ export default function Analytics() {
         url.searchParams.set("shop", shop);
         url.searchParams.set("startDate", range.start.toISOString());
         url.searchParams.set("endDate", range.end.toISOString());
-        const res = await fetch(url.toString());
+        const res = await fetch(url.toString(), {
+          headers: clientAuthHeaders(),
+        });
         const json = await res.json();
         if (!cancelled && json.data) setStats(json.data);
       } catch (e) {
@@ -271,7 +289,7 @@ export default function Analytics() {
 
     fetchStats();
     return () => { cancelled = true; };
-  }, [range.start, range.end]); // FIX: only range in deps — apiUrl/shop are stable
+  }, [range.start, range.end]);
 
   // ── Derived data ──────────────────────────────────────────────────────────
 

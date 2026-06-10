@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cartItem from "./routes/cartItem.js";
 import shopifyApi from "./routes/shopifyApi.js";
 import fileUpload from "./routes/fileUpload.js";
+import {requireApiKey} from "./middleware/auth.js";
 
 dotenv.config();
 
@@ -18,6 +19,8 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use("/api", requireApiKey);
 
 app.use("/api", cartItem);
 app.use("/api", shopifyApi);

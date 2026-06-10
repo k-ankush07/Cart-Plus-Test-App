@@ -210,22 +210,12 @@ function getDefaultRange() {
   return { start, end };
 }
 
-const DEFAULT_RANGE = getDefaultRange();
-
 const fmt = (n, currency = "USD") =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
   }).format(Number(n ?? 0));
-
-function isSameDay(a, b) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
@@ -404,6 +394,10 @@ function DashboardInner({
 }) {
   const navigate = useNavigate();
 
+  const authHeaders = () => ({
+    "x-api-key": import.meta.env.VITE_API_SECRET_KEY || "",
+  });
+
   const [carts, setCarts] = useState(initialCarts || []);
   const [cartStats, setCartStats] = useState(initialCartStats || {});
   const [shopRevenue, setShopRevenue] = useState(
@@ -438,11 +432,11 @@ function DashboardInner({
     setCarts(initialCarts);
   }, [initialCarts]);
 
+  const isFirstRangeRender = useRef(true);
+
   useEffect(() => {
-    if (
-      isSameDay(range.start, DEFAULT_RANGE.start) &&
-      isSameDay(range.end, DEFAULT_RANGE.end)
-    ) {
+    if (isFirstRangeRender.current) {
+      isFirstRangeRender.current = false;
       return;
     }
 
@@ -455,6 +449,7 @@ function DashboardInner({
         });
         const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
           credentials: "include",
+          headers: authHeaders(),
         });
         const data = await res.json();
         if (data.success) {
@@ -469,7 +464,7 @@ function DashboardInner({
     };
 
     fetchStats();
-  }, [range.start, range.end, apiUrl, shop.myshopifyDomain]);
+  }, [range.start, range.end]);
 
   const AppEmbedLink = () => (
     <Tooltip content="Enable the app embed to start showing this cart on your storefront. Click to enable in your theme editor.">
@@ -645,7 +640,7 @@ function DashboardInner({
                       onClick={() => navigate(cartEditorPath)}
                     >
                       <IndexTable.Cell>
-                       
+
                         <Link
                           to={cartEditorPath}
                           prefetch="intent"

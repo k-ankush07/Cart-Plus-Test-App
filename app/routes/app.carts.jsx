@@ -207,6 +207,10 @@ function AppCartsInner({
     const [duplicatingCartId, setDuplicatingCartId] = useState(null);
     const [popoverActive, setPopoverActive] = useState(false);
 
+    const authHeaders = () => ({
+        "x-api-key": import.meta.env.VITE_API_SECRET_KEY || "",
+    });
+
     const today = new Date();
     const defaultStart = new Date();
     defaultStart.setDate(today.getDate() - 29);
@@ -229,7 +233,7 @@ function AppCartsInner({
                     startDate: range.start.toISOString(),
                     endDate: range.end.toISOString(),
                 });
-                const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, { credentials: "include" });
+                const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, { credentials: "include", headers: authHeaders() });
                 const data = await res.json();
                 if (data.success) setCartStats(data.data || {});
             } catch (err) {

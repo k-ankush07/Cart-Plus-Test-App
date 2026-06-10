@@ -14,6 +14,7 @@ import {
     SkeletonBodyText,
     SkeletonDisplayText,
 } from "@shopify/polaris";
+
 import { useState, Suspense } from "react";
 import { CheckIcon } from "@shopify/polaris-icons";
 import { useLoaderData, useFetcher, Await } from "react-router-dom";
@@ -99,12 +100,20 @@ const FAQ = [
     },
 ];
 
+// ─── API key helper (server-side: read from process.env) ─────────────────────
+
+const apiAuthHeaders = (extra = {}) => ({
+    "x-api-key": process.env.API_SECRET_KEY || "",
+    ...extra,
+});
+
+
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
 const savePlan = (apiUrl, shop, plan, price, subscriptionId, status) =>
     fetch(`${apiUrl}/api/shop-plan`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: apiAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ shop, plan, price, subscriptionId, status }),
     });
 
@@ -157,7 +166,11 @@ export const loader = async ({ request }) => {
         savePlan(apiUrl, shopDomain, activePlan, activePrice, activeSubscriptionId, "active")
             .catch((e) => console.error("savePlan error:", e));
 
-        const dbRes = await fetch(`${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`);
+        const dbRes = await fetch(
+            `${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`,
+            { headers: apiAuthHeaders() },
+        );
+
         const dbData = await dbRes.json();
 
         return { activePlan, apiUrl, dbRecord: dbData.data };
