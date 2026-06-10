@@ -41,13 +41,6 @@ function getLabelsFromRange(start, end) {
   return labels;
 }
 
-function getDefaultRange() {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(end.getDate() - 29);
-  return { start, end };
-}
-
 // ─── API key header helper (server-side: process.env) ─────────────────────────
 
 const apiAuthHeaders = (extra = {}) => ({
@@ -198,47 +191,58 @@ export const loader = async ({ request }) => {
   const shopDomain = shop?.myshopifyDomain;
   const currency = shop?.currencyCode || "USD";
 
-  const today = new Date();
+  // FIX 1: Capture exact server-side dates as ISO strings so the client
+  // initialises its range from the same moment, regardless of timezone.
+  const defaultEnd = new Date();
   const defaultStart = new Date();
-  defaultStart.setDate(today.getDate() - 29);
+  defaultStart.setDate(defaultEnd.getDate() - 29);
+
+  const defaultStartISO = defaultStart.toISOString();
+  const defaultEndISO   = defaultEnd.toISOString();
 
   const statsPromise = (async () => {
     try {
       const url = new URL(`${apiUrl}/api/revenue-stats`);
       url.searchParams.set("shop", shopDomain);
-      url.searchParams.set("startDate", defaultStart.toISOString());
-      url.searchParams.set("endDate", today.toISOString());
-      const res = await fetch(url.toString(), {
-        headers: apiAuthHeaders(),
-      });
+      url.searchParams.set("startDate", defaultStartISO);
+      url.searchParams.set("endDate",   defaultEndISO);
+      const res  = await fetch(url.toString(), { headers: apiAuthHeaders() });
       const json = await res.json();
-      return json.data || null;
+      // FIX 2a: Always return something (even null) so .then() always fires
+      // and the client can clear the loading state.
+      return json.data ?? null;
     } catch {
       return null;
     }
   })();
 
-  return { statsPromise, shop: shopDomain, apiUrl, currency };
+  // Pass the ISO strings to the client so it can seed its range state.
+  return { statsPromise, shop: shopDomain, apiUrl, currency, defaultStartISO, defaultEndISO };
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Analytics() {
-  const loaderData = useLoaderData();
-  const navigate = useNavigate();
+  const loaderData  = useLoaderData();
+  const navigate    = useNavigate();
 
   const apiUrl   = loaderData.apiUrl;
   const shop     = loaderData.shop;
   const currency = loaderData.currency;
 
-  const [range, setRange] = useState(getDefaultRange);
+  // FIX 1: Seed range from the loader's server-computed dates instead of
+  // calling new Date() again on the client (different timezone = different range).
+  const [range, setRange] = useState(() => ({
+    start: new Date(loaderData.defaultStartISO),
+    end:   new Date(loaderData.defaultEndISO),
+  }));
+
   const [stats,   setStats]   = useState(null);
   const [loading, setLoading] = useState(true);
 
   const chartOpts = getChartOpts(currency);
 
   // ── Client-side API key (for refetch on range change) ─────────────────────
-  // This runs in the browser, so use the Vite/CRA env var pattern.
   const clientApiKey =
     (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_SECRET_KEY) ||
     (typeof process !== "undefined" && process.env?.REACT_APP_API_SECRET_KEY) ||
@@ -249,16 +253,30 @@ export default function Analytics() {
     ...extra,
   });
 
+  // FIX 2b: Always call setLoading(false) — even when data is null or the
+  // promise rejects — so the component never stays stuck on "Loading…".
   useEffect(() => {
     let cancelled = false;
-    loaderData.statsPromise.then((data) => {
-      if (!cancelled) {
-        setStats(data);
-        setLoading(false);
-      }
-    });
+    loaderData.statsPromise
+      .then((data) => {
+        if (!cancelled) {
+          setStats(data);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => { cancelled = true; };
   }, []);
+
+  // FIX 3: Use ISO strings (primitives) as useEffect deps instead of Date
+  // objects (references). React's dependency comparison is ===, so two
+  // different Date objects representing the same instant are never equal,
+  // causing spurious re-fetches or missed fetches depending on how the
+  // DateRangePicker creates its values.
+  const startISO = range.start.toISOString();
+  const endISO   = range.end.toISOString();
 
   const isFirstRangeRender = useRef(true);
   useEffect(() => {
@@ -272,14 +290,13 @@ export default function Analytics() {
       setLoading(true);
       try {
         const url = new URL(`${apiUrl}/api/revenue-stats`);
-        url.searchParams.set("shop", shop);
-        url.searchParams.set("startDate", range.start.toISOString());
-        url.searchParams.set("endDate", range.end.toISOString());
-        const res = await fetch(url.toString(), {
-          headers: clientAuthHeaders(),
-        });
+        url.searchParams.set("shop",      shop);
+        url.searchParams.set("startDate", startISO);
+        url.searchParams.set("endDate",   endISO);
+        const res  = await fetch(url.toString(), { headers: clientAuthHeaders() });
         const json = await res.json();
-        if (!cancelled && json.data) setStats(json.data);
+        // FIX 2c: Always update state (null is a valid value meaning "no data").
+        if (!cancelled) setStats(json.data ?? null);
       } catch (e) {
         console.error("Analytics fetch error:", e);
       } finally {
@@ -289,7 +306,7 @@ export default function Analytics() {
 
     fetchStats();
     return () => { cancelled = true; };
-  }, [range.start, range.end]);
+  }, [startISO, endISO]); // ← primitives, safe for dep comparison
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
