@@ -289,8 +289,6 @@ export default function Analytics() {
 
         const json = await res.json();
 
-        console.log("Analytics API Response:", json);
-
         if (!cancelled) {
           setStats(json.data ?? null);
         }
