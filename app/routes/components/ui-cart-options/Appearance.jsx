@@ -111,6 +111,11 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                         onChange={(val) => handleChange("savingsColor", val)}
                     />
                     <ColorInput
+                        label="Discount badge color"
+                        value={designSettings.discountBageColor || "#1e7e34"}
+                        onChange={(val) => handleChange("discountBageColor", val)}
+                    />
+                    <ColorInput
                         label="Estimated text color"
                         value={designSettings.subtotalColor}
                         onChange={(val) => handleChange("subtotalColor", val)}

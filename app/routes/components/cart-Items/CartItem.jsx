@@ -18,6 +18,36 @@ function hexToRGBA(hex, opacity) {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+// ─── Discount Badge ───────────────────────────────────────────────────────────
+function DiscountBadge({ code = "MEGA20", color = "#1e7e34" }) {
+  return (
+    <span
+      className="custom-cart-public-component-product-tile__discount-codes"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "4px",
+        color: color,
+        fontSize: "11px",
+        fontWeight: 600,
+        padding: "3px 8px",
+        borderRadius: "20px",
+        width: "fit-content",
+        background: hexToRGBA(color, 0.1),
+      }}
+    >
+      <svg viewBox="0 0 20 20" style={{ width: "15px", fill: color }}>
+        <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z" />
+        <path
+          fillRule="evenodd"
+          d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"
+        />
+      </svg>
+      {code}
+    </span>
+  );
+}
+
 // ─── Undo Toast ───────────────────────────────────────────────────────────────
 function UndoToast({ message, onUndo, onDismiss }) {
   return (
@@ -133,24 +163,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
             <div className=" custom-cart-bundle-item-variant-title cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
               Color: BLACK
             </div>
-            <span className="custom-cart-public-component-product-tile__discount-codes"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34",
-                fontSize: "11px", fontWeight: 600,
-                padding: "3px 8px", borderRadius: "20px", width: "fit-content",
-              }}>
-              <svg
-                viewBox="0 0 20 20"
-                style={{ width: "15px", fill: "#10812f" }}
-              >
-                <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z" />
-                <path
-                  fillRule="evenodd"
-                  d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"
-                />
-              </svg>
-              MEGA20
-            </span>
+            <DiscountBadge code="MEGA20" color={designSettings.discountBageColor || "#1e7e34"} />
           </div>
 
           {/* Right */}
@@ -244,23 +257,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
                 <TrashIcon />
               )}
             </button>
-            <span className="custom-cart-public-component-product-tile__discount-codes" style={{
-              display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34",
-              fontSize: "11px", fontWeight: 600,
-              padding: "3px 8px", borderRadius: "20px", width: "fit-content",
-            }}>
-              <svg
-                viewBox="0 0 20 20"
-                style={{ width: "15px", fill: "#10812f" }}
-              >
-                <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z" />
-                <path
-                  fillRule="evenodd"
-                  d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"
-                />
-              </svg>
-              MEGA20
-            </span>
+            <DiscountBadge code="MEGA20" color={designSettings.discountBageColor || "#1e7e34"} />
           </div>
         </div>
 
@@ -297,7 +294,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
 }
 
 // ─── Modern Layout ────────────────────────────────────────────────────────────
-function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings, deleteLoading }) {
+function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings, designSettings, deleteLoading }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile upcart-layout-modern">
 
@@ -399,23 +396,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
               <span className="custom-cart-public-component-product-tile__product-pricing custom-cart-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
             )}
             <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$200.00</span>
-            <span className="custom-cart-public-component-product-tile__discount-codes" style={{
-              display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34",
-              fontSize: "11px", fontWeight: 600,
-              padding: "6px 8px", borderRadius: "20px", width: "fit-content",
-            }}>
-              <svg
-                viewBox="0 0 20 20"
-                style={{ width: "15px", fill: "#10812f" }}
-              >
-                <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z" />
-                <path
-                  fillRule="evenodd"
-                  d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"
-                />
-              </svg>
-              MEGA20
-            </span>
+            <DiscountBadge code="MEGA20" color={designSettings?.discountBageColor || "#1e7e34"} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
               <QtyStepper
                 qty={qty}

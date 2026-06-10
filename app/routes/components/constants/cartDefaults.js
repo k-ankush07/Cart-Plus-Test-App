@@ -9,6 +9,7 @@ export const defaultSettings = {
   textColor: "#000000",
   savingsColor: "#2ea818",
   subtotalColor: "#000000",
+  discountBageColor:"#1e7e34",
   buttonRadius: "0",
   buttonColor: "#000000",
   buttonTextColor: "#FFFFFF",
