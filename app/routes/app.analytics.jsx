@@ -284,39 +284,45 @@ export default function Analytics() {
   const startISO = range.start.toISOString();
   const endISO = range.end.toISOString();
 
-  const isFirstRangeRender = useRef(true);
   useEffect(() => {
-    if (isFirstRangeRender.current) {
-      isFirstRangeRender.current = false;
-      return;
-    }
-
     let cancelled = false;
+
     const fetchStats = async () => {
       setLoading(true);
+
       try {
         const url = new URL(`${apiUrl}/api/revenue-stats`);
+
         url.searchParams.set("shop", shop);
         url.searchParams.set("startDate", startISO);
         url.searchParams.set("endDate", endISO);
-        const res = await fetch(url.toString(), { headers: clientAuthHeaders() });
-        console.log("Status:", res.status);
+
+        const res = await fetch(url.toString(), {
+          headers: clientAuthHeaders(),
+        });
 
         const json = await res.json();
 
         console.log("Analytics API Response:", json);
-        console.log("Analytics Data:", json.data);
-        if (!cancelled) setStats(json.data ?? null);
-      } catch (e) {
-        console.error("Analytics fetch error:", e);
+
+        if (!cancelled) {
+          setStats(json.data ?? null);
+        }
+      } catch (error) {
+        console.error("Analytics fetch error:", error);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchStats();
-    return () => { cancelled = true; };
-  }, [startISO, endISO]); // ← primitives, safe for dep comparison
+
+    return () => {
+      cancelled = true;
+    };
+  }, [startISO, endISO, shop, apiUrl]);
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
