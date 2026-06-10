@@ -35,7 +35,9 @@ export default function CartLayout({
   triggeredRewardsSettings,
   isDirty,
   onSave,
-  onDiscard
+  onDiscard,
+  onResetToDefault,
+  isResetting
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,6 +50,7 @@ export default function CartLayout({
   const [previewMode, setPreviewMode] = useState("items");
   const [leaveModal, setLeaveModal] = useState(false);
   const [leaveSaving, setLeaveSaving] = useState(false);
+  const [resetModal, setResetModal] = useState(false);
 
   // Sync state when cart prop changes (after switching carts via dropdown)
   useEffect(() => {
@@ -307,6 +310,14 @@ export default function CartLayout({
             </Button>
 
             <Button
+              variant="tertiary"
+              loading={isResetting}
+              onClick={() => setResetModal(true)}
+            >
+              Reset to default
+            </Button>
+
+            <Button
               variant="secondary"
               loading={publishLoading}
               onClick={handleTogglePublish}
@@ -511,6 +522,33 @@ export default function CartLayout({
         >
           <Modal.Section>
             Save or discard changes to exit.
+          </Modal.Section>
+        </Modal>
+
+        {/* ── Reset to default confirmation modal ── */}
+        <Modal
+          open={resetModal}
+          onClose={() => setResetModal(false)}
+          title="Reset to default settings?"
+          size="small"
+          primaryAction={{
+            content: "Reset to default",
+            tone: "critical",
+            loading: isResetting,
+            onAction: async () => {
+              await onResetToDefault?.();
+              setResetModal(false);
+            },
+          }}
+          secondaryActions={[
+            { content: "Cancel", onAction: () => setResetModal(false) },
+          ]}
+        >
+          <Modal.Section>
+            This restores every section of this cart — appearance, header, and
+            all modules — to the app's default settings and saves immediately.
+            Your current customizations for this cart will be lost and this
+            can't be undone.
           </Modal.Section>
         </Modal>
 

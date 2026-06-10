@@ -344,6 +344,85 @@ export default function CartEditor() {
     setIsDirty(false);
   };
 
+  const [isResetting, setIsResetting] = useState(false);
+
+  // Restores every section to the shipped defaults and persists immediately.
+  // Destructive (no undo) — CartLayout gates this behind a confirmation modal.
+  const handleResetToDefault = async () => {
+    try {
+      setIsResetting(true);
+
+      const cartId = window.location.pathname.split("/").pop();
+
+      // Defaults wipe all triggered rewards, but keep the synced Shopify
+      // discount reference so it can be re-synced if rewards are re-added,
+      // rather than being orphaned with no way to look it up.
+      const resetTriggeredRewardsSettings = {
+        ...defaultTriggeredRewardsSettings,
+        shopifyDiscountId: triggeredRewardsSettings?.shopifyDiscountId || null,
+      };
+
+      const res = await updateCart(apiUrl, cartId, {
+        designSettings: defaultSettings,
+        headerSettings: defaultHeaderSettings,
+        announcementSettings: defaultAnnouncementSettings,
+        rewardsSettings: defaultRewardsSettings,
+        recommendationsSettings: defaultRecommendationsSettings,
+        subscriptionUpgradesSettings: defaultSubscriptionUpgradesSettings,
+        upsellsSettings: defaultUpsellsSettings,
+        additionalNotesSettings: defaultAdditionalNotesSettings,
+        addonsSettings: defaultAddonsSettings,
+        discountCodesSettings: defaultDiscountCodesSettings,
+        expressPaymentsSettings: defaultExpressPaymentsSettings,
+        trustBadgesSettings: defaultTrustBadgesSettings,
+        cartSettings: defaultCartSettings,
+        triggeredRewardsSettings: resetTriggeredRewardsSettings,
+      });
+
+      if (!res.ok) throw new Error(`Reset failed with status ${res.status}`);
+
+      setDesignSettings(defaultSettings);
+      setHeaderSettings(defaultHeaderSettings);
+      setAnnouncementSettings(defaultAnnouncementSettings);
+      setRewardsSettings(defaultRewardsSettings);
+      setRecommendationsSettings(defaultRecommendationsSettings);
+      setSubscriptionUpgradesSettings(defaultSubscriptionUpgradesSettings);
+      setUpsellsSettings(defaultUpsellsSettings);
+      setAdditionalNotesSettings(defaultAdditionalNotesSettings);
+      setAddonsSettings(defaultAddonsSettings);
+      setDiscountCodesSettings(defaultDiscountCodesSettings);
+      setExpressPaymentsSettings(defaultExpressPaymentsSettings);
+      setTrustBadgesSettings(defaultTrustBadgesSettings);
+      setCartSettings(defaultCartSettings);
+      setTriggeredRewardsSettings(resetTriggeredRewardsSettings);
+
+      initialSettingsRef.current = {
+        design: defaultSettings,
+        header: defaultHeaderSettings,
+        announcement: defaultAnnouncementSettings,
+        rewardsSettings: defaultRewardsSettings,
+        recommendationsSettings: defaultRecommendationsSettings,
+        subscriptionUpgradesSettings: defaultSubscriptionUpgradesSettings,
+        upsellsSettings: defaultUpsellsSettings,
+        additionalNotesSettings: defaultAdditionalNotesSettings,
+        addonsSettings: defaultAddonsSettings,
+        discountCodesSettings: defaultDiscountCodesSettings,
+        expressPaymentsSettings: defaultExpressPaymentsSettings,
+        trustBadgesSettings: defaultTrustBadgesSettings,
+        cartSettings: defaultCartSettings,
+        triggeredRewards: resetTriggeredRewardsSettings,
+      };
+
+      setIsDirty(false);
+      window.shopify?.toast?.show("Cart reset to default settings");
+    } catch (error) {
+      console.error("Reset error:", error);
+      window.shopify?.toast?.show("Failed to reset settings", { isError: true });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
     <AppProvider>
       <ui-save-bar id="my-save-bar">
@@ -386,6 +465,8 @@ export default function CartEditor() {
         isDirty={isDirty}
         onSave={handleSave}
         onDiscard={handleDiscard}
+        onResetToDefault={handleResetToDefault}
+        isResetting={isResetting}
       />
     </AppProvider>
   );
