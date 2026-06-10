@@ -206,22 +206,25 @@ export const loader = async ({ request }) => {
   const defaultStartISO = defaultStart.toISOString();
   const defaultEndISO = defaultEnd.toISOString();
 
-  const statsPromise = (async () => {
+  const initialStats = await (async () => {
     try {
       const url = new URL(`${apiUrl}/api/revenue-stats`);
+
       url.searchParams.set("shop", shopDomain);
       url.searchParams.set("startDate", defaultStartISO);
       url.searchParams.set("endDate", defaultEndISO);
-      const res = await fetch(url.toString(), { headers: apiAuthHeaders() });
+
+      const res = await fetch(url.toString(), {
+        headers: apiAuthHeaders(),
+      });
+
       const json = await res.json();
-      console.log("Loader Analytics Response:", json);
 
       return json.data ?? null;
     } catch {
       return null;
     }
   })();
-
   // Pass the ISO strings to the client so it can seed its range state.
   return { statsPromise, shop: shopDomain, apiUrl, currency, defaultStartISO, defaultEndISO };
 };
@@ -243,8 +246,8 @@ export default function Analytics() {
     end: new Date(loaderData.defaultEndISO),
   }));
 
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(loaderData.initialStats);
+  const [loading, setLoading] = useState(false);
 
   const chartOpts = getChartOpts(currency);
 
@@ -258,23 +261,6 @@ export default function Analytics() {
     "x-api-key": clientApiKey,
     ...extra,
   });
-
-  // FIX 2b: Always call setLoading(false) — even when data is null or the
-  // promise rejects — so the component never stays stuck on "Loading…".
-  useEffect(() => {
-    let cancelled = false;
-    loaderData.statsPromise
-      .then((data) => {
-        if (!cancelled) {
-          setStats(data);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, []);
 
   // FIX 3: Use ISO strings (primitives) as useEffect deps instead of Date
   // objects (references). React's dependency comparison is ===, so two
