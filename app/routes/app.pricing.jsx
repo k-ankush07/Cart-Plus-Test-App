@@ -209,12 +209,6 @@ export const action = async ({ request }) => {
     const price = priceMap[selectedPlan];
     if (!price) return Response.json({ error: "Invalid plan" }, { status: 400 });
 
-    // NOTE: Do NOT cancel the existing subscription before billing confirmation.
-    // If we cancel first and the user abandons the Shopify billing page,
-    // they lose their current plan and fall back to free with no subscription.
-    // Shopify automatically replaces (cancels) the old subscription when the
-    // merchant approves the new one on the billing confirmation page.
-
     const returnUrl = `https://${session.shop}/admin/apps/cart-drawer-52/app/pricing?upgraded=${selectedPlan}`;
 
     const createRes = await admin.graphql(
@@ -331,10 +325,7 @@ export default function Pricing() {
 // ─── Inner component ──────────────────────────────────────────────────────────
 
 function PricingInner({ activePlan }) {
-    // When the user has no paid plan, pre-highlight "starter" (the Popular plan).
-    // Once the user clicks any card, that card becomes the highlighted selection.
-    const defaultHighlight = activePlan !== "free" ? activePlan : "starter";
-    const [selectedPlan, setSelectedPlan] = useState(defaultHighlight);
+    const [anyHovered, setAnyHovered] = useState(false);
 
     return (
         <Page
@@ -363,14 +354,15 @@ function PricingInner({ activePlan }) {
                             gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
                             gap: "16px",
                         }}
+                        onMouseLeave={() => setAnyHovered(false)}
                     >
                         {PLANS.map((plan) => (
                             <PricingCard
                                 key={plan.id}
                                 plan={plan}
                                 activePlan={activePlan}
-                                selectedPlan={selectedPlan}
-                                onSelect={setSelectedPlan}
+                                onCardHover={setAnyHovered}
+                                anyHovered={anyHovered}
                             />
                         ))}
                     </div>
@@ -403,11 +395,11 @@ function PricingInner({ activePlan }) {
 
 // ─── Pricing card ─────────────────────────────────────────────────────────────
 
-function PricingCard({ plan, activePlan, selectedPlan, onSelect }) {
+function PricingCard({ plan, activePlan, onCardHover, anyHovered }) {
     const fetcher = useFetcher();
     const [redirecting, setRedirecting] = useState(false);
+    const [hovered, setHovered] = useState(false);
     const isActive = activePlan === plan.id;
-    const isSelected = selectedPlan === plan.id;
     const isLoading = fetcher.state !== "idle" || redirecting;
     const onPaidPlan = activePlan !== "free";
 
@@ -417,30 +409,27 @@ function PricingCard({ plan, activePlan, selectedPlan, onSelect }) {
         window.top.location.href = fetcher.data.confirmationUrl;
     }
 
-    // Border priority:
-    // 1. Active (subscribed) plan  → orange
-    // 2. Selected / highlighted    → green
-    // 3. Default                   → subtle grey
+
     const getBorder = () => {
-        if (isActive) return "2px solid #FD6802";
-        if (isSelected) return "2px solid #008060";
-        return "1px solid #e1e3e5";
+        if (isActive) return (anyHovered && !hovered) ? "2px solid #e1e3e5" : "2px solid #FD6802";
+        return hovered ? "2px solid #FD6802" : "2px solid #e1e3e5";
     };
 
     return (
         <div
-            onClick={() => onSelect(plan.id)}
+            onMouseEnter={() => { setHovered(true); onCardHover(true); }}
+            onMouseLeave={() => { setHovered(false); }}
             style={{
                 border: getBorder(),
                 borderRadius: "12px",
                 padding: "24px",
-                backgroundColor: isSelected && !isActive ? "#f6faf8" : "#fff",
+                backgroundColor: "#fff",
                 display: "flex",
                 flexDirection: "column",
                 gap: "16px",
                 position: "relative",
                 cursor: "pointer",
-                transition: "border 0.15s ease, background-color 0.15s ease",
+                transition: "border-color 0.15s ease",
             }}
         >
             {/* Badge — "Popular" / "Best value" */}
@@ -481,7 +470,26 @@ function PricingCard({ plan, activePlan, selectedPlan, onSelect }) {
                 {plan.features.map((feature) => (
                     <InlineStack key={feature} gap="200" blockAlign="center">
                         <Box>
-                            <Icon source={CheckIcon} tone="success" />
+                            <span style={{
+                                background: plan.id === "free"
+                                    ? "#f0f0f0"
+                                    : plan.id === "starter"
+                                        ? "#e6f4f0"
+                                        : "#eff6ff",
+                                color: plan.id === "free"
+                                    ? "#8c9196"
+                                    : plan.id === "starter"
+                                        ? "#008060"
+                                        : "#2563eb",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: "22px",
+                                height: "22px",
+                                borderRadius: "100px",
+                            }}>
+                                <Icon source={CheckIcon} />
+                            </span>
                         </Box>
                         <Text as="p" variant="bodySm">{feature}</Text>
                     </InlineStack>
@@ -521,7 +529,7 @@ function PricingCard({ plan, activePlan, selectedPlan, onSelect }) {
                         <input type="hidden" name="plan" value={plan.id} />
                         <Button
                             fullWidth
-                            variant={isSelected ? "primary" : "secondary"}
+                            variant="primary"
                             submit
                             loading={isLoading}
                         >
