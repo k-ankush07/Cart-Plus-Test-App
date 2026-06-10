@@ -181,7 +181,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
                   background: hexToRGBA(savingColor, 0.1),
                   color: savingColor,
                   fontSize: "10px",
-                  fontWeight: 700,
+                  fontWeight: 600,
                   padding: "5px 7px",
                   borderRadius: "14px",
                 }}
@@ -267,7 +267,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
             <span style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }} className="custom-cart-item-compare-price">$40.00</span>
           )}
           {cartSettings.showSavingsBelowPrices && (
-            <span className="custom-cart-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>
+            <span className="custom-cart-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 600, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>
               {cartSettings.savingsText} 10%
             </span>
           )}
@@ -301,7 +301,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
       <div style={{ position: "relative", flexShrink: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
         {cartSettings.showSavingsBelowPrices && (
           <span className="custom-cart-public-component-product-tile__savings"
-            style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>{cartSettings.savingsText} 50%</span>
+            style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 600, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>{cartSettings.savingsText} 50%</span>
         )}
         <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }} className="cart-app-item__image custom-cart-bundle-item-image-wrapper custom-cart-public-component-product-tile__image-wrapper">
           <img className="upcart-public-component-product-tile__image custom-cart-public-component-product-tile__image " src={PRODUCT_IMAGE} alt="product" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
