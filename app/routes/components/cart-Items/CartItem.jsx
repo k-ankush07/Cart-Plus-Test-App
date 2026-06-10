@@ -402,7 +402,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
             <span className="custom-cart-public-component-product-tile__discount-codes" style={{
               display: "inline-flex", alignItems: "center", gap: "4px", color: "#1e7e34",
               fontSize: "11px", fontWeight: 600,
-              padding: "8px 8px", borderRadius: "20px", width: "fit-content",
+              padding: "6px 8px", borderRadius: "20px", width: "fit-content",
             }}>
               <svg
                 viewBox="0 0 20 20"

@@ -298,7 +298,7 @@ body,
     align-items: center;
     justify-content: center;
     transition: background 0.15s;
-    padding:0;
+    padding: 0;
 }
 
 button.cart-app-item__qty-btn.upcart-product-quantity-plus.custom-cart-public-component-product-tile__quantity-plus {
@@ -1397,6 +1397,12 @@ span.custom-cart-item-compare-price {
 
 span.custom-cart-public-component-product-tile__discount-codes {
     background: rgba(0, 0, 0, .05);
+}
+
+.discount-bgColor {
+    background: rgba(0, 0, 0, .05);
+    padding: 3px 8px;
+    border-radius:20px;
 }
 
 span.hub-coupon-code {

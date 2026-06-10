@@ -98,41 +98,6 @@ function LayoutWrapper({ value, selected, onSelect, children }) {
     );
 }
 
-// ─── Delete Behavior Option ───────────────────────────────────────────────────
-function DeleteBehaviorOption() {
-    return (
-        <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            padding: "12px",
-            background: "#f5f5f5",
-            borderRadius: "8px",
-            marginBottom: "16px",
-        }}>
-            <div style={{ flex: 1 }}>
-                <Text variant="bodySm" fontWeight="semibold">Delete Behavior</Text>
-                <Text variant="bodySm" tone="subdued">Choose how items are removed</Text>
-            </div>
-            <ButtonGroup>
-                <Button
-                    onClick={() => console.log("Set to undo")}
-                    variant="primary"
-                    size="slim"
-                >
-                    Undo Toast
-                </Button>
-                <Button
-                    onClick={() => console.log("Set to direct")}
-                    size="slim"
-                >
-                    Direct Delete
-                </Button>
-            </ButtonGroup>
-        </div>
-    );
-}
-
 export default function CartItems({ handleChange, cartSettings }) {
     const selected = cartSettings.cartItemLayout || "classic";
     const deleteBehavior = cartSettings.deleteBehavior || "undo";
@@ -186,15 +151,18 @@ export default function CartItems({ handleChange, cartSettings }) {
                                                 </Text>
                                             </BlockStack>
                                             <div style={{ marginTop: "4px" }}>
-                                                <span style={{
+                                                <span className="discount-bgColor" style={{
                                                     display: "inline-flex", alignItems: "center", gap: "4px",
-                                                    background: "#e6f4ea", color: "#1e7e34",
-                                                    fontSize: "12px", fontWeight: 600,
+                                                     color: "#1e7e34",
+                                                    fontSize: "11px", fontWeight: 600,
                                                     padding: "3px 10px", borderRadius: "20px",
                                                 }}>
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                                                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                                                    <svg viewBox="0 0 20 20" style={{ width: "15px", fill: "#10812f" }}>
+                                                        <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z" />
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"
+                                                        />
                                                     </svg>
                                                     MEGA20
                                                 </span>
@@ -263,13 +231,17 @@ export default function CartItems({ handleChange, cartSettings }) {
                                                     <TrashIcon />
                                                 </button>
                                             </div>
-                                            <span style={{
+                                            <span className="discount-bgColor" style={{
                                                 display: "inline-flex", alignItems: "center", gap: "4px",
-                                                color: "#1e7e34", fontSize: "12px", fontWeight: 600,
+                                                color: "#1e7e34", fontSize: "11px", fontWeight: 600,
+                                                marginTop:"5px"
                                             }}>
-                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                                                    <line x1="7" y1="7" x2="7.01" y2="7" />
+                                                <svg viewBox="0 0 20 20" style={{ width: "15px", fill: "#10812f" }}>
+                                                    <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z" />
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"
+                                                    />
                                                 </svg>
                                                 MEGA20
                                             </span>
@@ -385,13 +357,16 @@ export default function CartItems({ handleChange, cartSettings }) {
                                                 <span style={{ textDecoration: "line-through" }}>$400.00</span>
                                             </Text>
                                             <Text variant="bodyLg" fontWeight="bold">$200.00</Text>
-                                            <span style={{
+                                            <span className="discount-bgColor" style={{
                                                 display: "inline-flex", alignItems: "center", gap: "4px",
-                                                color: "#1e7e34", fontSize: "12px", fontWeight: 600,
+                                                color: "#1e7e34", fontSize: "11px", fontWeight: 600,
                                             }}>
-                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                                                    <line x1="7" y1="7" x2="7.01" y2="7" />
+                                                <svg viewBox="0 0 20 20" style={{ width: "15px", fill: "#10812f" }}>
+                                                    <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z" />
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"
+                                                    />
                                                 </svg>
                                                 MEGA20
                                             </span>
