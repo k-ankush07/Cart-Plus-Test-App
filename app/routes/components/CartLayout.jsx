@@ -305,9 +305,6 @@ export default function CartLayout({
                 ]}
               />
             </Popover>
-            <Button onClick={() => window.open(`https://${shop?.myshopifyDomain}`, "_blank")}>
-              Preview in store
-            </Button>
 
             <Button
               variant="tertiary"
@@ -315,6 +312,10 @@ export default function CartLayout({
               onClick={() => setResetModal(true)}
             >
               Reset to default
+            </Button>
+
+            <Button onClick={() => window.open(`https://${shop?.myshopifyDomain}`, "_blank")}>
+              Preview in store
             </Button>
 
             <Button
