@@ -430,50 +430,49 @@ router.post("/save-shop-token", async (req, res) => {
 
     await shopConfigModel.findOneAndUpdate(
       { shop },
-      { accessToken, email, updatedAt: new Date() },
-      { upsert: true, new: true },
+      {
+        accessToken,
+        email,
+        updatedAt: new Date(),
+      },
+      {
+        upsert: true,
+        new: true,
+      }
     );
 
     try {
-      if (isNewStore) {
-        // ── Fetch storeOwner from cartModels ──────────────────────────────
-        const cart = await cartModels.findOne({ shop });
-        const storeOwner = cart?.storeOwner || "there";
+      const cart = await cartModels.findOne({ shop });
+      const storeOwner = cart?.storeOwner || "there";
 
-        // ── New install → send branded welcome email ──────────────────────
-        const subject = "Welcome to Custom Cart 🎉";
-        const html = buildWelcomeEmailHtml({ storeOwner, shop });
+      const subject = "Welcome to Custom Cart 🎉";
+      const html = buildWelcomeEmailHtml({ storeOwner, shop });
 
-        const tasks = [sendEmail("sahil@hubsyntax.com", subject, html)];
-        if (email) tasks.push(sendEmail(email, subject, html));
-        await Promise.all(tasks);
+      const tasks = [
+        sendEmail("sahil@hubsyntax.com", subject, html),
+      ];
 
-      } else {
-        // ── Token / email updated → plain internal notification ───────────
-        const subject = "Shopify Store Updated";
-        const html = `
-          <div style="font-family:Arial,sans-serif;">
-            <h2>${subject}</h2>
-            <p><strong>Shop:</strong> ${shop}</p>
-            <p><strong>Email:</strong> ${email || "N/A"}</p>
-            <p>Store token or email has been updated.</p>
-            <hr/>
-            <p>HubSyntax App Notification</p>
-          </div>`;
-
-        const tasks = [sendEmail("sahil@hubsyntax.com", subject, html)];
-        if (email) tasks.push(sendEmail(email, subject, html));
-        await Promise.all(tasks);
+      if (email) {
+        tasks.push(sendEmail(email, subject, html));
       }
+
+      await Promise.all(tasks);
+
     } catch (emailError) {
       console.error("[hub] Email error:", emailError);
     }
 
-    return res.json({ success: true, updated: true });
+    return res.json({
+      success: true,
+      updated: true,
+      isNewStore,
+    });
 
   } catch (error) {
     console.error("SAVE SHOP TOKEN ERROR:", error);
-    return res.status(500).json({ success: false });
+    return res.status(500).json({
+      success: false,
+    });
   }
 });
 
