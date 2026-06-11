@@ -46,7 +46,7 @@ import {
 
 import DateRangePicker from "./components/ui/DateRangePicker";
 import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
-import { Suspense, useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect } from "react";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import LiveDot from "./components/ui/LiveDot";
 import { shopLoader } from "./components/shop.server";
@@ -60,6 +60,27 @@ import {
     duplicateCart,
 } from "../services/apiRoutes";
 import "../index.css";
+
+// ─── pulse animation ───────────────────────────────────────────────────────────
+
+const pulseStyle = `
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+`;
+
+function SkeletonCell({ width = 64 }) {
+    return (
+        <div style={{
+            width,
+            height: 16,
+            background: "#e1e3e5",
+            borderRadius: 4,
+            animation: "pulse 1.5s ease-in-out infinite",
+        }} />
+    );
+}
 
 const PLAN_ORDER_LIMITS = {
     free: 50,
@@ -98,9 +119,7 @@ async function fetchShopPlan(apiUrl, shopDomain) {
 
 async function fetchCurrentMonthOrders(apiUrl, shopDomain) {
     try {
-        const res = await fetch(
-            `${apiUrl}/api/cart-order-count?shop=${encodeURIComponent(shopDomain)}`
-        );
+        const res = await fetch(`${apiUrl}/api/cart-order-count?shop=${encodeURIComponent(shopDomain)}`);
         const data = await res.json();
         const now = new Date();
         const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
@@ -112,6 +131,8 @@ async function fetchCurrentMonthOrders(apiUrl, shopDomain) {
     }
 }
 
+// ─── Loader ────────────────────────────────────────────────────────────────────
+
 export const loader = async ({ request }) => {
     const { shop, apiUrl, accessToken, currency, mainThemeId } =
         await shopLoader(request);
@@ -122,6 +143,7 @@ export const loader = async ({ request }) => {
     const defaultStart = new Date();
     defaultStart.setDate(today.getDate() - 29);
 
+    // ← NOT awaited — stays pending so Suspense triggers skeleton
     const dataPromise = Promise.allSettled([
         getCarts(apiUrl, shop.myshopifyDomain),
         getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString()),
@@ -139,11 +161,12 @@ export const loader = async ({ request }) => {
     return { shop, apiUrl, currency, appEmbedId, mainThemeId, dataPromise };
 };
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// ─── Skeleton ──────────────────────────────────────────────────────────────────
 
 function AppCartsSkeleton() {
     return (
         <Page title="All Carts">
+            <style>{pulseStyle}</style>
             <Layout>
                 <Layout.Section>
                     <div style={{ marginTop: 16 }}>
@@ -170,18 +193,23 @@ function AppCartsSkeleton() {
     );
 }
 
+// ─── Shell ─────────────────────────────────────────────────────────────────────
+
 export default function AppCarts() {
     const loaderData = useLoaderData();
     return (
-        <Suspense fallback={<AppCartsSkeleton />}>
-            <Await resolve={loaderData.dataPromise} errorElement={<AppCartsSkeleton />}>
-                {(data) => <AppCartsInner {...loaderData} {...data} />}
-            </Await>
-        </Suspense>
+        <>
+            <style>{pulseStyle}</style>
+            <Suspense fallback={<AppCartsSkeleton />}>
+                <Await resolve={loaderData.dataPromise} errorElement={<AppCartsSkeleton />}>
+                    {(data) => <AppCartsInner {...loaderData} {...data} />}
+                </Await>
+            </Suspense>
+        </>
     );
 }
 
-// ─── Inner ────────────────────────────────────────────────────────────────────
+// ─── Inner ─────────────────────────────────────────────────────────────────────
 
 function AppCartsInner({
     shop,
@@ -220,24 +248,31 @@ function AppCartsInner({
     const [cartStats, setCartStats] = useState(initialCartStats);
     const [creatingFrom, setCreatingFrom] = useState(null);
 
-    const isFirstRender = useRef(true);
+    // ← true on mount so table cells show skeleton until first fetch completes
+    const [statsLoading, setStatsLoading] = useState(true);
 
     useEffect(() => { setCarts(initialCarts); }, [initialCarts]);
 
+    // ← no isFirstRender guard — runs on mount AND on range change
     useEffect(() => {
-        if (isFirstRender.current) { isFirstRender.current = false; return; }
         const fetchStats = async () => {
+            setStatsLoading(true);
             try {
                 const params = new URLSearchParams({
                     shop: shop.myshopifyDomain,
                     startDate: range.start.toISOString(),
                     endDate: range.end.toISOString(),
                 });
-                const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, { credentials: "include", headers: authHeaders() });
+                const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
+                    credentials: "include",
+                    headers: authHeaders(),
+                });
                 const data = await res.json();
                 if (data.success) setCartStats(data.data || {});
             } catch (err) {
                 console.error("STATS FETCH ERROR:", err);
+            } finally {
+                setStatsLoading(false);
             }
         };
         fetchStats();
@@ -444,7 +479,6 @@ function AppCartsInner({
                             const limitReached = monthOrders >= limit;
 
                             return (
-                                // ── FIX: No onClick on the row — cover Link handles navigation instantly
                                 <IndexTable.Row
                                     key={cart.cartId || `${cart._id || "cart"}-${i}`}
                                     id={cart.cartId || `${i}`}
@@ -452,19 +486,13 @@ function AppCartsInner({
                                     onClick={() => navigate(cartEditorPath)}
                                 >
                                     <IndexTable.Cell>
-
                                         <Link
                                             to={cartEditorPath}
                                             prefetch="intent"
-                                            style={{
-                                                position: "absolute",
-                                                inset: 0,
-                                                zIndex: 0,
-                                            }}
+                                            style={{ position: "absolute", inset: 0, zIndex: 0 }}
                                             aria-label={`Edit cart ${cart.cartName || "Untitled cart"}`}
                                         />
                                         <CartHoverCard cart={cart}>
-                                            {/* zIndex: 1 keeps hover card above the cover link */}
                                             <div style={{ position: "relative", zIndex: 1, cursor: "pointer" }}>
                                                 <Text as="span">
                                                     {(cart.cartName || "Untitled cart").length > 8
@@ -478,7 +506,6 @@ function AppCartsInner({
                                     {!isDraft && (
                                         <IndexTable.Cell>
                                             <InlineStack gap="200" blockAlign="center">
-                                                {/* zIndex: 1 keeps badge/link above cover */}
                                                 <span style={{ position: "relative", zIndex: 1 }}>
                                                     {appEmbedInstalled ? (
                                                         <Badge tone="success">Live</Badge>
@@ -490,33 +517,38 @@ function AppCartsInner({
                                         </IndexTable.Cell>
                                     )}
 
+                                    {/* Impressions */}
                                     <IndexTable.Cell>
-                                        {!isDraft && stats?.[cart.cartId]?.impressions != null
-                                            ? stats[cart.cartId].impressions.toLocaleString()
-                                            : "—"}
+                                        {statsLoading ? (
+                                            <SkeletonCell width={48} />
+                                        ) : stats?.[cart.cartId]?.impressions != null ? (
+                                            stats[cart.cartId].impressions.toLocaleString()
+                                        ) : "—"}
                                     </IndexTable.Cell>
 
+                                    {/* Conversion rate */}
                                     <IndexTable.Cell>
-                                        {!isDraft && stats?.[cart.cartId]?.conversionRate != null
-                                            ? stats[cart.cartId].conversionRate.toFixed(2) + "%"
-                                            : "—"}
+                                        {statsLoading ? (
+                                            <SkeletonCell width={56} />
+                                        ) : stats?.[cart.cartId]?.conversionRate != null ? (
+                                            stats[cart.cartId].conversionRate.toFixed(2) + "%"
+                                        ) : "—"}
                                     </IndexTable.Cell>
 
+                                    {/* Revenue */}
                                     <IndexTable.Cell>
-                                        {!isDraft && stats?.[cart.cartId]?.revenue != null
-                                            ? fmt(stats[cart.cartId].revenue)
-                                            : "—"}
+                                        {statsLoading ? (
+                                            <SkeletonCell width={72} />
+                                        ) : stats?.[cart.cartId]?.revenue != null ? (
+                                            fmt(stats[cart.cartId].revenue)
+                                        ) : "—"}
                                     </IndexTable.Cell>
 
-                                    {/* Action buttons — all at zIndex: 1 so they sit above the cover link */}
+                                    {/* Action buttons */}
                                     <IndexTable.Cell>
                                         <InlineStack gap="200" align="end" style={{ position: "relative", zIndex: 1 }}>
                                             <Tooltip content="Edit">
-                                                <Link
-                                                    to={cartEditorPath}
-                                                    prefetch="intent"
-                                                    style={{ textDecoration: "none" }}
-                                                >
+                                                <Link to={cartEditorPath} prefetch="intent" style={{ textDecoration: "none" }}>
                                                     <Button icon={EditIcon} />
                                                 </Link>
                                             </Tooltip>

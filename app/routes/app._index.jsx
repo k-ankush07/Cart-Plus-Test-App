@@ -27,6 +27,29 @@ import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import LiveDot from "./components/ui/LiveDot";
 
+// ─── pulse animation ───────────────────────────────────────────────────────────
+
+const pulseStyle = `
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+`;
+
+function SkeletonCell({ width = 64 }) {
+  return (
+    <div
+      style={{
+        width,
+        height: 16,
+        background: "#e1e3e5",
+        borderRadius: 4,
+        animation: "pulse 1.5s ease-in-out infinite",
+      }}
+    />
+  );
+}
+
 // ─── SetupTask ─────────────────────────────────────────────────────────────────
 
 function SetupTask({
@@ -43,9 +66,7 @@ function SetupTask({
       <InlineGrid columns={{ xs: 1, sm: ["twoThirds", "oneThird"] }} gap="300" alignItems="center">
         <BlockStack gap="150">
           <InlineStack gap="200" blockAlign="center">
-            <Text variant="bodyMd" fontWeight="semibold">
-              {title}
-            </Text>
+            <Text variant="bodyMd" fontWeight="semibold">{title}</Text>
             {completed ? (
               <Badge tone="success">Completed</Badge>
             ) : isEmbedStarted ? (
@@ -54,15 +75,10 @@ function SetupTask({
               <Badge tone="info">Recommended</Badge>
             )}
           </InlineStack>
-          <Text variant="bodySm" tone="subdued">
-            {description}
-          </Text>
+          <Text variant="bodySm" tone="subdued">{description}</Text>
         </BlockStack>
-
         <InlineStack align="end">
-          <Button size="slim" onClick={onAction}>
-            {actionLabel}
-          </Button>
+          <Button size="slim" onClick={onAction}>{actionLabel}</Button>
         </InlineStack>
       </InlineGrid>
     </Box>
@@ -165,14 +181,10 @@ export const loader = async ({ request }) => {
     subscriptionRevenue: 0,
   };
 
+  // ← do NOT await — return as a pending promise so Suspense triggers
   const dataPromise = Promise.allSettled([
     getCarts(apiUrl, shop.myshopifyDomain),
-    getCartStats(
-      apiUrl,
-      shop.myshopifyDomain,
-      defaultStart.toISOString(),
-      today.toISOString()
-    ),
+    getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString()),
     checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
   ]).then(([cartsResult, statsResult, embedResult]) => ({
     carts:
@@ -184,21 +196,12 @@ export const loader = async ({ request }) => {
         ? statsResult.value?.shopRevenue || fallbackRevenue
         : fallbackRevenue,
     appEmbedInstalled:
-      embedResult.status === "fulfilled"
-        ? embedResult.value.installed
-        : false,
+      embedResult.status === "fulfilled" ? embedResult.value.installed : false,
     appEmbedStarted:
       embedResult.status === "fulfilled" ? embedResult.value.started : false,
   }));
 
-  return {
-    shop,
-    apiUrl,
-    currency,
-    appEmbedId,
-    mainThemeId,
-    dataPromise,
-  };
+  return { shop, apiUrl, currency, appEmbedId, mainThemeId, dataPromise };
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -217,7 +220,7 @@ const fmt = (n, currency = "USD") =>
     minimumFractionDigits: 2,
   }).format(Number(n ?? 0));
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
+// ─── Sparkline ─────────────────────────────────────────────────────────────────
 
 function Sparkline({ type = "flat", value = 0 }) {
   if (Number(value) === 0) type = "flat";
@@ -293,7 +296,9 @@ function Sparkline({ type = "flat", value = 0 }) {
   );
 }
 
-function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft }) {
+// ─── StatTile ──────────────────────────────────────────────────────────────────
+
+function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft, loading }) {
   return (
     <div
       onClick={onClick}
@@ -313,23 +318,34 @@ function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft }
         <BlockStack gap="100">
           <Text variant="bodyMd" fontWeight="semibold" truncate>{label}</Text>
           <InlineStack gap="300" align="left" blockAlign="center">
-            <Text variant="bodyMd" fontWeight="semibold">{value}</Text>
-            <Badge>—</Badge>
+            {loading ? (
+              <div style={{ width: 80, height: 20, background: "#e1e3e5", borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+            ) : (
+              <>
+                <Text variant="bodyMd" fontWeight="semibold">{value}</Text>
+                <Badge>—</Badge>
+              </>
+            )}
           </InlineStack>
         </BlockStack>
         <div style={{ flexShrink: 0, paddingInlineStart: "8px" }}>
-          <Sparkline type={sparklineType} value={rawValue} />
+          {loading ? (
+            <div style={{ width: 72, height: 36, background: "#e1e3e5", borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+          ) : (
+            <Sparkline type={sparklineType} value={rawValue} />
+          )}
         </div>
       </InlineStack>
     </div>
   );
 }
 
-// ─── Dashboard ─────────────────────────────────────────────────────────────────
+// ─── DashboardSkeleton ─────────────────────────────────────────────────────────
 
 function DashboardSkeleton() {
   return (
     <Page title="Welcome to Custom Cart 🎉">
+      <style>{pulseStyle}</style>
       <BlockStack gap="400">
         <BlockStack gap="200">
           <SkeletonDisplayText size="small" />
@@ -366,19 +382,26 @@ function DashboardSkeleton() {
   );
 }
 
+// ─── Dashboard (shell) ─────────────────────────────────────────────────────────
+
 export default function Dashboard() {
   const loaderData = useLoaderData();
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <Await
-        resolve={loaderData.dataPromise}
-        errorElement={<DashboardSkeleton />}
-      >
-        {(data) => <DashboardInner {...loaderData} {...data} />}
-      </Await>
-    </Suspense>
+    <>
+      <style>{pulseStyle}</style>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <Await
+          resolve={loaderData.dataPromise}
+          errorElement={<DashboardSkeleton />}
+        >
+          {(data) => <DashboardInner {...loaderData} {...data} />}
+        </Await>
+      </Suspense>
+    </>
   );
 }
+
+// ─── DashboardInner ────────────────────────────────────────────────────────────
 
 function DashboardInner({
   shop,
@@ -406,6 +429,9 @@ function DashboardInner({
   const [range, setRange] = useState(getDefaultRange);
   const [setupOpen, setSetupOpen] = useState(false);
 
+  // ← true on first render so skeleton shows until first fetch completes
+  const [statsLoading, setStatsLoading] = useState(true);
+
   const storeHandle = shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
 
@@ -432,15 +458,10 @@ function DashboardInner({
     setCarts(initialCarts);
   }, [initialCarts]);
 
-  const isFirstRangeRender = useRef(true);
-
+  // ← no isFirstRangeRender guard — runs on mount AND on range change
   useEffect(() => {
-    if (isFirstRangeRender.current) {
-      isFirstRangeRender.current = false;
-      return;
-    }
-
     const fetchStats = async () => {
+      setStatsLoading(true);
       try {
         const params = new URLSearchParams({
           shop: shop.myshopifyDomain,
@@ -460,6 +481,8 @@ function DashboardInner({
         }
       } catch (err) {
         console.error("STATS FETCH ERROR:", err);
+      } finally {
+        setStatsLoading(false);
       }
     };
 
@@ -500,6 +523,7 @@ function DashboardInner({
       }
     >
       <BlockStack gap="400">
+
         {/* ── Live carts ── */}
         <BlockStack gap="200">
           <InlineStack gap="200" blockAlign="center">
@@ -518,6 +542,7 @@ function DashboardInner({
           >
             <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }}>
               <StatTile
+                loading={statsLoading}
                 label="Add-ons revenue"
                 value={fmt(shopRevenue.addonRevenue ?? 0, currency)}
                 rawValue={shopRevenue.addonRevenue ?? 0}
@@ -526,6 +551,7 @@ function DashboardInner({
               />
               <StatTile
                 borderLeft
+                loading={statsLoading}
                 label="Upsell revenue"
                 value={fmt(shopRevenue.upsellRevenue ?? 0, currency)}
                 rawValue={shopRevenue.upsellRevenue ?? 0}
@@ -534,6 +560,7 @@ function DashboardInner({
               />
               <StatTile
                 borderLeft
+                loading={statsLoading}
                 label="Subscriptions revenue"
                 value={fmt(shopRevenue.subscriptionRevenue ?? 0, currency)}
                 rawValue={shopRevenue.subscriptionRevenue ?? 0}
@@ -542,6 +569,7 @@ function DashboardInner({
               />
               <StatTile
                 borderLeft
+                loading={statsLoading}
                 label="Total revenue"
                 value={fmt(
                   (shopRevenue.addonRevenue ?? 0) +
@@ -631,9 +659,6 @@ function DashboardInner({
                   const cartEditorPath = `/app/cart-editor/${cart.cartId}?from=home`;
 
                   return (
-                    // ── FIX: Row uses position-relative wrapper so the cover
-                    //    <Link> makes the whole row clickable without navigate().
-                    //    This fires instantly — no loader waterfall on click.
                     <IndexTable.Row
                       key={safeId}
                       id={safeId}
@@ -641,23 +666,15 @@ function DashboardInner({
                       onClick={() => navigate(cartEditorPath)}
                     >
                       <IndexTable.Cell>
-
                         <Link
                           to={cartEditorPath}
                           prefetch="intent"
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            zIndex: 0,
-                          }}
+                          style={{ position: "absolute", inset: 0, zIndex: 0 }}
                           aria-label={`Edit cart ${cart.cartName || "Untitled cart"}`}
                         />
                         <CartHoverCard cart={cart}>
-                          {/* z-index keeps hover card above the cover link */}
                           <div style={{ maxWidth: "150px", cursor: "pointer", position: "relative", zIndex: 1 }}>
-                            <Text truncate as="span">
-                              {cart.cartName || "Untitled cart"}
-                            </Text>
+                            <Text truncate as="span">{cart.cartName || "Untitled cart"}</Text>
                             <Text as="span" tone="subdued" variant="bodySm">
                               {cart.updatedAt
                                 ? `Last edited: ${new Date(cart.updatedAt)
@@ -681,32 +698,36 @@ function DashboardInner({
                         </InlineStack>
                       </IndexTable.Cell>
 
+                      {/* Impressions */}
                       <IndexTable.Cell>
-                        {cartStats?.[cart.cartId]?.impressions != null
-                          ? cartStats[cart.cartId].impressions.toLocaleString()
-                          : "—"}
+                        {statsLoading ? (
+                          <SkeletonCell width={48} />
+                        ) : cartStats?.[cart.cartId]?.impressions != null ? (
+                          cartStats[cart.cartId].impressions.toLocaleString()
+                        ) : "—"}
+                      </IndexTable.Cell>
+
+                      {/* Conversion rate */}
+                      <IndexTable.Cell>
+                        {statsLoading ? (
+                          <SkeletonCell width={56} />
+                        ) : cartStats?.[cart.cartId]?.conversionRate != null ? (
+                          cartStats[cart.cartId].conversionRate.toFixed(2) + "%"
+                        ) : "—"}
+                      </IndexTable.Cell>
+
+                      {/* Revenue */}
+                      <IndexTable.Cell>
+                        {statsLoading ? (
+                          <SkeletonCell width={72} />
+                        ) : cartStats?.[cart.cartId]?.revenue != null ? (
+                          fmt(cartStats[cart.cartId].revenue, currency)
+                        ) : "—"}
                       </IndexTable.Cell>
 
                       <IndexTable.Cell>
-                        {cartStats?.[cart.cartId]?.conversionRate != null
-                          ? cartStats[cart.cartId].conversionRate.toFixed(2) + "%"
-                          : "—"}
-                      </IndexTable.Cell>
-
-                      <IndexTable.Cell>
-                        {cartStats?.[cart.cartId]?.revenue != null
-                          ? fmt(cartStats[cart.cartId].revenue, currency)
-                          : "—"}
-                      </IndexTable.Cell>
-
-                      <IndexTable.Cell>
-                        {/* These buttons need z-index so they sit above cover link */}
                         <InlineStack gap="200" align="end" style={{ position: "relative", zIndex: 1 }}>
-                          <Link
-                            to={cartEditorPath}
-                            prefetch="intent"
-                            style={{ textDecoration: "none" }}
-                          >
+                          <Link to={cartEditorPath} prefetch="intent" style={{ textDecoration: "none" }}>
                             <Button size="slim">Edit cart</Button>
                           </Link>
                           <Button
@@ -867,24 +888,14 @@ const EmptyState = ({ title, subtitle, tag, primaryAction, secondaryAction }) =>
           <img
             src="https://hubsyntax.com/cart-images/Clip%20path%20group.png"
             alt={title}
-            style={{
-              width: "127px",
-              height: "82px",
-              objectFit: "contain",
-              flexShrink: 0,
-              display: "block",
-            }}
+            style={{ width: "127px", height: "82px", objectFit: "contain", flexShrink: 0, display: "block" }}
           />
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <Text variant="headingMd" as="h4">
-                {title}
-              </Text>
+              <Text variant="headingMd" as="h4">{title}</Text>
               {tag?.label && <Badge tone={tag.tone || "warning"}>{tag.label}</Badge>}
             </div>
-            <Text variant="bodySm" tone="subdued" as="p">
-              {subtitle}
-            </Text>
+            <Text variant="bodySm" tone="subdued" as="p">{subtitle}</Text>
           </div>
         </InlineStack>
 

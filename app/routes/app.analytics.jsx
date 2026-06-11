@@ -8,7 +8,7 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale,
   PointElement, LineElement, Filler, Tooltip as ChartTooltip,
 } from "chart.js";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import DateRangePicker from "./components/ui/DateRangePicker";
 import { shopLoader } from "./components/shop.server";
 
@@ -32,11 +32,16 @@ function buildDailyMap(daily = []) {
 function getLabelsFromRange(start, end) {
   const labels = [];
   const current = new Date(start);
-  while (current <= end) {
+  // Normalise to midnight UTC so label strings are always YYYY-MM-DD
+  current.setUTCHours(0, 0, 0, 0);
+  const endNorm = new Date(end);
+  endNorm.setUTCHours(23, 59, 59, 999);
+
+  while (current <= endNorm) {
     labels.push(
-      `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`
+      `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, "0")}-${String(current.getUTCDate()).padStart(2, "0")}`
     );
-    current.setDate(current.getDate() + 1);
+    current.setUTCDate(current.getUTCDate() + 1);
   }
   return labels;
 }
@@ -112,6 +117,22 @@ function DownloadIcon() {
       <path d="M10.75 4.25a.75.75 0 0 0-1.5 0v6.69l-1.72-1.72a.75.75 0 0 0-1.06 1.06l3 3a.75.75 0 0 0 1.06 0l3-3a.75.75 0 1 0-1.06-1.06l-1.72 1.72V4.25Z" />
       <path d="M16.5 13.75a.75.75 0 0 0-1.5 0v.8a.75.75 0 0 1-.75.75h-8.5a.75.75 0 0 1-.75-.75v-.8a.75.75 0 0 0-1.5 0v.8A2.25 2.25 0 0 0 5.75 16.8h8.5a2.25 2.25 0 0 0 2.25-2.25v-.8Z" />
     </svg>
+  );
+}
+
+// ─── Empty state placeholder for charts ──────────────────────────────────────
+
+function EmptyChartPlaceholder({ message = "No data for this period" }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "center",
+      height: "100%", flexDirection: "column", gap: "8px",
+    }}>
+      <svg width="32" height="32" viewBox="0 0 20 20" fill="#c9cccf">
+        <path d="M2 14l4-4 3 3 4-5 5 6H2z" />
+      </svg>
+      <Text tone="subdued" variant="bodySm">{message}</Text>
+    </div>
   );
 }
 
@@ -197,8 +218,6 @@ export const loader = async ({ request }) => {
   const shopDomain = shop?.myshopifyDomain;
   const currency = shop?.currencyCode || "USD";
 
-  // FIX 1: Capture exact server-side dates as ISO strings so the client
-  // initialises its range from the same moment, regardless of timezone.
   const defaultEnd = new Date();
   const defaultStart = new Date();
   defaultStart.setDate(defaultEnd.getDate() - 29);
@@ -209,23 +228,18 @@ export const loader = async ({ request }) => {
   const initialStats = await (async () => {
     try {
       const url = new URL(`${apiUrl}/api/revenue-stats`);
-
       url.searchParams.set("shop", shopDomain);
       url.searchParams.set("startDate", defaultStartISO);
       url.searchParams.set("endDate", defaultEndISO);
 
-      const res = await fetch(url.toString(), {
-        headers: apiAuthHeaders(),
-      });
-
+      const res = await fetch(url.toString(), { headers: apiAuthHeaders() });
       const json = await res.json();
-
       return json.data ?? null;
     } catch {
       return null;
     }
   })();
-  // Pass the ISO strings to the client so it can seed its range state.
+
   return { initialStats, shop: shopDomain, apiUrl, currency, defaultStartISO, defaultEndISO };
 };
 
@@ -239,8 +253,6 @@ export default function Analytics() {
   const shop = loaderData.shop;
   const currency = loaderData.currency;
 
-  // FIX 1: Seed range from the loader's server-computed dates instead of
-  // calling new Date() again on the client (different timezone = different range).
   const [range, setRange] = useState(() => ({
     start: new Date(loaderData.defaultStartISO),
     end: new Date(loaderData.defaultEndISO),
@@ -251,7 +263,6 @@ export default function Analytics() {
 
   const chartOpts = getChartOpts(currency);
 
-  // ── Client-side API key (for refetch on range change) ─────────────────────
   const clientApiKey =
     (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_SECRET_KEY) ||
     (typeof process !== "undefined" && process.env?.REACT_APP_API_SECRET_KEY) ||
@@ -262,11 +273,6 @@ export default function Analytics() {
     ...extra,
   });
 
-  // FIX 3: Use ISO strings (primitives) as useEffect deps instead of Date
-  // objects (references). React's dependency comparison is ===, so two
-  // different Date objects representing the same instant are never equal,
-  // causing spurious re-fetches or missed fetches depending on how the
-  // DateRangePicker creates its values.
   const startISO = range.start.toISOString();
   const endISO = range.end.toISOString();
 
@@ -275,18 +281,13 @@ export default function Analytics() {
 
     const fetchStats = async () => {
       setLoading(true);
-
       try {
         const url = new URL(`${apiUrl}/api/revenue-stats`);
-
         url.searchParams.set("shop", shop);
         url.searchParams.set("startDate", startISO);
         url.searchParams.set("endDate", endISO);
 
-        const res = await fetch(url.toString(), {
-          headers: clientAuthHeaders(),
-        });
-
+        const res = await fetch(url.toString(), { headers: clientAuthHeaders() });
         const json = await res.json();
 
         if (!cancelled) {
@@ -294,40 +295,53 @@ export default function Analytics() {
         }
       } catch (error) {
         console.error("Analytics fetch error:", error);
+        if (!cancelled) setStats(null);
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchStats();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [startISO, endISO, shop, apiUrl]);
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
+  // Use the currency from stats if available, fall back to loader currency
   const resolvedCurrency = stats?.revenue?.totals?.currency ?? currency;
+
   const daily = stats?.revenue?.daily ?? [];
   const dailyAnalytics = stats?.dailyAnalytics ?? {};
 
   const labels = getLabelsFromRange(range.start, range.end);
   const dayMap = buildDailyMap(daily);
 
-  const cartImpressions = labels.reduce((sum, l) =>
-    sum + (dailyAnalytics[l]?.cart_impression ?? 0), 0);
-
-  const checkouts = labels.reduce((sum, l) =>
-    sum + (dailyAnalytics[l]?.checkout_initiated ?? 0), 0);
-
-  const checkoutComplete = labels.reduce((sum, l) =>
-    sum + (dailyAnalytics[l]?.checkout_completed ?? 0), 0);
+  // FIX: Normalise dailyAnalytics keys to YYYY-MM-DD (zero-padded) so they
+  // always match the labels produced by getLabelsFromRange.
+  // The API may return keys like "2026-5-3" — normalise them here.
+  const normalisedDailyAnalytics = Object.fromEntries(
+    Object.entries(dailyAnalytics).map(([key, val]) => {
+      const parts = key.split("-");
+      if (parts.length === 3) {
+        const normalised = `${parts[0]}-${parts[1].padStart(2, "0")}-${parts[2].padStart(2, "0")}`;
+        return [normalised, val];
+      }
+      return [key, val];
+    })
+  );
 
   const [filters, setFilters] = useState({ addons: true, upsells: true, subscriptions: true });
   const toggleFilter = (key) => setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  // Aggregate totals using normalised keys
+  const cartImpressions = labels.reduce((sum, l) =>
+    sum + (normalisedDailyAnalytics[l]?.cart_impression ?? 0), 0);
+
+  const checkouts = labels.reduce((sum, l) =>
+    sum + (normalisedDailyAnalytics[l]?.checkout_initiated ?? 0), 0);
+
+  const checkoutComplete = labels.reduce((sum, l) =>
+    sum + (normalisedDailyAnalytics[l]?.checkout_completed ?? 0), 0);
 
   const totalRevenue = labels.reduce((sum, l) => {
     const day = dayMap[l] ?? {};
@@ -343,29 +357,46 @@ export default function Analytics() {
   const addonSeries = labels.map((l) => dayMap[l]?.addonRevenue ?? 0);
   const subSeries = labels.map((l) => dayMap[l]?.subscriptionRevenue ?? 0);
 
+  // FIX: Guard against checkouts > impressions (data integrity).
+  // Conversion = checkouts initiated / cart impressions, capped at 100%.
   const rangeConversionRate =
-    cartImpressions > 0
-      ? Math.min((checkouts / cartImpressions) * 100, 100)
-      : 0;
+    cartImpressions > 0 && checkouts <= cartImpressions
+      ? (checkouts / cartImpressions) * 100
+      : cartImpressions > 0 && checkouts > cartImpressions
+        ? 100  // data anomaly – cap visually but don't hide it
+        : 0;
 
   const checkoutConv = labels.map((l) => {
-    const day = dailyAnalytics[l] ?? {};
+    const day = normalisedDailyAnalytics[l] ?? {};
     const imp = day.cart_impression ?? 0;
     const ini = day.checkout_initiated ?? 0;
+    // FIX: if initiated > impression the day's data is suspect; cap at 100
     return imp > 0 ? Math.min((ini / imp) * 100, 100) : 0;
   });
 
   const orderConv = labels.map((l) => {
-    const day = dailyAnalytics[l] ?? {};
+    const day = normalisedDailyAnalytics[l] ?? {};
     const ini = day.checkout_initiated ?? 0;
     const com = day.checkout_completed ?? 0;
     return ini > 0 ? Math.min((com / ini) * 100, 100) : 0;
   });
 
   const shortLabels = labels.map((l) => {
-    const d = new Date(l + "T00:00:00");
+    // Parse as UTC noon to avoid DST boundary issues
+    const d = new Date(l + "T12:00:00Z");
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   });
+
+  // ── Determine whether each chart has any real data ────────────────────────
+
+  const hasRevenueData = totalRevenue > 0 ||
+    upsellSeries.some(Boolean) ||
+    addonSeries.some(Boolean) ||
+    subSeries.some(Boolean);
+
+  const hasConversionData = checkoutConv.some(Boolean) || orderConv.some(Boolean);
+
+  // ── Chart datasets ────────────────────────────────────────────────────────
 
   const revenueChartData = {
     labels: shortLabels,
@@ -408,6 +439,8 @@ export default function Analytics() {
     p.name, p.quantity, fmt(p.revenue, resolvedCurrency), p.module,
   ]);
 
+  // ── CSV download ──────────────────────────────────────────────────────────
+
   function downloadCSV(data, filename, isPercentage = false) {
     const headers = ["Date", ...data.datasets.map((d) => d.label)];
     const rows = data.labels.map((label, i) => [
@@ -421,9 +454,7 @@ export default function Analytics() {
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
+    a.href = url; a.download = filename; a.click();
     URL.revokeObjectURL(url);
   }
 
@@ -445,6 +476,8 @@ export default function Analytics() {
         <Card padding="0">
           <Box padding="400">
             <InlineStack gap="600" wrap={false} blockAlign="start">
+
+              {/* Chart area */}
               <Box style={{ flexGrow: 1, minWidth: 0, height: 260, position: "relative" }}>
                 <div style={{ position: "absolute", top: 0, right: 0, zIndex: 10 }}>
                   <Button
@@ -452,27 +485,34 @@ export default function Analytics() {
                     size="slim"
                     accessibilityLabel="Download revenue data"
                     onClick={() => downloadCSV(revenueChartData, "revenue.csv", false)}
+                    disabled={!hasRevenueData}
                   />
                 </div>
+
                 {loading ? (
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#70707b" }}>
                     <Text tone="subdued">Loading…</Text>
                   </div>
+                ) : !hasRevenueData ? (
+                  <EmptyChartPlaceholder message="No revenue data for this period" />
                 ) : (
                   <Line data={revenueChartData} options={chartOpts} />
                 )}
               </Box>
 
+              {/* Sidebar: revenue total + filters */}
               <Box width="180px">
                 <BlockStack gap="400">
                   <BlockStack gap="100">
                     <InlineStack gap="100" blockAlign="center">
-                      <Tooltip content="This is the total revenue generated by Upcart." hasUnderline activatorWrapper="span">
+                      <Tooltip content="Total revenue generated by Upcart in the selected period." hasUnderline activatorWrapper="span">
                         <Text variant="bodyMd">Revenue</Text>
                       </Tooltip>
                     </InlineStack>
                     <InlineStack gap="100" blockAlign="center">
-                      <Text variant="headingLg" as="h4">{fmt(totalRevenue, resolvedCurrency)}</Text>
+                      <Text variant="headingLg" as="h4">
+                        {loading ? "—" : fmt(totalRevenue, resolvedCurrency)}
+                      </Text>
                       <Tooltip
                         content={`Change in revenue compared to previous period. Previous revenue: ${fmt(0, resolvedCurrency)}`}
                         hasUnderline activatorWrapper="span"
@@ -481,6 +521,7 @@ export default function Analytics() {
                       </Tooltip>
                     </InlineStack>
                   </BlockStack>
+
                   <BlockStack gap="200">
                     <Text variant="bodyMd" tone="subdued">Filters</Text>
                     <BlockStack gap="150">
@@ -491,6 +532,7 @@ export default function Analytics() {
                   </BlockStack>
                 </BlockStack>
               </Box>
+
             </InlineStack>
           </Box>
         </Card>
@@ -501,21 +543,21 @@ export default function Analytics() {
             <BlockStack gap="400">
               <SmallCard
                 title="Cart impressions"
-                value={cartImpressions}
+                value={loading ? "—" : cartImpressions}
                 icon="https://hubsyntax.com/cart-images/Layer_1.png"
-                valueTooltip="An impression is a unique time a customer has seen the cart."
+                valueTooltip="Unique times a customer has seen the cart."
               />
               <SmallCard
                 title="Checkouts completed"
-                value={checkoutComplete}
+                value={loading ? "—" : checkoutComplete}
                 icon="https://hubsyntax.com/cart-images/Layer_1%20(1).png"
-                valueTooltip="This is the number of items orders completed."
+                valueTooltip="Number of orders completed."
               />
               <SmallCard
                 title="Cart Checkout"
-                value={checkouts}
+                value={loading ? "—" : checkouts}
                 icon="https://hubsyntax.com/cart-images/Group%201707479976.png"
-                valueTooltip="Number of times a customer initiated the checkout process."
+                valueTooltip="Number of times a customer initiated checkout."
               />
             </BlockStack>
           </Layout.Section>
@@ -526,13 +568,20 @@ export default function Analytics() {
                 <InlineStack align="space-between" blockAlign="start">
                   <BlockStack gap="100">
                     <Tooltip
-                      content="This is the total conversion rate of the cart which is measured by dividing the number of visited checkouts or completed orders by the impressions."
+                      content="Conversion rate = checkout initiated ÷ cart impressions. A high rate may indicate a small sample size."
                       hasUnderline activatorWrapper="span"
                     >
                       <Text variant="bodyMd" tone="subdued">Conversion rate</Text>
                     </Tooltip>
                     <InlineStack gap="100" blockAlign="center">
-                      <Text variant="headingLg" as="h5">{rangeConversionRate.toFixed(2) + "%"}</Text>
+                      {/* FIX: show "—" when there are no impressions so we don't display a misleading 0% or 100% */}
+                      <Text variant="headingLg" as="h5">
+                        {loading
+                          ? "—"
+                          : cartImpressions === 0
+                            ? "—"
+                            : rangeConversionRate.toFixed(2) + "%"}
+                      </Text>
                     </InlineStack>
                   </BlockStack>
                   <Button
@@ -540,13 +589,17 @@ export default function Analytics() {
                     size="slim"
                     onClick={() => downloadCSV(convChartData, "conversion.csv", true)}
                     accessibilityLabel="Download conversion data"
+                    disabled={!hasConversionData}
                   />
                 </InlineStack>
+
                 <Box style={{ height: 208 }}>
                   {loading ? (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#70707b" }}>
                       <Text tone="subdued">Loading…</Text>
                     </div>
+                  ) : !hasConversionData ? (
+                    <EmptyChartPlaceholder message="No conversion data for this period" />
                   ) : (
                     <Line data={convChartData} options={convOpts} />
                   )}
