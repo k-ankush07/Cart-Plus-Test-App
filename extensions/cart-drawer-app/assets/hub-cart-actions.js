@@ -681,8 +681,10 @@ window.hubCheckoutClick = function (e, blockId, btn) {
 
   const url = btn.getAttribute("href");
 
+  // Track checkout initiation — revenue split is tracked by the web pixel
+  // on checkout_completed so it only fires on confirmed orders.
   fetch(
-    `${window.__HUB_API_URL__ || "https://hubsyntax.online"}/api/track-event`,
+    `${window.__HUB_API_URL__ || "http://localhost:9002"}/api/track-event`,
     {
       method: "POST",
       headers: {
