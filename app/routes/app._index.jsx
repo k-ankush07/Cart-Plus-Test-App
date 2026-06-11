@@ -181,25 +181,31 @@ export const loader = async ({ request }) => {
     subscriptionRevenue: 0,
   };
 
-  // ← do NOT await — return as a pending promise so Suspense triggers
-  const dataPromise = Promise.allSettled([
-    getCarts(apiUrl, shop.myshopifyDomain),
-    getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString()),
-    checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
-  ]).then(([cartsResult, statsResult, embedResult]) => ({
-    carts:
-      cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [],
-    cartStats:
-      statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {},
-    shopRevenue:
-      statsResult.status === "fulfilled"
-        ? statsResult.value?.shopRevenue || fallbackRevenue
-        : fallbackRevenue,
-    appEmbedInstalled:
-      embedResult.status === "fulfilled" ? embedResult.value.installed : false,
-    appEmbedStarted:
-      embedResult.status === "fulfilled" ? embedResult.value.started : false,
-  }));
+  const dataPromise = getCarts(apiUrl, shop.myshopifyDomain).then((cartsRes) => {
+    const allCarts = cartsRes?.data || [];
+    const publishedCartIds = allCarts
+      .filter((c) => c.status === "published")
+      .map((c) => c.cartId);
+
+    return Promise.allSettled([
+      Promise.resolve(cartsRes),
+      getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString(), publishedCartIds),
+      checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
+    ]).then(([cartsResult, statsResult, embedResult]) => ({
+      carts:
+        cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [],
+      cartStats:
+        statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {},
+      shopRevenue:
+        statsResult.status === "fulfilled"
+          ? statsResult.value?.shopRevenue || fallbackRevenue
+          : fallbackRevenue,
+      appEmbedInstalled:
+        embedResult.status === "fulfilled" ? embedResult.value.installed : false,
+      appEmbedStarted:
+        embedResult.status === "fulfilled" ? embedResult.value.started : false,
+    }));
+  });
 
   return { shop, apiUrl, currency, appEmbedId, mainThemeId, dataPromise };
 };
@@ -386,6 +392,7 @@ function DashboardSkeleton() {
 
 export default function Dashboard() {
   const loaderData = useLoaderData();
+  console.log(loaderData)
   return (
     <>
       <style>{pulseStyle}</style>
@@ -460,34 +467,38 @@ function DashboardInner({
 
   // ← no isFirstRangeRender guard — runs on mount AND on range change
   useEffect(() => {
-    const fetchStats = async () => {
-      setStatsLoading(true);
-      try {
-        const params = new URLSearchParams({
-          shop: shop.myshopifyDomain,
-          startDate: range.start.toISOString(),
-          endDate: range.end.toISOString(),
-        });
-        const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
-          credentials: "include",
-          headers: authHeaders(),
-        });
-        const data = await res.json();
-        if (data.success) {
-          setCartStats(data.data || {});
-          setShopRevenue(
-            data.shopRevenue || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 }
-          );
-        }
-      } catch (err) {
-        console.error("STATS FETCH ERROR:", err);
-      } finally {
-        setStatsLoading(false);
+  const fetchStats = async () => {
+    setStatsLoading(true);
+    try {
+      const publishedCartIds = liveCarts.map((c) => c.cartId);
+      const params = new URLSearchParams({
+        shop: shop.myshopifyDomain,
+        startDate: range.start.toISOString(),
+        endDate: range.end.toISOString(),
+      });
+      if (publishedCartIds.length > 0) {
+        params.append("cartIds", publishedCartIds.join(","));
       }
-    };
+      const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
+        credentials: "include",
+        headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCartStats(data.data || {});
+        setShopRevenue(
+          data.shopRevenue || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 }
+        );
+      }
+    } catch (err) {
+      console.error("STATS FETCH ERROR:", err);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
-    fetchStats();
-  }, [range.start, range.end]);
+  fetchStats();
+}, [range.start, range.end]);
 
   const AppEmbedLink = () => (
     <Tooltip content="Enable the app embed to start showing this cart on your storefront. Click to enable in your theme editor.">
@@ -509,6 +520,8 @@ function DashboardInner({
       </span>
     </Tooltip>
   );
+
+  const sparkType = (val) => (val ?? 0) > 0 ? "spike" : "flat";
 
   return (
     <Page
@@ -546,7 +559,7 @@ function DashboardInner({
                 label="Add-ons revenue"
                 value={fmt(shopRevenue.addonRevenue ?? 0, currency)}
                 rawValue={shopRevenue.addonRevenue ?? 0}
-                sparklineType="spike"
+                sparklineType={sparkType(shopRevenue.addonRevenue)}
                 onClick={() => navigate("/app/analytics")}
               />
               <StatTile
@@ -555,7 +568,7 @@ function DashboardInner({
                 label="Upsell revenue"
                 value={fmt(shopRevenue.upsellRevenue ?? 0, currency)}
                 rawValue={shopRevenue.upsellRevenue ?? 0}
-                sparklineType="peak"
+                sparklineType={sparkType(shopRevenue.upsellRevenue)}
                 onClick={() => navigate("/app/analytics")}
               />
               <StatTile
@@ -564,7 +577,7 @@ function DashboardInner({
                 label="Subscriptions revenue"
                 value={fmt(shopRevenue.subscriptionRevenue ?? 0, currency)}
                 rawValue={shopRevenue.subscriptionRevenue ?? 0}
-                sparklineType="flat"
+                sparklineType={sparkType(shopRevenue.subscriptionRevenue)}
                 onClick={() => navigate("/app/analytics")}
               />
               <StatTile
@@ -582,7 +595,11 @@ function DashboardInner({
                   (shopRevenue.upsellRevenue ?? 0) +
                   (shopRevenue.subscriptionRevenue ?? 0)
                 }
-                sparklineType="peak"
+                sparklineType={sparkType(
+                  (shopRevenue.addonRevenue ?? 0) +
+                  (shopRevenue.upsellRevenue ?? 0) +
+                  (shopRevenue.subscriptionRevenue ?? 0)
+                )}
                 onClick={() => navigate("/app/analytics")}
               />
             </InlineGrid>

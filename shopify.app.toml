@@ -2,7 +2,7 @@
 
 client_id = "0741db22a559208f286f8afcfb6dcc65"
 name = "Cart Drawer"
-application_url = "https://hubsyntax.online"
+application_url = "https://horizontal-den-humans-tucson.trycloudflare.com"
 embedded = true
 
 [build]
@@ -29,10 +29,10 @@ scopes = "read_customers,read_discounts,read_locations,read_orders,read_pixels,r
 
 [auth]
 redirect_urls = [
-  "https://hubsyntax.online/api/auth"
+  "https://horizontal-den-humans-tucson.trycloudflare.com/api/auth"
 ]
 
 [app_proxy]
-url = "https://hubsyntax.online/api/proxy-order-track"
+url = "https://horizontal-den-humans-tucson.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"

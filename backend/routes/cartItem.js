@@ -791,7 +791,7 @@ router.post("/order-revenue", async (req, res) => {
 
 router.get("/cart-stats", async (req, res) => {
   try {
-    const { shop, startDate, endDate } = req.query;
+    const { shop, startDate, endDate, cartIds } = req.query;
     if (!shop)
       return res.status(400).json({ success: false, message: "Missing shop" });
 
@@ -800,12 +800,18 @@ router.get("/cart-stats", async (req, res) => {
       .replace("http://", "")
       .replace(/\/$/, "");
 
+    // Parse cartIds filter
+    const cartIdFilter =
+      cartIds && cartIds.trim() !== ""
+        ? cartIds.split(",").map((id) => id.trim()).filter(Boolean)
+        : null;
+
     // Build date filter
     const dateFilter = {};
     if (startDate) dateFilter.$gte = new Date(startDate);
     if (endDate) {
       const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999); // include full end day
+      end.setHours(23, 59, 59, 999);
       dateFilter.$lte = end;
     }
     const hasDateFilter = Object.keys(dateFilter).length > 0;
@@ -816,8 +822,6 @@ router.get("/cart-stats", async (req, res) => {
       ...(hasDateFilter && { createdAt: dateFilter }),
     };
 
-    // cartOrderCountModel stores `date` as "YYYY-MM-DD" strings (not Date),
-    // so filter on that field separately when a range is provided.
     const toDateStr = (d) => new Date(d).toISOString().slice(0, 10);
     const orderCountDateFilter = {};
     if (startDate) orderCountDateFilter.$gte = toDateStr(startDate);
@@ -840,9 +844,11 @@ router.get("/cart-stats", async (req, res) => {
       ...(hasDateFilter && { createdAt: dateFilter }),
     };
 
+    // ← KEY CHANGE: filter shopRevenue to published cartIds only
     const shopRevenueMatch = {
       shop: cleanShop,
       ...(hasDateFilter && { createdAt: dateFilter }),
+      ...(cartIdFilter ? { cartId: { $in: cartIdFilter } } : {}),
     };
 
     const [
@@ -988,12 +994,7 @@ router.get("/cart-stats", async (req, res) => {
 
     const result = {};
     Object.entries(stats).forEach(
-      ([
-        cartId,
-           { revenue, impressions, checkouts, completedOrders, ordersByDate, impressionsByDate, revenueByDate },  
-      ]) => {
-        // Prefer completed orders for conversion rate; fall back to
-        // checkout_initiated when no order-count data exists for the range.
+      ([cartId, { revenue, impressions, checkouts, completedOrders, ordersByDate, impressionsByDate, revenueByDate }]) => {
         const numerator = completedOrders > 0 ? completedOrders : checkouts;
         const ordersByDateArr = Object.entries(ordersByDate)
           .map(([date, count]) => ({ date, totalOrders: count }))
@@ -1001,7 +1002,7 @@ router.get("/cart-stats", async (req, res) => {
 
         result[cartId] = {
           revenue,
-          revenueByDate: Object.entries(revenueByDate) 
+          revenueByDate: Object.entries(revenueByDate)
             .map(([date, total]) => ({ date, revenue: total }))
             .sort((a, b) => (a.date < b.date ? 1 : -1)),
           impressions,
@@ -1015,7 +1016,7 @@ router.get("/cart-stats", async (req, res) => {
           completedOrders,
           ordersByDate: ordersByDateArr,
         };
-      },
+      }
     );
 
     const breakdown = shopRevenueBreakdown[0] || {

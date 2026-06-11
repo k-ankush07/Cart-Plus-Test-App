@@ -6,11 +6,12 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-export const getCartStats = async (apiUrl, shop, startDate, endDate) => {
+export const getCartStats = async (apiUrl, shop, startDate, endDate, cartIds = []) => {
   const params = new URLSearchParams({ shop });
   if (startDate) params.append("startDate", startDate);
   if (endDate) params.append("endDate", endDate);
- 
+  if (cartIds.length > 0) params.append("cartIds", cartIds.join(","));
+
   const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
     credentials: "include",
     headers: authHeaders(),

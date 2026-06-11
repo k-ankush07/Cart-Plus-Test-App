@@ -3,7 +3,6 @@ export const requireApiKey = (req, res, next) => {
   const validKey = process.env.VITE_API_SECRET_KEY || process.env.API_SECRET_KEY;
 
   if (!key || key !== validKey) {
-    console.log("[auth] BLOCKED — keys do not match");
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
   next();
