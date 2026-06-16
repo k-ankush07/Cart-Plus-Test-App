@@ -48,12 +48,12 @@ export default function Appearance({ designSettings, setDesignSettings }) {
             <LegacyCard sectioned title="General">
                 <LegacyStack vertical spacing="tight">
                     <Checkbox
-                        label="Inherit fonts from theme"
+                        label="Use theme fonts"
                         checked={designSettings.inheritFonts}
                         onChange={(value) => handleChange("inheritFonts", value)}
                     />
                     <Checkbox
-                        label="Show strikethrough prices"
+                        label="Show compare-at prices"
                         checked={designSettings.showStrikethrough}
                         onChange={(value) => handleChange("showStrikethrough", value)}
                     />

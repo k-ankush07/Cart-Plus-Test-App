@@ -1,5 +1,5 @@
 import { Card, Text } from "@shopify/polaris";
-import TopSection from "./ui-cart-options/Top-Section";
+import TopSection from "./ui-cart-options/Header";
 import Notices from "./ui-cart-options/Notices";
 import Appearance from "./ui-cart-options/Appearance";
 import TieredOffers from "./ui-cart-options/TieredOffers";
@@ -32,7 +32,7 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 }
             />
         ),
-        "Top Section": <TopSection
+        "Header": <TopSection
             headerSettings={headerSettings}
             handleChange={handleChange}
             shop={shop}

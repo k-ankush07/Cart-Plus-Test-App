@@ -29,7 +29,7 @@ import { uploadImage } from "../../../services/apiRoutes";
 import { useState } from "react";
 import "../../../index.css";
 
-export default function TopSection({ handleChange, headerSettings, accessToken, shop, apiUrl }) {
+export default function Header({ handleChange, headerSettings, accessToken, shop, apiUrl }) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -88,7 +88,7 @@ export default function TopSection({ handleChange, headerSettings, accessToken, 
                 <Icon source={LayoutHeaderIcon} />
               </Box>
               <InlineStack gap="200">
-                <Text variant="headingMd" as="h2">Top Section</Text>
+                <Text variant="headingMd" as="h2">Header</Text>
               </InlineStack>
             </InlineStack>
             <InlineStack gap="200" />

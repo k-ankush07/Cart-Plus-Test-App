@@ -92,7 +92,7 @@ export default function Sidebar({
               title: "General",
               items: [
                 clickable("Appearance", PaintBrushFlatIcon),
-                clickable("Top Section", LayoutHeaderIcon),
+                clickable("Header", LayoutHeaderIcon),
               ],
             },
             {
