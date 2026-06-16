@@ -50,7 +50,7 @@ export default function Sidebar({
       "Upgrade subscription": subscriptionUpgradesSettings?.enabled,
       "Upsells": upsellsSettings?.enabled,
       "Add Notes": additionalNotesSettings?.enabled,
-      "Extras": addonsSettings?.enabled,
+      "Add ons": addonsSettings?.enabled,
       "Discount code": discountCodesSettings?.enabled,
       "Quick Checkout": expressPaymentsSettings?.enabled,
       "Security Badges": trustBadgesSettings?.enabled,
@@ -111,7 +111,7 @@ export default function Sidebar({
             {
               title: "Footer",
               items: [
-                item("Extras", AppsIcon),
+                item("Add ons", AppsIcon),
                 item("Discount code", DiscountIcon),
                 item("Order Summary", ReceiptIcon, false),
                 item("Quick Checkout", CreditCardIcon),

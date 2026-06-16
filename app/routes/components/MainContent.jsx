@@ -8,7 +8,7 @@ import Recommended from "./ui-cart-options/RecommendedProduct";
 import SubscriptionUpgrades from "./ui-cart-options/SubscriptionUpgrades";
 import UpsellsSettings from "./ui-cart-options/UpsellsSettings";
 import AddNotes from "./ui-cart-options/AddNotes";
-import Extras from "./ui-cart-options/Extras";
+import AddOns from "./ui-cart-options/AddOns";
 import DiscountCode from "./ui-cart-options/DiscountCode";
 import QuickCheckout from "./ui-cart-options/QuickCheckout";
 import SecurityBadges from "./ui-cart-options/SecurityBadges";
@@ -82,8 +82,8 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 handleChange={handleChange}
             />
         ),
-        "Extras": (
-            <Extras
+        "Add ons": (
+            <AddOns
                 addonsSettings={addonsSettings}
                 handleChange={handleChange}
                 currency={currency}
