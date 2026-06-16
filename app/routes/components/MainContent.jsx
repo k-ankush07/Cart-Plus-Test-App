@@ -69,7 +69,7 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 handleChange={handleChange}
             />
         ),
-        "Upgrade Offers": (
+        "Upsells": (
             <UpsellsSettings
                 upsellsSettings={upsellsSettings}
                 handleChange={handleChange}

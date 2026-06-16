@@ -61,7 +61,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                                 <Icon source={PlusCircleIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Upgrade Offers</Text>
+                                <Text variant="headingMd" as="h2">Upsells</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={upsellsSettings.enabled ? "critical" : "success"}>

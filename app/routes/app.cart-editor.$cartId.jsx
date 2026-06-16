@@ -56,7 +56,7 @@ export default function CartEditor() {
     recommendations: "Suggested Products",
     rewards: "Tiered Offers",
     "triggered-rewards": "Smart Offers",
-    upsells: "Upgrade Offers",
+    upsells: "Upsells",
     addons: "Extras",
     announcements: "Notices",
     "subscription-upgrades": "Subscription Options",
