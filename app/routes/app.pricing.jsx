@@ -82,22 +82,22 @@ const PLANS = [
 ];
 
 const FAQ = [
-    {
-        q: "Can I change plans at any time?",
-        a: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated.",
-    },
-    {
-        q: "Is there a free trial?",
-        a: "All paid plans come with a 7-day free trial. No credit card required to start.",
-    },
-    {
-        q: "What happens to my carts if I downgrade?",
-        a: "Your carts remain intact but only the number allowed by your plan will be active. The rest will be paused.",
-    },
-    {
-        q: "Do you offer annual billing?",
-        a: "Yes, annual billing is available with a 20% discount. Contact support to switch.",
-    },
+  {
+    q: "Is there a free trial available?",
+    a: "Yes, we offer a free trial so you can test all key features before choosing a paid plan.",
+  },
+  {
+    q: "What happens if I switch plans?",
+    a: "When you upgrade or downgrade, your billing is automatically adjusted based on your new plan.",
+  },
+  {
+    q: "Does the cart drawer work with all Shopify themes?",
+    a: "Yes, our cart drawer is designed to be compatible with most Shopify themes.",
+  },
+  {
+    q: "Do you offer annual billing?",
+    a: "Yes, annual billing is available with a 20% discount. Contact support to switch.",
+  },
 ];
 
 // ─── API key helper (server-side: read from process.env) ─────────────────────
