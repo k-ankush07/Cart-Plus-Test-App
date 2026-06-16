@@ -144,9 +144,9 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
           <BlockStack gap="100">
             <LegacyStack distribution="fillEvenly">
               {[
-                { label: "Inherit from theme titles", value: "inherit", icon: TextTitleIcon },
+                { label: "Use theme titles", value: "inherit", icon: TextTitleIcon },
                 { label: "Brand logo", value: "logo", icon: ImageIcon },
-                { label: "Define text styles", value: "custom", icon: AdjustIcon },
+                { label: "Customize text style", value: "custom", icon: AdjustIcon },
               ].map((item) => (
                 <div
                   key={item.value}

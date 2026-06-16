@@ -44,7 +44,7 @@ export default function Sidebar({
 
   const isItemEnabled = (label) => {
     const map = {
-      Notices: announcementSettings?.enabled,
+      Announcements: announcementSettings?.enabled,
       "Tiered Offers": rewardsSettings?.enabled,
       "Suggested Products": recommendationsSettings?.enabled,
       "Subscription Options": subscriptionUpgradesSettings?.enabled,
@@ -98,7 +98,7 @@ export default function Sidebar({
             {
               title: "Body",
               items: [
-                item("Notices", MegaphoneIcon),
+                item("Announcements", MegaphoneIcon),
                 item("Tiered Offers", GiftCardIcon),
                 item("Smart Offers", AutomationIcon, false),
                 item("Suggested Products", StarIcon),

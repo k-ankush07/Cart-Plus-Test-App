@@ -1,6 +1,6 @@
 import { Card, Text } from "@shopify/polaris";
 import TopSection from "./ui-cart-options/Header";
-import Notices from "./ui-cart-options/Notices";
+import Notices from "./ui-cart-options/Announcements";
 import Appearance from "./ui-cart-options/Appearance";
 import TieredOffers from "./ui-cart-options/TieredOffers";
 import SmartOffers from "./ui-cart-options/SmartOffers";
@@ -39,7 +39,7 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
             accessToken={accessToken}
             apiUrl={apiUrl}
         />,
-        Notices: <Notices
+        Announcements: <Notices
             announcementSettings={announcementSettings}
             handleChange={handleChange}
         />,
