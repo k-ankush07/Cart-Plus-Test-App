@@ -51,7 +51,7 @@ export default function Sidebar({
       "Upsells": upsellsSettings?.enabled,
       "Add Notes": additionalNotesSettings?.enabled,
       "Extras": addonsSettings?.enabled,
-      "Promo Codes": discountCodesSettings?.enabled,
+      "Discount code": discountCodesSettings?.enabled,
       "Quick Checkout": expressPaymentsSettings?.enabled,
       "Security Badges": trustBadgesSettings?.enabled,
     };
@@ -112,7 +112,7 @@ export default function Sidebar({
               title: "Footer",
               items: [
                 item("Extras", AppsIcon),
-                item("Promo Codes", DiscountIcon),
+                item("Discount code", DiscountIcon),
                 item("Order Summary", ReceiptIcon, false),
                 item("Quick Checkout", CreditCardIcon),
                 item("Security Badges", ShieldCheckMarkIcon),

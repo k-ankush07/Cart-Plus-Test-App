@@ -19,7 +19,7 @@ import {
     DiscountIcon,             // Discount codes
 } from "@shopify/polaris-icons";
 
-export default function PromoCodes({ discountCodesSettings, handleChange }) {
+export default function DiscountCode({ discountCodesSettings, handleChange }) {
     const [showLimitations, setShowLimitations] = useState(false);
 
     const update = (key, value) => {
@@ -40,7 +40,7 @@ export default function PromoCodes({ discountCodesSettings, handleChange }) {
                                 <Icon source={DiscountIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Promo Codes</Text>
+                                <Text variant="headingMd" as="h2">Discount Code</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={discountCodesSettings.enabled ? "critical" : "success"}>
@@ -86,7 +86,7 @@ export default function PromoCodes({ discountCodesSettings, handleChange }) {
                         </InlineStack>
 
                         <ColorInput
-                            label="Coupon heading color"
+                            label="Coupon Heading Text Color"
                             value={discountCodesSettings.couponHeadingColor ?? "#000000"}
                             onChange={(val) => update("couponHeadingColor", val)}
                             autoComplete="off"
@@ -94,12 +94,12 @@ export default function PromoCodes({ discountCodesSettings, handleChange }) {
                         {discountCodesSettings.showOfferBox && (
                             <BlockStack gap="300">
                                 <ColorInput
-                                    label="View all offers button text color"
+                                    label="View All Offers Text Color"
                                     value={discountCodesSettings.viewAllOffersColor ?? "#000000"}
                                     onChange={(val) => update("viewAllOffersColor", val)}
                                 />
                                 <ColorInput
-                                    label="View all offers button background color"
+                                    label="View All Offers Background Color"
                                     value={discountCodesSettings.viewAllOffersBgColor ?? "#ffffff"}
                                     onChange={(val) => update("viewAllOffersBgColor", val)}
                                 />

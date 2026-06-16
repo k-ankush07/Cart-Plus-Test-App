@@ -9,7 +9,7 @@ import SubscriptionUpgrades from "./ui-cart-options/SubscriptionUpgrades";
 import UpsellsSettings from "./ui-cart-options/UpsellsSettings";
 import AddNotes from "./ui-cart-options/AddNotes";
 import Extras from "./ui-cart-options/Extras";
-import PromoCodes from "./ui-cart-options/PromoCodes";
+import DiscountCode from "./ui-cart-options/DiscountCode";
 import QuickCheckout from "./ui-cart-options/QuickCheckout";
 import SecurityBadges from "./ui-cart-options/SecurityBadges";
 import Preferences from "./ui-cart-options/Preferences";
@@ -92,8 +92,8 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 apiUrl={apiUrl}
             />
         ),
-        "Promo Codes": (
-            <PromoCodes
+        "Discount code": (
+            <DiscountCode
                 discountCodesSettings={discountCodesSettings}
                 handleChange={handleChange}
             />
