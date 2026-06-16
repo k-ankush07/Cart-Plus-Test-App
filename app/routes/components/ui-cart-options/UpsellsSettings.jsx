@@ -86,7 +86,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                     <Text variant="headingSm">Select product</Text>
                     <InlineStack>
                         <Checkbox
-                            label="Use AI recommended upsells"
+                            label="AI-Powered Upsell Suggestions"
                             checked={upsellsSettings.useAiRecommended}
                             onChange={(val) => update("useAiRecommended", val)}
                         />
@@ -132,7 +132,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                         <Text variant="headingSm">Upsell settings</Text>
                         <InlineStack>
                             <Checkbox
-                                label="Show upsell offer if item already in cart"
+                                label="Show upsell for items already in cart"
                                 checked={upsellsSettings.showIfAlreadyInCart}
                                 onChange={(val) => update("showIfAlreadyInCart", val)}
                             />
@@ -141,7 +141,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                         <InlineStack>
                             <BlockStack gap="100">
                                 <Checkbox
-                                    label="Limit the number of upsells in the cart"
+                                    label="Set Upsell Limit in Cart"
                                     checked={upsellsSettings.limitUpsellsInCart}
                                     onChange={(val) => update("limitUpsellsInCart", val)}
                                 />
@@ -153,7 +153,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                         <BlockStack gap="200">
                             <InlineStack>
                                 <Checkbox
-                                    label="Suggested Products"
+                                    label="Recommended Products"
                                     checked={upsellsSettings.showSuggestedProduct}
                                     onChange={(val) => update("showSuggestedProduct", val)}
                                 />
@@ -162,7 +162,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                                 <Button onClick={() => setSuggestedOpen(true)}>
                                     {upsellsSettings.suggestedProduct?.items?.titles?.[0]
                                         ? `Selected: ${upsellsSettings.suggestedProduct.items.titles[0]}`
-                                        : "Select Suggested Product"}
+                                        : "Recommended Products"}
                                 </Button>
                             )}
                         </BlockStack>
@@ -170,7 +170,7 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                         <Modal
                             open={suggestedOpen}
                             onClose={() => setSuggestedOpen(false)}
-                            title="Select Suggested Product"
+                            title="Recommended Products"
                             primaryAction={{
                                 content: "Save",
                                 onAction: () => {
@@ -298,14 +298,12 @@ export default function UpsellsSettings({ upsellsSettings, handleChange, currenc
                                     disabled={!upsellsSettings.showReviews}
                                 />
                                 <Banner tone="info">
-                                    This integration will only work with product review apps that
-                                    allow the{" "}
+                                    This works only with product review apps that allow to read product review data through the{" "}
                                     <Link
                                         url="https://shopify.dev/docs/api/storefront"
                                         target="_blank"
                                     >
-                                        Shopify Storefront API to read product review data stored in
-                                        metafields.
+                                        Shopify Storefront API metafields.
                                     </Link>
                                 </Banner>
                             </>
