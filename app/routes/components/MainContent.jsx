@@ -7,7 +7,7 @@ import SmartOffers from "./ui-cart-options/SmartOffers";
 import Recommended from "./ui-cart-options/RecommendedProduct";
 import SubscriptionUpgrades from "./ui-cart-options/SubscriptionUpgrades";
 import UpsellsSettings from "./ui-cart-options/UpsellsSettings";
-import OrderNotes from "./ui-cart-options/Order-Notes";
+import AddNotes from "./ui-cart-options/AddNotes";
 import Extras from "./ui-cart-options/Extras";
 import PromoCodes from "./ui-cart-options/PromoCodes";
 import QuickCheckout from "./ui-cart-options/QuickCheckout";
@@ -76,8 +76,8 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 currency={currency}
             />
         ),
-        "Order Notes": (
-            <OrderNotes
+        "Add Notes": (
+            <AddNotes
                 additionalNotesSettings={additionalNotesSettings}
                 handleChange={handleChange}
             />

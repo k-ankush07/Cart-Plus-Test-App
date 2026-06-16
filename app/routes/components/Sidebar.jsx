@@ -49,7 +49,7 @@ export default function Sidebar({
       "Recommended Products": recommendationsSettings?.enabled,
       "Upgrade subscription": subscriptionUpgradesSettings?.enabled,
       "Upsells": upsellsSettings?.enabled,
-      "Order Notes": additionalNotesSettings?.enabled,
+      "Add Notes": additionalNotesSettings?.enabled,
       "Extras": addonsSettings?.enabled,
       "Promo Codes": discountCodesSettings?.enabled,
       "Quick Checkout": expressPaymentsSettings?.enabled,
@@ -105,7 +105,7 @@ export default function Sidebar({
                 item("Items in Cart", CartIcon, false),
                 item("Upgrade subscription", RefreshIcon),
                 item("Upsells", PlusCircleIcon),
-                item("Order Notes", NoteIcon),
+                item("Add Notes", NoteIcon),
               ],
             },
             {
