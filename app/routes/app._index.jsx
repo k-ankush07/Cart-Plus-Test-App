@@ -392,7 +392,6 @@ function DashboardSkeleton() {
 
 export default function Dashboard() {
   const loaderData = useLoaderData();
-  console.log(loaderData)
   return (
     <>
       <style>{pulseStyle}</style>
@@ -858,8 +857,8 @@ function DashboardInner({
                   <Icon source={HeartIcon} />
                 </div>
                 <BlockStack gap="050">
-                  <Text variant="headingXs">Need help?</Text>
-                  <Text variant="bodySm" tone="subdued">Chat with us for hands-on help.</Text>
+                  <Text variant="headingXs">Questions or need help? </Text>
+                  <Text variant="bodySm" tone="subdued">Chat with our support team.</Text>
                 </BlockStack>
               </InlineStack>
               <Button>Chat with us</Button>
