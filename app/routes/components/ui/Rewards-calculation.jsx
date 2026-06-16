@@ -131,13 +131,14 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                                 borderRadius="300"
                                 borderWidth="025"
                                 borderColor="border"
+                                   height="100%" 
                             >
                                 <RadioButton
                                     label="Cart total ($)"
                                     id="total"
                                     name="rewards-calculation"
                                     checked={rewardsSettings.calculationType === "total"}
-                                    helpText="Your rewards will be calculated based on the total amount of the cart."
+                                    helpText=" Rewards are calculated based on the total amount of the cart."
                                     onChange={() => {
                                         handleChange("rewardsSettings", (prev) => ({
                                             ...prev,
@@ -161,7 +162,7 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                                     id="quantity"
                                     name="rewards-calculation"
                                     checked={rewardsSettings.calculationType === "quantity"}
-                                    helpText="Your rewards will be calculated based on the quantity of items in the cart."
+                                    helpText="Rewards are calculated based on the number of items in the cart."
                                     onChange={() => {
                                         handleChange("rewardsSettings", (prev) => ({
                                             ...prev,
@@ -178,7 +179,7 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                         <Checkbox
                             label="Use pre-discounted prices for cart total"
                             checked={rewardsSettings.usePreDiscount}
-                            helpText="Enable calculating reward bar tiers based on the cart total before any discounts are applied. This ensures that rewards are based on the original prices of items, allowing you to maintain consistent reward thresholds regardless of any discounts given."
+                            helpText="Before any discounts are applied, enable the calculation of reward bar tiers based on the total of the cart. You will be able to maintain consistent reward thresholds regardless of any discounts given because this ensures that rewards are based on the original prices of items."
                             onChange={(value) => {
                                 handleChange("rewardsSettings", (prev) => ({
                                     ...prev,
@@ -403,7 +404,7 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                     <BlockStack gap="100">
                         <InlineStack align="space-between" blockAlign="center">
                             <Text variant="bodyMd" fontWeight="medium">
-                                Title before achieving tier
+                                Title Before Reaching a Tier
                             </Text>
                             <Button
                                 variant="plain"
@@ -413,7 +414,7 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                             </Button>
                         </InlineStack>
                         <RichTextEditor
-                            label="Title before achieving tier"
+                            label="Title Before Reaching a Tier"
                             value={current?.title || ""}
                             onChange={(val) => updateTier("title", val)}
                         />

@@ -60,7 +60,7 @@ export default function TieredOffers({ handleChange, rewardsSettings, currency }
             </Box>
             <Box paddingBlockEnd="400">
                 <Text as="p" variant="bodySm">
-                    Motivate customers with a rewards bar with tiers/levels to unlock.
+                 Show customers a progress bar that highlights reward milestones.
                 </Text>
             </Box>
             <LegacyCard sectioned title="General settings">
@@ -99,7 +99,7 @@ export default function TieredOffers({ handleChange, rewardsSettings, currency }
                     <BlockStack gap="100">
                         <InlineStack align="space-between" blockAlign="center">
                             <Text variant="bodyMd" fontWeight="medium">
-                                Text after completing full rewards bar
+                                Completing full rewards bar text
                             </Text>
                             <Button
                                 variant="plain"
