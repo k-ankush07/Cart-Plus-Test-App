@@ -872,8 +872,8 @@ function DashboardInner({
                   <Icon source={NoteIcon} />
                 </div>
                 <BlockStack gap="050">
-                  <Text variant="headingXs">See our docs</Text>
-                  <Text variant="bodySm" tone="subdued">Browse our documentation and guides.</Text>
+                  <Text variant="headingXs">Explore our docs</Text>
+                  <Text variant="bodySm" tone="subdued">Find detailed guides and help articles.</Text>
                 </BlockStack>
               </InlineStack>
               <Button>View docs</Button>
