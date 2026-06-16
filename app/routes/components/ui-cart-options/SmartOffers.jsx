@@ -501,7 +501,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
       </Box>
       <Box paddingBlockEnd="400">
         <Text as="p" variant="bodySm">
-          Rewards that are shown if specific conditions (eg. products in cart, customer type) are met. You can create up to 10 rules.
+          Rewards shown when specific conditions are met (e.g., products in cart, customer type). You can create up to 10 rules.
         </Text>
       </Box>
       <Divider />

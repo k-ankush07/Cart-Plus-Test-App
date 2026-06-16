@@ -46,7 +46,7 @@ export default function Sidebar({
     const map = {
       Announcements: announcementSettings?.enabled,
       "Tiered Offers": rewardsSettings?.enabled,
-      "Suggested Products": recommendationsSettings?.enabled,
+      "Recommended Products": recommendationsSettings?.enabled,
       "Subscription Options": subscriptionUpgradesSettings?.enabled,
       "Upsells": upsellsSettings?.enabled,
       "Order Notes": additionalNotesSettings?.enabled,
@@ -101,7 +101,7 @@ export default function Sidebar({
                 item("Announcements", MegaphoneIcon),
                 item("Tiered Offers", GiftCardIcon),
                 item("Smart Offers", AutomationIcon, false),
-                item("Suggested Products", StarIcon),
+                item("Recommended Products", StarIcon),
                 item("Items in Cart", CartIcon, false),
                 item("Subscription Options", RefreshIcon),
                 item("Upsells", PlusCircleIcon),

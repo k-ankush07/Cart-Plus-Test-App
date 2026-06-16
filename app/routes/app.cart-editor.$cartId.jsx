@@ -53,7 +53,7 @@ export default function CartEditor() {
   const [searchParams] = useSearchParams();
 
   const MODULE_TAB_MAP = {
-    recommendations: "Suggested Products",
+    recommendations: "Recommended Products",
     rewards: "Tiered Offers",
     "triggered-rewards": "Smart Offers",
     upsells: "Upsells",

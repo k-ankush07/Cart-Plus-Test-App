@@ -4,7 +4,7 @@ import Notices from "./ui-cart-options/Announcements";
 import Appearance from "./ui-cart-options/Appearance";
 import TieredOffers from "./ui-cart-options/TieredOffers";
 import SmartOffers from "./ui-cart-options/SmartOffers";
-import SuggestedProducts from "./ui-cart-options/SuggestedProducts";
+import Recommended from "./ui-cart-options/RecommendedProduct";
 import SubscriptionUpgrades from "./ui-cart-options/SubscriptionUpgrades";
 import UpsellsSettings from "./ui-cart-options/UpsellsSettings";
 import OrderNotes from "./ui-cart-options/Order-Notes";
@@ -56,8 +56,8 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 handleChange={handleChange}
             />
         ),
-        "Suggested Products": (
-            <SuggestedProducts
+        "Recommended Products": (
+            <Recommended
                 recommendationsSettings={recommendationsSettings}
                 handleChange={handleChange}
                 currency={currency}

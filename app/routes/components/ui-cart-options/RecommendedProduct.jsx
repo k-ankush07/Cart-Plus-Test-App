@@ -32,7 +32,7 @@ import ProductItemCollections from "../ui/ProductItem-Collections";
 import RichTextEditor from "../ui/RichTextEditor";
 import { useState, useEffect } from "react";
 
-export default function SuggestedProducts({ recommendationsSettings, handleChange, currency }) {
+export default function Recommended({ recommendationsSettings, handleChange, currency }) {
 
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState({
@@ -72,7 +72,7 @@ export default function SuggestedProducts({ recommendationsSettings, handleChang
                                 <Icon source={StarIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Suggested Products</Text>
+                                <Text variant="headingMd" as="h2">Recommended Products</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={recommendationsSettings.enabled ? "critical" : "success"}>
@@ -93,7 +93,7 @@ export default function SuggestedProducts({ recommendationsSettings, handleChang
             <LegacyCard sectioned title="Recommendations settings">
                 <LegacyStack vertical spacing="tight">
                     <Text variant="bodySm" tone="subdued">
-                        Displays <Text as="span" fontWeight="bold">only</Text> on an empty cart.
+                        Shown <Text as="span" fontWeight="bold">only</Text> on an empty cart.
                     </Text>
                     <BlockStack gap="100">
                         <InlineStack align="space-between" blockAlign="center">
@@ -138,7 +138,7 @@ export default function SuggestedProducts({ recommendationsSettings, handleChang
                     <BlockStack gap="100">
                         <InlineStack align="space-between" blockAlign="center">
                             <Text variant="bodyMd" fontWeight="medium">
-                                Product recommendations header text
+                               Recommended product header text
                             </Text>
                             <Button
                                 variant="plain"
@@ -156,12 +156,12 @@ export default function SuggestedProducts({ recommendationsSettings, handleChang
 
                     {/* Manual config button */}
                     <Button fullWidth variant="primary" onClick={() => setOpen(true)}>
-                        Configure manual recommendations
+                       Set up product recommendations
                     </Button>
 
                     {/* Max recommendations */}
                     <TextField
-                        label="Maximum number of recommendations to display"
+                        label="Maximum recommendations to show"
                         type="number"
                         value={String(recommendationsSettings.maxRecommendations)}
                         onChange={(val) => update("maxRecommendations", Number(val))}
@@ -211,9 +211,9 @@ export default function SuggestedProducts({ recommendationsSettings, handleChang
                         <Banner tone="info">
                             <InlineStack gap="100" blockAlign="center" wrap={false}>
                                 <Text variant="bodyMd">
-                                    This integration will only work with product review apps that allow the{" "}
+                                    This works only with product review apps that allow to read product review data through the{" "}
                                     <Link url="https://shopify.dev/docs/storefronts/headless/building-with-the-storefront-api/products-collections/metafields" target="_blank">
-                                        Shopify Storefront API to read product review data stored in metafields.
+                                       Shopify Storefront API metafields.
                                     </Link>
                                 </Text>
                             </InlineStack>
