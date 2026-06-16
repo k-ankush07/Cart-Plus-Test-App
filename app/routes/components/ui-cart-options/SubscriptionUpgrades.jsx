@@ -45,7 +45,7 @@ export default function SubscriptionUpgrades({ subscriptionUpgradesSettings, han
                                 <Icon source={RefreshIcon} />
                             </Box>
                             <InlineStack gap="200">
-                                <Text variant="headingMd" as="h2">Subscription Options</Text>
+                                <Text variant="headingMd" as="h2">Upgrade subscription</Text>
                             </InlineStack>
                             <Box paddingInlineStart="200">
                                 <Badge tone={subscriptionUpgradesSettings.enabled ? "critical" : "success"}>
@@ -73,14 +73,14 @@ export default function SubscriptionUpgrades({ subscriptionUpgradesSettings, han
                             autoComplete="off"
                         />
                         <Text variant="bodySm" tone="subdued">
-                            Use {`{{selling_plan_group_name}}`} to show the name of the selling plan. Preview uses 'Subscribe &amp; Save 20%' as the selling plan group name.
+                            Use {`{{selling_plan_group_name}}`} to display the selling plan name. Preview uses “Subscribe & Save 20%” as the selling plan name.
                         </Text>
                     </BlockStack>
 
                     <BlockStack gap="100">
                         <Checkbox
-                            label="Override subscription plan options text"
-                            helpText="Customize the text that appears in the dropdown menu for each subscription plan"
+                            label="Customize Subscription Plan Option Text"
+                            helpText="Set custom text for each subscription plan option displayed in the dropdown menu."
                             checked={subscriptionUpgradesSettings.overridePlanOptionsText}
                             onChange={(val) => update("overridePlanOptionsText", val)}
                         />
@@ -97,32 +97,32 @@ export default function SubscriptionUpgrades({ subscriptionUpgradesSettings, han
                                 />
                                 <Box paddingBlockEnd="400">
                                     <Text variant="bodyMd" tone="subdued">
-                                        The variables {`{{selling_plan_group_name}}`} / {`{{selling_plan_name}}`} will be replaced with the 'subscription group name' and the 'subscription plan name' of the product, respectively. If the field is empty, the default subscription group and plan names will be used
+                                        The variables {`{{selling_plan_group_name}}`} and {`{{selling_plan_name}}`} are replaced with the product’s subscription group name and subscription plan name. If empty, default names will be used.
                                     </Text>
                                 </Box>
                             </BlockStack>
 
                             <BlockStack gap="100">
-                                <Text variant="bodyMd" fontWeight="medium">Subscription plan options one-time purchase text</Text>
+                                <Text variant="bodyMd" fontWeight="medium">One-Time Purchase subscription plan text</Text>
                                 <TextField
                                     value={subscriptionUpgradesSettings.planOptionsOneTimePurchaseText}
                                     onChange={(val) => update("planOptionsOneTimePurchaseText", val)}
                                     autoComplete="off"
                                 />
                                 <Text variant="bodySm" tone="subdued">
-                                    Override the text that appears in the dropdown menu for one-time purchase.
+                                    Customize the text that appears in the dropdown menu for one-time purchase.
                                 </Text>
                             </BlockStack>
 
                             <BlockStack gap="100">
-                                <Text variant="bodyMd" fontWeight="medium">Subscription plan full price text</Text>
+                                <Text variant="bodyMd" fontWeight="medium">Full price Subscription plan text</Text>
                                 <TextField
                                     value={subscriptionUpgradesSettings.planFullPriceText}
                                     onChange={(val) => update("planFullPriceText", val)}
                                     autoComplete="off"
                                 />
                                 <Text variant="bodySm" tone="subdued">
-                                    Text used to indicate the full (non-discounted) price in the subscription options.
+                                    Text shown for the original subscription price before any discount is applied.
                                 </Text>
                             </BlockStack>
 
@@ -135,7 +135,7 @@ export default function SubscriptionUpgrades({ subscriptionUpgradesSettings, han
                                 />
                                 <Box paddingBlockEnd="0">
                                     <Text variant="bodyMd" tone="subdued">
-                                        Heading text used above subscription plan choices (e.g. 'Subscription plans').
+                                       Text displayed as the heading above the subscription plans.
                                     </Text>
                                 </Box>
                             </BlockStack>

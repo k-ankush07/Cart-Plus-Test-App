@@ -63,7 +63,7 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
                 currency={currency}
             />
         ),
-        "Subscription Options": (
+        "Upgrade subscription": (
             <SubscriptionUpgrades
                 subscriptionUpgradesSettings={subscriptionUpgradesSettings}
                 handleChange={handleChange}
