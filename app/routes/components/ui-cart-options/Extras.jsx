@@ -180,12 +180,12 @@ export default function Extras({ addonsSettings, handleChange, currency, }) {
                                 <Banner tone="info">
                                     <Text variant="bodyMd" fontWeight="semibold">Shipping protection disclaimer</Text>
                                     <Text variant="bodySm">
-                                        Upcart only provides a product to be used to signify shipping protection, and does not provide any shipping protection services itself.
+                                       Appname only provides a product to represent shipping protection and does not offer shipping protection services itself.
                                     </Text>
                                 </Banner>
 
                                 <TextField
-                                    label="Add-on Title"
+                                    label="Title"
                                     value={addonsSettings.title}
                                     onChange={(val) => update("title", val.slice(0, 50))}
                                     helpText="Name of the product in the cart"
@@ -273,43 +273,43 @@ export default function Extras({ addonsSettings, handleChange, currency, }) {
 
                         <BlockStack gap="100">
                             <Checkbox
-                                label="Include addons in cart item count"
+                                label="Add Add-ons to Cart Item Count"
                                 checked={addonsSettings.includeInItemCount}
                                 onChange={(val) => update("includeInItemCount", val)}
                             />
                             <Text variant="bodySm" tone="subdued">
-                                Addons are not included in cart item count by default.
+                               By default, add-ons are excluded from the cart item count.
                             </Text>
                         </BlockStack>
 
                         {isShipping && (
                             <BlockStack gap="100">
                                 <Checkbox
-                                    label="Auto-fulfill shipping protection"
+                                    label="Auto-Fulfill Shipping Protection"
                                     checked={addonsSettings.autoFulfill}
                                     onChange={(val) => update("autoFulfill", val)}
                                 />
                                 <Text variant="bodySm" tone="subdued">
-                                    Automatically fulfill the shipping protection product when other items in the order are fulfilled.
+                                    Shipping protection will be automatically fulfilled when other items in the order are fulfilled.
                                 </Text>
                             </BlockStack>
                         )}
 
                         <BlockStack gap="100">
                             <Checkbox
-                                label="Include addon tracking on orders"
+                                label="Enable Add-on Tracking on Orders"
                                 checked={addonsSettings.includeTracking}
                                 onChange={(val) => update("includeTracking", val)}
                             />
                             <Text variant="bodySm" tone="subdued">
-                                Shows addon details on packing slips and receipts for analytics and tracking (attributes like beamAddonDesiredState will be included).
+                                Show add-on details on order documents for tracking and analytics (attributes like beamAddonDesiredState are included).
                             </Text>
                         </BlockStack>
 
                         <BlockStack gap="100">
                             <InlineStack gap="200" align="start" blockAlign="center">
                                 <Checkbox
-                                    label="Accept offer by default"
+                                    label="Accept Offers by Default"
                                     checked={false}
                                     disabled
                                     onChange={() => { }}
@@ -317,14 +317,14 @@ export default function Extras({ addonsSettings, handleChange, currency, }) {
                                 <Badge tone="warning">Deprecated</Badge>
                             </InlineStack>
                             <Text variant="bodySm" tone="subdued">
-                                Automatically accept the addon when a customer adds their first item to the cart.
+                                Auto-accept the add-on when the first item is added to the cart.
                             </Text>
                         </BlockStack>
 
                         <Banner tone="warning">
-                            <Text variant="bodyMd" fontWeight="semibold">We have removed "Accept offer by default"</Text>
+                            <Text variant="bodyMd" fontWeight="semibold">Removed “Accept offer by default”</Text>
                             <Text variant="bodySm">
-                                To provide more trustworthy buyer experiences, Shopify is prohibiting apps from automatically adding non-free items. Buyers will need to explicitly accept add-ons by clicking the toggle. To learn more, see{" "}
+                                To provide a more trustworthy buyer experience, Shopify prohibits apps from automatically adding non-free items. Buyers must explicitly accept add-ons using the toggle. For more details, see{" "}
                                 <Link url="https://shopify.dev/docs/apps/launch/app-requirements" target="_blank">
                                     Section 1.19
                                 </Link>{" "}
