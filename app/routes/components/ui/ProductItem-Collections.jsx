@@ -315,24 +315,14 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
     return (
         <div>
             <BlockStack gap="300">
-                {(showProducts || showCollections) && (
+                {showProducts && showCollections && (
                     <Tabs
                         tabs={[
-                            ...(showProducts ? [{ id: "products", content: "Product", accessibilityLabel: "Search Products" }] : []),
-                            ...(showCollections ? [{ id: "collections", content: "Collection", accessibilityLabel: "Search Collections" }] : []),
+                            { id: "products", content: "Product", accessibilityLabel: "Search Products" },
+                            { id: "collections", content: "Collection", accessibilityLabel: "Search Collections" },
                         ]}
-                        selected={
-                            activeTab === "products"
-                                ? showProducts ? 0 : -1
-                                : showProducts ? 1 : 0
-                        }
-                        onSelect={(index) => {
-                            const tabs = [
-                                ...(showProducts ? ["products"] : []),
-                                ...(showCollections ? ["collections"] : []),
-                            ];
-                            setActiveTab(tabs[index]);
-                        }}
+                        selected={activeTab === "products" ? 0 : 1}
+                        onSelect={(index) => setActiveTab(index === 0 ? "products" : "collections")}
                         fitted
                     />
                 )}
