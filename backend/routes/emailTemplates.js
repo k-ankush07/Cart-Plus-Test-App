@@ -397,10 +397,7 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
                 <p style="margin:0;">
                   It looks like you've reached the limit of your ${safePlan} account. Upgrade your plan to continue accessing all premium features and tools.
                 </p>
-                <div class="plan_descrition" style="border:1px solid #EBEBEB; margin-top:20px; border-radius:10px; background:#F9FAFC; text-align:left; padding:20px;">
-                  <h3 style="font-size:22px; font-weight:600; margin:0; padding-bottom:12px;">Premium Plan</h3>
-                  <p style="margin:0; font-size:14px; line-height:18px;">Unlock advanced features, higher limits, and everything you need to grow your store with Checkout Cart.</p>
-                </div>
+               
                 <div class="plan_descrition" style="border:1px solid #EBEBEB; margin-top:20px; border-radius:10px; background:#F9FAFC; text-align:left; padding:20px;">
                   <h3 style="font-size:22px; font-weight:600; margin:0; padding-bottom:12px;">Ready to upgrade?</h3>
                   <p style="margin:0; font-size:14px; line-height:18px;">Upgrade your account in just a few clicks and continue building a higher-converting cart experience for your customers.</p>
@@ -611,7 +608,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                 <p style="margin:0 0 12px;"><strong>${safeShop}</strong></p>
                 <p style="margin:0 0 12px;"><strong>Thank you for installing Custom Cart</strong></p>
                 <p style="margin:0;">
-                  Your app is now installed and you're ready to start building a higher-converting cart experience for your Shopify store.
+                 We're excited to help you increase conversions, improve the customer experience, and boost your store's revenue with a smarter, more engaging cart experience.
                 </p>
               </td>
             </tr>
