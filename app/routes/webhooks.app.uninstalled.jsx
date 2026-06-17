@@ -27,7 +27,7 @@ const buildUninstallEmail = (shop, owner) => {
   const safeOwner = escapeHtml(owner || "there");
 
   return {
-    subject: "You uninstalled CustomCart — your data will be deleted in 48 hours",
+    subject: "You uninstalled Custom Cart — reinstall within 48 hours to restore your settings",
     html: `<!doctype html>
 <html lang="en">
   <head>
@@ -97,9 +97,8 @@ const buildUninstallEmail = (shop, owner) => {
             <tr>
               <td bgcolor="#ffffff" style="background-color:#ffffff; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
                 <p style="margin:0 0 12px;">Hi <strong>${safeOwner}</strong>,</p>
-                <p style="margin:0 0 12px;">We noticed that CustomCart was uninstalled from <strong>${safeShop}</strong></p>
-                <p style="margin:0 0 12px;">Your store data, including carts, settings, analytics, and revenue records, will be permanently deleted in <strong>48 hours</strong>.</p>
-                <p style="margin:0 0 30px;">If this was a mistake, reinstall CustomCart within the next <strong>48 hours</strong> to keep your data.</p>
+                <p style="margin:0 0 12px;">We noticed that you uninstalled <strong>Custom Cart</strong> from <strong>${safeShop}</strong>.</p>
+                <p style="margin:0 0 30px;">Thank you for giving us the opportunity to support your business. If this wasn't intentional, you can reinstall the app within <strong>48 hours</strong> and restore your settings and preferences.</p>
 
                 <!-- What Happens Next? -->
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -112,22 +111,22 @@ const buildUninstallEmail = (shop, owner) => {
                       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td style="padding:4px 0; font-family:'Outfit',Arial,sans-serif; font-size:15px; color:#3c3c3c; line-height:22px;">
-                            <span style="margin-right:8px;">&#8226;</span> Custom Cart features will no longer be active on your store.
+                            <span style="margin-right:8px;">&#8226;</span> App features will no longer be available in your store.
                           </td>
                         </tr>
                         <tr>
                           <td style="padding:4px 0; font-family:'Outfit',Arial,sans-serif; font-size:15px; color:#3c3c3c; line-height:22px;">
-                            <span style="margin-right:8px;">&#8226;</span> Any active custom cart configurations will stop functioning.
+                            <span style="margin-right:8px;">&#8226;</span> Saved settings and configurations will remain available for a limited period.
                           </td>
                         </tr>
                         <tr>
                           <td style="padding:4px 0; font-family:'Outfit',Arial,sans-serif; font-size:15px; color:#3c3c3c; line-height:22px;">
-                            <span style="margin-right:8px;">&#8226;</span> Your account data will be retained for a limited period in accordance with our data retention policy.
+                            <span style="margin-right:8px;">&#8226;</span> Analytics and app-related data may be removed after the retention period expires.
                           </td>
                         </tr>
                         <tr>
                           <td style="padding:4px 0; font-family:'Outfit',Arial,sans-serif; font-size:15px; color:#3c3c3c; line-height:22px;">
-                            <span style="margin-right:8px;">&#8226;</span> You can reinstall Custom Cart at any time to restore your cart experience.
+                            <span style="margin-right:8px;">&#8226;</span> You can reinstall the app at any time and continue where you left off.
                           </td>
                         </tr>
                       </table>
@@ -135,16 +134,16 @@ const buildUninstallEmail = (shop, owner) => {
                   </tr>
                 </table>
 
-                <!-- Changed Your Mind? -->
+                <!-- Need Help? -->
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                  style="border:1px solid #e0e0e0; border-radius:12px; text-align:left; background:#F9FAFC"">
+                  style="border:1px solid #e0e0e0; border-radius:12px; text-align:left; background:#F9FAFC">
                   <tr>
                     <td style="padding:28px 28px 24px;">
                       <p style="margin:0 0 12px; font-family:'Outfit',Arial,sans-serif; font-size:20px; font-weight:700; color:#1a1a1a;">
-                        Changed Your Mind?
+                        Need Help?
                       </p>
                       <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:15px; color:#3c3c3c; line-height:22px;">
-                        If you uninstalled Custom Cart by mistake or would like to continue improving your store's checkout experience, you can reinstall the app and pick up where you left off.
+                        If you experienced any issues or have questions, our support team would love to help. Your feedback helps us improve and build a better experience for merchants like you.
                       </p>
                     </td>
                   </tr>

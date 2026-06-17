@@ -95,11 +95,13 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
               <td bgcolor="#f7f7f7" style="background-color:#f7f7f7; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
                 <p style="margin:0 0 12px;">Hi <strong>${safeOwner}</strong>,</p>
                 <p style="margin:0 0 12px;"><strong>${safeShop}</strong></p>
-                <p style="margin:0;">
-                  <strong>Thank you for upgrading your account</strong><br />
-                  Your ${safePlan} plan is now active and you can start using all advanced
-                  Checkout Cart features immediately.
-                </p>
+                 <p style="margin:0 0 12px;">
+                  <strong>Congratulations on upgrading your account!</strong><br />
+                    You now have access to your new plan, including increased limits, additional features, and more resources to help you get more conversions.
+               </p>
+            <p style="margin:0;">
+             Thank you for choosing to grow with us. We're excited to support your continued success and look forward to helping you achieve even more.
+        </p>
               </td>
             </tr>
 
