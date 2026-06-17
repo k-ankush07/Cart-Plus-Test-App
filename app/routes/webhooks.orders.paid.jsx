@@ -20,6 +20,12 @@ export const action = async ({ request }) => {
 
   try {
     const apiUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
+    const apiSecret =
+      process.env.API_SECRET_KEY || process.env.VITE_API_SECRET_KEY || "";
+    const apiHeaders = {
+      "Content-Type": "application/json",
+      "x-api-key": apiSecret,
+    };
 
     // 1) Check that the cart-drawer app embed is enabled in the live theme.
     let appEmbedInstalled = false;
@@ -107,11 +113,16 @@ export const action = async ({ request }) => {
     try {
       const statusRes = await fetch(
         `${apiUrl}/api/get-carts?shop=${encodeURIComponent(shop)}`,
+        { headers: apiHeaders },
       );
       if (statusRes.ok) {
         const statusData = await statusRes.json();
         const carts = statusData?.data || [];
         hasPublishedCart = carts.some((c) => c.status === "published");
+      } else {
+        console.error(
+          `[orders/paid] get-carts failed status=${statusRes.status} body=${(await statusRes.text())?.slice(0, 200)}`,
+        );
       }
     } catch (e) {
       console.error("[orders/paid] published-cart check failed:", e.message);
@@ -194,7 +205,7 @@ export const action = async ({ request }) => {
 
     const res = await fetch(`${apiUrl}/api/order-revenue`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: apiHeaders,
       body: JSON.stringify({
         shop,
         orderId: String(payload.id),
