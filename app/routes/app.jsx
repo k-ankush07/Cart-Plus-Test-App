@@ -25,7 +25,6 @@ const NAV_LINKS = [
   { href: "/app/sticky-cart", label: "Sticky Cart" },
   { href: "/app/pricing", label: "Pricing" },
   { href: "/app/analytics", label: "Analytics" },
-  { href: "/app/help&support", label: "Help & Support" },
 ];
 
 export const ssr = false;
