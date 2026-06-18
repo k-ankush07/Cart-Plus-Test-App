@@ -157,9 +157,10 @@ async function checkAppEmbed(shopDomain, accessToken, themeId) {
 
     for (const key in blocks) {
       const block = blocks[key];
-      if (block?.type?.includes("shopify://apps/cart-drawer/")) {
+      if (block?.type?.includes("shopify://apps/cart-plus/")) {
         return { started: true, installed: !block?.disabled };
       }
+
     }
   } catch (_) { }
   return { started: false, installed: false };
