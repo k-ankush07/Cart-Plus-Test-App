@@ -35,7 +35,7 @@ const PLANS = [
         cta: "Current plan",
         tone: null,
         features: [
-            "Dev/Partner Stores Only",
+            "Dev & Partner Only",
         ],
     },
     {
@@ -83,7 +83,7 @@ const PLANS = [
         name: "Advance",
         price: 14.99,
         period: "month",
-        badge: "Active",
+        badge: "Premium",
         description: "Up to 1000 orders/mo",
         cta: "Upgrade to Advance",
         tone: null,
@@ -106,7 +106,7 @@ const PLANS = [
 const COMPARE_ROWS = [
     {
         label: "Monthly orders",
-        values: { free: "Dev/Partner Stores Only", starter: "200", growth: "500", advance: "1000" },
+        values: { free: "Dev & Partner Only", starter: "200", growth: "500", advance: "1000" },
     },
     { label: "14-day free trial", values: { free: false, starter: true, growth: true, advance: true } },
     { label: "Design settings", values: { free: false, starter: true, growth: true, advance: true } },
@@ -129,10 +129,6 @@ const FAQ = [
     {
         q: "Does the cart drawer work with all Shopify themes?",
         a: "Yes, our cart drawer is designed to be compatible with most Shopify themes.",
-    },
-    {
-        q: "Do you offer annual billing?",
-        a: "Yes, annual billing is available with a 20% discount. Contact support to switch.",
     },
 ];
 
@@ -424,7 +420,7 @@ function PricingInner({ activePlan, isDev }) {
 
     const renderRowButton = (plan) => {
         const isActive = activePlan === plan.id;
-     
+
         const thisRowLoading = isLoading && pendingPlanId === plan.id;
         const otherRowBusy = isLoading && pendingPlanId !== plan.id;
 
@@ -632,17 +628,33 @@ function PricingInner({ activePlan, isDev }) {
                                                                         <Badge tone="success">Active</Badge>
                                                                     )}
                                                                     {activePlan !== plan.id && plan.badge && (
-                                                                        <Badge
-                                                                            tone={
-                                                                                plan.badge === "Popular"
-                                                                                    ? "success"
-                                                                                    : plan.badge === "Best value"
-                                                                                        ? "info"
-                                                                                        : "attention"
-                                                                            }
+                                                                        <span
+                                                                            style={{
+                                                                                display: "inline-block",
+                                                                                padding: "2px 8px",
+                                                                                borderRadius: "12px",
+                                                                                fontSize: "12px",
+                                                                                fontWeight: 500,
+                                                                                background:
+                                                                                    plan.badge === "Popular"
+                                                                                        ? "#D1FAE5"
+                                                                                        : plan.badge === "Recommended"
+                                                                                            ? "#DBEAFE"
+                                                                                            : plan.badge === "Premium"
+                                                                                                ? "#FEF3C7"
+                                                                                                : "#F3F4F6",
+                                                                                color:
+                                                                                    plan.badge === "Popular"
+                                                                                        ? "#065F46"
+                                                                                        : plan.badge === "Recommended"
+                                                                                            ? "#1D4ED8"
+                                                                                            : plan.badge === "Premium"
+                                                                                                ? "#92400E"
+                                                                                                : "#6B7280",
+                                                                            }}
                                                                         >
                                                                             {plan.badge}
-                                                                        </Badge>
+                                                                        </span>
                                                                     )}
                                                                 </InlineStack>
                                                             </Box>
@@ -688,14 +700,16 @@ function PricingInner({ activePlan, isDev }) {
                                             </Box>
                                             {PLANS.map((plan) => (
                                                 <Box key={plan.id} minWidth="100px">
-                                                    <Text
-                                                        as="span"
-                                                        variant="bodySm"
-                                                        fontWeight="semibold"
-                                                        tone={activePlan === plan.id ? undefined : "subdued"}
-                                                    >
-                                                        {plan.name}
-                                                    </Text>
+                                                    <InlineStack align="center">
+                                                        <Text
+                                                            as="span"
+                                                            variant="bodySm"
+                                                            fontWeight="semibold"
+                                                            tone={activePlan === plan.id ? undefined : "subdued"}
+                                                        >
+                                                            {plan.name}
+                                                        </Text>
+                                                    </InlineStack>
                                                 </Box>
                                             ))}
                                         </InlineStack>
@@ -715,19 +729,21 @@ function PricingInner({ activePlan, isDev }) {
                                                         const val = row.values[plan.id];
                                                         return (
                                                             <Box key={plan.id} minWidth="100px">
-                                                                {typeof val === "boolean" ? (
-                                                                    val ? (
-                                                                        <Icon source={CheckIcon} tone="success" />
+                                                                <InlineStack align="center">
+                                                                    {typeof val === "boolean" ? (
+                                                                        val ? (
+                                                                            <Icon source={CheckIcon} tone="success" />
+                                                                        ) : (
+                                                                            <Text as="span" tone="subdued">—</Text>
+                                                                        )
                                                                     ) : (
-                                                                        <Text as="span" tone="subdued">
-                                                                            —
-                                                                        </Text>
-                                                                    )
-                                                                ) : (
-                                                                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                                                                        {val}
-                                                                    </Text>
-                                                                )}
+                                                                        <div style={{ whiteSpace: "nowrap" }}>
+                                                                            <Text as="span" variant="bodySm" fontWeight="semibold">
+                                                                                {val}
+                                                                            </Text>
+                                                                        </div>
+                                                                    )}
+                                                                </InlineStack>
                                                             </Box>
                                                         );
                                                     })}
@@ -743,21 +759,26 @@ function PricingInner({ activePlan, isDev }) {
 
                 <Layout.Section>
                     <Card>
-                        <BlockStack gap="300">
-                            <Text as="h2" variant="headingMd">
+                        <BlockStack gap="400">
+                            <Text as="h2" variant="headingLg">
                                 Frequently asked questions
                             </Text>
-                            <Divider />
-                            {FAQ.map((item) => (
-                                <BlockStack key={item.q} gap="100">
-                                    <Text as="p" variant="bodyMd" fontWeight="semibold">
-                                        {item.q}
-                                    </Text>
-                                    <Text as="p" variant="bodyMd" tone="subdued">
-                                        {item.a}
-                                    </Text>
-                                </BlockStack>
-                            ))}
+                            <div style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(3, 1fr)",
+                                gap: "24px",
+                            }}>
+                                {FAQ.map((item) => (
+                                    <BlockStack key={item.q} gap="100">
+                                        <Text as="p" variant="bodyMd" fontWeight="semibold">
+                                            {item.q}
+                                        </Text>
+                                        <Text as="p" variant="bodySm" tone="subdued">
+                                            {item.a}
+                                        </Text>
+                                    </BlockStack>
+                                ))}
+                            </div>
                         </BlockStack>
                     </Card>
                 </Layout.Section>
