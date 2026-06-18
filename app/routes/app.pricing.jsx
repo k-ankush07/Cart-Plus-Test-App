@@ -15,8 +15,8 @@ import {
     SkeletonDisplayText,
 } from "@shopify/polaris";
 
-import { useState, Suspense } from "react";
-import { CheckIcon } from "@shopify/polaris-icons";
+import { useState, useEffect, Suspense } from "react";
+import { CheckIcon, ChevronUpIcon, ChevronDownIcon } from "@shopify/polaris-icons";
 import { useLoaderData, useFetcher, Await } from "react-router-dom";
 import { authenticate } from "../shopify.server";
 import "../index.css";
@@ -44,7 +44,7 @@ const PLANS = [
         price: 4.99,
         period: "month",
         badge: "Popular",
-        description: "For growing stores",
+        description: "Up to 200 orders/mo",
         cta: "Upgrade to Starter",
         tone: "success",
         features: [
@@ -64,7 +64,7 @@ const PLANS = [
         price: 9.99,
         period: "month",
         badge: "Best value",
-        description: "For scaling businesses",
+        description: "Up to 500 orders/mo",
         cta: "Upgrade to Growth",
         tone: null,
         features: [
@@ -84,7 +84,7 @@ const PLANS = [
         price: 14.99,
         period: "month",
         badge: "Active",
-        description: "For scaling businesses",
+        description: "Up to 1000 orders/mo",
         cta: "Upgrade to Advance",
         tone: null,
         features: [
@@ -99,6 +99,22 @@ const PLANS = [
         ],
     },
 
+];
+
+// Feature matrix rows for the "Compare plans" table. Each row maps a label
+// to either a per-plan boolean (✓ / —) or a per-plan display value (e.g. order limits).
+const COMPARE_ROWS = [
+    {
+        label: "Monthly orders",
+        values: { free: "Dev/Partner Stores Only", starter: "200", growth: "500", advance: "1000" },
+    },
+    { label: "14-day free trial", values: { free: false, starter: true, growth: true, advance: true } },
+    { label: "Design settings", values: { free: false, starter: true, growth: true, advance: true } },
+    { label: "Announcements module", values: { free: false, starter: true, growth: true, advance: true } },
+    { label: "Upsells & cross-sells", values: { free: false, starter: true, growth: true, advance: true } },
+    { label: "Reward progress bar", values: { free: false, starter: true, growth: true, advance: true } },
+    { label: "Add-ons module", values: { free: false, starter: true, growth: true, advance: true } },
+    { label: "Custom HTML & CSS", values: { free: false, starter: true, growth: true, advance: true } },
 ];
 
 const FAQ = [
@@ -318,31 +334,12 @@ function PricingSkeleton() {
         <Page title="Pricing" subtitle="Choose the plan that works best for your store">
             <Layout>
                 <Layout.Section>
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                            gap: "16px",
-                        }}
-                    >
-                        {[0, 1, 2].map((i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    border: "1px solid #e1e3e5",
-                                    borderRadius: "12px",
-                                    padding: "24px",
-                                    backgroundColor: "#fff",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: "16px",
-                                }}
-                            >
-                                <SkeletonDisplayText size="small" />
-                                <SkeletonBodyText lines={5} />
-                            </div>
-                        ))}
-                    </div>
+                    <Card>
+                        <BlockStack gap="400">
+                            <SkeletonDisplayText size="small" />
+                            <SkeletonBodyText lines={6} />
+                        </BlockStack>
+                    </Card>
                 </Layout.Section>
             </Layout>
         </Page>
@@ -366,7 +363,103 @@ export default function Pricing() {
 // ─── Inner component ──────────────────────────────────────────────────────────
 
 function PricingInner({ activePlan, isDev }) {
-    const [anyHovered, setAnyHovered] = useState(false);
+    const [plansVisible, setPlansVisible] = useState(true);
+    const fetcher = useFetcher();
+    const [redirecting, setRedirecting] = useState(false);
+    const [showDowngradeModal, setShowDowngradeModal] = useState(false);
+    const [pendingPlan, setPendingPlan] = useState(null);
+
+    // Tracks WHICH plan row triggered the current fetcher submission, so only
+    // that row shows a spinner instead of every button on the page.
+    const [pendingPlanId, setPendingPlanId] = useState(null);
+
+    const isLoading = fetcher.state !== "idle" || redirecting;
+    const activePlanData = PLANS.find((p) => p.id === activePlan);
+
+    // Side effects must live in useEffect, not in the render body.
+    useEffect(() => {
+        if (fetcher.data?.confirmationUrl && !redirecting) {
+            setRedirecting(true);
+            window.top.location.href = fetcher.data.confirmationUrl;
+        }
+    }, [fetcher.data, redirecting]);
+
+    // Reset the "which row is loading" marker once the fetcher goes idle again
+    // (e.g. request finished, errored, or was a no-op).
+    useEffect(() => {
+        if (fetcher.state === "idle" && !redirecting) {
+            setPendingPlanId(null);
+        }
+    }, [fetcher.state, redirecting]);
+
+    // Called when a row button is clicked — either submits directly (upgrade)
+    // or opens the confirmation modal first (downgrade / move to free).
+    const handlePlanAction = (plan) => {
+        const isDowngrade = plan.id === "free" || plan.price < (activePlanData?.price ?? 0);
+        if (isDowngrade) {
+            setPendingPlan(plan);
+            setShowDowngradeModal(true);
+        } else {
+            setPendingPlanId(plan.id);
+            fetcher.submit(
+                { _action: "upgrade", plan: plan.id },
+                { method: "post" }
+            );
+        }
+    };
+
+    const confirmDowngrade = () => {
+        setShowDowngradeModal(false);
+        if (!pendingPlan) return;
+        setPendingPlanId(pendingPlan.id);
+        if (pendingPlan.id === "free") {
+            fetcher.submit({ _action: "cancel" }, { method: "post" });
+        } else {
+            fetcher.submit(
+                { _action: "upgrade", plan: pendingPlan.id },
+                { method: "post" }
+            );
+        }
+    };
+
+    const renderRowButton = (plan) => {
+        const isActive = activePlan === plan.id;
+     
+        const thisRowLoading = isLoading && pendingPlanId === plan.id;
+        const otherRowBusy = isLoading && pendingPlanId !== plan.id;
+
+        if (isActive) {
+            return <Button disabled>Current plan</Button>;
+        }
+
+        if (plan.id === "free") {
+            const onPaidPlan = activePlan !== "free";
+            if (!onPaidPlan) return <Button disabled>Current plan</Button>;
+            return (
+                <Button
+                    tone="critical"
+                    variant="secondary"
+                    loading={thisRowLoading}
+                    disabled={otherRowBusy}
+                    onClick={() => handlePlanAction(plan)}
+                >
+                    Downgrade to Free
+                </Button>
+            );
+        }
+
+        const isDowngrade = plan.price < (activePlanData?.price ?? 0);
+        return (
+            <Button
+                variant="primary"
+                loading={thisRowLoading}
+                disabled={otherRowBusy}
+                onClick={() => handlePlanAction(plan)}
+            >
+                {isDowngrade ? `Downgrade to ${plan.name}` : plan.cta}
+            </Button>
+        );
+    };
 
     return (
         <Page
@@ -391,34 +484,261 @@ function PricingInner({ activePlan, isDev }) {
                         <Banner tone="success">
                             <Text as="p" variant="bodyMd">
                                 You are on the{" "}
-                                <strong>
-                                    {PLANS.find((p) => p.id === activePlan)?.name} plan
-                                </strong>
-                                . Thank you for subscribing!
+                                <strong>{activePlanData?.name} plan</strong>. Thank you for
+                                subscribing!
                             </Text>
                         </Banner>
                     </Layout.Section>
                 )}
 
-                <Layout.Section>
+                {/* ── Downgrade confirmation modal ── */}
+                {showDowngradeModal && pendingPlan && (
                     <div
                         style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                            gap: "16px",
+                            position: "fixed",
+                            inset: 0,
+                            background: "rgba(0,0,0,0.45)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            zIndex: 9999,
                         }}
-                        onMouseLeave={() => setAnyHovered(false)}
+                        onClick={() => setShowDowngradeModal(false)}
                     >
-                        {PLANS.map((plan) => (
-                            <PricingCard
-                                key={plan.id}
-                                plan={plan}
-                                activePlan={activePlan}
-                                onCardHover={setAnyHovered}
-                                anyHovered={anyHovered}
-                            />
-                        ))}
+                        <div
+                            style={{
+                                background: "#fff",
+                                borderRadius: "12px",
+                                padding: "24px",
+                                maxWidth: "400px",
+                                width: "90%",
+                                boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <BlockStack gap="400">
+                                <BlockStack gap="100">
+                                    <Text as="h2" variant="headingMd">
+                                        Downgrade to {pendingPlan.name}?
+                                    </Text>
+                                    <Text as="p" variant="bodyMd" tone="subdued">
+                                        {pendingPlan.id === "free"
+                                            ? "You'll lose access to all paid features. Cart drawers beyond the free limit will be paused."
+                                            : `You'll lose access to higher-tier features. Any extras beyond the ${pendingPlan.name} plan limits will be paused.`}
+                                    </Text>
+                                </BlockStack>
+                                <Divider />
+                                <InlineStack gap="200" align="end">
+                                    <Button onClick={() => setShowDowngradeModal(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        tone="critical"
+                                        onClick={confirmDowngrade}
+                                        loading={isLoading}
+                                    >
+                                        Yes, downgrade
+                                    </Button>
+                                </InlineStack>
+                            </BlockStack>
+                        </div>
                     </div>
+                )}
+
+                {/* ── Choose plan card ── */}
+                <Layout.Section>
+                    <Card padding="0">
+                        <Box padding="500">
+                            <BlockStack gap="400">
+                                <Text as="h2" variant="headingLg">
+                                    Choose plan
+                                </Text>
+
+                                {/* Plan rows table */}
+                                {plansVisible && (
+                                    <Box borderColor="border" borderWidth="025" borderRadius="200" overflowX="hidden">
+                                        <Box padding="300" background="bg-surface-secondary">
+                                            <InlineStack wrap={false} gap="400">
+                                                <Box minWidth="180px">
+                                                    <Text as="span" variant="bodySm" fontWeight="semibold" tone="subdued">
+                                                        Plan
+                                                    </Text>
+                                                </Box>
+                                                <Box minWidth="240px">
+                                                    <Text as="span" variant="bodySm" fontWeight="semibold" tone="subdued">
+                                                        Description
+                                                    </Text>
+                                                </Box>
+                                                <Box minWidth="140px">
+                                                    <Text as="span" variant="bodySm" fontWeight="semibold" tone="subdued">
+                                                        Price
+                                                    </Text>
+                                                </Box>
+                                                <Box minWidth="200px" />
+                                            </InlineStack>
+                                        </Box>
+                                        <Divider />
+                                        <Box padding="300">
+                                            <InlineStack
+                                                wrap={false}
+                                                gap="400"
+                                                blockAlign="center"
+                                                align="space-between"
+                                            >
+                                                <InlineStack wrap={false} gap="400" blockAlign="center">
+                                                    <Box minWidth="180px">
+                                                        <InlineStack gap="150" blockAlign="center">
+                                                            <Text as="span" variant="bodyMd" fontWeight="semibold">
+                                                                Free
+                                                            </Text>
+                                                            {activePlan === "free" && (
+                                                                <Badge tone="success">Active</Badge>
+                                                            )}
+                                                        </InlineStack>
+                                                    </Box>
+                                                    <Box minWidth="240px">
+                                                        <Text as="span" variant="bodySm" tone="subdued">
+                                                            Perfect for getting started
+                                                        </Text>
+                                                    </Box>
+                                                    <Box minWidth="140px">
+                                                        <Text as="span" variant="bodyMd" fontWeight="semibold">
+                                                            Free
+                                                        </Text>
+                                                    </Box>
+                                                </InlineStack>
+                                                {renderRowButton(PLANS.find((p) => p.id === "free"))}
+                                            </InlineStack>
+                                        </Box>
+                                        <Divider />
+                                        {PLANS.filter((p) => p.id !== "free").map((plan, idx) => (
+                                            <Box key={plan.id}>
+                                                {idx > 0 && <Divider />}
+                                                <Box padding="300">
+                                                    <InlineStack
+                                                        wrap={false}
+                                                        gap="400"
+                                                        blockAlign="center"
+                                                        align="space-between"
+                                                    >
+                                                        <InlineStack wrap={false} gap="400" blockAlign="center">
+                                                            <Box minWidth="180px">
+                                                                <InlineStack gap="150" blockAlign="center">
+                                                                    <Text as="span" variant="bodyMd" fontWeight="semibold">
+                                                                        {plan.name}
+                                                                    </Text>
+                                                                    {activePlan === plan.id && (
+                                                                        <Badge tone="success">Active</Badge>
+                                                                    )}
+                                                                    {activePlan !== plan.id && plan.badge && (
+                                                                        <Badge
+                                                                            tone={
+                                                                                plan.badge === "Popular"
+                                                                                    ? "success"
+                                                                                    : plan.badge === "Best value"
+                                                                                        ? "info"
+                                                                                        : "attention"
+                                                                            }
+                                                                        >
+                                                                            {plan.badge}
+                                                                        </Badge>
+                                                                    )}
+                                                                </InlineStack>
+                                                            </Box>
+                                                            <Box minWidth="240px">
+                                                                <Text as="span" variant="bodySm" tone="subdued">
+                                                                    {plan.description}
+                                                                </Text>
+                                                            </Box>
+                                                            <Box minWidth="140px">
+                                                                <Text as="span" variant="bodyMd" fontWeight="semibold">
+                                                                    ${plan.price.toFixed(2)}/mo
+                                                                </Text>
+                                                            </Box>
+                                                        </InlineStack>
+                                                        {renderRowButton(plan)}
+                                                    </InlineStack>
+                                                </Box>
+                                            </Box>
+                                        ))}
+
+                                    </Box>
+                                )}
+                            </BlockStack>
+                        </Box>
+                    </Card>
+                </Layout.Section>
+
+                {/* ── Compare plans ── */}
+                <Layout.Section>
+                    <Card padding="0">
+                        <Box padding="500">
+                            <BlockStack gap="400">
+                                <Text as="h2" variant="headingLg">
+                                    Compare plans
+                                </Text>
+                                <Box borderColor="border" borderWidth="025" borderRadius="200" overflowX="auto">
+                                    <Box padding="300" background="bg-surface-secondary">
+                                        <InlineStack wrap={false} gap="400" align="space-between">
+                                            <Box minWidth="200px">
+                                                <Text as="span" variant="bodySm" fontWeight="semibold" tone="subdued">
+                                                    Feature
+                                                </Text>
+                                            </Box>
+                                            {PLANS.map((plan) => (
+                                                <Box key={plan.id} minWidth="100px">
+                                                    <Text
+                                                        as="span"
+                                                        variant="bodySm"
+                                                        fontWeight="semibold"
+                                                        tone={activePlan === plan.id ? undefined : "subdued"}
+                                                    >
+                                                        {plan.name}
+                                                    </Text>
+                                                </Box>
+                                            ))}
+                                        </InlineStack>
+                                    </Box>
+                                    <Divider />
+                                    {COMPARE_ROWS.map((row, idx) => (
+                                        <Box key={row.label}>
+                                            {idx > 0 && <Divider />}
+                                            <Box padding="300">
+                                                <InlineStack wrap={false} gap="400" align="space-between" blockAlign="center">
+                                                    <Box minWidth="200px">
+                                                        <Text as="span" variant="bodySm">
+                                                            {row.label}
+                                                        </Text>
+                                                    </Box>
+                                                    {PLANS.map((plan) => {
+                                                        const val = row.values[plan.id];
+                                                        return (
+                                                            <Box key={plan.id} minWidth="100px">
+                                                                {typeof val === "boolean" ? (
+                                                                    val ? (
+                                                                        <Icon source={CheckIcon} tone="success" />
+                                                                    ) : (
+                                                                        <Text as="span" tone="subdued">
+                                                                            —
+                                                                        </Text>
+                                                                    )
+                                                                ) : (
+                                                                    <Text as="span" variant="bodySm" fontWeight="semibold">
+                                                                        {val}
+                                                                    </Text>
+                                                                )}
+                                                            </Box>
+                                                        );
+                                                    })}
+                                                </InlineStack>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Box>
+                            </BlockStack>
+                        </Box>
+                    </Card>
                 </Layout.Section>
 
                 <Layout.Section>
@@ -443,237 +763,5 @@ function PricingInner({ activePlan, isDev }) {
                 </Layout.Section>
             </Layout>
         </Page>
-    );
-}
-
-// ─── Pricing card ─────────────────────────────────────────────────────────────
-
-function PricingCard({ plan, activePlan, onCardHover, anyHovered }) {
-    const fetcher = useFetcher();
-    const [redirecting, setRedirecting] = useState(false);
-    const [hovered, setHovered] = useState(false);
-    const [showDowngradeModal, setShowDowngradeModal] = useState(false);
-    const isActive = activePlan === plan.id;
-    const isLoading = fetcher.state !== "idle" || redirecting;
-    const onPaidPlan = activePlan !== "free";
-
-    const activePlanData = PLANS.find((p) => p.id === activePlan);
-    const isDowngrade = plan.price < (activePlanData?.price ?? 0);
-
-    if (fetcher.data?.confirmationUrl && !redirecting) {
-        setRedirecting(true);
-        window.top.location.href = fetcher.data.confirmationUrl;
-    }
-
-    const getBorder = () => {
-        if (isActive) return (anyHovered && !hovered) ? "2px solid #e1e3e5" : "2px solid #FD6802";
-        return hovered ? "2px solid #FD6802" : "2px solid #e1e3e5";
-    };
-
-    // Called when user clicks a downgrade button — shows modal instead of submitting
-    const handleDowngradeClick = () => setShowDowngradeModal(true);
-
-    // Called when user confirms in modal — submits the hidden form
-    const confirmDowngrade = () => {
-        setShowDowngradeModal(false);
-        document.getElementById(`downgrade-form-${plan.id}`)?.requestSubmit();
-    };
-
-    return (
-        <>
-            {/* ── Downgrade confirmation modal ── */}
-            {showDowngradeModal && (
-                <div
-                    style={{
-                        position: "fixed",
-                        inset: 0,
-                        background: "rgba(0,0,0,0.45)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        zIndex: 9999,
-                    }}
-                    onClick={() => setShowDowngradeModal(false)}
-                >
-                    <div
-                        style={{
-                            background: "#fff",
-                            borderRadius: "12px",
-                            padding: "24px",
-                            maxWidth: "400px",
-                            width: "90%",
-                            boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <BlockStack gap="400">
-                            <BlockStack gap="100">
-                                <Text as="h2" variant="headingMd">
-                                    Downgrade to {plan.name}?
-                                </Text>
-                                <Text as="p" variant="bodyMd" tone="subdued">
-                                    {plan.id === "free"
-                                        ? "You'll lose access to all paid features. Cart drawers beyond the free limit will be paused."
-                                        : `You'll lose access to higher-tier features. Any extras beyond the ${plan.name} plan limits will be paused.`}
-                                </Text>
-                            </BlockStack>
-                            <Divider />
-                            <InlineStack gap="200" align="end">
-                                <Button onClick={() => setShowDowngradeModal(false)}>
-                                    Cancel
-                                </Button>
-                                <Button
-                                    variant="primary"
-                                    tone="critical"
-                                    onClick={confirmDowngrade}
-                                    loading={isLoading}
-                                >
-                                    Yes, downgrade
-                                </Button>
-                            </InlineStack>
-                        </BlockStack>
-                    </div>
-                </div>
-            )}
-
-            {/* ── Card ── */}
-            <div
-                onMouseEnter={() => { setHovered(true); onCardHover(true); }}
-                onMouseLeave={() => setHovered(false)}
-                style={{
-                    border: getBorder(),
-                    borderRadius: "12px",
-                    padding: "24px",
-                    backgroundColor: "#fff",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "16px",
-                    position: "relative",
-                    cursor: "pointer",
-                    transition: "border-color 0.15s ease",
-                }}
-            >
-                {plan.badge && (
-                    <div style={{ position: "absolute", top: "-12px", left: "20px" }}>
-                        <Badge tone={plan.badge === "Popular" ? "success" : plan.badge === "Best value" ? "info" : plan.badge === "Active" ? "warning" : "critical"}>
-                            {plan.badge}
-                        </Badge>
-                    </div>
-                )}
-                {isActive && (
-                    <div style={{ position: "absolute", top: "-12px", right: "20px" }} className="badge-orange">
-                        <Badge tone="info">Active plan</Badge>
-                    </div>
-                )}
-
-                <BlockStack gap="100">
-                    <Text as="h3" variant="headingMd">{plan.name}</Text>
-                    <Text as="p" variant="bodySm" tone="subdued">{plan.description}</Text>
-                </BlockStack>
-
-                <InlineStack gap="100" blockAlign="end">
-                    <Text as="p" variant="heading2xl" fontWeight="bold">
-                        {plan.price === 0 ? "Free" : `$${plan.price}`}
-                    </Text>
-                    {plan.price > 0 && (
-                        <Text as="p" variant="bodySm" tone="subdued">/ {plan.period}</Text>
-                    )}
-                </InlineStack>
-
-                <Divider />
-
-                <BlockStack gap="200">
-                    {plan.features.map((feature) => (
-                        <InlineStack key={feature} gap="200" blockAlign="center">
-                            <Box>
-                                <span
-                                    style={{
-                                        background: plan.id === "free" ? "#f0f0f0" : plan.id === "starter" ? "#e6f4f0" : plan.id === "growth" ? "#eff6ff" : "#fff4e5",
-                                        color: plan.id === "free" ? "#8c9196" : plan.id === "starter" ? "#008060" : plan.id === "growth" ? "#2563eb" : "#b45309",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        width: "22px",
-                                        height: "22px",
-                                        borderRadius: "100px",
-                                    }}
-                                >
-                                    <Icon source={CheckIcon} />
-                                </span>
-                            </Box>
-                            <Box maxWidth="160px">
-                                <Text as="p" variant="bodySm">{feature}</Text>
-                            </Box>
-                        </InlineStack>
-                    ))}
-                </BlockStack>
-
-                <div style={{ marginTop: "auto" }}>
-                    {/* Free plan */}
-                    {plan.id === "free" && (
-                        onPaidPlan ? (
-                            <>
-                                {/* Hidden form — submitted programmatically after modal confirm */}
-                                <fetcher.Form
-                                    id={`downgrade-form-${plan.id}`}
-                                    method="post"
-                                    style={{ display: "none" }}
-                                >
-                                    <input type="hidden" name="_action" value="cancel" />
-                                </fetcher.Form>
-                                <Button
-                                    fullWidth
-                                    variant="secondary"
-                                    tone="critical"
-                                    loading={isLoading}
-                                    onClick={handleDowngradeClick}
-                                >
-                                    Downgrade to Free
-                                </Button>
-                            </>
-                        ) : (
-                            <Button fullWidth disabled>Current plan</Button>
-                        )
-                    )}
-
-                    {/* Paid plan — currently active */}
-                    {plan.id !== "free" && isActive && (
-                        <Button fullWidth disabled>Current plan</Button>
-                    )}
-
-                    {/* Paid plan — not active */}
-                    {plan.id !== "free" && !isActive && (
-                        isDowngrade ? (
-                            <>
-                                <fetcher.Form
-                                    id={`downgrade-form-${plan.id}`}
-                                    method="post"
-                                    style={{ display: "none" }}
-                                >
-                                    <input type="hidden" name="_action" value="upgrade" />
-                                    <input type="hidden" name="plan" value={plan.id} />
-                                </fetcher.Form>
-                                <Button
-                                    fullWidth
-                                    variant="primary"
-                                    loading={isLoading}
-                                    onClick={handleDowngradeClick}
-                                >
-                                    {plan.cta}
-                                </Button>
-                            </>
-                        ) : (
-                            <fetcher.Form method="post">
-                                <input type="hidden" name="_action" value="upgrade" />
-                                <input type="hidden" name="plan" value={plan.id} />
-                                <Button fullWidth variant="primary" submit loading={isLoading}>
-                                    {plan.cta}
-                                </Button>
-                            </fetcher.Form>
-                        )
-                    )}
-                </div>
-            </div>
-        </>
     );
 }
