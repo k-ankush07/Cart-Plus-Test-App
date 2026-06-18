@@ -116,8 +116,8 @@ function buildSetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appE
       onAction: goTo("triggered-rewards"),
     },
     {
-      title: "Appname Embed Installation",
-      description: "Set up the Appname embed in your Shopify theme before enabling AppName to start using its features.",
+      title: "Cart Plus Embed Installation",
+      description: "Set up the Cart Plus embed in your Shopify theme before enabling Cart Plus to start using its features.",
       actionLabel: "Install Upcart app embed",
       completed: appEmbedInstalled,
       isEmbedStarted: false,
@@ -129,9 +129,9 @@ function buildSetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appE
         ),
     },
     {
-      title: "Activate Appname",
-      description: "Open the cart editor and set the AppName status to 'Active'.",
-      actionLabel: "Activate Appname",
+      title: "Activate Cart Plus",
+      description: "Open the cart editor and set the Cart Plus status to 'Active'.",
+      actionLabel: "Activate Cart Plus",
       completed: !!liveCart,
       onAction: () => navigate("/app/carts"),
     },
@@ -351,7 +351,7 @@ function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft, 
 
 function DashboardSkeleton() {
   return (
-    <Page title="Welcome to Custom Cart 🎉">
+    <Page title="Welcome to Cart Plus 🎉">
       <style>{pulseStyle}</style>
       <BlockStack gap="400">
         <BlockStack gap="200">
@@ -525,7 +525,7 @@ function DashboardInner({
 
   return (
     <Page
-      title="Welcome to Custom Cart 🎉"
+      title="Welcome to Cart Plus 🎉"
       primaryAction={
         <InlineStack align="end" gap="300">
           <DateRangePicker value={range} onChange={setRange} />
