@@ -83,7 +83,7 @@ const PLANS = [
         name: "Advance",
         price: 14.99,
         period: "month",
-        badge: "Best value",
+        badge: "Active",
         description: "For scaling businesses",
         cta: "Upgrade to Advance",
         tone: null,
@@ -555,7 +555,9 @@ function PricingCard({ plan, activePlan, onCardHover, anyHovered }) {
             >
                 {plan.badge && (
                     <div style={{ position: "absolute", top: "-12px", left: "20px" }}>
-                        <Badge tone={plan.badge === "Popular" ? "success" : "info"}>{plan.badge}</Badge>
+                        <Badge tone={plan.badge === "Popular" ? "success" : plan.badge === "Best value" ? "info" : plan.badge === "Active" ? "warning" : "critical"}>
+                            {plan.badge}
+                        </Badge>
                     </div>
                 )}
                 {isActive && (
@@ -584,12 +586,18 @@ function PricingCard({ plan, activePlan, onCardHover, anyHovered }) {
                     {plan.features.map((feature) => (
                         <InlineStack key={feature} gap="200" blockAlign="center">
                             <Box>
-                                <span style={{
-                                    background: plan.id === "free" ? "#f0f0f0" : plan.id === "starter" ? "#e6f4f0" : "#eff6ff",
-                                    color: plan.id === "free" ? "#8c9196" : plan.id === "starter" ? "#008060" : "#2563eb",
-                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                    width: "22px", height: "22px", borderRadius: "100px",
-                                }}>
+                                <span
+                                    style={{
+                                        background: plan.id === "free" ? "#f0f0f0" : plan.id === "starter" ? "#e6f4f0" : plan.id === "growth" ? "#eff6ff" : "#fff4e5",
+                                        color: plan.id === "free" ? "#8c9196" : plan.id === "starter" ? "#008060" : plan.id === "growth" ? "#2563eb" : "#b45309",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        width: "22px",
+                                        height: "22px",
+                                        borderRadius: "100px",
+                                    }}
+                                >
                                     <Icon source={CheckIcon} />
                                 </span>
                             </Box>
