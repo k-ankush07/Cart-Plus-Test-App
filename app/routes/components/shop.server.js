@@ -33,6 +33,8 @@ export const shopLoader = async (request) => {
           currencyCode
           plan {
             displayName
+            partnerDevelopment
+            shopifyPlus
           }
         }
         themes(first: 5, roles: [MAIN]) {

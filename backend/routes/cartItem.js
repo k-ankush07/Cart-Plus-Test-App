@@ -21,8 +21,20 @@ const router = express.Router();
 // ─── Plan order limits (monthly) ─────────────────────────────────────────────
 const PLAN_ORDER_LIMITS = {
   free: 50,
-  starter: 100,
-  growth: 200,
+  starter: 200,
+  growth: 500,
+  advance: 1000,
+};
+
+// ─── Plan entitlement ────────────────────────────────────────────────────────
+// A shop is entitled to the cart drawer + all features when it is a Shopify
+// development / partner store (free forever) OR on an active paid plan.
+// Live stores on the free plan are NOT entitled — the storefront drawer is
+// suppressed for them.
+const isEntitled = (shopPlan) => {
+  if (!shopPlan) return false;
+  if (shopPlan.isDev) return true;
+  return shopPlan.plan !== "free" && shopPlan.status === "active";
 };
 
 const getMonthlyOrderCount = async (shop) => {
@@ -60,12 +72,16 @@ router.get("/get-carts", async (req, res) => {
         message: "Missing required field: shop",
       });
     }
-    const carts = await cartModels.find({ shop });
+    const [carts, shopPlan] = await Promise.all([
+      cartModels.find({ shop }),
+      shopPlanModel.findOne({ shop }),
+    ]);
 
     return res.status(200).json({
       success: true,
       message: "Carts retrieved successfully",
       data: carts,
+      entitled: isEntitled(shopPlan),
     });
   } catch (error) {
     console.error("GET CARTS ERROR:", error);
@@ -494,7 +510,7 @@ router.get("/shop-plan", async (req, res) => {
 
 router.post("/shop-plan", async (req, res) => {
   try {
-    const { shop, plan, price, subscriptionId, status } = req.body;
+    const { shop, plan, price, subscriptionId, status, isDev } = req.body;
 
     if (!shop || !plan || price === undefined) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
@@ -503,17 +519,21 @@ router.post("/shop-plan", async (req, res) => {
     // 1. Read previous plan BEFORE updating
     const previousPlan = await shopPlanModel.findOne({ shop });
 
-    // 2. Save to DB first
+    // 2. Save to DB first. Only overwrite isDev when the caller provides it
+    //    (the billing action omits it and must not wipe the stored value).
+    const update = {
+      shop,
+      plan,
+      price,
+      subscriptionId,
+      status: status || "active",
+      updatedAt: new Date(),
+    };
+    if (isDev !== undefined) update.isDev = isDev;
+
     const updated = await shopPlanModel.findOneAndUpdate(
       { shop },
-      {
-        shop,
-        plan,
-        price,
-        subscriptionId,
-        status: status || "active",
-        updatedAt: new Date(),
-      },
+      update,
       { upsert: true, new: true }
     );
 
@@ -681,6 +701,8 @@ router.post("/order-revenue", async (req, res) => {
     // ─── Plan limit check ────────────────────────────────────────────────────
     const shopPlan = await shopPlanModel.findOne({ shop });
     const planName = shopPlan?.plan || "free";
+    // Dev / partner stores are entitled to everything for free → no cap.
+    const enforceLimit = !shopPlan?.isDev;
     const monthlyLimit = PLAN_ORDER_LIMITS[planName] ?? PLAN_ORDER_LIMITS.free;
     const monthlyOrderCount = await getMonthlyOrderCount(shop);
 
@@ -709,7 +731,7 @@ router.post("/order-revenue", async (req, res) => {
     };
     // ────────────────────────────────────────────────────────────────────────
 
-    if (monthlyOrderCount >= monthlyLimit) {
+    if (enforceLimit && monthlyOrderCount >= monthlyLimit) {
       await cartModels.findOneAndUpdate(
         { cartId: publishedCart.cartId },
         { $set: { status: "unpublished" } },
@@ -741,7 +763,7 @@ router.post("/order-revenue", async (req, res) => {
 
     // ─── Re-check after incrementing ────────────────────────────────────────
     const newMonthlyCount = monthlyOrderCount + 1;
-    if (newMonthlyCount >= monthlyLimit) {
+    if (enforceLimit && newMonthlyCount >= monthlyLimit) {
       await cartModels.findOneAndUpdate(
         { cartId: publishedCart.cartId },
         { $set: { status: "unpublished" } },

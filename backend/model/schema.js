@@ -67,6 +67,9 @@ const shopPlanSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   subscriptionId: { type: String, default: null },
   status: { type: String, enum: ["active", "pending", "cancelled"], default: "active" },
+  // True for Shopify development / partner stores — these get every feature
+  // for free. Live stores must be on a paid plan to be entitled.
+  isDev: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

@@ -35,69 +35,89 @@ const PLANS = [
         cta: "Current plan",
         tone: null,
         features: [
-            "1 cart drawer",
-            "Basic design customization",
-            "Cart announcements",
-            "Email support",
+            "Dev/Partner Stores Only",
         ],
     },
     {
         id: "starter",
         name: "Starter",
-        price: 9,
+        price: 4.99,
         period: "month",
         badge: "Popular",
         description: "For growing stores",
         cta: "Upgrade to Starter",
         tone: "success",
         features: [
-            "3 cart drawers",
-            "Advanced design customization",
-            "Tiered rewards",
+            "Up to 200 monthly store orders",
+            "14 Day Trial",
+            "Design Settings",
+            "Announcements Module",
             "Upsells & cross-sells",
-            "Trust badges",
-            "Priority email support",
+            "Reward Progress Bar",
+            "Add-Ons Module",
+            "Custom HTML and CSS",
         ],
     },
     {
         id: "growth",
         name: "Growth",
-        price: 29,
+        price: 9.99,
         period: "month",
         badge: "Best value",
         description: "For scaling businesses",
         cta: "Upgrade to Growth",
         tone: null,
         features: [
-            "Unlimited cart drawers",
-            "Everything in Starter",
-            "Sticky cart button",
-            "Express payments",
-            "Discount codes",
-            "Add-ons & subscriptions",
-            "Custom HTML blocks",
-            "Live chat support",
+            "Up to 500 monthly store orders",
+            "14 Day Trial",
+            "Design Settings",
+            "Announcements Module",
+            "Upsells & cross-sells",
+            "Reward Progress Bar",
+            "Add-Ons Module",
+            "Custom HTML and CSS",
         ],
     },
+    {
+        id: "advance",
+        name: "Advance",
+        price: 14.99,
+        period: "month",
+        badge: "Best value",
+        description: "For scaling businesses",
+        cta: "Upgrade to Advance",
+        tone: null,
+        features: [
+            "Up to 1000 monthly store orders",
+            "14 Day Trial",
+            "Design Settings",
+            "Announcements Module",
+            "Upsells & cross-sells",
+            "Reward Progress Bar",
+            "Add-Ons Module",
+            "Custom HTML and CSS",
+        ],
+    },
+
 ];
 
 const FAQ = [
-  {
-    q: "Is there a free trial available?",
-    a: "Yes, we offer a free trial so you can test all key features before choosing a paid plan.",
-  },
-  {
-    q: "What happens if I switch plans?",
-    a: "When you upgrade or downgrade, your billing is automatically adjusted based on your new plan.",
-  },
-  {
-    q: "Does the cart drawer work with all Shopify themes?",
-    a: "Yes, our cart drawer is designed to be compatible with most Shopify themes.",
-  },
-  {
-    q: "Do you offer annual billing?",
-    a: "Yes, annual billing is available with a 20% discount. Contact support to switch.",
-  },
+    {
+        q: "Is there a free trial available?",
+        a: "Yes, we offer a free trial so you can test all key features before choosing a paid plan.",
+    },
+    {
+        q: "What happens if I switch plans?",
+        a: "When you upgrade or downgrade, your billing is automatically adjusted based on your new plan.",
+    },
+    {
+        q: "Does the cart drawer work with all Shopify themes?",
+        a: "Yes, our cart drawer is designed to be compatible with most Shopify themes.",
+    },
+    {
+        q: "Do you offer annual billing?",
+        a: "Yes, annual billing is available with a 20% discount. Contact support to switch.",
+    },
 ];
 
 // ─── API key helper (server-side: read from process.env) ─────────────────────
@@ -110,11 +130,11 @@ const apiAuthHeaders = (extra = {}) => ({
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
-const savePlan = (apiUrl, shop, plan, price, subscriptionId, status) =>
+const savePlan = (apiUrl, shop, plan, price, subscriptionId, status, isDev) =>
     fetch(`${apiUrl}/api/shop-plan`, {
         method: "POST",
         headers: apiAuthHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ shop, plan, price, subscriptionId, status }),
+        body: JSON.stringify({ shop, plan, price, subscriptionId, status, isDev }),
     });
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
@@ -122,6 +142,7 @@ const savePlan = (apiUrl, shop, plan, price, subscriptionId, status) =>
 export const loader = async ({ request }) => {
     const { shop, apiUrl, admin } = await shopLoader(request);
     const shopDomain = shop?.myshopifyDomain;
+    const isDev = shop?.plan?.partnerDevelopment || false;
 
     const dataPromise = (async () => {
         const res = await admin.graphql(`
@@ -158,12 +179,17 @@ export const loader = async ({ request }) => {
             const amount = parseFloat(
                 active.lineItems?.[0]?.plan?.pricingDetails?.price?.amount || 0
             );
-            activePlan = amount <= 9 ? "starter" : "growth";
+            // Match the charged amount to the closest paid plan so all
+            // tiers (starter / growth / advance …) resolve correctly.
+            const matched = PLANS
+                .filter((p) => p.price > 0)
+                .sort((a, b) => Math.abs(a.price - amount) - Math.abs(b.price - amount))[0];
+            activePlan = matched?.id || "starter";
             activePrice = amount;
             activeSubscriptionId = active.id;
         }
 
-        savePlan(apiUrl, shopDomain, activePlan, activePrice, activeSubscriptionId, "active")
+        savePlan(apiUrl, shopDomain, activePlan, activePrice, activeSubscriptionId, "active", isDev)
             .catch((e) => console.error("savePlan error:", e));
 
         const dbRes = await fetch(
@@ -173,7 +199,7 @@ export const loader = async ({ request }) => {
 
         const dbData = await dbRes.json();
 
-        return { activePlan, apiUrl, dbRecord: dbData.data };
+        return { activePlan, apiUrl, dbRecord: dbData.data, isDev };
     })();
 
     return { dataPromise };
@@ -218,9 +244,11 @@ export const action = async ({ request }) => {
     }
 
     const selectedPlan = formData.get("plan");
-    const priceMap = { starter: "9.00", growth: "29.00" };
-    const price = priceMap[selectedPlan];
-    if (!price) return Response.json({ error: "Invalid plan" }, { status: 400 });
+    // Price comes straight from the PLANS definition so the four tiers stay
+    // in sync with what the merchant sees on the page.
+    const planDef = PLANS.find((p) => p.id === selectedPlan && p.price > 0);
+    if (!planDef) return Response.json({ error: "Invalid plan" }, { status: 400 });
+    const price = planDef.price.toFixed(2);
 
     const returnUrl = `https://${session.shop}/admin/apps/cart-drawer-52/app/pricing?upgraded=${selectedPlan}`;
 
@@ -248,7 +276,7 @@ export const action = async ({ request }) => {
             variables: {
                 name: `Cart Drawer - ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan`,
                 returnUrl,
-                trialDays: 7,
+                trialDays: 14,
                 test: true,
                 lineItems: [
                     {
@@ -329,7 +357,7 @@ export default function Pricing() {
     return (
         <Suspense fallback={<PricingSkeleton />}>
             <Await resolve={dataPromise} errorElement={<PricingSkeleton />}>
-                {(data) => <PricingInner activePlan={data.activePlan} />}
+                {(data) => <PricingInner activePlan={data.activePlan} isDev={data.isDev} />}
             </Await>
         </Suspense>
     );
@@ -337,7 +365,7 @@ export default function Pricing() {
 
 // ─── Inner component ──────────────────────────────────────────────────────────
 
-function PricingInner({ activePlan }) {
+function PricingInner({ activePlan, isDev }) {
     const [anyHovered, setAnyHovered] = useState(false);
 
     return (
@@ -346,6 +374,18 @@ function PricingInner({ activePlan }) {
             subtitle="Choose the plan that works best for your store"
         >
             <Layout>
+                {isDev && activePlan === "free" && (
+                    <Layout.Section>
+                        <Banner tone="info">
+                            <Text as="p" variant="bodyMd">
+                                This is a <strong>development / partner store</strong>, so
+                                all features are unlocked for free. On a live store the cart
+                                drawer requires a paid plan.
+                            </Text>
+                        </Banner>
+                    </Layout.Section>
+                )}
+
                 {activePlan !== "free" && (
                     <Layout.Section>
                         <Banner tone="success">
@@ -474,7 +514,7 @@ function PricingCard({ plan, activePlan, onCardHover, anyHovered }) {
                                 <Text as="p" variant="bodyMd" tone="subdued">
                                     {plan.id === "free"
                                         ? "You'll lose access to all paid features. Cart drawers beyond the free limit will be paused."
-                                        : `You'll lose access to Growth-only features. Any extras beyond the ${plan.name} plan limits will be paused.`}
+                                        : `You'll lose access to higher-tier features. Any extras beyond the ${plan.name} plan limits will be paused.`}
                                 </Text>
                             </BlockStack>
                             <Divider />
@@ -553,7 +593,9 @@ function PricingCard({ plan, activePlan, onCardHover, anyHovered }) {
                                     <Icon source={CheckIcon} />
                                 </span>
                             </Box>
-                            <Text as="p" variant="bodySm">{feature}</Text>
+                            <Box maxWidth="160px">
+                                <Text as="p" variant="bodySm">{feature}</Text>
+                            </Box>
                         </InlineStack>
                     ))}
                 </BlockStack>

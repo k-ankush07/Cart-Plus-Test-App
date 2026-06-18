@@ -9,7 +9,7 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-const apiUrl = "https://hubsyntax.online";
+const apiUrl = "http://localhost:9002";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");
@@ -544,6 +544,19 @@ window.startAnnTimer = function (blockId, timeStr) {
 
   function applyCartData({ cartResult, stickyResult }) {
     let hasPublishedCart = false;
+
+    if (cartResult?.entitled === false) {
+      console.log("[hub] Store not entitled (free plan on a live store) — drawer disabled");
+      const blockId = window.HUB_CART_BLOCK_ID;
+      // Tear down anything already rendered (e.g. from a stale cache hit) and
+      // clear active state so no premium module can read it.
+      document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
+      document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
+      document.getElementById("hub-sticky-cart-btn")?.remove();
+      window.__HUB_ACTIVE_CART__ = null;
+      return;
+    }
+
     if (cartResult?.success && cartResult.data?.length) {
       const publishedCart = cartResult.data.find(
         (cart) => cart.status === "published",
@@ -623,7 +636,13 @@ window.startAnnTimer = function (blockId, timeStr) {
       );
       const nextSticky = JSON.stringify(stickyResult.data ?? null);
 
-      if (prevCart !== nextCart || prevSticky !== nextSticky) {
+      // Entitlement can flip independently of cart content (e.g. a plan
+      // downgrade), so re-apply when it changes too — applyCartData() then
+      // tears the drawer down if the store is no longer entitled.
+      const entitlementChanged =
+        (cached?.cartResult?.entitled ?? true) !== (cartResult?.entitled ?? true);
+
+      if (prevCart !== nextCart || prevSticky !== nextSticky || entitlementChanged) {
         console.log("[hub] Fresh data differs from cache — re-applying");
         applyCartData(freshData);
       } else {

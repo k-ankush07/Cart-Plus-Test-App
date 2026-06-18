@@ -84,8 +84,9 @@ function SkeletonCell({ width = 64 }) {
 
 const PLAN_ORDER_LIMITS = {
     free: 50,
-    starter: 100,
-    growth: 200,
+    starter: 200,
+    growth: 500,
+    advance: 1000,
 };
 
 async function checkAppEmbed(shopDomain, accessToken, themeId) {
