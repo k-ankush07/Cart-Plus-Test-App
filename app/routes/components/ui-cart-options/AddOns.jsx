@@ -180,7 +180,7 @@ export default function AddOns({ addonsSettings, handleChange, currency, }) {
                                 <Banner tone="info">
                                     <Text variant="bodyMd" fontWeight="semibold">Shipping protection disclaimer</Text>
                                     <Text variant="bodySm">
-                                       Appname only provides a product to represent shipping protection and does not offer shipping protection services itself.
+                                       Cart Plus only provides a product to represent shipping protection and does not offer shipping protection services itself.
                                     </Text>
                                 </Banner>
 
