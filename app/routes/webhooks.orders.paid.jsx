@@ -80,7 +80,7 @@ export const action = async ({ request }) => {
       const blocks = settings?.current?.blocks || {};
       for (const key in blocks) {
         const block = blocks[key];
-        if (block?.type?.includes("shopify://apps/cart-drawer/")) {
+        if (block?.type?.includes("shopify://apps/cart-plus/")) {
           if (!block?.disabled) appEmbedInstalled = true;
           break;
         }

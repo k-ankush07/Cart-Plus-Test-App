@@ -2088,6 +2088,7 @@ span.upsell-text.suggestion-product {
   font-size: 12px;
   line-height: 1;
   padding: 3px 0;
+  margin: 0;
 }
 
 .upsell-inner {
