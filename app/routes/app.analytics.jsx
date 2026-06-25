@@ -46,13 +46,6 @@ function getLabelsFromRange(start, end) {
   return labels;
 }
 
-// ─── API key header helper (server-side: process.env) ─────────────────────────
-
-const apiAuthHeaders = (extra = {}) => ({
-  "x-api-key": process.env.API_SECRET_KEY || "",
-  ...extra,
-});
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function FlatIcon() {
@@ -225,22 +218,11 @@ export const loader = async ({ request }) => {
   const defaultStartISO = defaultStart.toISOString();
   const defaultEndISO = defaultEnd.toISOString();
 
-  const initialStats = await (async () => {
-    try {
-      const url = new URL(`${apiUrl}/api/revenue-stats`);
-      url.searchParams.set("shop", shopDomain);
-      url.searchParams.set("startDate", defaultStartISO);
-      url.searchParams.set("endDate", defaultEndISO);
-
-      const res = await fetch(url.toString(), { headers: apiAuthHeaders() });
-      const json = await res.json();
-      return json.data ?? null;
-    } catch {
-      return null;
-    }
-  })();
-
-  return { initialStats, shop: shopDomain, apiUrl, currency, defaultStartISO, defaultEndISO };
+  // Do NOT fetch stats here: the component already fetches on mount (and on
+  // every range change). Fetching in the loader too only froze navigation for
+  // seconds while duplicating the same request. Render instantly; load stats
+  // client-side with the existing "Loading…" state.
+  return { initialStats: null, shop: shopDomain, apiUrl, currency, defaultStartISO, defaultEndISO };
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -259,7 +241,9 @@ export default function Analytics() {
   }));
 
   const [stats, setStats] = useState(loaderData.initialStats);
-  const [loading, setLoading] = useState(false);
+  // Start in loading state when we have no preloaded stats (we no longer fetch
+  // in the loader), so the page shows "Loading…" instead of an empty flash.
+  const [loading, setLoading] = useState(!loaderData.initialStats);
 
   const chartOpts = getChartOpts(currency);
 

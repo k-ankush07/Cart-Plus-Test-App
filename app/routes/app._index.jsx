@@ -436,8 +436,12 @@ function DashboardInner({
   const [range, setRange] = useState(getDefaultRange);
   const [setupOpen, setSetupOpen] = useState(false);
 
-  // ← true on first render so skeleton shows until first fetch completes
-  const [statsLoading, setStatsLoading] = useState(true);
+  // ← false on first render: the loader already resolved cartStats/shopRevenue,
+  // so render them immediately instead of flashing a skeleton + refetching.
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  // Skip the very first effect run (mount); only refetch when the range changes.
+  const isFirstRangeRender = useRef(true);
 
   const storeHandle = shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
@@ -465,8 +469,12 @@ function DashboardInner({
     setCarts(initialCarts);
   }, [initialCarts]);
 
-  // ← no isFirstRangeRender guard — runs on mount AND on range change
+  // Refetch stats only when the date range changes — not on mount (loader did that).
   useEffect(() => {
+  if (isFirstRangeRender.current) {
+    isFirstRangeRender.current = false;
+    return;
+  }
   const fetchStats = async () => {
     setStatsLoading(true);
     try {

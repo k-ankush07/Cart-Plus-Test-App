@@ -33,6 +33,9 @@ const cartSchema = new mongoose.Schema(
   }
 );
 
+// get-carts queries by shop on every dashboard load.
+cartSchema.index({ shop: 1 });
+
 const stickyCartSchema = new mongoose.Schema({
   shop: { type: String, required: true, unique: true },
   cartId: { type: String, required: true, unique: true },
@@ -67,8 +70,7 @@ const shopPlanSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   subscriptionId: { type: String, default: null },
   status: { type: String, enum: ["active", "pending", "cancelled"], default: "active" },
-  // True for Shopify development / partner stores — these get every feature
-  // for free. Live stores must be on a paid plan to be entitled.
+ 
   isDev: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
@@ -96,6 +98,13 @@ const analyticsSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+// Indexes: cart-stats / revenue-stats filter Analytics by shop + createdAt
+// (and often eventType / cartId). Without these, every dashboard load does a
+// full collection scan of Analytics — the main cause of multi-second loads.
+analyticsSchema.index({ shop: 1, createdAt: 1 });
+analyticsSchema.index({ shop: 1, cartId: 1, createdAt: 1 });
+analyticsSchema.index({ shop: 1, eventType: 1, createdAt: 1 });
+
 const orderRevenueSchema = new mongoose.Schema({
   shop: { type: String, required: true },
   cartId: { type: String },
@@ -109,6 +118,11 @@ const orderRevenueSchema = new mongoose.Schema({
   subscriptionRevenue: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
+
+// OrderRevenue is aggregated by shop + createdAt (and cartId) in cart-stats /
+// revenue-stats. Only orderId was indexed before, forcing full scans.
+orderRevenueSchema.index({ shop: 1, createdAt: 1 });
+orderRevenueSchema.index({ shop: 1, cartId: 1, createdAt: 1 });
 
 const cartOrderCountSchema = new mongoose.Schema({
   shop: { type: String, required: true },
