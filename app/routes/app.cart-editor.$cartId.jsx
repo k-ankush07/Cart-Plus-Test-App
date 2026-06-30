@@ -26,6 +26,25 @@ import {
   defaultTriggeredRewardsSettings,
 } from "../routes/components/constants/cartDefaults";
 
+const isSettingsEqual = (a, b) => {
+  if (a === b) return true;
+  if (!a || !b || typeof a !== "object" || typeof b !== "object") {
+    return a === b;
+  }
+
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  if (Array.isArray(a)) {
+    if (a.length !== b.length) return false;
+    return a.every((value, index) => isSettingsEqual(value, b[index]));
+  }
+
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((key) => isSettingsEqual(a[key], b[key]));
+};
+
 export const loader = async ({ request, params }) => {
   const cartId = params.cartId;
   const apiUrl = process.env.PUBLIC_REACT_APP_API_URL;
@@ -148,8 +167,6 @@ export default function CartEditor() {
 
   const [isDirty, setIsDirty] = useState(false);
 
-  const isEqual = useCallback((a, b) => JSON.stringify(a) === JSON.stringify(b), []);
-
   const handleChange = useCallback((type, updater) => {
     const setters = {
       design: setDesignSettings,
@@ -175,12 +192,12 @@ export default function CartEditor() {
       const updated =
         typeof updater === "function" ? updater(prev) : updater;
 
-      const isSame = isEqual(initialSettingsRef.current[type], updated);
+      const isSame = isSettingsEqual(initialSettingsRef.current[type], updated);
       setIsDirty(!isSame);
 
       return updated;
     });
-  }, [isEqual]);
+  }, []);
 
   useEffect(() => {
     if (!window.shopify) return;

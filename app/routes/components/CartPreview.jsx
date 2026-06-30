@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import CartItem from "./cart-Items/CartItem";
 import "../../index.css";
 import Announcements from "./cart-Items/Announcements";
@@ -34,6 +34,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
 
     const emptyCart = previewMode === "empty";
 
+    const scopedCustomCss = useMemo(() => scopeCss(cartSettings?.customCss, ".cart-app"), [cartSettings?.customCss]);
     const [qty, setQty] = useState(1);
     const [breakdownOpen, setBreakdownOpen] = useState(false);
     const [offerOpen, setOfferOpen] = useState(false);
@@ -66,7 +67,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
             )}
 
             {cartSettings?.customCss && (
-                <style dangerouslySetInnerHTML={{ __html: scopeCss(cartSettings.customCss, ".cart-app") }} />
+                <style dangerouslySetInnerHTML={{ __html: scopedCustomCss }} />
             )}
 
             <div className="cart-app__container styles_CartPreview__card__" style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
