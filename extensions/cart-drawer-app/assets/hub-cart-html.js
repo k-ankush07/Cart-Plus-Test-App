@@ -207,42 +207,40 @@ window.injectCartHTML = function (blockId, root) {
 
   // Inject button color + hover style for this drawer
   const btnStyleId = `hub-btn-style-${blockId}`;
-  if (!document.getElementById(btnStyleId)) {
-    const bs = document.createElement("style");
+  let bs = document.getElementById(btnStyleId);
+  if (!bs) {
+    bs = document.createElement("style");
     bs.id = btnStyleId;
-
-    bs.textContent = `
-      #hub-cart-drawer-${blockId} .hub-cart-checkout-btn {
-        background: ${btnColor} !important;
-      }
-      #hub-cart-drawer-${blockId} .hub-cart-checkout-btn:hover {
-        color: ${btnHoverColor} !important;
-      }
-      #hub-cart-drawer-${blockId} .hub-cart-checkout-btn {
-        color: ${textColor} !important;
-      }
-    `;
     document.head.appendChild(bs);
   }
-
+  bs.textContent = `
+  #hub-cart-drawer-${blockId} .hub-cart-checkout-btn {
+    background: ${btnColor} !important;
+  }
+  #hub-cart-drawer-${blockId} .hub-cart-checkout-btn:hover {
+    color: ${btnHoverColor} !important;
+  }
+  #hub-cart-drawer-${blockId} .hub-cart-checkout-btn {
+    color: ${textColor} !important;
+  }
+`;
   // Inject mobile-width style for this drawer
   const mobileStyleId = `hub-mobile-width-${blockId}`;
-  if (!document.getElementById(mobileStyleId)) {
-    const ms = document.createElement("style");
+  let ms = document.getElementById(mobileStyleId);
+  if (!ms) {
+    ms = document.createElement("style");
     ms.id = mobileStyleId;
-    const mobileWidth =
-      designSettings.mobileWidth === "full" ? "100vw" : "90vw";
-    ms.textContent = `
-      @media (max-width: 480px) {
-        #hub-cart-drawer-${blockId} {
-          width: ${mobileWidth} !important;
-          max-width: 100vw !important;
-        }
-      }
-    `;
     document.head.appendChild(ms);
   }
-
+  const mobileWidth = designSettings.mobileWidth === "full" ? "100vw" : "90vw";
+  ms.textContent = `
+  @media (max-width: 480px) {
+    #hub-cart-drawer-${blockId} {
+      width: ${mobileWidth} !important;
+      max-width: 100vw !important;
+    }
+  }
+`;
   // Inject a style tag once to hide the theme's native cart drawers
   if (!document.getElementById("hub-hide-theme-cart")) {
     const s = document.createElement("style");
