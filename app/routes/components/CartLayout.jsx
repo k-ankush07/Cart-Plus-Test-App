@@ -1,11 +1,12 @@
 import { Page, Button, Modal, TextField, InlineStack, Badge, Popover, ActionList, Icon } from "@shopify/polaris";
 import { EditIcon, ArrowLeftIcon, InfoIcon, CheckIcon, CaretDownIcon } from "@shopify/polaris-icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import { useNavigate, useLocation, useNavigation } from "react-router-dom";
 import "../../index.css";
 import { renameCart, togglePublishCart, getCarts } from "../../services/apiRoutes";
 
-export default function CartLayout({
+const CartLayout = memo(function CartLayout({
+  
   activeTab,
   setActiveTab,
   designSettings,
@@ -122,9 +123,9 @@ export default function CartLayout({
   const isPublished = cartStatus === "published";
 
   // Build ActionList items: other carts + rename option
-  const otherCarts = allCarts.filter((c) => c.cartId !== cart?.cartId);
+  const otherCarts = useMemo(() => allCarts.filter((c) => c.cartId !== cart?.cartId), [allCarts, cart?.cartId]);
 
-  const switcherItems = [
+  const switcherItems = useMemo(() => [
     {
       items: [
         {
@@ -185,9 +186,9 @@ export default function CartLayout({
         },
       ],
     },
-  ];
+  ], [otherCarts, isPublished, cartName, navigate]);
 
-  const searchParams = new URLSearchParams(location.search);
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const fromPage = searchParams.get("from");
   const backPath = fromPage === "home" ? "/app" : "/app/carts";
 
@@ -593,4 +594,6 @@ export default function CartLayout({
       </div>
     </>
   );
-}
+});
+
+export default CartLayout;

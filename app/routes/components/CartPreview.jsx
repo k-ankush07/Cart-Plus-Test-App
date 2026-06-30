@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import CartItem from "./cart-Items/CartItem";
 import "../../index.css";
 import Announcements from "./cart-Items/Announcements";
@@ -28,7 +28,7 @@ function scopeCss(css, scope) {
     return result;
 }
 
-export default function CartPreview({ currency, designSettings, headerSettings, announcementSettings, rewardsSettings,
+const CartPreview = memo(function CartPreview({ currency, designSettings, headerSettings, announcementSettings, rewardsSettings,
     recommendationsSettings, activeTab, subscriptionUpgradesSettings, upsellsSettings, additionalNotesSettings,
     addonsSettings, discountCodesSettings, trustBadgesSettings, cartSettings, previewMode, onClosePreview }) {
 
@@ -221,4 +221,6 @@ export default function CartPreview({ currency, designSettings, headerSettings, 
             </div>
         </div>
     );
-}
+});
+
+export default CartPreview;

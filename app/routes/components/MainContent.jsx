@@ -1,4 +1,5 @@
 import { Card, Text } from "@shopify/polaris";
+import { memo, useMemo } from "react";
 import TopSection from "./ui-cart-options/Header";
 import Notices from "./ui-cart-options/Announcements";
 import Appearance from "./ui-cart-options/Appearance";
@@ -17,13 +18,13 @@ import CartItem from "./ui-cart-options/CartItems";
 import CartSummary from "./ui-cart-options/CartSummary";
 import "../../index.css";
 
-export default function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
+const MainContent = memo(function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
     announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings, upsellsSettings,
     additionalNotesSettings, addonsSettings, discountCodesSettings, expressPaymentsSettings, trustBadgesSettings, cartSettings,
     triggeredRewardsSettings
 }) {
 
-    const COMPONENT_MAP = {
+    const componentMap = useMemo(() => ({
         Appearance: (
             <Appearance
                 designSettings={designSettings}
@@ -128,12 +129,16 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
         "Order Summary": (
             <CartSummary />
         )
-    };
+    }), [designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
+        announcementSettings, rewardsSettings, currency, recommendationsSettings,
+        subscriptionUpgradesSettings, upsellsSettings, additionalNotesSettings,
+        addonsSettings, discountCodesSettings, expressPaymentsSettings,
+        trustBadgesSettings, cartSettings, triggeredRewardsSettings]);
 
     return (
         <div className="mainContent">
 
-            {COMPONENT_MAP[activeTab] || (
+            {componentMap[activeTab] || (
                 <Card>
                     <Text variant="headingMd">{activeTab} Settings</Text>
                 </Card>
@@ -141,4 +146,6 @@ export default function MainContent({ activeTab, designSettings, headerSettings,
 
         </div>
     );
-}
+});
+
+export default MainContent;

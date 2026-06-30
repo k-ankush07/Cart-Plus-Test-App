@@ -20,9 +20,9 @@ import {
   SettingsIcon,             // Settings
 } from "@shopify/polaris-icons";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 
-export default function Sidebar({
+const Sidebar = memo(function Sidebar({
   activeTab,
   setActiveTab,
   announcementSettings,
@@ -126,4 +126,6 @@ export default function Sidebar({
       </LegacyCard>
     </div>
   );
-}
+});
+
+export default Sidebar;

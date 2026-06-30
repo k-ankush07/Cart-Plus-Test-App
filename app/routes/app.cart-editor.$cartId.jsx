@@ -8,7 +8,7 @@ import CartLayout from "./components/CartLayout";
 import { shopLoader } from "./components/shop.server";
 import { useLoaderData, useSearchParams } from "react-router-dom";
 import { getCart, updateCart } from "../services/apiRoutes";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   defaultSettings,
   defaultHeaderSettings,
@@ -148,9 +148,9 @@ export default function CartEditor() {
 
   const [isDirty, setIsDirty] = useState(false);
 
-  const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const isEqual = useCallback((a, b) => JSON.stringify(a) === JSON.stringify(b), []);
 
-  const handleChange = (type, updater) => {
+  const handleChange = useCallback((type, updater) => {
     const setters = {
       design: setDesignSettings,
       header: setHeaderSettings,
@@ -180,7 +180,7 @@ export default function CartEditor() {
 
       return updated;
     });
-  };
+  }, [isEqual]);
 
   useEffect(() => {
     if (!window.shopify) return;
@@ -195,9 +195,6 @@ export default function CartEditor() {
   useEffect(() => {
     if (!cart) return;
 
-    // Always reset ALL settings to the new cart's values (or defaults).
-    // Using `if (cart.X)` guards caused the previous cart's data to persist
-    // when switching to a cart that had no saved settings for that field.
     setDesignSettings(cart.designSettings || defaultSettings);
     setHeaderSettings(cart.headerSettings || defaultHeaderSettings);
     setAnnouncementSettings(cart.announcementSettings || defaultAnnouncementSettings);
