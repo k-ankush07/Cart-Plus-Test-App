@@ -95,13 +95,20 @@ export default function CartHoverCard({ cart, children }) {
                     onMouseLeave={scheduleHide}
                 >
                     {/* Cart name */}
-                    <p style={{
-                        margin: "0 0 12px 0",
-                        fontWeight: 600,
-                        fontSize: "13px",
-                        color: "var(--p-color-text)",
-                        fontFamily: "var(--p-font-family-sans)",
-                    }}>
+                    <p
+                        title={cart.cartName || "Untitled cart"}
+                        style={{
+                            margin: "0 0 12px 0",
+                            fontWeight: 600,
+                            fontSize: "13px",
+                            color: "var(--p-color-text)",
+                            fontFamily: "var(--p-font-family-sans)",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: "180px", 
+                        }}
+                    >
                         {cart.cartName || "Untitled cart"}
                     </p>
 
