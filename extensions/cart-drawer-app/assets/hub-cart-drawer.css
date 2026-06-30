@@ -1007,6 +1007,7 @@ span.hub-total-arrow svg {
   padding-bottom: 15px;
   line-height: 12px;
   color: #2D2D2D;
+  margin: 0;
 }
 
 .hub-rewards-segments {
@@ -1571,6 +1572,7 @@ span.hub-total-arrow svg {
   text-decoration: none;
   margin-bottom: 4px;
   line-height: 1.4;
+  margin-top: 0;
 }
 
 .hub-addon-sp-desc {
@@ -1618,6 +1620,7 @@ span.hub-total-arrow svg {
   font-size: 13px;
   font-weight: 500;
   line-height: 18px;
+  margin: 0;
 }
 
 .hub-discount-input-row {
@@ -1680,6 +1683,7 @@ span.hub-total-arrow svg {
   padding: 2px 5px;
   border-radius: 15px;
   line-height: 15px;
+      margin: 0;
 }
 
 .hub-undo-toast {
