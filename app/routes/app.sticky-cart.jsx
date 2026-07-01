@@ -145,10 +145,10 @@ const ICONS = [
 ];
 
 const ICON_SVGS = {
-  bag: (color) => (
+  bag: (color, size = 45) => (
     <svg
-      width="45"
-      height="45"
+      width={size}
+      height={size}
       viewBox="0 0 45 45"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -181,10 +181,10 @@ const ICON_SVGS = {
     </svg>
   ),
 
-  tote: (color) => (
+  tote: (color, size = 45) => (
     <svg
-      width="45"
-      height="45"
+      width={size}
+      height={size}
       viewBox="0 0 45 45"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -230,10 +230,10 @@ const ICON_SVGS = {
     </svg>
   ),
 
-  cart: (color) => (
+  cart: (color, size = 45) => (
     <svg
-      width="45"
-      height="45"
+      width={size}
+      height={size}
       viewBox="0 0 45 45"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -934,7 +934,7 @@ export default function StickyCart() {
                         cursor: "pointer",
                       }}
                     >
-                      {renderCartIcon(selectedIcon, customIconUrl, iconColor)}
+                      {renderCartIcon(selectedIcon, customIconUrl, iconColor, iconSize)}
                       <div
                         className="styles_CartQuantityIconText__ upcart-sticky-cart-quantity-icon-text"
                         style={{
