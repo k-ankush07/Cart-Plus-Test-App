@@ -57,6 +57,13 @@ function scopeCss(css, scope) {
     return icons[type] || icons.cart;
   }
 
+  function getStickyIconMarkup(selectedIcon, customIconUrl) {
+    if (selectedIcon === "custom" && customIconUrl) {
+      return `<img src="${customIconUrl}" alt="Custom cart icon" style="width:45px;height:45px;object-fit:contain;display:block;" />`;
+    }
+    return getStickyIcon(selectedIcon);
+  }
+
   async function updateStickyBadge() {
     try {
       const res = await fetch("/cart.js");
@@ -190,7 +197,10 @@ function scopeCss(css, scope) {
     // ── Icon wrapper ──
     const iconWrapper = document.createElement("div");
     iconWrapper.classList.add("custom-cart-sticky-cart-icon");
-    iconWrapper.innerHTML = getStickyIcon(data.selectedIcon);
+    iconWrapper.innerHTML = getStickyIconMarkup(
+      data.selectedIcon,
+      data.customIconUrl,
+    );
     btn.appendChild(iconWrapper);
 
     // ── Click → open drawer ──

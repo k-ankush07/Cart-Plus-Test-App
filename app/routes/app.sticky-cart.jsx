@@ -32,6 +32,12 @@ const spinnerStyleTag = (
   `}</style>
 );
 
+// ── Stable stringify: sorts keys so comparisons never depend on insertion order ──
+function stableStringify(obj) {
+  if (!obj || typeof obj !== "object") return JSON.stringify(obj);
+  return JSON.stringify(obj, Object.keys(obj).sort());
+}
+
 function scopeCss(css, scope) {
   if (!css) return "";
 
@@ -300,6 +306,7 @@ function buildSettings(data) {
     qTextColor: data?.qTextColor ?? "#ffffff",
     position: data?.position ?? "bottom-right",
     device: data?.device ?? "all",
+    hideOnEmptyCart: data?.hideOnEmptyCart ?? false,
     customCss: data?.customCss ?? "",
   };
 }
@@ -312,15 +319,16 @@ export default function StickyCart() {
   const [enabled, setEnabled] = useState(initial.enabled);
   const [saved, setSaved] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState(initial.selectedIcon);
-  const [customIconUrl, setCustomIconUrl] = useState(initial.customIconUrl); // NEW
-  const [uploadingIcon, setUploadingIcon] = useState(false); // NEW
-  const fileInputRef = useRef(null); // NEW
+  const [customIconUrl, setCustomIconUrl] = useState(initial.customIconUrl);
+  const [uploadingIcon, setUploadingIcon] = useState(false);
+  const fileInputRef = useRef(null);
   const [bgColor, setBgColor] = useState(initial.bgColor);
   const [iconColor, setIconColor] = useState(initial.iconColor);
   const [qBgColor, setQBgColor] = useState(initial.qBgColor);
   const [qTextColor, setQTextColor] = useState(initial.qTextColor);
   const [position, setPosition] = useState(initial.position);
   const [device, setDevice] = useState(initial.device);
+  const [hideOnEmptyCart, setHideOnEmptyCart] = useState(initial.hideOnEmptyCart);
   const [cssListOpen, setCssListOpen] = useState(false);
   const skipDirtyCheck = useRef(false);
   const [loading, setLoading] = useState(false);
@@ -348,7 +356,7 @@ export default function StickyCart() {
     }));
   };
 
-  // ── Custom icon upload handler ── NEW
+  // ── Custom icon upload handler ──
   const handleIconFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -389,13 +397,14 @@ export default function StickyCart() {
     skipDirtyCheck.current = true;
     setEnabled(s.enabled);
     setSelectedIcon(s.selectedIcon);
-    setCustomIconUrl(s.customIconUrl); // NEW
+    setCustomIconUrl(s.customIconUrl);
     setBgColor(s.bgColor);
     setIconColor(s.iconColor);
     setQBgColor(s.qBgColor);
     setQTextColor(s.qTextColor);
     setPosition(s.position);
     setDevice(s.device);
+    setHideOnEmptyCart(s.hideOnEmptyCart);
     setCartSettings({ customCss: s.customCss });
     initialSettingsRef.current = s;
     setIsDirty(false);
@@ -408,31 +417,33 @@ export default function StickyCart() {
     const current = {
       enabled,
       selectedIcon,
-      customIconUrl, // NEW
+      customIconUrl,
       bgColor,
       iconColor,
       qBgColor,
       qTextColor,
       position,
       device,
+      hideOnEmptyCart,
       customCss: cartSettings.customCss,
     };
 
+    // ── FIX: sorted-key comparison so field order never matters ──
     const isSame =
-      JSON.stringify(current) ===
-      JSON.stringify(initialSettingsRef.current);
+      stableStringify(current) === stableStringify(initialSettingsRef.current);
 
     setIsDirty(!isSame);
   }, [
     enabled,
     selectedIcon,
-    customIconUrl, // NEW
+    customIconUrl,
     bgColor,
     iconColor,
     qBgColor,
     qTextColor,
     position,
     device,
+    hideOnEmptyCart,
     cartSettings.customCss,
   ]);
 
@@ -457,13 +468,14 @@ export default function StickyCart() {
         shop: Storeshop,
         enabled,
         selectedIcon,
-        customIconUrl, // NEW
+        customIconUrl,
         bgColor,
         iconColor,
         qBgColor,
         qTextColor,
         position,
         device,
+        hideOnEmptyCart,
         customCss: cartSettings.customCss,
       };
 
@@ -476,13 +488,14 @@ export default function StickyCart() {
         initialSettingsRef.current = {
           enabled,
           selectedIcon,
-          customIconUrl, // NEW
+          customIconUrl,
           bgColor,
           iconColor,
           qBgColor,
           qTextColor,
           position,
           device,
+          hideOnEmptyCart,
           customCss: cartSettings.customCss,
         };
         setIsDirty(false);
@@ -505,13 +518,14 @@ export default function StickyCart() {
 
     setEnabled(initial.enabled);
     setSelectedIcon(initial.selectedIcon);
-    setCustomIconUrl(initial.customIconUrl); // NEW
+    setCustomIconUrl(initial.customIconUrl);
     setBgColor(initial.bgColor);
     setIconColor(initial.iconColor);
     setQBgColor(initial.qBgColor);
     setQTextColor(initial.qTextColor);
     setPosition(initial.position);
     setDevice(initial.device);
+    setHideOnEmptyCart(initial.hideOnEmptyCart);
     setCartSettings({ customCss: initial.customCss });
     setIsDirty(false);
 
@@ -531,13 +545,14 @@ export default function StickyCart() {
 
     setEnabled(defaults.enabled);
     setSelectedIcon(defaults.selectedIcon);
-    setCustomIconUrl(defaults.customIconUrl); // NEW
+    setCustomIconUrl(defaults.customIconUrl);
     setBgColor(defaults.bgColor);
     setIconColor(defaults.iconColor);
     setQBgColor(defaults.qBgColor);
     setQTextColor(defaults.qTextColor);
     setPosition(defaults.position);
     setDevice(defaults.device);
+    setHideOnEmptyCart(defaults.hideOnEmptyCart);
     setCartSettings({ customCss: defaults.customCss });
 
     const payload = { shop: Storeshop, ...defaults };
@@ -669,7 +684,7 @@ export default function StickyCart() {
                         </div>
                       ))}
 
-                      {/* Custom uploaded icon thumbnail, selectable like the presets — NEW */}
+                      {/* Custom uploaded icon thumbnail, selectable like the presets */}
                       {customIconUrl && (
                         <div
                           className="icon-selector"
@@ -697,7 +712,7 @@ export default function StickyCart() {
                         </div>
                       )}
 
-                      {/* Upload tile — NEW */}
+                      {/* Upload tile */}
                       <div
                         onClick={triggerIconUpload}
                         title="Upload custom icon"
@@ -803,6 +818,41 @@ export default function StickyCart() {
                     value={device}
                     onChange={setDevice}
                   />
+
+                  <InlineStack gap="200" align="space-between" blockAlign="center">
+                    <BlockStack gap="0">
+                      <Text variant="bodyMd" as="label">Hide on empty cart</Text>
+                      <Text variant="bodySm" tone="subdued">
+                        Don't show the sticky cart button when there are no items in the cart
+                      </Text>
+                    </BlockStack>
+                    <div
+                      onClick={() => setHideOnEmptyCart((v) => !v)}
+                      style={{
+                        width: 44,
+                        height: 24,
+                        borderRadius: 12,
+                        background: hideOnEmptyCart ? "#1a1a1a" : "#d1d5db",
+                        position: "relative",
+                        cursor: "pointer",
+                        transition: "background .2s",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: "absolute",
+                          width: 18,
+                          height: 18,
+                          borderRadius: "50%",
+                          background: "#fff",
+                          top: 3,
+                          left: hideOnEmptyCart ? 23 : 3,
+                          transition: "left .2s",
+                        }}
+                      />
+                    </div>
+                  </InlineStack>
                 </BlockStack>
               </Card>
             </Layout.Section>
