@@ -143,6 +143,7 @@ function scopeCss(css, scope) {
       `hub-sticky-scope-${blockId}`,
     );
 
+    const buttonSize = Number(data.buttonSize) || 82;
     const pos = {
       "bottom-right": { bottom: "20px", right: "20px" },
       "center-right": {
@@ -163,8 +164,8 @@ function scopeCss(css, scope) {
     Object.assign(btn.style, {
       position: "fixed",
       zIndex: 2147483638,
-      width: "82px",
-      height: "82px",
+      width: `${buttonSize}px`,
+      height: `${buttonSize}px`,
       borderRadius: "50%",
       background: data.bgColor || "#000",
       color: data.iconColor || "#fff",
@@ -183,7 +184,7 @@ function scopeCss(css, scope) {
     Object.assign(badgeWrapper.style, {
       position: "absolute",
       top: "5px",
-      left: "60px",
+      left: `${Math.max(buttonSize - 24, 24)}px`,
       minWidth: "25px",
       height: "25px",
       borderRadius: "100%",

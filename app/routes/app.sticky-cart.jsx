@@ -27,6 +27,9 @@ import { uploadImage } from "../services/apiRoutes";
 const ICON_SIZE_MIN = 24;
 const ICON_SIZE_MAX = 72;
 const ICON_SIZE_DEFAULT = 45;
+const BUTTON_SIZE_MIN = 56;
+const BUTTON_SIZE_MAX = 120;
+const BUTTON_SIZE_DEFAULT = 82;
 
 const spinnerStyleTag = (
   <style>{`
@@ -309,6 +312,7 @@ function buildSettings(data) {
     bgColor: data?.bgColor ?? "#000000",
     iconColor: data?.iconColor ?? "#ffffff",
     iconSize: data?.iconSize ?? ICON_SIZE_DEFAULT,
+    buttonSize: data?.buttonSize ?? BUTTON_SIZE_DEFAULT,
     qBgColor: data?.qBgColor ?? "#e42626",
     qTextColor: data?.qTextColor ?? "#ffffff",
     position: data?.position ?? "bottom-right",
@@ -332,6 +336,7 @@ export default function StickyCart() {
   const [bgColor, setBgColor] = useState(initial.bgColor);
   const [iconColor, setIconColor] = useState(initial.iconColor);
   const [iconSize, setIconSize] = useState(initial.iconSize);
+  const [buttonSize, setButtonSize] = useState(initial.buttonSize);
   const [qBgColor, setQBgColor] = useState(initial.qBgColor);
   const [qTextColor, setQTextColor] = useState(initial.qTextColor);
   const [position, setPosition] = useState(initial.position);
@@ -409,6 +414,7 @@ export default function StickyCart() {
     setBgColor(s.bgColor);
     setIconColor(s.iconColor);
     setIconSize(s.iconSize);
+    setButtonSize(s.buttonSize);
     setQBgColor(s.qBgColor);
     setQTextColor(s.qTextColor);
     setPosition(s.position);
@@ -429,6 +435,7 @@ export default function StickyCart() {
       customIconUrl,
       bgColor,
       iconColor,
+      buttonSize,
       qBgColor,
       qTextColor,
       position,
@@ -449,6 +456,7 @@ export default function StickyCart() {
     bgColor,
     iconColor,
     iconSize,
+    buttonSize,
     qBgColor,
     qTextColor,
     position,
@@ -482,6 +490,7 @@ export default function StickyCart() {
         bgColor,
         iconColor,
         iconSize,
+        buttonSize,
         qBgColor,
         qTextColor,
         position,
@@ -503,6 +512,7 @@ export default function StickyCart() {
           bgColor,
           iconColor,
           iconSize,
+          buttonSize,
           qBgColor,
           qTextColor,
           position,
@@ -534,6 +544,7 @@ export default function StickyCart() {
     setBgColor(initial.bgColor);
     setIconColor(initial.iconColor);
     setIconSize(initial.iconSize);
+    setButtonSize(initial.buttonSize);
     setQBgColor(initial.qBgColor);
     setQTextColor(initial.qTextColor);
     setPosition(initial.position);
@@ -562,6 +573,7 @@ export default function StickyCart() {
     setBgColor(defaults.bgColor);
     setIconColor(defaults.iconColor);
     setIconSize(defaults.iconSize);
+    setButtonSize(defaults.buttonSize);
     setQBgColor(defaults.qBgColor);
     setQTextColor(defaults.qTextColor);
     setPosition(defaults.position);
@@ -877,6 +889,16 @@ export default function StickyCart() {
                     onChange={setIconSize}
                     output
                   />
+
+                  <RangeSlider
+                    label={`Button Size: ${buttonSize}px`}
+                    min={BUTTON_SIZE_MIN}
+                    max={BUTTON_SIZE_MAX}
+                    step={1}
+                    value={buttonSize}
+                    onChange={setButtonSize}
+                    output
+                  />
                 </BlockStack>
               </Card>
             </Layout.Section>
@@ -921,8 +943,8 @@ export default function StickyCart() {
                       style={{
                         position: "absolute",
                         ...fabPos,
-                        width: 82,
-                        height: 82,
+                        width: buttonSize,
+                        height: buttonSize,
                         borderRadius: "50%",
                         background: bgColor,
                         display: "flex",
