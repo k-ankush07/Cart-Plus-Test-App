@@ -62,6 +62,7 @@ const stickyCartSchema = new mongoose.Schema({
   selectedIcon: { type: String, default: "bag" },
   bgColor: { type: String, default: "#000000" },
   iconColor: { type: String, default: "#ffffff" },
+  iconSize: { type: Number, min: 24, max: 72, default: 45 },
   qBgColor: { type: String, default: "#e42626" },
   qTextColor: { type: String, default: "#ffffff" },
   device: { type: String, default: "all" },

@@ -85,10 +85,19 @@ function scopeCss(css, scope) {
       const badgeWrapper = document.querySelector(
         ".custom-cart-sticky-cart-quantity-icon",
       );
-      if (!badgeText || !badgeWrapper) return;
+      const widget = document.querySelector(".custom-cart-sticky-widget");
 
-      badgeText.textContent = count > 99 ? "99+" : count;
-      badgeWrapper.style.display = count > 0 ? "flex" : "none";
+      if (badgeText && badgeWrapper) {
+        badgeText.textContent = count > 99 ? "99+" : count;
+        badgeWrapper.style.display = count > 0 ? "flex" : "none";
+      }
+
+      // ── Hide the entire sticky button (not just the badge) on empty cart ──
+      if (widget) {
+        const data = window.__HUB_STICKY_CART__ || {};
+        const shouldHide = !!data.hideOnEmptyCart && count === 0;
+        widget.style.display = shouldHide ? "none" : "flex";
+      }
     } catch (_) {}
   }
 
@@ -109,8 +118,6 @@ function scopeCss(css, scope) {
       return;
     }
 
-    updateStickyBadge();
-
     if (!_badgeListenerBound) {
       _badgeListenerBound = true;
       document.addEventListener("cart:updated", () => {
@@ -119,7 +126,11 @@ function scopeCss(css, scope) {
       });
     }
 
-    if (document.querySelector(".custom-cart-sticky-widget")) return;
+    if (document.querySelector(".custom-cart-sticky-widget")) {
+      // Widget already exists (e.g. re-render call) — just refresh badge/visibility state
+      updateStickyBadge();
+      return;
+    }
 
     // ── Root button ──
     const btn = document.createElement("div");
@@ -153,7 +164,8 @@ function scopeCss(css, scope) {
       borderRadius: "50%",
       background: data.bgColor || "#000",
       color: data.iconColor || "#fff",
-      display: "flex",
+      // ── Avoid a flash-of-visible-button before the initial cart fetch resolves ──
+      display: data.hideOnEmptyCart ? "none" : "flex",
       alignItems: "center",
       justifyContent: "center",
       cursor: "pointer",
@@ -220,5 +232,9 @@ function scopeCss(css, scope) {
     });
 
     document.body.appendChild(btn);
+
+    // ── Now that the widget is in the DOM, fetch cart state and apply
+    //     both the quantity badge and the hideOnEmptyCart visibility ──
+    updateStickyBadge();
   };
 })();

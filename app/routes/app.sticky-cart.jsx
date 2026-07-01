@@ -10,6 +10,7 @@ import {
   Button,
   Select,
   Divider,
+  RangeSlider,
   Banner,
   Collapsible,
   AppProvider,
@@ -23,6 +24,9 @@ import { shopLoader } from "./components/shop.server";
 import { useLoaderData } from "react-router";
 import { createStickyCart, getStickyCart } from "../services/apiRoutes";
 import { uploadImage } from "../services/apiRoutes";
+const ICON_SIZE_MIN = 24;
+const ICON_SIZE_MAX = 72;
+const ICON_SIZE_DEFAULT = 45;
 
 const spinnerStyleTag = (
   <style>{`
@@ -246,19 +250,21 @@ const ICON_SVGS = {
   ),
 };
 
-function renderCartIcon(selectedIcon, customIconUrl, iconColor) {
+function renderCartIcon(selectedIcon, customIconUrl, iconColor, iconSize) {
+  const px = iconSize ?? ICON_SIZE_DEFAULT;
+
   if (selectedIcon === "custom" && customIconUrl) {
     return (
       <img
         src={customIconUrl}
         alt="Custom cart icon"
-        style={{ width: 45, height: 45, objectFit: "contain", display: "block" }}
+        style={{ width: px, height: px, objectFit: "contain", display: "block" }}
       />
     );
   }
 
   const renderer = ICON_SVGS[selectedIcon] ?? ICON_SVGS.bag;
-  return renderer(iconColor);
+  return renderer(iconColor, px);
 }
 
 const CSS_CLASSES = [
@@ -302,6 +308,7 @@ function buildSettings(data) {
     customIconUrl,
     bgColor: data?.bgColor ?? "#000000",
     iconColor: data?.iconColor ?? "#ffffff",
+    iconSize: data?.iconSize ?? ICON_SIZE_DEFAULT,
     qBgColor: data?.qBgColor ?? "#e42626",
     qTextColor: data?.qTextColor ?? "#ffffff",
     position: data?.position ?? "bottom-right",
@@ -324,6 +331,7 @@ export default function StickyCart() {
   const fileInputRef = useRef(null);
   const [bgColor, setBgColor] = useState(initial.bgColor);
   const [iconColor, setIconColor] = useState(initial.iconColor);
+  const [iconSize, setIconSize] = useState(initial.iconSize);
   const [qBgColor, setQBgColor] = useState(initial.qBgColor);
   const [qTextColor, setQTextColor] = useState(initial.qTextColor);
   const [position, setPosition] = useState(initial.position);
@@ -400,6 +408,7 @@ export default function StickyCart() {
     setCustomIconUrl(s.customIconUrl);
     setBgColor(s.bgColor);
     setIconColor(s.iconColor);
+    setIconSize(s.iconSize);
     setQBgColor(s.qBgColor);
     setQTextColor(s.qTextColor);
     setPosition(s.position);
@@ -439,6 +448,7 @@ export default function StickyCart() {
     customIconUrl,
     bgColor,
     iconColor,
+    iconSize,
     qBgColor,
     qTextColor,
     position,
@@ -471,6 +481,7 @@ export default function StickyCart() {
         customIconUrl,
         bgColor,
         iconColor,
+        iconSize,
         qBgColor,
         qTextColor,
         position,
@@ -491,6 +502,7 @@ export default function StickyCart() {
           customIconUrl,
           bgColor,
           iconColor,
+          iconSize,
           qBgColor,
           qTextColor,
           position,
@@ -521,6 +533,7 @@ export default function StickyCart() {
     setCustomIconUrl(initial.customIconUrl);
     setBgColor(initial.bgColor);
     setIconColor(initial.iconColor);
+    setIconSize(initial.iconSize);
     setQBgColor(initial.qBgColor);
     setQTextColor(initial.qTextColor);
     setPosition(initial.position);
@@ -548,6 +561,7 @@ export default function StickyCart() {
     setCustomIconUrl(defaults.customIconUrl);
     setBgColor(defaults.bgColor);
     setIconColor(defaults.iconColor);
+    setIconSize(defaults.iconSize);
     setQBgColor(defaults.qBgColor);
     setQTextColor(defaults.qTextColor);
     setPosition(defaults.position);
@@ -853,6 +867,16 @@ export default function StickyCart() {
                       />
                     </div>
                   </InlineStack>
+
+                  <RangeSlider
+                    label={`Cart Icon Size: ${iconSize}px`}
+                    min={ICON_SIZE_MIN}
+                    max={ICON_SIZE_MAX}
+                    step={1}
+                    value={iconSize}
+                    onChange={setIconSize}
+                    output
+                  />
                 </BlockStack>
               </Card>
             </Layout.Section>
