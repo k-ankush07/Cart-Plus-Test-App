@@ -359,6 +359,7 @@ router.post("/save-sticky-cart", async (req, res) => {
       qBgColor,
       qTextColor,
       device,
+      hideOnEmptyCart,
       customCss,
     } = req.body;
 
@@ -380,6 +381,7 @@ router.post("/save-sticky-cart", async (req, res) => {
         qBgColor,
         qTextColor,
         device,
+        hideOnEmptyCart,
         customCss,
       },
       {

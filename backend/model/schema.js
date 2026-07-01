@@ -12,13 +12,16 @@ const cartSchema = new mongoose.Schema(
       enum: ["unpublished", "published"],
       default: "unpublished",
     },
-     lastLiveDate: { type: Date, default: null },
+    lastLiveDate: { type: Date, default: null },
     designSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     headerSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     announcementSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     rewardsSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     recommendationsSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
-    subscriptionUpgradesSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
+    subscriptionUpgradesSettings: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
     upsellsSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     additionalNotesSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     addonsSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
@@ -26,11 +29,14 @@ const cartSchema = new mongoose.Schema(
     expressPaymentsSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     trustBadgesSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
     cartSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
-    triggeredRewardsSettings: { type: mongoose.Schema.Types.Mixed, default: {} },
+    triggeredRewardsSettings: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // get-carts queries by shop on every dashboard load.
@@ -41,7 +47,14 @@ const stickyCartSchema = new mongoose.Schema({
   cartId: { type: String, required: true, unique: true },
   position: {
     type: String,
-    enum: ["bottom-right", "center-right", "top-right", "bottom-left", "center-left", "top-left"],
+    enum: [
+      "bottom-right",
+      "center-right",
+      "top-right",
+      "bottom-left",
+      "center-left",
+      "top-left",
+    ],
     default: "bottom-right",
   },
   enabled: { type: Boolean, default: true },
@@ -52,6 +65,7 @@ const stickyCartSchema = new mongoose.Schema({
   qBgColor: { type: String, default: "#e42626" },
   qTextColor: { type: String, default: "#ffffff" },
   device: { type: String, default: "all" },
+  hideOnEmptyCart: { type: Boolean, default: false },
   customCss: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
 });
@@ -61,7 +75,7 @@ const stickyCartSchema = new mongoose.Schema({
 const shopConfigSchema = new mongoose.Schema({
   shop: { type: String, required: true, unique: true },
   accessToken: { type: String, required: true },
-  email:{type:String},
+  email: { type: String },
   updatedAt: { type: Date, default: Date.now },
 });
 
@@ -70,8 +84,12 @@ const shopPlanSchema = new mongoose.Schema({
   plan: { type: String, required: true },
   price: { type: Number, required: true },
   subscriptionId: { type: String, default: null },
-  status: { type: String, enum: ["active", "pending", "cancelled"], default: "active" },
- 
+  status: {
+    type: String,
+    enum: ["active", "pending", "cancelled"],
+    default: "active",
+  },
+
   isDev: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
@@ -136,12 +154,31 @@ const cartOrderCountSchema = new mongoose.Schema({
 
 cartOrderCountSchema.index({ shop: 1, cartId: 1, date: 1 }, { unique: true });
 
-const cartModels          = mongoose.models["carts"]          || mongoose.model("carts", cartSchema);
-const stickyCartModel     = mongoose.models["stickyCart"]     || mongoose.model("stickyCart", stickyCartSchema);
-const shopConfigModel     = mongoose.models["shopConfig"]     || mongoose.model("shopConfig", shopConfigSchema);
-const shopPlanModel       = mongoose.models["Plans"]          || mongoose.model("Plans", shopPlanSchema);
-const analyticsModel      = mongoose.models["Analytics"]      || mongoose.model("Analytics", analyticsSchema);
-const orderRevenueModel   = mongoose.models["OrderRevenue"]   || mongoose.model("OrderRevenue", orderRevenueSchema);
-const cartOrderCountModel = mongoose.models["CartOrderCount"] || mongoose.model("CartOrderCount", cartOrderCountSchema);
+const cartModels =
+  mongoose.models["carts"] || mongoose.model("carts", cartSchema);
+const stickyCartModel =
+  mongoose.models["stickyCart"] ||
+  mongoose.model("stickyCart", stickyCartSchema);
+const shopConfigModel =
+  mongoose.models["shopConfig"] ||
+  mongoose.model("shopConfig", shopConfigSchema);
+const shopPlanModel =
+  mongoose.models["Plans"] || mongoose.model("Plans", shopPlanSchema);
+const analyticsModel =
+  mongoose.models["Analytics"] || mongoose.model("Analytics", analyticsSchema);
+const orderRevenueModel =
+  mongoose.models["OrderRevenue"] ||
+  mongoose.model("OrderRevenue", orderRevenueSchema);
+const cartOrderCountModel =
+  mongoose.models["CartOrderCount"] ||
+  mongoose.model("CartOrderCount", cartOrderCountSchema);
 
-export { cartModels, stickyCartModel, shopConfigModel, shopPlanModel, analyticsModel, orderRevenueModel, cartOrderCountModel };
+export {
+  cartModels,
+  stickyCartModel,
+  shopConfigModel,
+  shopPlanModel,
+  analyticsModel,
+  orderRevenueModel,
+  cartOrderCountModel,
+};
