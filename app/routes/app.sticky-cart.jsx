@@ -22,6 +22,15 @@ import HtmlEditor from "./components/ui-cart-options/HtmlEditor";
 import { shopLoader } from "./components/shop.server";
 import { useLoaderData } from "react-router";
 import { createStickyCart, getStickyCart } from "../services/apiRoutes";
+import { uploadImage } from "../services/apiRoutes";
+
+const spinnerStyleTag = (
+  <style>{`
+    @keyframes stickyCartIconSpin {
+      to { transform: rotate(360deg); }
+    }
+  `}</style>
+);
 
 function scopeCss(css, scope) {
   if (!css) return "";
@@ -231,6 +240,21 @@ const ICON_SVGS = {
   ),
 };
 
+function renderCartIcon(selectedIcon, customIconUrl, iconColor) {
+  if (selectedIcon === "custom" && customIconUrl) {
+    return (
+      <img
+        src={customIconUrl}
+        alt="Custom cart icon"
+        style={{ width: 45, height: 45, objectFit: "contain", display: "block" }}
+      />
+    );
+  }
+
+  const renderer = ICON_SVGS[selectedIcon] ?? ICON_SVGS.bag;
+  return renderer(iconColor);
+}
+
 const CSS_CLASSES = [
   "custom-cart-sticky-widget",
   "custom-cart-sticky-cart-quantity-icon",
@@ -263,9 +287,13 @@ const positionStyles = {
 };
 
 function buildSettings(data) {
+  const selectedIcon = data?.selectedIcon ?? "bag";
+  const customIconUrl = data?.customIconUrl ?? null;
+
   return {
     enabled: data?.enabled ?? false,
-    selectedIcon: data?.selectedIcon ?? "bag",
+    selectedIcon: selectedIcon === "custom" && !customIconUrl ? "bag" : selectedIcon,
+    customIconUrl,
     bgColor: data?.bgColor ?? "#000000",
     iconColor: data?.iconColor ?? "#ffffff",
     qBgColor: data?.qBgColor ?? "#e42626",
@@ -277,13 +305,16 @@ function buildSettings(data) {
 }
 
 export default function StickyCart() {
-  const { shop, apiUrl, stickyCart } = useLoaderData();
+  const { shop, apiUrl, accessToken, stickyCart } = useLoaderData();
 
   const initial = buildSettings(stickyCart);
 
   const [enabled, setEnabled] = useState(initial.enabled);
   const [saved, setSaved] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState(initial.selectedIcon);
+  const [customIconUrl, setCustomIconUrl] = useState(initial.customIconUrl); // NEW
+  const [uploadingIcon, setUploadingIcon] = useState(false); // NEW
+  const fileInputRef = useRef(null); // NEW
   const [bgColor, setBgColor] = useState(initial.bgColor);
   const [iconColor, setIconColor] = useState(initial.iconColor);
   const [qBgColor, setQBgColor] = useState(initial.qBgColor);
@@ -317,12 +348,48 @@ export default function StickyCart() {
     }));
   };
 
+  // ── Custom icon upload handler ── NEW
+  const handleIconFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // basic guardrails
+    if (!file.type.startsWith("image/")) {
+      console.error("Please choose an image file for the cart icon.");
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      setUploadingIcon(true);
+      const res = await uploadImage(apiUrl, file, shop, accessToken);
+
+      if (res?.success && res?.imageUrl) {
+        setCustomIconUrl(res.imageUrl);
+        setSelectedIcon("custom");
+      } else {
+        console.error("Icon upload failed:", res);
+      }
+    } catch (err) {
+      console.error("Icon upload error:", err);
+    } finally {
+      setUploadingIcon(false);
+      e.target.value = ""; // allow re-selecting the same file later
+    }
+  };
+
+  const triggerIconUpload = () => {
+    if (uploadingIcon) return;
+    fileInputRef.current?.click();
+  };
+
   // Sync all state when loader data changes (e.g. navigating via s-link)
   useEffect(() => {
     const s = buildSettings(stickyCart);
     skipDirtyCheck.current = true;
     setEnabled(s.enabled);
     setSelectedIcon(s.selectedIcon);
+    setCustomIconUrl(s.customIconUrl); // NEW
     setBgColor(s.bgColor);
     setIconColor(s.iconColor);
     setQBgColor(s.qBgColor);
@@ -341,6 +408,7 @@ export default function StickyCart() {
     const current = {
       enabled,
       selectedIcon,
+      customIconUrl, // NEW
       bgColor,
       iconColor,
       qBgColor,
@@ -358,6 +426,7 @@ export default function StickyCart() {
   }, [
     enabled,
     selectedIcon,
+    customIconUrl, // NEW
     bgColor,
     iconColor,
     qBgColor,
@@ -388,6 +457,7 @@ export default function StickyCart() {
         shop: Storeshop,
         enabled,
         selectedIcon,
+        customIconUrl, // NEW
         bgColor,
         iconColor,
         qBgColor,
@@ -406,6 +476,7 @@ export default function StickyCart() {
         initialSettingsRef.current = {
           enabled,
           selectedIcon,
+          customIconUrl, // NEW
           bgColor,
           iconColor,
           qBgColor,
@@ -434,6 +505,7 @@ export default function StickyCart() {
 
     setEnabled(initial.enabled);
     setSelectedIcon(initial.selectedIcon);
+    setCustomIconUrl(initial.customIconUrl); // NEW
     setBgColor(initial.bgColor);
     setIconColor(initial.iconColor);
     setQBgColor(initial.qBgColor);
@@ -455,10 +527,11 @@ export default function StickyCart() {
     setIsResetting(true);
     skipDirtyCheck.current = true;
 
-    const defaults = buildSettings(null); 
+    const defaults = buildSettings(null);
 
     setEnabled(defaults.enabled);
     setSelectedIcon(defaults.selectedIcon);
+    setCustomIconUrl(defaults.customIconUrl); // NEW
     setBgColor(defaults.bgColor);
     setIconColor(defaults.iconColor);
     setQBgColor(defaults.qBgColor);
@@ -492,6 +565,7 @@ export default function StickyCart() {
 
   return (
     <AppProvider>
+      {spinnerStyleTag}
       <ui-save-bar id="my-save-bar">
         <button variant="primary" id="save-btn" onClick={handleSave}>
           Save
@@ -572,7 +646,7 @@ export default function StickyCart() {
                   {/* Cart Icon */}
                   <BlockStack gap="200">
                     <Text variant="bodyMd" as="label">Cart Icon</Text>
-                    <InlineStack gap="50">
+                    <InlineStack gap="50" blockAlign="center">
                       {ICONS.map((icon) => (
                         <div
                           key={icon.id}
@@ -594,7 +668,96 @@ export default function StickyCart() {
                           {icon.svg}
                         </div>
                       ))}
+
+                      {/* Custom uploaded icon thumbnail, selectable like the presets — NEW */}
+                      {customIconUrl && (
+                        <div
+                          className="icon-selector"
+                          onClick={() => setSelectedIcon("custom")}
+                          title="Custom icon"
+                          style={{
+                            borderRadius: 6,
+                            padding: 6,
+                            border: selectedIcon === "custom" ? "2px solid #4da6a6" : "2px solid #FFFFFF",
+                            background: selectedIcon === "custom" ? "rgba(77, 166, 166, .15)" : undefined,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                            transition: "all .15s",
+                            width: 45,
+                            height: 45,
+                          }}
+                        >
+                          <img
+                            src={customIconUrl}
+                            alt="Custom cart icon"
+                            style={{ width: 32, height: 32, objectFit: "contain", display: "block" }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Upload tile — NEW */}
+                      <div
+                        onClick={triggerIconUpload}
+                        title="Upload custom icon"
+                        style={{
+                          borderRadius: 6,
+                          padding: 6,
+                          border: "2px dashed #d1d5db",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: uploadingIcon ? "not-allowed" : "pointer",
+                          opacity: uploadingIcon ? 0.6 : 1,
+                          width: 45,
+                          height: 45,
+                          fontSize: 20,
+                          fontWeight: 500,
+                          color: "#6b7280",
+                          transition: "all .15s",
+                        }}
+                      >
+                        {uploadingIcon ? (
+                          <div
+                            style={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: "50%",
+                              border: "2px solid #d1d5db",
+                              borderTopColor: "#6b7280",
+                              animation: "stickyCartIconSpin 0.7s linear infinite",
+                            }}
+                          />
+                        ) : (
+                          "+"
+                        )}
+                      </div>
+
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleIconFileChange}
+                        style={{ display: "none" }}
+                      />
                     </InlineStack>
+
+                    {selectedIcon === "custom" && customIconUrl && (
+                      <InlineStack gap="150" blockAlign="center">
+                        <Text variant="bodySm" tone="subdued">Using custom icon</Text>
+                        <Button
+                          variant="plain"
+                          tone="critical"
+                          onClick={() => {
+                            setCustomIconUrl(null);
+                            setSelectedIcon("bag");
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </InlineStack>
+                    )}
                   </BlockStack>
 
                   {/* Background Color */}
@@ -697,7 +860,7 @@ export default function StickyCart() {
                         cursor: "pointer",
                       }}
                     >
-                      {ICON_SVGS[selectedIcon](iconColor)}
+                      {renderCartIcon(selectedIcon, customIconUrl, iconColor)}
                       <div
                         className="styles_CartQuantityIconText__ upcart-sticky-cart-quantity-icon-text"
                         style={{

@@ -45,6 +45,7 @@ const stickyCartSchema = new mongoose.Schema({
     default: "bottom-right",
   },
   enabled: { type: Boolean, default: true },
+  customIconUrl: { type: String, default: null },
   selectedIcon: { type: String, default: "bag" },
   bgColor: { type: String, default: "#000000" },
   iconColor: { type: String, default: "#ffffff" },
