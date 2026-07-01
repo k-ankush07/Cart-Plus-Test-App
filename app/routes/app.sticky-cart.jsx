@@ -24,6 +24,7 @@ import { shopLoader } from "./components/shop.server";
 import { useLoaderData } from "react-router";
 import { createStickyCart, getStickyCart } from "../services/apiRoutes";
 import { uploadImage } from "../services/apiRoutes";
+
 const ICON_SIZE_MIN = 24;
 const ICON_SIZE_MAX = 72;
 const ICON_SIZE_DEFAULT = 45;
