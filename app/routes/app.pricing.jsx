@@ -16,7 +16,7 @@ import {
 } from "@shopify/polaris";
 
 import { useState, useEffect, Suspense } from "react";
-import { CheckIcon, ChevronUpIcon, ChevronDownIcon } from "@shopify/polaris-icons";
+import { CheckIcon} from "@shopify/polaris-icons";
 import { useLoaderData, useFetcher, Await } from "react-router-dom";
 import { authenticate } from "../shopify.server";
 import "../index.css";
