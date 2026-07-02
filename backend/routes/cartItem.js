@@ -1356,7 +1356,7 @@ router.post("/contact", async (req, res) => {
           </table>
         </div>
       `;
-      await sendEmail("sahil@hubsyntax.com", subject, html);
+      await sendEmail("noreply.cartplus@gmail.com", subject, html);
     } catch (emailError) {
       console.error("[hub] Contact form email error:", emailError);
     }
