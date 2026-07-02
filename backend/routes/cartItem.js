@@ -1280,4 +1280,52 @@ router.get("/cart-order-count", async (req, res) => {
   }
 });
 
+// ─── Contact Form ─────────────────────────────────────────────────────────────
+// Handles submissions from the public "Let's Discuss Your Goals" contact
+// form: saves them to Mongo and notifies the team by email.
+ 
+router.post("/contact", async (req, res) => {
+  try {
+    const { firstName, lastName, phone, address } = req.body;
+ 
+    if (!firstName || !lastName || !phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: firstName, lastName, phone",
+      });
+    }
+ 
+    const newContact = await contactModel.create({
+      firstName,
+      lastName,
+      phone,
+      address: address || "",
+    });
+ 
+    try {
+      const subject = `New contact form submission — ${firstName} ${lastName}`;
+      const html = `
+        <h2>New Contact Form Submission</h2>
+        <p><strong>First Name:</strong> ${firstName}</p>
+        <p><strong>Last Name:</strong> ${lastName}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p><strong>Address:</strong> ${address || "-"}</p>
+        <p><strong>Submitted At:</strong> ${new Date().toLocaleString()}</p>
+      `;
+      await sendEmail("sahil@hubsyntax.com", subject, html);
+    } catch (emailError) {
+      console.error("[hub] Contact form email error:", emailError);
+    }
+ 
+    return res.status(201).json({
+      success: true,
+      message: "Contact submitted successfully",
+      data: newContact,
+    });
+  } catch (error) {
+    console.error("CONTACT FORM ERROR:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 export default router;

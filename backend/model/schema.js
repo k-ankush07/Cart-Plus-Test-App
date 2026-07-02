@@ -156,6 +156,16 @@ const cartOrderCountSchema = new mongoose.Schema({
 
 cartOrderCountSchema.index({ shop: 1, cartId: 1, date: 1 }, { unique: true });
 
+const contactSchema = new mongoose.Schema({
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  phone: { type: String, required: true },
+  address: { type: String, default: "" },
+  createdAt: { type: Date, default: Date.now },
+});
+
+contactSchema.index({ createdAt: -1 });
+
 const cartModels =
   mongoose.models["carts"] || mongoose.model("carts", cartSchema);
 const stickyCartModel =
@@ -175,6 +185,9 @@ const cartOrderCountModel =
   mongoose.models["CartOrderCount"] ||
   mongoose.model("CartOrderCount", cartOrderCountSchema);
 
+const contactModel =
+  mongoose.models["Contact"] || mongoose.model("Contact", contactSchema);
+ 
 export {
   cartModels,
   stickyCartModel,
@@ -183,4 +196,5 @@ export {
   analyticsModel,
   orderRevenueModel,
   cartOrderCountModel,
+  contactModel
 };
