@@ -7,6 +7,7 @@ import {
   analyticsModel,
   orderRevenueModel,
   cartOrderCountModel,
+  contactModel
 } from "../model/schema.js";
 import { sendEmail } from "./sendEmail.js";
 import { buildPlanUpgradeEmailHtml, buildPlanLimitReachedEmailHtml, buildWelcomeEmailHtml } from "./emailTemplates.js";
