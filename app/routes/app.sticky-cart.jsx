@@ -16,6 +16,7 @@ import {
   Collapsible,
   AppProvider,
   Modal,
+  Tooltip,
 } from "@shopify/polaris";
 import "../index.css";
 
@@ -32,6 +33,10 @@ const ICON_SIZE_DEFAULT = 45;
 const BUTTON_SIZE_MIN = 56;
 const BUTTON_SIZE_MAX = 120;
 const BUTTON_SIZE_DEFAULT = 82;
+
+// ── Allowed icon upload types ──
+const ALLOWED_ICON_TYPES = ["image/png", "image/svg+xml"];
+const ALLOWED_ICON_EXTENSIONS = ".png,.svg";
 
 const spinnerStyleTag = (
   <style>{`
@@ -334,6 +339,7 @@ export default function StickyCart() {
   const [selectedIcon, setSelectedIcon] = useState(initial.selectedIcon);
   const [customIconUrl, setCustomIconUrl] = useState(initial.customIconUrl);
   const [uploadingIcon, setUploadingIcon] = useState(false);
+  const [iconUploadError, setIconUploadError] = useState("");
   const fileInputRef = useRef(null);
   const [bgColor, setBgColor] = useState(initial.bgColor);
   const [iconColor, setIconColor] = useState(initial.iconColor);
@@ -376,9 +382,11 @@ export default function StickyCart() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // basic guardrails
-    if (!file.type.startsWith("image/")) {
-      console.error("Please choose an image file for the cart icon.");
+    setIconUploadError("");
+
+    // basic guardrails — only PNG or SVG icons are accepted
+    if (!ALLOWED_ICON_TYPES.includes(file.type)) {
+      setIconUploadError("Please choose a PNG or SVG file for the cart icon.");
       e.target.value = "";
       return;
     }
@@ -391,9 +399,11 @@ export default function StickyCart() {
         setCustomIconUrl(res.imageUrl);
         setSelectedIcon("custom");
       } else {
+        setIconUploadError("Icon upload failed. Please try again.");
         console.error("Icon upload failed:", res);
       }
     } catch (err) {
+      setIconUploadError("Icon upload failed. Please try again.");
       console.error("Icon upload error:", err);
     } finally {
       setUploadingIcon(false);
@@ -743,50 +753,58 @@ export default function StickyCart() {
                       )}
 
                       {/* Upload tile */}
-                      <div
-                        onClick={triggerIconUpload}
-                        title="Upload custom icon"
-                        style={{
-                          borderRadius: 8,
-                          padding: 8,
-                          border: "1px dashed #d1d5db",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: uploadingIcon ? "not-allowed" : "pointer",
-                          opacity: uploadingIcon ? 0.6 : 1,
-                          width: 45,
-                          height: 45,
-                          fontSize: 20,
-                          fontWeight: 500,
-                          color: "#6b7280",
-                          transition: "all .15s",
-                        }}
-                      >
-                        {uploadingIcon ? (
-                          <div
-                            style={{
-                              width: 16,
-                              height: 16,
-                              borderRadius: "50%",
-                              border: "2px solid #d1d5db",
-                              borderTopColor: "#6b7280",
-                              animation: "stickyCartIconSpin 0.7s linear infinite",
-                            }}
-                          />
-                        ) : (
-                          "+"
-                        )}
-                      </div>
+                      <Tooltip content="PNG or SVG only.">
+                        <div
+                          onClick={triggerIconUpload}
+                          title=""
+                          style={{
+                            borderRadius: 8,
+                            padding: 8,
+                            border: "1px dashed #d1d5db",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: uploadingIcon ? "not-allowed" : "pointer",
+                            opacity: uploadingIcon ? 0.6 : 1,
+                            width: 45,
+                            height: 45,
+                            fontSize: 20,
+                            fontWeight: 500,
+                            color: "#6b7280",
+                            transition: "all .15s",
+                          }}
+                        >
+                          {uploadingIcon ? (
+                            <div
+                              style={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: "50%",
+                                border: "2px solid #d1d5db",
+                                borderTopColor: "#6b7280",
+                                animation: "stickyCartIconSpin 0.7s linear infinite",
+                              }}
+                            />
+                          ) : (
+                            "+"
+                          )}
+                        </div>
+                      </Tooltip>
 
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/*"
+                        accept={ALLOWED_ICON_EXTENSIONS}
                         onChange={handleIconFileChange}
                         style={{ display: "none" }}
                       />
                     </InlineStack>
+
+                    {iconUploadError && (
+                      <Text variant="bodySm" tone="critical">
+                        {iconUploadError}
+                      </Text>
+                    )}
 
                     {selectedIcon === "custom" && customIconUrl && (
                       <InlineStack gap="150" blockAlign="center">
