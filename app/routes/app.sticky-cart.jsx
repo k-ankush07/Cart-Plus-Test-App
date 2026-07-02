@@ -5,6 +5,7 @@ import {
   Layout,
   Text,
   InlineStack,
+  InlineGrid,
   BlockStack,
   Box,
   Button,
@@ -688,17 +689,19 @@ export default function StickyCart() {
                   {/* Cart Icon */}
                   <BlockStack gap="200">
                     <Text variant="bodyMd" as="label">Cart Icon</Text>
-                    <InlineStack gap="50" blockAlign="center">
+                    <InlineStack gap="200" blockAlign="center">
                       {ICONS.map((icon) => (
                         <div
                           key={icon.id}
                           className="icon-selector"
                           onClick={() => setSelectedIcon(icon.id)}
                           style={{
-                            borderRadius: 6,
-                            padding: 6,
-                            border: selectedIcon === icon.id ? "2px solid #4da6a6" : "2px solid #FFFFFF",
-                            background: selectedIcon === icon.id ? "rgba(77, 166, 166, .15)" : undefined,
+                            borderRadius: 8,
+                            padding: 8,
+                            width: 45,
+                            height: 45,
+                            border: selectedIcon === icon.id ? "2px solid #4da6a6" : "1px solid #d1d5db",
+                            background: selectedIcon === icon.id ? "rgba(77, 166, 166, .15)" : "#fff",
                             color: selectedIcon === icon.id ? "#2c7be5" : "#6b7280",
                             display: "flex",
                             alignItems: "center",
@@ -718,10 +721,10 @@ export default function StickyCart() {
                           onClick={() => setSelectedIcon("custom")}
                           title="Custom icon"
                           style={{
-                            borderRadius: 6,
-                            padding: 6,
-                            border: selectedIcon === "custom" ? "2px solid #4da6a6" : "2px solid #FFFFFF",
-                            background: selectedIcon === "custom" ? "rgba(77, 166, 166, .15)" : undefined,
+                            borderRadius: 8,
+                            padding: 8,
+                            border: selectedIcon === "custom" ? "2px solid #4da6a6" : "1px solid #d1d5db",
+                            background: selectedIcon === "custom" ? "rgba(77, 166, 166, .15)" : "#fff",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -744,9 +747,9 @@ export default function StickyCart() {
                         onClick={triggerIconUpload}
                         title="Upload custom icon"
                         style={{
-                          borderRadius: 6,
-                          padding: 6,
-                          border: "2px dashed #d1d5db",
+                          borderRadius: 8,
+                          padding: 8,
+                          border: "1px dashed #d1d5db",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -802,33 +805,37 @@ export default function StickyCart() {
                     )}
                   </BlockStack>
 
-                  {/* Background Color */}
-                  <ColorInput
-                    label="Background Color"
-                    value={bgColor}
-                    onChange={setBgColor}
-                  />
+                  <Divider />
 
-                  {/* Icon Color */}
-                  <ColorInput
-                    label="Icon Color"
-                    value={iconColor}
-                    onChange={setIconColor}
-                  />
+                  {/* Background Color / Icon Color — 2 column grid, matches Figma */}
+                  <InlineGrid columns={2} gap="400">
+                    <ColorInput
+                      label="Background Color"
+                      value={bgColor}
+                      onChange={setBgColor}
+                    />
+                    <ColorInput
+                      label="Icon Color"
+                      value={iconColor}
+                      onChange={setIconColor}
+                    />
+                  </InlineGrid>
 
-                  {/* Quantity Background Color */}
-                  <ColorInput
-                    label="Quantity Background Color"
-                    value={qBgColor}
-                    onChange={setQBgColor}
-                  />
+                  {/* Quantity Background Color / Quantity Text Color — 2 column grid */}
+                  <InlineGrid columns={2} gap="400">
+                    <ColorInput
+                      label="Quantity Background Color"
+                      value={qBgColor}
+                      onChange={setQBgColor}
+                    />
+                    <ColorInput
+                      label="Quantity Text Color"
+                      value={qTextColor}
+                      onChange={setQTextColor}
+                    />
+                  </InlineGrid>
 
-                  {/* Quantity Text Color */}
-                  <ColorInput
-                    label="Quantity Text Color"
-                    value={qTextColor}
-                    onChange={setQTextColor}
-                  />
+                  <Divider />
 
                   {/* Position */}
                   <Select
@@ -845,7 +852,7 @@ export default function StickyCart() {
                     value={device}
                     onChange={setDevice}
                   />
-
+                  <Divider />
                   <InlineStack gap="200" align="space-between" blockAlign="center">
                     <BlockStack gap="0">
                       <Text variant="bodyMd" as="label">Hide on empty cart</Text>
@@ -880,7 +887,7 @@ export default function StickyCart() {
                       />
                     </div>
                   </InlineStack>
-
+                  <Divider />
                   <RangeSlider
                     label={`Cart Icon Size: ${iconSize}px`}
                     min={ICON_SIZE_MIN}
