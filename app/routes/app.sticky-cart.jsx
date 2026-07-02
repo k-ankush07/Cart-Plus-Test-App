@@ -19,7 +19,7 @@ import {
   Tooltip,
 } from "@shopify/polaris";
 import "../index.css";
-
+import "@shopify/polaris/build/esm/styles.css";
 import ColorInput from "./components/ui/ColorInput";
 import HtmlEditor from "./components/ui-cart-options/HtmlEditor";
 import { shopLoader } from "./components/shop.server";
@@ -447,6 +447,7 @@ export default function StickyCart() {
       customIconUrl,
       bgColor,
       iconColor,
+      iconSize,
       buttonSize,
       qBgColor,
       qTextColor,
