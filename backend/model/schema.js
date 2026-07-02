@@ -158,8 +158,9 @@ cartOrderCountSchema.index({ shop: 1, cartId: 1, date: 1 }, { unique: true });
 
 const contactSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  phone: { type: String, required: true },
+  lastName: { type: String,},
+  email:{ type: String, required: true },
+  phone: { type: String,},
   address: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
 });

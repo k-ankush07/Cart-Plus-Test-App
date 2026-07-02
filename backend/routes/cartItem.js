@@ -1287,37 +1287,80 @@ router.get("/cart-order-count", async (req, res) => {
  
 router.post("/contact", async (req, res) => {
   try {
-    const { firstName, lastName, phone, address } = req.body;
- 
-    if (!firstName || !lastName || !phone) {
+    const { firstName, lastName, email, phone, address } = req.body;
+
+    if (!firstName || !email) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: firstName, lastName, phone",
+        message: "Missing required fields: firstName, lastName, email, phone",
       });
     }
- 
+
     const newContact = await contactModel.create({
       firstName,
       lastName,
+      email,
       phone,
       address: address || "",
     });
- 
+
     try {
       const subject = `New contact form submission — ${firstName} ${lastName}`;
       const html = `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>First Name:</strong> ${firstName}</p>
-        <p><strong>Last Name:</strong> ${lastName}</p>
-        <p><strong>Phone:</strong> ${phone}</p>
-        <p><strong>Address:</strong> ${address || "-"}</p>
-        <p><strong>Submitted At:</strong> ${new Date().toLocaleString()}</p>
+        <div style="background-color:#F3E8FF; padding:40px 20px; font-family: Arial, Helvetica, sans-serif;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px; margin:0 auto;">
+            <tr>
+              <td align="center" style="padding-bottom:24px;">
+                <img src="https://cartplus.io/cartplus-img/CartLogo.svg" alt="Cart Plus" width="140" style="display:block;" />
+              </td>
+            </tr>
+            <tr>
+              <td style="background-color:#FFFFFF; border:1px solid #E5D4FA; border-radius:16px; padding:32px;">
+                <h2 style="margin:0 0 24px; text-align:center; font-size:20px; color:#1A1A1A;">
+                  New Contact Form Submission
+                </h2>
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                  <tr>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#7A5AA0; width:130px;">First Name</td>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#1A1A1A;">${firstName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#7A5AA0;">Last Name</td>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#1A1A1A;">${lastName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#7A5AA0;">Email</td>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#1A1A1A;">${email}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#7A5AA0;">Phone</td>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#1A1A1A;">${phone}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#7A5AA0; vertical-align:top;">Address</td>
+                    <td style="padding:10px 0; border-bottom:1px solid #F0E4FF; font-size:14px; color:#1A1A1A;">${address || "-"}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px 0; font-size:14px; color:#7A5AA0;">Submitted At</td>
+                    <td style="padding:10px 0; font-size:14px; color:#1A1A1A;">${new Date().toLocaleString()}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding-top:20px; font-size:12px; color:#9B8AAE;">
+                This is an automated notification from Cart Plus.
+              </td>
+            </tr>
+          </table>
+        </div>
       `;
       await sendEmail("sahil@hubsyntax.com", subject, html);
     } catch (emailError) {
       console.error("[hub] Contact form email error:", emailError);
     }
- 
+
     return res.status(201).json({
       success: true,
       message: "Contact submitted successfully",
