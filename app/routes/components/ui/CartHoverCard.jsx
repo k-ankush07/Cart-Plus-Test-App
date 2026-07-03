@@ -30,17 +30,17 @@ export default function CartHoverCard({ cart, children }) {
     };
 
     const MODULE_LABELS = [
-        { key: "announcementSettings", label: "Notices" },
+        { key: "announcementSettings", label: "Announcement" },
         { key: "rewardsSettings", label: "Tiered Offers" },
         { key: "triggeredRewardsSettings", label: "Smart Offers" },
         { key: "recommendationsSettings", label: "Suggested Products" },
-        { key: "upsellsSettings", label: "Upgrade Offers" },
-        { key: "additionalNotesSettings", label: "Order Notes" },
-        { key: "addonsSettings", label: "Extras" },
-        { key: "discountCodesSettings", label: "Promo Codes" },
-        { key: "expressPaymentsSettings", label: "Quick Checkout" },
-        { key: "trustBadgesSettings", label: "Security Badges" },
-        { key: "subscriptionUpgradesSettings", label: "Subscription Options" },
+        { key: "upsellsSettings", label: "Upsells" },
+        { key: "additionalNotesSettings", label: "Notes" },
+        { key: "addonsSettings", label: "Add-ons" },
+        { key: "discountCodesSettings", label: "Discount Codes" },
+        { key: "expressPaymentsSettings", label: "Express Payments" },
+        { key: "trustBadgesSettings", label: "Badges" },
+        { key: "subscriptionUpgradesSettings", label: "Subscription" },
     ];
 
     const enabledModules = MODULE_LABELS
