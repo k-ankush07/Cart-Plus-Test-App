@@ -357,7 +357,7 @@ function buildPrimarySetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeI
       completed: !!liveCart,
       disabled: !liveCart,
       hideIncompleteBadge: true,
-      onAction: () => navigate(cartEditorPath),
+      onAction:() => navigate("/app/carts"),
     },
   ];
 }
