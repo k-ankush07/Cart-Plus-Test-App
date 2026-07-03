@@ -711,7 +711,7 @@ function DashboardInner({
 
   // Two separate Setup guide cards, each with its own collapse state.
   const [primarySetupOpen, setPrimarySetupOpen] = useState(true);
-  const [secondarySetupOpen, setSecondarySetupOpen] = useState(false);
+  const [secondarySetupOpen, setSecondarySetupOpen] = useState(true);
 
   // Which individual rows are expanded within the primary (rich) guide — like Figma.
   const [openTasks, setOpenTasks] = useState(() => new Set([0]));
@@ -763,11 +763,9 @@ function DashboardInner({
 
   const primaryCompletedCount = primaryTasks.filter((t) => t.completed).length;
   const primaryProgressPercent = Math.round((primaryCompletedCount / primaryTasks.length) * 100);
-  const primaryAllCompleted = primaryCompletedCount === primaryTasks.length;
 
   const secondaryCompletedCount = secondaryTasks.filter((t) => t.completed).length;
   const secondaryProgressPercent = Math.round((secondaryCompletedCount / secondaryTasks.length) * 100);
-  const secondaryAllCompleted = secondaryCompletedCount === secondaryTasks.length;
 
   useEffect(() => {
     setCarts(initialCarts);
@@ -832,6 +830,16 @@ function DashboardInner({
   ), [shop?.myshopifyDomain, mainThemeId, appEmbedId]);
 
   const sparkType = useCallback((val) => (val ?? 0) > 0 ? "spike" : "flat", []);
+
+  const openTidioChat = useCallback(() => {
+    if (window.tidioChatApi) {
+      window.tidioChatApi.open();
+    } else {
+      document.addEventListener("tidioChat-ready", () => {
+        window.tidioChatApi?.open();
+      });
+    }
+  }, []);
 
   return (
     <Page
@@ -1196,7 +1204,7 @@ function DashboardInner({
                 textAlign: "left",
               }}
             >
-              <Text variant="headingMd">Setup guide</Text>
+              <Text variant="headingMd">Recommendations </Text>
               <Text tone="subdued">
                 {secondaryCompletedCount} of {secondaryTasks.length} tasks complete
               </Text>
@@ -1243,7 +1251,7 @@ function DashboardInner({
                   <Text variant="bodySm" tone="subdued">Chat with our support team.</Text>
                 </BlockStack>
               </InlineStack>
-              <Button>Chat with us</Button>
+              <Button onClick={openTidioChat}>Chat with us</Button>
             </InlineStack>
           </Card>
 
