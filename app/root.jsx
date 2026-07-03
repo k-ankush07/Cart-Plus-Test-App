@@ -31,6 +31,8 @@ export default function App() {
           src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
           data-api-key={apiKey}
         />
+        <script src="//code.tidio.co/40jtopadf98eytkutwweixaa6e8tqtg8.js" async></script>
+        
         <Meta />
         <Links />
       </head>

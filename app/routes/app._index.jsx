@@ -28,7 +28,7 @@ import {
 import { getCarts, getCartStats } from "../services/apiRoutes";
 import { shopLoader } from "./components/shop.server";
 import DateRangePicker from "./components/ui/DateRangePicker";
-import { Suspense, useState, useEffect, useRef, useCallback } from "react";
+import { Suspense, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import LiveDot from "./components/ui/LiveDot";
@@ -698,10 +698,9 @@ function DashboardInner({
   currency,
 }) {
   const navigate = useNavigate();
-
-  const authHeaders = () => ({
+  const authHeaders = useMemo(() => ({
     "x-api-key": import.meta.env.VITE_API_SECRET_KEY || "",
-  });
+  }), []);
 
   const [carts, setCarts] = useState(initialCarts || []);
   const [cartStats, setCartStats] = useState(initialCartStats || {});
@@ -734,20 +733,22 @@ function DashboardInner({
   const storeHandle = shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
 
-  const liveCarts = carts
-    .filter((cart) => cart.status === "published")
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const liveCarts = useMemo(() => {
+    return (carts || [])
+      .filter((cart) => cart.status === "published")
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [carts]);
 
-  const primaryTasks = buildPrimarySetupTasks(
+  const primaryTasks = useMemo(() => buildPrimarySetupTasks(
     liveCarts[0] || null,
     navigate,
     shop,
     appEmbedId,
     mainThemeId,
     appEmbedInstalled
-  );
+  ), [liveCarts, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled]);
 
-  const secondaryTasks = buildSecondarySetupTasks(
+  const secondaryTasks = useMemo(() => buildSecondarySetupTasks(
     liveCarts[0] || null,
     navigate,
     shop,
@@ -755,7 +756,7 @@ function DashboardInner({
     mainThemeId,
     appEmbedInstalled,
     appEmbedStarted
-  );
+  ), [liveCarts, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled, appEmbedStarted]);
 
   const handlePrimarySetupToggle = useCallback(() => setPrimarySetupOpen((v) => !v), []);
   const handleSecondarySetupToggle = useCallback(() => setSecondarySetupOpen((v) => !v), []);
@@ -792,7 +793,7 @@ function DashboardInner({
         }
         const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
           credentials: "include",
-          headers: authHeaders(),
+          headers: authHeaders,
         });
         const data = await res.json();
         if (data.success) {
@@ -809,30 +810,28 @@ function DashboardInner({
     };
 
     fetchStats();
-  }, [range.start, range.end]);
+  }, [range.start, range.end, liveCarts, apiUrl, shop?.myshopifyDomain, authHeaders]);
 
-  const AppEmbedLink = () => (
+  const AppEmbedLink = useMemo(() => (
     <Tooltip content="Enable the app embed to start showing this cart on your storefront. Click to enable in your theme editor.">
       <span>
         <a
-          href={`https://${shop.myshopifyDomain}/admin/themes/${mainThemeId}/editor?context=apps&activateAppId=${appEmbedId}/app-embed`}
+          href={`https://${shop?.myshopifyDomain}/admin/themes/${mainThemeId}/editor?context=apps&activateAppId=${appEmbedId}/app-embed`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          style={{ display: "inline-flex", alignItems: "center", gap: "2px", textDecoration: "none" }}
-          onMouseEnter={(e) => { e.currentTarget.querySelector(".embed-icon").style.opacity = "1"; }}
-          onMouseLeave={(e) => { e.currentTarget.querySelector(".embed-icon").style.opacity = "0"; }}
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
         >
           <Badge tone="warning">App embed off</Badge>
-          <span className="embed-icon" style={{ opacity: 0, transition: "opacity 0.15s" }}>
+          <span className="embed-icon" style={{ opacity: 0.9 }}>
             <Icon source={ExternalIcon} tone="subdued" />
           </span>
         </a>
       </span>
     </Tooltip>
-  );
+  ), [shop?.myshopifyDomain, mainThemeId, appEmbedId]);
 
-  const sparkType = (val) => (val ?? 0) > 0 ? "spike" : "flat";
+  const sparkType = useCallback((val) => (val ?? 0) > 0 ? "spike" : "flat", []);
 
   return (
     <Page
@@ -1232,7 +1231,7 @@ function DashboardInner({
 
       {/* ── Help cards ── */}
       <Box paddingBlockStart="400">
-        <InlineGrid columns={{ xs: 1, sm: 2 }} gap="300">
+        <InlineGrid columns={{ xs: 1, sm: 1 }} gap="300">
           <Card padding="400">
             <InlineStack align="space-between" blockAlign="center" gap="400" wrap={false}>
               <InlineStack gap="300" blockAlign="start" wrap={false}>
@@ -1248,7 +1247,7 @@ function DashboardInner({
             </InlineStack>
           </Card>
 
-          <Card padding="400">
+          {/* <Card padding="400">
             <InlineStack align="space-between" blockAlign="center" gap="400" wrap={false}>
               <InlineStack gap="300" blockAlign="start" wrap={false}>
                 <div style={{ width: 44, height: 44, background: "#EDEDEE", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid #C5C5C5" }}>
@@ -1261,7 +1260,7 @@ function DashboardInner({
               </InlineStack>
               <Button>View docs</Button>
             </InlineStack>
-          </Card>
+          </Card> */}
         </InlineGrid>
       </Box>
     </Page>
