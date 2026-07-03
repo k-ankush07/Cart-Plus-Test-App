@@ -17,7 +17,13 @@ import {
   SkeletonBodyText,
   SkeletonDisplayText,
 } from "@shopify/polaris";
-import { ChevronDownIcon, HeartIcon, NoteIcon, ExternalIcon } from "@shopify/polaris-icons";
+import {
+  ChevronDownIcon,
+  HeartIcon,
+  NoteIcon,
+  ExternalIcon,
+  CheckIcon,
+} from "@shopify/polaris-icons";
 
 import { getCarts, getCartStats } from "../services/apiRoutes";
 import { shopLoader } from "./components/shop.server";
@@ -50,7 +56,226 @@ function SkeletonCell({ width = 64 }) {
   );
 }
 
-// ─── SetupTask ─────────────────────────────────────────────────────────────────
+// ─── CheckItem (setup guide checklist row) ──────────────────────────────────────
+
+function CheckItem({ text, completed }) {
+  return (
+    <InlineStack gap="200" blockAlign="start" wrap={false}>
+      <div style={{ marginTop: 2, flexShrink: 0 }}>
+        {completed ? (
+          <Icon source={CheckIcon} tone="success" />
+        ) : (
+          <div
+            style={{
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              border: "1px solid #c9cccf",
+              boxSizing: "border-box",
+            }}
+          />
+        )}
+      </div>
+      <Text variant="bodyMd">{text}</Text>
+    </InlineStack>
+  );
+}
+
+// ─── SetupStepCard ───────────────────────────────────────────────────────────
+// Rich, individually-collapsible setup guide row: numbered circle, title,
+// description, status badge, "WHAT TO DO" checklist, action button(s),
+// and an optional preview image on the right — matches the Figma design.
+
+function SetupStepCard({
+  index,
+  title,
+  description,
+  completed,
+  cartCount,
+  isEmbedStarted,
+  hideIncompleteBadge,
+  checklist,
+  previewImage,
+  actionLabel,
+  onAction,
+  secondaryActionLabel,
+  onSecondaryAction,
+  isOpen,
+  onToggle,
+  disabled,
+}) {
+
+  const isCollapsible = !!previewImage;
+  const isCircleComplete = completed || (index === 3 && cartCount >= 1);
+
+  const header = (
+    <>
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: "50%",
+          background: isCircleComplete ? "#008060" : "#f1f2f3",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          fontWeight: 600,
+          fontSize: 13,
+          color: isCircleComplete ? "#fff" : "#616161",
+        }}
+      >
+        {isCircleComplete ? <Icon source={CheckIcon} tone="text-inverse" /> : index}
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <Text variant="bodyMd" fontWeight="semibold">
+          {title}
+        </Text>
+        <Text variant="bodySm" tone="subdued">
+          {description}
+        </Text>
+      </div>
+
+      {index !== 3 && (
+        completed ? (
+          <Badge tone="success">Completed</Badge>
+        ) : (
+          <Badge>Pending</Badge>
+        )
+      )}
+      {isCollapsible && (
+        <div
+          style={{
+            transition: "transform 0.2s",
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            display: "flex",
+            flexShrink: 0,
+          }}
+        >
+          <Icon source={ChevronDownIcon} />
+        </div>
+      )}
+    </>
+  );
+
+  const content = (
+    <div
+      style={{
+        padding: previewImage
+          ? "20px 20px 24px 20px"
+          : "5px 20px 24px 20px",
+        borderTop: previewImage ? "1px solid #f1f2f3" : "none",
+      }}
+    >
+      <InlineGrid
+        columns={previewImage ? { xs: 1, md: ["twoThirds", "oneThird"] } : 1}
+        gap="400"
+      >
+        <BlockStack gap="300">
+          {checklist?.length > 0 && (
+            <BlockStack gap="200">
+              <Text variant="bodySm" fontWeight="semibold" tone="subdued">
+                WHAT TO DO
+              </Text>
+              <BlockStack gap="150">
+                {checklist.map((item, i) => (
+                  <CheckItem key={i} text={item} completed={completed} />
+                ))}
+              </BlockStack>
+            </BlockStack>
+          )}
+          <InlineStack gap="200">
+            {secondaryActionLabel && (
+              <Button size="slim" onClick={onSecondaryAction}>
+                <InlineStack gap="100" blockAlign="center" wrap={false}>
+                  <Text as="span">{secondaryActionLabel}</Text>
+                  <Icon source={ExternalIcon} />
+                </InlineStack>
+              </Button>
+            )}
+            <div className={index !== 3 ? "setup-step-dark-btn" : undefined}>
+              <Button
+                size="slim"
+                variant={index !== 3 ? "primary" : undefined}
+                onClick={onAction}
+                disabled={disabled}
+              >
+                <InlineStack gap="100" blockAlign="center" wrap={false}>
+                  <Text as="span">{actionLabel}</Text>
+                  <Icon source={ExternalIcon} />
+                </InlineStack>
+              </Button>
+            </div>
+          </InlineStack>
+        </BlockStack>
+        {previewImage && (
+          <div>
+            <img
+              src={previewImage}
+              alt={title}
+              style={{ width: "100%", display: "block" }}
+            />
+          </div>
+        )}
+      </InlineGrid>
+    </div>
+  );
+
+  return (
+    <div
+      style={{
+        border: "1px solid #e1e3e5",
+        borderRadius: 8,
+        background: "#fff",
+        overflow: "hidden",
+      }}
+    >
+      {isCollapsible ? (
+        <button
+          type="button"
+          onClick={onToggle}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            padding: "16px 20px",
+            background: "none",
+            border: "none",
+            outline: "none",
+            cursor: "pointer",
+            textAlign: "left",
+          }}
+        >
+          {header}
+        </button>
+      ) : (
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            padding: "16px 20px",
+            textAlign: "left",
+          }}
+        >
+          {header}
+        </div>
+      )}
+
+      {isCollapsible ? (
+        <Collapsible open={isOpen} id={`setup-step-${index}`}>
+          {content}
+        </Collapsible>
+      ) : (
+        content
+      )}
+    </div>
+  );
+}
+// ─── SetupTask (flat row, used by the second/simple Setup guide card) ──────────
 
 function SetupTask({
   title,
@@ -86,8 +311,58 @@ function SetupTask({
 }
 
 // ─── Setup Tasks Data ──────────────────────────────────────────────────────────
+// Two separate guides, matching the two stacked "Setup guide" cards in Figma:
+//  1) buildPrimarySetupTasks  → rich accordion (checklist + preview image)
+//  2) buildSecondarySetupTasks → flat list (title, description, button)
 
-function buildSetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled, appEmbedStarted) {
+function buildPrimarySetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled) {
+  const storeHandle = shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
+  const themeId = mainThemeId || "current";
+  const cartEditorPath = liveCart?.cartId
+    ? `/app/cart-editor/${liveCart.cartId}?from=home`
+    : "/app/carts";
+
+  return [
+    {
+      title: "Create Your Cart",
+      description: "Design and configure your cart drawer.",
+      actionLabel: "Edit Existing Cart",
+      secondaryActionLabel: "Create new Cart",
+      completed: !!liveCart,
+      disabled: !liveCart,
+      checklist: [
+        "Choose your cart layout and style",
+        "Add upsells, free shipping bar, and cart goals",
+        "Customize colors, fonts, and branding",
+        "Save your cart settings",
+      ],
+      previewImage: "https://cartplus.io/cartplus-img/Your%20Cart%20Step4.svg",
+      onAction: () => navigate(cartEditorPath),
+      onSecondaryAction: () => navigate("/app/carts"),
+    },
+    {
+      title: "Integrate Cart Plus with your theme",
+      description: "Enable the embed app in shopify's theme editor to make the cart drawer visible on your store",
+      actionLabel: "Integrate Now",
+      completed: appEmbedInstalled,
+      onAction: () =>
+        window.open(
+          `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
+        ),
+    },
+    {
+      title: "Manage Your Carts",
+      description: "View and organize all the carts you've created for your store.",
+      actionLabel: "View Existing Cart",
+      completed: !!liveCart,
+      disabled: !liveCart,
+      hideIncompleteBadge: true,
+      onAction: () => navigate(cartEditorPath),
+    },
+  ];
+}
+
+function buildSecondarySetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled, appEmbedStarted) {
   const cartId = liveCart?.cartId;
   const goTo = (module) => () => cartId && navigate(`/app/cart-editor/${cartId}?from=home&module=${module}`);
   const storeHandle = shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
@@ -116,8 +391,8 @@ function buildSetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appE
       onAction: goTo("triggered-rewards"),
     },
     {
-      title: "Cart Plus Embed Installation",
-      description: "Set up the Cart Plus embed in your Shopify theme before enabling Cart Plus to start using its features.",
+      title: "Upcart App Embed Installation",
+      description: "Set up the Upcart app embed in your Shopify theme before enabling Upcart to start using its features.",
       actionLabel: "Install Upcart app embed",
       completed: appEmbedInstalled,
       isEmbedStarted: false,
@@ -129,9 +404,9 @@ function buildSetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appE
         ),
     },
     {
-      title: "Activate Cart Plus",
-      description: "Open the cart editor and set the Cart Plus status to 'Active'.",
-      actionLabel: "Activate Cart Plus",
+      title: "Activate Upcart",
+      description: "Open the cart editor and set the Upcart status to 'Active'.",
+      actionLabel: "Activate Upcart",
       completed: !!liveCart,
       onAction: () => navigate("/app/carts"),
     },
@@ -434,7 +709,20 @@ function DashboardInner({
     initialShopRevenue || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 }
   );
   const [range, setRange] = useState(getDefaultRange);
-  const [setupOpen, setSetupOpen] = useState(false);
+
+  // Two separate Setup guide cards, each with its own collapse state.
+  const [primarySetupOpen, setPrimarySetupOpen] = useState(true);
+  const [secondarySetupOpen, setSecondarySetupOpen] = useState(false);
+
+  // Which individual rows are expanded within the primary (rich) guide — like Figma.
+  const [openTasks, setOpenTasks] = useState(() => new Set([0]));
+  const toggleTask = useCallback((i) => {
+    setOpenTasks((prev) => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  }, []);
 
   // ← false on first render: the loader already resolved cartStats/shopRevenue,
   // so render them immediately instead of flashing a skeleton + refetching.
@@ -450,7 +738,16 @@ function DashboardInner({
     .filter((cart) => cart.status === "published")
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  const setupTasks = buildSetupTasks(
+  const primaryTasks = buildPrimarySetupTasks(
+    liveCarts[0] || null,
+    navigate,
+    shop,
+    appEmbedId,
+    mainThemeId,
+    appEmbedInstalled
+  );
+
+  const secondaryTasks = buildSecondarySetupTasks(
     liveCarts[0] || null,
     navigate,
     shop,
@@ -460,10 +757,16 @@ function DashboardInner({
     appEmbedStarted
   );
 
-  const handleSetupToggle = useCallback(() => setSetupOpen((v) => !v), []);
-  const completedCount = setupTasks.filter((t) => t.completed).length;
-  const progressPercent = Math.round((completedCount / setupTasks.length) * 100);
-  const allCompleted = completedCount === setupTasks.length;
+  const handlePrimarySetupToggle = useCallback(() => setPrimarySetupOpen((v) => !v), []);
+  const handleSecondarySetupToggle = useCallback(() => setSecondarySetupOpen((v) => !v), []);
+
+  const primaryCompletedCount = primaryTasks.filter((t) => t.completed).length;
+  const primaryProgressPercent = Math.round((primaryCompletedCount / primaryTasks.length) * 100);
+  const primaryAllCompleted = primaryCompletedCount === primaryTasks.length;
+
+  const secondaryCompletedCount = secondaryTasks.filter((t) => t.completed).length;
+  const secondaryProgressPercent = Math.round((secondaryCompletedCount / secondaryTasks.length) * 100);
+  const secondaryAllCompleted = secondaryCompletedCount === secondaryTasks.length;
 
   useEffect(() => {
     setCarts(initialCarts);
@@ -799,66 +1102,131 @@ function DashboardInner({
         </BlockStack>
       </BlockStack>
 
-      {/* ── Help & Support ── */}
       <Box paddingBlockStart="400">
-        <BlockStack gap="200">
-          <Text variant="headingMd">Help &amp; Support</Text>
-
-          {!allCompleted && (
-            <div
+        <BlockStack gap="300">
+          {/* Card 1 — rich guide: Create Your Cart / Integrate / Manage Your Carts */}
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #e1e3e5",
+              borderRadius: 12,
+              overflow: "hidden",
+            }}
+          >
+            <button
+              type="button"
+              onClick={handlePrimarySetupToggle}
               style={{
-                background: "#fff",
-                border: "1px solid #e1e3e5",
-                borderRadius: 12,
-                overflow: "hidden",
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "14px 16px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
               }}
             >
-              <button
-                type="button"
-                onClick={handleSetupToggle}
+              <Text variant="headingMd">Setup guide</Text>
+              <Text tone="subdued">
+                {primaryCompletedCount} of {primaryTasks.length} tasks complete
+              </Text>
+              <div style={{ flex: 1 }} />
+              <div style={{ width: 200 }}>
+                <ProgressBar progress={primaryProgressPercent} size="small" tone="primary" />
+              </div>
+              <div
                 style={{
-                  width: "100%",
+                  transition: "transform 0.2s",
+                  transform: primarySetupOpen ? "rotate(180deg)" : "rotate(0deg)",
                   display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "14px 16px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textAlign: "left",
                 }}
               >
-                <Text variant="headingMd">Setup guide</Text>
-                <Text tone="subdued">
-                  {completedCount} of {setupTasks.length} tasks complete
-                </Text>
-                <div style={{ flex: 1 }} />
-                <div style={{ width: 200 }}>
-                  <ProgressBar progress={progressPercent} size="small" tone="primary" />
-                </div>
-                <div
-                  style={{
-                    transition: "transform 0.2s",
-                    transform: setupOpen ? "rotate(180deg)" : "rotate(0deg)",
-                    display: "flex",
-                  }}
-                >
-                  <Icon source={ChevronDownIcon} />
-                </div>
-              </button>
+                <Icon source={ChevronDownIcon} />
+              </div>
+            </button>
 
-              <Collapsible open={setupOpen} id="setup-guide">
-                <div style={{ borderTop: "1px solid #e1e3e5" }}>
-                  {setupTasks.map((task, i) => (
-                    <div key={task.title}>
-                      <SetupTask {...task} />
-                      {i < setupTasks.length - 1 && <Divider />}
-                    </div>
-                  ))}
-                </div>
-              </Collapsible>
-            </div>
-          )}
+            <Collapsible open={primarySetupOpen} id="setup-guide-primary">
+              <div
+                style={{
+                  borderTop: "1px solid #e1e3e5",
+                  background: "#fafbfb",
+                  padding: 16,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
+                }}
+              >
+                {primaryTasks.map((task, i) => (
+                  <SetupStepCard
+                    key={task.title}
+                    index={i + 1}
+                    cartCount={liveCarts.length}
+                    isOpen={openTasks.has(i)}
+                    onToggle={() => toggleTask(i)}
+                    {...task}
+                  />
+                ))}
+              </div>
+            </Collapsible>
+          </div>
+
+          {/* Card 2 — flat guide: Add upsells / rewards / triggered rewards / embed / activate */}
+
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #e1e3e5",
+              borderRadius: 12,
+              overflow: "hidden",
+            }}
+          >
+            <button
+              type="button"
+              onClick={handleSecondarySetupToggle}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "14px 16px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+              }}
+            >
+              <Text variant="headingMd">Setup guide</Text>
+              <Text tone="subdued">
+                {secondaryCompletedCount} of {secondaryTasks.length} tasks complete
+              </Text>
+              <div style={{ flex: 1 }} />
+              <div style={{ width: 200 }}>
+                <ProgressBar progress={secondaryProgressPercent} size="small" tone="primary" />
+              </div>
+              <div
+                style={{
+                  transition: "transform 0.2s",
+                  transform: secondarySetupOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  display: "flex",
+                }}
+              >
+                <Icon source={ChevronDownIcon} />
+              </div>
+            </button>
+
+            <Collapsible open={secondarySetupOpen} id="setup-guide-secondary">
+              <div style={{ borderTop: "1px solid #e1e3e5" }}>
+                {secondaryTasks.map((task, i) => (
+                  <div key={task.title}>
+                    <SetupTask {...task} />
+                    {i < secondaryTasks.length - 1 && <Divider />}
+                  </div>
+                ))}
+              </div>
+            </Collapsible>
+          </div>
         </BlockStack>
       </Box>
 
