@@ -33,7 +33,7 @@ export default function CartHoverCard({ cart, children }) {
         { key: "announcementSettings", label: "Announcement" },
         { key: "rewardsSettings", label: "Tiered Offers" },
         { key: "triggeredRewardsSettings", label: "Smart Offers" },
-        { key: "recommendationsSettings", label: "Suggested Products" },
+        { key: "recommendationsSettings", label: "Recommendations" },
         { key: "upsellsSettings", label: "Upsells" },
         { key: "additionalNotesSettings", label: "Notes" },
         { key: "addonsSettings", label: "Add-ons" },
