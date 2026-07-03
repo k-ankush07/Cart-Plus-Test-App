@@ -471,42 +471,42 @@ function DashboardInner({
 
   // Refetch stats only when the date range changes — not on mount (loader did that).
   useEffect(() => {
-  if (isFirstRangeRender.current) {
-    isFirstRangeRender.current = false;
-    return;
-  }
-  const fetchStats = async () => {
-    setStatsLoading(true);
-    try {
-      const publishedCartIds = liveCarts.map((c) => c.cartId);
-      const params = new URLSearchParams({
-        shop: shop.myshopifyDomain,
-        startDate: range.start.toISOString(),
-        endDate: range.end.toISOString(),
-      });
-      if (publishedCartIds.length > 0) {
-        params.append("cartIds", publishedCartIds.join(","));
-      }
-      const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
-        credentials: "include",
-        headers: authHeaders(),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setCartStats(data.data || {});
-        setShopRevenue(
-          data.shopRevenue || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 }
-        );
-      }
-    } catch (err) {
-      console.error("STATS FETCH ERROR:", err);
-    } finally {
-      setStatsLoading(false);
+    if (isFirstRangeRender.current) {
+      isFirstRangeRender.current = false;
+      return;
     }
-  };
+    const fetchStats = async () => {
+      setStatsLoading(true);
+      try {
+        const publishedCartIds = liveCarts.map((c) => c.cartId);
+        const params = new URLSearchParams({
+          shop: shop.myshopifyDomain,
+          startDate: range.start.toISOString(),
+          endDate: range.end.toISOString(),
+        });
+        if (publishedCartIds.length > 0) {
+          params.append("cartIds", publishedCartIds.join(","));
+        }
+        const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
+          credentials: "include",
+          headers: authHeaders(),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setCartStats(data.data || {});
+          setShopRevenue(
+            data.shopRevenue || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 }
+          );
+        }
+      } catch (err) {
+        console.error("STATS FETCH ERROR:", err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
 
-  fetchStats();
-}, [range.start, range.end]);
+    fetchStats();
+  }, [range.start, range.end]);
 
   const AppEmbedLink = () => (
     <Tooltip content="Enable the app embed to start showing this cart on your storefront. Click to enable in your theme editor.">
@@ -616,6 +616,12 @@ function DashboardInner({
 
         {/* ── Cart table ── */}
         <BlockStack>
+          <Box paddingBlockEnd="200">
+            <InlineStack gap="200" blockAlign="center">
+              <Text variant="headingMd">Cart logs</Text>
+            </InlineStack>
+          </Box>
+
           {liveCarts.length > 0 ? (
             <div
               className="compact-cart-table"
