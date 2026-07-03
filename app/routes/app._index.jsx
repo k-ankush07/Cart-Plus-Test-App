@@ -275,6 +275,7 @@ function SetupStepCard({
     </div>
   );
 }
+
 // ─── SetupTask (flat row, used by the second/simple Setup guide card) ──────────
 
 function SetupTask({
