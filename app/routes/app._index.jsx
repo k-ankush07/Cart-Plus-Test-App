@@ -20,7 +20,6 @@ import {
 import {
   ChevronDownIcon,
   HeartIcon,
-  NoteIcon,
   ExternalIcon,
   CheckIcon,
 } from "@shopify/polaris-icons";
