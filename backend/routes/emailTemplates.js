@@ -532,11 +532,6 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Congratulations – Cart Plus</title>
-    <!--[if mso]>
-    <noscript>
-      <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
-    </noscript>
-    <![endif]-->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -563,7 +558,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                 bgcolor="#1a1a1a"
                 background="https://cartplus.io/cartplus-img/Rectangle%201.svg"
                 style="
-                  padding:50px 50px 20px 50px;
+                  padding:50px 50px 10px 50px;
                   width:100%; max-width:600px; height:600px;
                   background-color:#1a1a1a;
                   background-image:url('https://cartplus.io/cartplus-img/Rectangle%201.svg');
@@ -579,7 +574,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                   <tr>
                     <td align="center" valign="top" style="text-align:center; vertical-align:top;">
                       <div style="text-align:center;">
-                 <img
+                   <img
                       src="https://cartplus.io/cartplus-img/Layer_1.svg"
                       alt="Cart Plus Logo"
                       width="250"
@@ -592,14 +587,14 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                   <!-- MIDDLE: Welcome + title + image -->
                   <tr>
                     <td align="center" valign="middle" style="text-align:center; vertical-align:bottom;">
-                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; padding-top:20px; font-size:40px; font-weight:200; color:#3C3C3C; line-height:1.6;">
+                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; padding-top:20px; font-size:60px; font-weight:200; color:#3C3C3C; line-height:1.6;">
                         Welcome to
                       </p>
-                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:68px; font-weight:600; line-height:75px; letter-spacing:-1px; padding-bottom:30px; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display:inline-block;">
-                        Cart Plus
-                      </h1>
+                   <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:80px; font-weight:600; line-height:75px; letter-spacing:-1px; padding-bottom:30px; color:#500088; display:inline-block;">
+                     Cart Plus
+                   </h1>
                       <img src="https://cartplus.io/cartplus-img/Group%201707479975.png"
-                           style="display:inline-block; vertical-align:middle; border:0;" />
+                           style="display:inline-block; vertical-align:middle; border:0;outline:none; text-decoration:none" />
                     </td>
                   </tr>
                 </table>
@@ -629,7 +624,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
 
                 <!-- Feature icons row -->
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                  style="width:100%; border:1px solid rgba(255,255,255,0.2); border-radius:30px; padding:15px;">
+                  style="width:100%; border:1px solid #FFFFFF; border-radius:30px; padding:15px;">
                   <tr>
                     <!-- Increase AOV -->
                     <td width="25%" style="text-align:center; vertical-align:top; padding:10px 5px;">
@@ -640,7 +635,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                       </p>
                     </td>
                     <!-- Add rewards -->
-                    <td width="25%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2); padding:10px 5px;">
+                    <td width="25%" style="text-align:center; vertical-align:top; border-left:1px solid #FFFFFF; padding:10px 5px;">
                       <img src="https://cartplus.io/cartplus-img/Group%201707479634%20(1).svg"
                         style="display:inline-block; vertical-align:middle; border:0;" />
                       <p style="margin:12px 0 0; font-family:'Outfit',Arial,sans-serif; font-size:13px; font-weight:500; color:#ffffff; line-height:1.3;">
@@ -648,7 +643,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                       </p>
                     </td>
                     <!-- Improve conversion -->
-                    <td width="25%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2); padding:10px 5px;">
+                    <td width="25%" style="text-align:center; vertical-align:top; border-left:1px solid #FFFFFF; padding:10px 5px;">
                       <img src="https://cartplus.io/cartplus-img/Group%201707479634%20(2).svg"
                         style="display:inline-block; vertical-align:middle; border:0;" />
                       <p style="margin:12px 0 0; font-family:'Outfit',Arial,sans-serif; font-size:13px; font-weight:500; color:#ffffff; line-height:1.3;">
@@ -656,7 +651,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                       </p>
                     </td>
                     <!-- Customize -->
-                    <td width="25%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2); padding:10px 5px;">
+                    <td width="25%" style="text-align:center; vertical-align:top; border-left:1px solid #FFFFFF; padding:10px 5px;">
                       <img src="https://cartplus.io/cartplus-img/Group%201707479633.svg"
                         style="display:inline-block; vertical-align:middle; border:0;" />
                       <p style="margin:12px 0 0; font-family:'Outfit',Arial,sans-serif; font-size:13px; font-weight:500; color:#ffffff; line-height:1.3;">
@@ -778,7 +773,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
 
                       <!-- Contact Support button -->
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"
-                        style="border:1px solid #FFFFFF33; border-radius:26px; background:transparent;">
+                        style="border:1px solid #FFFFFF; border-radius:26px; background:transparent;">
                         <tr>
                           <td style="padding:5px 28px 5px 5px; vertical-align:middle;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0">
