@@ -902,3 +902,175 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
   </body>
 </html>`;
 };
+
+export const buildContactFormEmailHtml = ({ firstName, lastName, email, phone, address }) => {
+  const safeFirst = String(firstName || "").replace(/</g, "&lt;");
+  const safeLast = String(lastName || "").replace(/</g, "&lt;");
+  const safeEmail = String(email || "").replace(/</g, "&lt;");
+  const safePhone = String(phone || "").replace(/</g, "&lt;");
+  const safeAddress = String(address || "-").replace(/</g, "&lt;");
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Contact Form Submission – Cart Plus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+      body { font-family: 'Outfit', Arial, sans-serif; }
+    </style>
+  </head>
+  <body style="margin:0; padding:0; background:#ffffff; font-family:'Outfit',Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
+
+            <!-- ===================== HEADER ===================== -->
+            <tr>
+              <td
+                width="600"
+                height="220"
+                bgcolor="#1a1a1a"
+                style="padding:40px; width:100%; max-width:600px; background-color:#1a1a1a; text-align:center;"
+              >
+                <img
+                  src="https://cartplus.io/cartplus-img/Layer_1.svg"
+                  alt="Cart Plus Logo"
+                  width="220"
+                  style="display:block; margin:0 auto 20px; border:0; outline:none; text-decoration:none;"
+                />
+                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:26px; font-weight:600; color:#ffffff;">
+                  New Contact Form Submission
+                </p>
+              </td>
+            </tr>
+
+            <!-- ===================== BODY: SUBMISSION DETAILS ===================== -->
+            <tr>
+              <td bgcolor="#F8EEFF" style="background-color:#F8EEFF; padding:50px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                  style="background:#ffffff; border:1px solid #E5D4FA; border-radius:16px; padding:10px 24px;">
+                  <tr>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0; width:130px;">First Name</td>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safeFirst}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0;">Last Name</td>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safeLast}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0;">Email</td>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safeEmail}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0;">Phone</td>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safePhone}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0; vertical-align:top;">Address</td>
+                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safeAddress}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:14px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0;">Submitted At</td>
+                    <td style="padding:14px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${new Date().toLocaleString()}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- ===================== FOOTER ===================== -->
+            <tr>
+              <td bgcolor="#f7f7f7" style="background-color:#F8EEFF; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+                <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
+                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:16px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+                  &nbsp;|&nbsp;
+                  <a href="https://www.cartplus.io" style="color:#555555; font-size:16px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
+                </p>
+                <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
+                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:13px; color:#3c3c3c;">
+                  &copy; 2026 Cart Plus. All rights reserved. This is an automated notification.
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+};
+
+export const buildContactFormThankYouEmailHtml = ({ firstName }) => {
+  const safeFirst = String(firstName || "there").replace(/</g, "&lt;");
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thank You – Cart Plus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+      body { font-family: 'Outfit', Arial, sans-serif; }
+    </style>
+  </head>
+  <body style="margin:0; padding:0; background:#ffffff; font-family:'Outfit',Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
+
+            <!-- HEADER -->
+            <tr>
+              <td width="600" height="260" bgcolor="#1a1a1a" style="padding:40px; width:100%; max-width:600px; background-color:#1a1a1a; text-align:center;">
+                <img src="https://cartplus.io/cartplus-img/Layer_1.svg" alt="Cart Plus Logo" width="220" style="display:block; margin:0 auto 24px; border:0; outline:none; text-decoration:none;" />
+                <h1 style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:44px; font-weight:600; color:#ffffff; line-height:1.2;">
+                  Thank You!
+                </h1>
+              </td>
+            </tr>
+
+            <!-- BODY -->
+            <tr>
+              <td bgcolor="#F8EEFF" style="background-color:#F8EEFF; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:17px; line-height:27px; font-weight:400; color:#1a1a1a;">
+                <p style="margin:0 0 12px;">Hi <strong>${safeFirst}</strong>,</p>
+                <p style="margin:0 0 12px;">
+                  Thanks for reaching out to <strong>Cart Plus</strong>! We've received your message and our team will get back to you shortly.
+                </p>
+                <p style="margin:0;">
+                  In the meantime, feel free to explore how Cart Plus can help boost your store's conversions and AOV.
+                </p>
+              </td>
+            </tr>
+
+            <!-- FOOTER -->
+            <tr>
+              <td bgcolor="#f7f7f7" style="background-color:#F8EEFF; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+                <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
+                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:16px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+                  &nbsp;|&nbsp;
+                  <a href="https://www.cartplus.io" style="color:#555555; font-size:16px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
+                </p>
+                <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
+                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:13px; color:#3c3c3c;">
+                  &copy; 2026 Cart Plus. All rights reserved.
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+};
