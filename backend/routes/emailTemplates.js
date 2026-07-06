@@ -532,7 +532,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Congratulations – Custom Cart</title>
+    <title>Congratulations – Cart Plus</title>
     <!--[if mso]>
     <noscript>
       <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
@@ -562,12 +562,12 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                 width="600"
                 height="600px"
                 bgcolor="#1a1a1a"
-                background="https://hubsyntax.com/cart-images/Frame%201707479976.svg"
+                background="https://cartplus.io/cartplus-img/Rectangle%201.svg"
                 style="
-                  padding:50px;
+                  padding:50px 50px 20px 50px;
                   width:100%; max-width:600px; height:600px;
                   background-color:#1a1a1a;
-                  background-image:url('https://hubsyntax.com/cart-images/Frame%201707479976.svg');
+                  background-image:url('https://cartplus.io/cartplus-img/Rectangle%201.svg');
                   background-repeat:no-repeat;
                   background-position:center center;
                   background-size:cover;
@@ -576,25 +576,30 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
               >
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="height:700px;">
 
-                  <!-- TOP: Custom Cart logo -->
+                  <!-- TOP: Cart Plus logo -->
                   <tr>
                     <td align="center" valign="top" style="text-align:center; vertical-align:top;">
-                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:35px; font-weight:600; color:#ffffff; line-height:1;">
-                        Custom <span style="background:#c8f000; color:#1a1a1a; padding:2px 10px; border-radius:4px;">Cart</span>
-                      </p>
+                      <div style="text-align:center;">
+                 <img
+                      src="https://cartplus.io/cartplus-img/Layer_1.svg"
+                      alt="Cart Plus Logo"
+                      width="250"
+                      style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
+                 />
+                 </div>
                     </td>
                   </tr>
 
                   <!-- MIDDLE: Welcome + title + image -->
                   <tr>
                     <td align="center" valign="middle" style="text-align:center; vertical-align:bottom;">
-                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; padding-top:20px; font-size:40px; font-weight:200; color:#ffffff; line-height:1.6;">
+                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; padding-top:20px; font-size:40px; font-weight:200; color:#3C3C3C; line-height:1.6;">
                         Welcome to
                       </p>
-                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:68px; font-weight:600; color:#c8f000; line-height:1.1; letter-spacing:-1px; padding-bottom:40px;">
-                        Custom Cart
-                      </h1>
-                      <img src="https://hubsyntax.com/cart-images/Group%201707479975.svg"
+                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:68px; font-weight:600; line-height:75px; letter-spacing:-1px; padding-bottom:30px; color:#9500FF; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display:inline-block;">
+                        Cart Plus
+                       </h1>
+                      <img src="https://cartplus.io/cartplus-img/Group%201707479975.svg"
                            style="display:inline-block; vertical-align:middle; border:0;" />
                     </td>
                   </tr>
@@ -605,10 +610,10 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
 
             <!-- ===================== BODY TEXT ===================== -->
             <tr>
-              <td bgcolor="#ffffff" style="background-color:#ffffff; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
+              <td bgcolor="#ffffff" style="background-color:#F8EEFF; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
                 <p style="margin:0 0 12px;">Hi <strong>${safeOwner}</strong>,</p>
                 <p style="margin:0 0 12px;"><strong>${safeShop}</strong></p>
-                <p style="margin:0 0 12px;"><strong>Thank you for installing Custom Cart</strong></p>
+                <p style="margin:0 0 12px;"><strong>Thank you for installing Cart Plus</strong></p>
                 <p style="margin:0;">
                  We're excited to help you increase conversions, improve the customer experience, and boost your store's revenue with a smarter, more engaging cart experience.
                 </p>
@@ -617,20 +622,20 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
 
             <!-- ===================== FEATURES STRIP ===================== -->
             <tr>
-              <td style="background-image:url('https://hubsyntax.com/cart-images/featureBg.svg'); padding:50px 30px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); padding:50px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
 
                 <!-- What you can do heading -->
-                <p style="margin:0 0 30px; font-family:'Outfit',Arial,sans-serif; font-size:26px; font-weight:700; text-align:center; color:#ffffff;">
-                  What you can do with<br/>Custom Cart
+                <p style="margin:0 0 30px; font-family:'Outfit',Arial,sans-serif; font-size:26px; font-weight:600; text-align:center; color:#ffffff;">
+                  What you can do with<br/>Cart Plus
                 </p>
 
                 <!-- Feature icons row -->
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                  style="width:100%; border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:20px 15px;">
+                  style="width:100%; border:1px solid rgba(255,255,255,0.2); border-radius:30px; padding:15px;">
                   <tr>
                     <!-- Increase AOV -->
                     <td width="25%" style="text-align:center; vertical-align:top; padding:10px 5px;">
-                      <img src="https://hubsyntax.com/cart-images/Group%201707479634.svg"
+                      <img src="https://cartplus.io/cartplus-img/Group%201707479634.svg"
                         style="display:inline-block; vertical-align:middle; border:0;" />
                       <p style="margin:12px 0 0; font-family:'Outfit',Arial,sans-serif; font-size:13px; font-weight:500; color:#ffffff; line-height:1.3;">
                         Increase AOV<br/>with upsells
@@ -638,7 +643,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                     </td>
                     <!-- Add rewards -->
                     <td width="25%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2); padding:10px 5px;">
-                      <img src="https://hubsyntax.com/cart-images/Group%201707479634%20(1).svg"
+                      <img src="https://cartplus.io/cartplus-img/Group%201707479634%20(1).svg"
                         style="display:inline-block; vertical-align:middle; border:0;" />
                       <p style="margin:12px 0 0; font-family:'Outfit',Arial,sans-serif; font-size:13px; font-weight:500; color:#ffffff; line-height:1.3;">
                         Add rewards &<br/>free gifts
@@ -646,7 +651,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                     </td>
                     <!-- Improve conversion -->
                     <td width="25%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2); padding:10px 5px;">
-                      <img src="https://hubsyntax.com/cart-images/Group%201707479634%20(2).svg"
+                      <img src="https://cartplus.io/cartplus-img/Group%201707479634%20(2).svg"
                         style="display:inline-block; vertical-align:middle; border:0;" />
                       <p style="margin:12px 0 0; font-family:'Outfit',Arial,sans-serif; font-size:13px; font-weight:500; color:#ffffff; line-height:1.3;">
                         Improve cart<br/>conversion rates
@@ -654,7 +659,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                     </td>
                     <!-- Customize -->
                     <td width="25%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2); padding:10px 5px;">
-                      <img src="https://hubsyntax.com/cart-images/Group%201707479633%20(2).svg"
+                      <img src="https://cartplus.io/cartplus-img/Group%201707479633.svg"
                         style="display:inline-block; vertical-align:middle; border:0;" />
                       <p style="margin:12px 0 0; font-family:'Outfit',Arial,sans-serif; font-size:13px; font-weight:500; color:#ffffff; line-height:1.3;">
                         Customize your<br/>cart drawer
@@ -668,14 +673,14 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
 
             <!-- ===================== GETTING STARTED ===================== -->
             <tr>
-              <td bgcolor="#ffffff" style="background-color:#ffffff; padding:50px;">
+              <td bgcolor="#ffffff" style="background-color:#F8EEFF; padding:50px;">
               <table 
                role="presentation" 
                width="100%" 
                cellpadding="0" 
                cellspacing="0" 
                border="0"
-              style="border:1px solid #E9E9E9; border-radius:16px; background-color:#F9FAFC;">
+              style="border:1px solid #9500FF1A; border-radius:30px; background-color:white;">
          <tr>
           <td style="padding:30px;">
                 <p style="margin:0 0 30px; font-family:'Outfit',Arial,sans-serif; font-size:26px; font-weight:700; color:#1a1a1a;">
@@ -689,21 +694,21 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td width="42" height="42" align="center" valign="middle"
-                            style="width:42px; height:42px; border-radius:50%; background: linear-gradient(180deg, #680BD6 46.54%, #DFF646 138.05%); color:#ffffff; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; text-align:center; vertical-align:middle;">
+                            style="width:42px; height:42px; border-radius:50%; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); color:#ffffff; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; text-align:center; vertical-align:middle;">
                             1
                           </td>
                         </tr>
                         <!-- Connector line -->
                         <tr>
                           <td align="center">
-                            <div style="width:2px; height:40px; background: linear-gradient(180deg, #AD9382 0%, #680BD6 100%); margin:0 auto;"></div>
+                            <div style="width:2px; height:40px; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); margin:0 auto;"></div>
                           </td>
                         </tr>
                       </table>
                     </td>
                     <td valign="top" style="vertical-align:top; padding-top:8px;">
                       <p style="margin:0 0 4px; font-family:'Outfit',Arial,sans-serif; font-size:17px; font-weight:700; color:#1a1a1a;">Open the App</p>
-                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:15px; font-weight:400; color:#555555; line-height:1.5;">Go to your Custom Cart dashboard.</p>
+                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:15px; font-weight:400; color:#555555; line-height:1.5;">Go to your Cart Plus dashboard.</p>
                     </td>
                   </tr>
                 </table>
@@ -715,14 +720,14 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td width="42" height="42" align="center" valign="middle"
-                            style="width:42px; height:42px; border-radius:50%; background: linear-gradient(180deg, #680BD6 46.54%, #DFF646 138.05%); color:#ffffff; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; text-align:center; vertical-align:middle;">
+                            style="width:42px; height:42px; border-radius:50%; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); color:#ffffff; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; text-align:center; vertical-align:middle;">
                             2
                           </td>
                         </tr>
                         <!-- Connector line -->
                         <tr>
                           <td align="center">
-                            <div style="width:2px; height:40px; background: linear-gradient(180deg, #AD9382 0%, #680BD6 100%); margin:0 auto;"></div>
+                            <div style="width:2px; height:40px; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); margin:0 auto;"></div>
                           </td>
                         </tr>
                       </table>
@@ -741,7 +746,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td width="42" height="42" align="center" valign="middle"
-                            style="width:42px; height:42px; border-radius:50%; background: linear-gradient(180deg, #680BD6 46.54%, #DFF646 138.05%); color:#ffffff; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; text-align:center; vertical-align:middle;">
+                            style="width:42px; height:42px; border-radius:50%; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); color:#ffffff; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; text-align:center; vertical-align:middle;">
                             3
                           </td>
                         </tr>
@@ -762,7 +767,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
             </tr>
             <!-- ===================== NEED HELP STRIP ===================== -->
             <tr>
-              <td style="background-image:url('https://hubsyntax.com/cart-images/featureBg.svg'); padding:50px 30px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Frame%202121452816.svg'); padding:50px 30px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="text-align:center;">
@@ -775,20 +780,20 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
 
                       <!-- Contact Support button -->
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"
-                        style="border:1px solid rgba(255,255,255,0.2); border-radius:26px; background:transparent;">
+                        style="border:1px solid #FFFFFF33; border-radius:26px; background:transparent;">
                         <tr>
                           <td style="padding:5px 28px 5px 5px; vertical-align:middle;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                               <tr>
                                 <td style="width:42px; height:42px; text-align:center; vertical-align:middle;">
                                   <img
-                                    src="https://hubsyntax.com/cart-images/cartEmailImage.svg"
+                                    src="https://cartplus.io/cartplus-img/Group%201707479635.svg"
                                     alt="" width="42" height="42"
                                     style="display:inline-block; vertical-align:middle; border:0;"
                                   />
                                 </td>
                                 <td style="padding-left:16px; vertical-align:middle;">
-                                  <a href="mailto:Info@customcart.com"
+                                  <a href="mailto:Support@cartplus.io"
                                     style="font-family:'Outfit',Arial,sans-serif; font-size:17px; font-weight:500; color:#ffffff; text-decoration:none;">
                                     Contact Support
                                   </a>
@@ -807,7 +812,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
 
             <!-- ===================== FOOTER ===================== -->
             <tr>
-              <td bgcolor="#f7f7f7" style="background-color:#f7f7f7; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+              <td bgcolor="#f7f7f7" style="background-color:#F8EEFF; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
 
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; color:#1a1a1a;">
                   Follow us
@@ -817,27 +822,27 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
                   <tr>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartFacbook.svg" alt="Facebook" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      <a href="#" style="display:inline-block; ">
+                        <img src="https://cartplus.io/cartplus-img/Frame%206113.svg" alt="Facebook" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartInstagram.svg" alt="Instagram" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      <a href="#" style="display:inline-block;">
+                        <img src="https://cartplus.io/cartplus-img/Frame%206115.svg" alt="Instagram" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartLinkdin.svg" alt="LinkedIn" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      <a href="#" style="display:inline-block;">
+                        <img src="https://cartplus.io/cartplus-img/Group%201707479925.svg" alt="LinkedIn" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                   </tr>
                 </table>
 
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Info@customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Info@customcart.com</a>
+                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
                   &nbsp;|&nbsp;
-                  <a href="https://www.customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.customcart.com</a>
+                  <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
 
                 <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
@@ -846,7 +851,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                   style="border-bottom:1px solid #dddddd; padding-bottom:20px; margin-bottom:20px;">
                   <tr>
                     <td align="left" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
-                      &copy; 2026 Custom Cart. All rights reserved.
+                      &copy; 2026 Cart Plus. All rights reserved.
                     </td>
                     <td align="right" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
                       <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Preference</a>
@@ -857,8 +862,8 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                 </table>
 
                 <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c; line-height:20px;">
-                  Thank you for choosing Custom Cart! &#128156;<br />
-                  The Custom Cart Team
+                  Thank you for choosing Cart Plus! &#128156;<br />
+                  The Cart Plus Team
                 </p>
 
               </td>
@@ -868,7 +873,6 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
         </td>
       </tr>
     </table>
-
   </body>
 </html>`;
 };
