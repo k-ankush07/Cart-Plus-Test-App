@@ -522,7 +522,6 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
 </html>`;
 };
 
-
 export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
   const safeOwner = String(storeOwner || "there").replace(/</g, "&lt;");
   const safeShop = String(shop || "").replace(/</g, "&lt;");
