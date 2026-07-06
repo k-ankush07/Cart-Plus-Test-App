@@ -8,7 +8,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Congratulations – Custom Cart</title>
+    <title>Congratulations – Cart Plus</title>
     <!--[if mso]>
     <noscript>
       <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
@@ -52,12 +52,12 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
     width="600"
     height="390"
     bgcolor="#1a1a1a"
-    background="https://hubsyntax.com/cart-images/cartDashboardImg.svg"
+    background="https://cartplus.io/cartplus-img/Group%201707480303.png"
     style="
       padding:50px;
       width:100%; max-width:600px; height:390px;
       background-color:#1a1a1a;
-      background-image:url('https://hubsyntax.com/cart-images/cartDashboardImg.svg');
+      background-image:url('https://cartplus.io/cartplus-img/Group%201707480303.png');
       background-repeat:no-repeat;
       background-position:center center;
       background-size:cover;
@@ -66,22 +66,27 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
   >
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="height:390px;">
 
-      <!-- TOP: Custom Cart logo -->
+      <!-- TOP: Cart Plus logo -->
       <tr>
         <td align="center" valign="top" style="text-align:center; vertical-align:top;">
-          <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:35px; font-weight:600; color:#ffffff; line-height:1;">
-            Custom <span style="background:#c8f000; color:#1a1a1a; padding:2px 10px; border-radius:4px;">Cart</span>
-          </p>
+          <div style="text-align:center;">
+                   <img
+                      src="https://cartplus.io/cartplus-img/Layer_1.svg"
+                      alt="Cart Plus Logo"
+                      width="250"
+                      style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
+                 />
+                 </div>
         </td>
       </tr>
 
       <!-- MIDDLE: Congratulations + subtitle -->
       <tr>
         <td align="center" valign="middle" style="text-align:center; vertical-align:bottom; padding:0 30px 40px;">
-          <h1 style="font-family:'Outfit',Arial,sans-serif; font-size:68px; font-weight:600; color:#c8f000; line-height:1.1; letter-spacing:-1px; margin-bottom:20px;">
+          <h1 style="font-family:'Outfit',Arial,sans-serif; font-size:68px; font-weight:600; color:#500088; line-height:1.1; letter-spacing:-1px; margin-bottom:20px;">
             Congratulations
           </h1>
-          <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:30px; font-weight:200; color:#ffffff; line-height:1.6;">
+          <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:30px; font-weight:200; color:#000; line-height:1.6;">
             Your plan has now been upgraded.
           </p>
         </td>
@@ -92,7 +97,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
 </tr>
             <!-- ===================== BODY TEXT ===================== -->
             <tr>
-              <td bgcolor="#f7f7f7" style="background-color:#f7f7f7; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
+              <td bgcolor="#f7f7f7" style="background-color:#F8EEFF; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
                 <p style="margin:0 0 12px;">Hi <strong>${safeOwner}</strong>,</p>
                 <p style="margin:0 0 12px;"><strong>${safeShop}</strong></p>
                  <p style="margin:0 0 12px;">
@@ -108,12 +113,12 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
             <!-- ===================== FEATURES STRIP ===================== -->
             <!-- background-image replaced with solid bgcolor fallback -->
             <tr>
-              <td style="background-image:url('https://hubsyntax.com/cart-images/featureBg.svg'); padding:50px 30px;
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); padding:50px 30px;
               background-repeat:no-repeat; background-position:center center;  background-size:cover;">
 
                 <!-- Feature icons row -->
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                  style="width:100%; border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:20px 15px;">
+                  style="width:100%; border:1px solid #ffffff; border-radius:20px; padding:20px 15px;">
                   <tr>
                     <!-- Premium Features -->
                     <td width="33%" style="text-align:center; vertical-align:top;">
@@ -132,7 +137,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
                       </p>
                     </td>
                     <!-- Higher Limits -->
-                    <td width="33%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2);">
+                    <td width="33%" style="text-align:center; vertical-align:top; border-left:1px solid #ffffff;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
                         <tr>
                           <td>
@@ -148,7 +153,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
                       </p>
                     </td>
                     <!-- Priority Support -->
-                    <td width="34%" style="text-align:center; vertical-align:top; border-left:1px solid rgba(255,255,255,0.2);">
+                    <td width="34%" style="text-align:center; vertical-align:top; border-left:1px solid #ffffff;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
                         <tr>
                           <td>
@@ -179,20 +184,20 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
 
                       <!-- Support button — table-based, no display:inline-table -->
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"
-                        style="border:1px solid rgba(255,255,255,0.2); border-radius:26px; background:transparent;">
+                        style="border:1px solid #ffffff; border-radius:26px; background:transparent;">
                         <tr>
                           <td style="padding:5px 28px 5px 5px; vertical-align:middle;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                               <tr>
-                                <td style="width:36px; height:36px; text-align:center; vertical-align:middle;">
+                                <td style="width:42px; height:42px; text-align:center; vertical-align:middle;">
                                   <img
-                                    src="https://hubsyntax.com/cart-images/cartEmailImage.svg"
+                                    src="https://cartplus.io/cartplus-img/Group%201707479635.svg"
                                     alt="" width="42" height="42"
                                     style="display:inline-block; vertical-align:middle; border:0;"
                                   />
                                 </td>
-                                <td style="padding-left:28px; vertical-align:middle;">
-                                  <a href="mailto:Info@customcart.com"
+                                <td style="padding-left:16px; vertical-align:middle;">
+                                  <a href="mailto:Support@cartplus.io"
                                     style="font-family:'Outfit',Arial,sans-serif; font-size:17px; font-weight:500; color:#ffffff; text-decoration:none;">
                                     Contact Support
                                   </a>
@@ -212,37 +217,37 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
 
             <!-- ===================== FOOTER ===================== -->
             <tr>
-              <td bgcolor="#f7f7f7" style="background-color:#f7f7f7; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+              <td bgcolor="#f7f7f7" style="background-color:#F8EEFF; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
 
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; color:#1a1a1a;">
                   Follow us
                 </p>
 
                 <!-- Social icons -->
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
+               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
                   <tr>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartFacbook.svg" alt="Facebook" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      <a href="#" style="display:inline-block; ">
+                        <img src="https://cartplus.io/cartplus-img/Frame%206113.png" alt="Facebook" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartInstagram.svg" alt="Instagram" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      <a href="#" style="display:inline-block;">
+                        <img src="https://cartplus.io/cartplus-img/Frame%206115.png" alt="Instagram" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartLinkdin.svg" alt="LinkedIn" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      <a href="#" style="display:inline-block;">
+                        <img src="https://cartplus.io/cartplus-img/Frame%202121452813.png" alt="LinkedIn" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                   </tr>
                 </table>
 
-                <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Info@customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Info@customcart.com</a>
+               <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
+                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
                   &nbsp;|&nbsp;
-                  <a href="https://www.customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.customcart.com</a>
+                  <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
 
                 <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
@@ -251,7 +256,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
                   style="border-bottom:1px solid #dddddd; padding-bottom:20px; margin-bottom:20px;">
                   <tr>
                     <td align="left" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
-                      &copy; 2026 Custom Cart. All rights reserved.
+                      &copy; 2026 Cart Plus. All rights reserved.
                     </td>
                     <td align="right" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
                       <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Preference</a>
@@ -262,8 +267,8 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
                 </table>
 
                 <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c; line-height:20px;">
-                  Thank you for choosing Custom Cart! &#128156;<br />
-                  The Custom Cart Team
+                  Thank you for choosing Cart Plus! &#128156;<br />
+                  The Cart Plus Team
                 </p>
 
               </td>
@@ -282,13 +287,14 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
   const safeOwner = String(storeOwner || "there").replace(/</g, "&lt;");
   const safeShop = String(shop || "").replace(/</g, "&lt;");
   const safePlan = String(plan || "Free").replace(/</g, "&lt;");
+  const shopHandle = safeShop.replace('.myshopify.com', '');
 
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Account Limit Reached – Custom Cart</title>
+    <title>Account Limit Reached – Cart Plus</title>
     <!--[if mso]>
     <noscript>
       <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
@@ -349,12 +355,12 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
                 width="600"
                 height="390"
                 bgcolor="#1a1a1a"
-                background="https://hubsyntax.com/cart-images/Frame%201707479976.svg"
+                background="https://cartplus.io/cartplus-img/Frame%202121452821.png"
                 style="
                   padding:50px;
                   width:100%; max-width:600px; height:390px;
                   background-color:#1a1a1a;
-                  background-image:url('https://hubsyntax.com/cart-images/Frame%201707479976.svg');
+                  background-image:url('https://cartplus.io/cartplus-img/Frame%202121452821.png');
                   background-repeat:no-repeat;
                   background-position:center center;
                   background-size:cover;
@@ -363,25 +369,30 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
               >
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="height:390px;">
 
-                  <!-- TOP: Custom Cart logo -->
+                  <!-- TOP: Cart Plus logo -->
                   <tr>
                     <td align="center" valign="top" style="text-align:center; vertical-align:top;">
-                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:35px; font-weight:600; color:#ffffff; line-height:1;">
-                        Custom <span style="background:#c8f000; color:#1a1a1a; padding:2px 10px; border-radius:4px;">Cart</span>
-                      </p>
+                      <div style="text-align:center;">
+                   <img
+                      src="https://cartplus.io/cartplus-img/Layer_1.svg"
+                      alt="Cart Plus Logo"
+                      width="250"
+                      style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
+                 />
+                 </div>
                     </td>
                   </tr>
 
                   <!-- MIDDLE: Account Limit + subtitle -->
                   <tr>
                     <td align="center" valign="middle" style="text-align:center; vertical-align:bottom;">
-                      <img src="https://hubsyntax.com/cart-images/Group%201707479984.svg"
+                      <img src="https://cartplus.io/cartplus-img/Group%201707479984.png"
                         style="display:inline-block; vertical-align:middle; border:0;"/>
-                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:40px; font-weight:200; color:#ffffff; line-height:1.6;">
+                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:40px; font-weight:200; color:#000000; line-height:1.6;">
                         You've reached the
                       </p>
 
-                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin: 0; font-size:68px; font-weight:600; color:#c8f000; line-height:1.1; letter-spacing:-1px;">
+                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin: 0; font-size:80px; font-weight:600; color:#500088; line-height:1.1; letter-spacing:-1px;">
                         Account Limit
                       </h1>
                     </td>
@@ -393,7 +404,7 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
 
             <!-- ===================== BODY TEXT ===================== -->
             <tr>
-              <td bgcolor="#ffffff" style="background-color:#ffffff; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
+              <td bgcolor="#ffffff" style="background-color:#F8EEFF; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
                 <p style="margin:0 0 12px;">Hi <strong>${safeOwner}</strong>,</p>
                 <p style="margin:0 0 12px;"><strong>${safeShop}</strong></p>
                 <p style="margin:0;">
@@ -409,7 +420,7 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
 
             <!-- ===================== UPGRADE STRIP ===================== -->
             <tr>
-              <td style="background-image:url('https://hubsyntax.com/cart-images/featureBg.svg'); padding:50px 30px;
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); padding:50px 30px;
               background-repeat:no-repeat; background-position:center center;  background-size:cover;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:30px;">
                   <tr>
@@ -423,30 +434,29 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
 
                       <!-- Upgrade button -->
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"
-                        style="border:1px solid rgba(255,255,255,0.2); border-radius:26px; background:transparent;">
+                        style="border:1px solid #ffff; border-radius:26px; background:transparent;">
                         <tr>
                           <td style="padding:5px 28px 5px 5px; vertical-align:middle;">
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                               <tr>
                                 <td style="width:36px; height:36px; text-align:center; vertical-align:middle;">
                                   <img
-                                    src="https://hubsyntax.com/cart-images/Group%201707479635.svg"
+                                    src="https://cartplus.io/cartplus-img/Group%201707479636%20(1).png"
                                     alt="" width="42" height="42"
                                     style="display:inline-block; vertical-align:middle; border:0;"
                                   />
                                 </td>
                                 <td style="padding-left:28px; vertical-align:middle;">
-                                  <a href="mailto:Info@customcart.com"
-                                    style="font-family:'Outfit',Arial,sans-serif; font-size:17px; font-weight:500; color:#ffffff; text-decoration:none;">
-                                    Upgrade Plan
-                                  </a>
+                                <a href="https://admin.shopify.com/store/${shopHandle}/apps/cart-drawer-52/app/pricing"
+                      style="font-family:'Outfit',Arial,sans-serif; font-size:17px; font-weight:500; color:#ffffff; text-decoration:none;">
+                                           Upgrade Plan
+                                </a>
                                 </td>
                               </tr>
                             </table>
                           </td>
                         </tr>
                       </table>
-
                     </td>
                   </tr>
                 </table>
@@ -456,37 +466,37 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
 
             <!-- ===================== FOOTER ===================== -->
             <tr>
-              <td bgcolor="#f7f7f7" style="background-color:#f7f7f7; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+              <td bgcolor="#F8EEFF" style="background-color:#F8EEFF; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
 
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; color:#1a1a1a;">
                   Follow us
                 </p>
 
                 <!-- Social icons -->
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
+                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
                   <tr>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartFacbook.svg" alt="Facebook" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      <a href="#" style="display:inline-block; ">
+                        <img src="https://cartplus.io/cartplus-img/Frame%206113.png" alt="Facebook" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartInstagram.svg" alt="Instagram" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      <a href="#" style="display:inline-block;">
+                        <img src="https://cartplus.io/cartplus-img/Frame%206115.png" alt="Instagram" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartLinkdin.svg" alt="LinkedIn" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
+                      <a href="#" style="display:inline-block;">
+                        <img src="https://cartplus.io/cartplus-img/Frame%202121452813.png" alt="LinkedIn" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                   </tr>
                 </table>
 
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Info@customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Info@customcart.com</a>
+                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
                   &nbsp;|&nbsp;
-                  <a href="https://www.customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.customcart.com</a>
+                  <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
 
                 <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
@@ -495,7 +505,7 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
                   style="border-bottom:1px solid #dddddd; padding-bottom:20px; margin-bottom:20px;">
                   <tr>
                     <td align="left" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
-                      &copy; 2026 Custom Cart. All rights reserved.
+                      &copy; 2026 Cart Plus. All rights reserved.
                     </td>
                     <td align="right" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
                       <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Preference</a>
@@ -506,8 +516,8 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
                 </table>
 
                 <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c; line-height:20px;">
-                  Thank you for choosing Custom Cart! &#128156;<br />
-                  The Custom Cart Team
+                  Thank you for choosing Cart Plus! &#128156;<br />
+                  The Cart Plus Team
                 </p>
 
               </td>
