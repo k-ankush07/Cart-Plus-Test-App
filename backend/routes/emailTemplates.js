@@ -227,23 +227,30 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
                   <tr>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; ">
-                        <img src="https://cartplus.io/cartplus-img/Frame%206113.png" alt="Facebook" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                     <div style="width:34px; height:34px;">
+                     <a href="#" style="display:block;">
+                       <img src="https://cartplus.io/cartplus-img/Frame%206113%20(2).png"
+                        alt="Facebook"
+                        style="display:block; width:100%; height:100%; border:0;">
+                    </a>
+                    </div>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block;">
-                        <img src="https://cartplus.io/cartplus-img/Frame%206115.png" alt="Instagram" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Frame%206115%20(2).png" alt="Instagram"  style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block;">
-                        <img src="https://cartplus.io/cartplus-img/Frame%202121452813.png" alt="LinkedIn" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Group%201707479925%20(1).png" alt="LinkedIn"  style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 </table>
-
                <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
                   <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
                   &nbsp;|&nbsp;
@@ -476,19 +483,27 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
                   <tr>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; ">
-                        <img src="https://cartplus.io/cartplus-img/Frame%206113.png" alt="Facebook" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                     <div style="width:34px; height:34px;">
+                     <a href="#" style="display:block;">
+                       <img src="https://cartplus.io/cartplus-img/Frame%206113%20(2).png"
+                        alt="Facebook"
+                        style="display:block; width:100%; height:100%; border:0;">
+                    </a>
+                    </div>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block;">
-                        <img src="https://cartplus.io/cartplus-img/Frame%206115.png" alt="Instagram" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Frame%206115%20(2).png" alt="Instagram"  style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block;">
-                        <img src="https://cartplus.io/cartplus-img/Frame%202121452813.png" alt="LinkedIn" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Group%201707479925%20(1).png" alt="LinkedIn"  style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 </table>
@@ -825,19 +840,27 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
                   <tr>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; ">
-                        <img src="https://cartplus.io/cartplus-img/Frame%206113.png" alt="Facebook" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                     <div style="width:34px; height:34px;">
+                     <a href="#" style="display:block;">
+                       <img src="https://cartplus.io/cartplus-img/Frame%206113%20(2).png"
+                        alt="Facebook"
+                        style="display:block; width:100%; height:100%; border:0;">
+                    </a>
+                    </div>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block;">
-                        <img src="https://cartplus.io/cartplus-img/Frame%206115.png" alt="Instagram" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Frame%206115%20(2).png" alt="Instagram"  style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block;">
-                        <img src="https://cartplus.io/cartplus-img/Frame%202121452813.png" alt="LinkedIn" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Group%201707479925%20(1).png" alt="LinkedIn"  style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 </table>

@@ -56,12 +56,12 @@ const buildUninstallEmail = (shop, owner) => {
                 width="600"
                 height="400"
                 bgcolor="#1a1a1a"
-                background="https://hubsyntax.com/cart-images/unimsallbg.png"
+                background="https://cartplus.io/cartplus-img/Rectangle%201.svg"
                 style="
                   padding:50px;
                   width:100%; max-width:600px; height:400px;
                   background-color:#1a1a1a;
-                  background-image:url('https://hubsyntax.com/cart-images/unimsallbg.png');
+                  background-image:url('https://cartplus.io/cartplus-img/Rectangle%201.svg');
                   background-repeat:no-repeat;
                   background-position:center center;
                   background-size:cover;
@@ -71,20 +71,25 @@ const buildUninstallEmail = (shop, owner) => {
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="height:400px;">
                   <tr>
                     <td align="center" valign="top" style="text-align:center; vertical-align:top;">
-                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:35px; font-weight:600; color:#ffffff; line-height:1;">
-                        Custom <span style="background:#c8f000; color:#1a1a1a; padding:2px 10px; border-radius:4px;">Cart</span>
-                      </p>
+                      <div style="text-align:center;">
+                   <img
+                      src="https://cartplus.io/cartplus-img/Layer_1.svg"
+                      alt="Cart Plus Logo"
+                      width="250"
+                      style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
+                 />
+                 </div>
                     </td>
                   </tr>
                   <tr>
                     <td align="center" valign="bottom" style="text-align:center; vertical-align:center;">
-                      <img src="https://hubsyntax.com/cart-images/Group%201707480001.png"
+                      <img src="https://cartplus.io/cartplus-img/Group%201707480001.png"
                            style="display:inline-block; vertical-align:middle; border:0;" />
 
-                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; padding-top:20px; font-size:40px; font-weight:200; color:#ffffff; line-height:1.6;">
+                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; padding-top:20px; font-size:40px; font-weight:200; line-height:1.6;">
                        Your Account Has Been
                       </p>
-                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:68px; font-weight:600; color:#c8f000; line-height:1.1; letter-spacing:-1px;">
+                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:68px; font-weight:600; color:#500088; line-height:1.1; letter-spacing:-1px;">
                        Uninstalled
                       </h1>
                     </td>
@@ -95,7 +100,7 @@ const buildUninstallEmail = (shop, owner) => {
 
             <!-- ===================== BODY TEXT ===================== -->
             <tr>
-              <td bgcolor="#ffffff" style="background-color:#ffffff; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
+              <td bgcolor="#ffffff" style="background-color:#F8EEFF; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
                 <p style="margin:0 0 12px;">Hi <strong>${safeOwner}</strong>,</p>
                 <p style="margin:0 0 12px;">We noticed that you uninstalled <strong>Custom Cart</strong> from <strong>${safeShop}</strong>.</p>
                 <p style="margin:0 0 30px;">Thank you for giving us the opportunity to support your business. If this wasn't intentional, you can reinstall the app within <strong>48 hours</strong> and restore your settings and preferences.</p>
@@ -154,7 +159,7 @@ const buildUninstallEmail = (shop, owner) => {
 
             <!-- ===================== Reinstall Custom Cart ===================== -->
             <tr>
-              <td style="background-image:url('https://hubsyntax.com/cart-images/Frame%202121452747%20(1).png'); padding:50px 30px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); padding:50px 30px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="text-align:center;">
@@ -172,7 +177,7 @@ const buildUninstallEmail = (shop, owner) => {
                               <tr>
                                 <td style="width:42px; height:42px; text-align:center; vertical-align:middle;">
                                   <img
-                                    src="https://hubsyntax.com/cart-images/Group%201707480000.svg"
+                                    src="https://cartplus.io/cartplus-img/Group%201707479636%20(2).png"
                                     alt="" width="42" height="42"
                                     style="display:inline-block; vertical-align:middle; border:0;"
                                   />
@@ -196,34 +201,43 @@ const buildUninstallEmail = (shop, owner) => {
 
             <!-- ===================== FOOTER ===================== -->
             <tr>
-              <td bgcolor="#f7f7f7" style="background-color:#f7f7f7; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+              <td bgcolor="#f7f7f7" style="background-color:#F8EEFF; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; color:#1a1a1a;">
                   Follow us
                 </p>
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
+                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
                   <tr>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartFacbook.svg" alt="Facebook" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                     <div style="width:34px; height:34px;">
+                     <a href="#" style="display:block;">
+                       <img src="https://cartplus.io/cartplus-img/Frame%206113%20(2).png"
+                        alt="Facebook"
+                        style="display:block; width:100%; height:100%; border:0;">
+                    </a>
+                    </div>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartInstagram.svg" alt="Instagram" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Frame%206115%20(2).png" alt="Instagram"  style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
                     </td>
                     <td style="padding:0 6px;">
-                      <a href="#" style="display:inline-block; width:34px; height:34px; background:#ffffff; border-radius:50%; border:0.68px solid #680bd6; text-align:center; line-height:34px; overflow:hidden; text-decoration:none;">
-                        <img src="https://hubsyntax.com/cart-images/cartLinkdin.svg" alt="LinkedIn" width="13" height="13" style="display:inline-block; vertical-align:middle; border:0;" />
-                      </a>
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Group%201707479925%20(1).png" alt="LinkedIn"  style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 </table>
-                <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Info@customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Info@customcart.com</a>
+                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
+                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
                   &nbsp;|&nbsp;
-                  <a href="https://www.customcart.com" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.customcart.com</a>
+                  <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
+
                 <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                   style="border-bottom:1px solid #dddddd; padding-bottom:20px; margin-bottom:20px;">
