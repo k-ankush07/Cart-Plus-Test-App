@@ -27,13 +27,13 @@ const buildUninstallEmail = (shop, owner) => {
   const safeOwner = escapeHtml(owner || "there");
 
   return {
-    subject: "You uninstalled Custom Cart — reinstall within 48 hours to restore your settings",
+    subject: "You uninstalled Cart Plus — reinstall within 48 hours to restore your settings",
     html: `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Congratulations – Custom Cart</title>
+    <title>Congratulations – Cart Plus</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -102,7 +102,7 @@ const buildUninstallEmail = (shop, owner) => {
             <tr>
               <td bgcolor="#ffffff" style="background-color:#F8EEFF; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
                 <p style="margin:0 0 12px;">Hi <strong>${safeOwner}</strong>,</p>
-                <p style="margin:0 0 12px;">We noticed that you uninstalled <strong>Custom Cart</strong> from <strong>${safeShop}</strong>.</p>
+                <p style="margin:0 0 12px;">We noticed that you uninstalled <strong>Cart Plus</strong> from <strong>${safeShop}</strong>.</p>
                 <p style="margin:0 0 30px;">Thank you for giving us the opportunity to support your business. If this wasn't intentional, you can reinstall the app within <strong>48 hours</strong> and restore your settings and preferences.</p>
 
                 <!-- What Happens Next? -->
@@ -157,14 +157,14 @@ const buildUninstallEmail = (shop, owner) => {
               </td>
             </tr>
 
-            <!-- ===================== Reinstall Custom Cart ===================== -->
+            <!-- ===================== Reinstall Cart Plus ===================== -->
             <tr>
               <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); padding:50px 30px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="text-align:center;">
                       <p style="margin:0 0 15px; font-family:'Outfit',Arial,sans-serif; font-size:26px; font-weight:700; color:#ffffff;">
-                       Reinstall Custom Cart
+                       Reinstall Cart Plus
                       </p>
                       <p style="margin:0 0 30px; font-family:'Outfit',Arial,sans-serif; font-size:18px; color:#ffffff;">
                        Get back to creating a higher-converting cart experience for your customers.
@@ -243,7 +243,7 @@ const buildUninstallEmail = (shop, owner) => {
                   style="border-bottom:1px solid #dddddd; padding-bottom:20px; margin-bottom:20px;">
                   <tr>
                     <td align="left" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
-                      &copy; 2026 Custom Cart. All rights reserved.
+                      &copy; 2026 Cart Plus. All rights reserved.
                     </td>
                     <td align="right" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
                       <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Preference</a>
@@ -253,8 +253,8 @@ const buildUninstallEmail = (shop, owner) => {
                   </tr>
                 </table>
                 <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c; line-height:20px;">
-                  Thank you for choosing Custom Cart! &#128156;<br />
-                  The Custom Cart Team
+                  Thank you for choosing Cart Plus! &#128156;<br />
+                  The Cart Plus Team
                 </p>
               </td>
             </tr>

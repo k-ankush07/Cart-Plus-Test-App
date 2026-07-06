@@ -470,7 +470,7 @@ router.post("/save-shop-token", async (req, res) => {
       const cart = await cartModels.findOne({ shop });
       const storeOwner = cart?.storeOwner || "there";
 
-      const subject = "Welcome to Custom Cart 🎉";
+      const subject = "Welcome to Cart Plus 🎉";
       const html = buildWelcomeEmailHtml({ storeOwner, shop });
 
       const tasks = [
@@ -564,7 +564,7 @@ router.post("/shop-plan", async (req, res) => {
         const storeOwner = cart?.storeOwner || "there";
 
         if (toEmail) {
-          const subject = "Your Custom Cart plan has been upgraded";
+          const subject = "Your Cart Plus plan has been upgraded";
           const html = buildPlanUpgradeEmailHtml({ storeOwner, shop, plan });
           await Promise.all([
             sendEmail(toEmail, subject, html),
@@ -727,7 +727,7 @@ router.post("/order-revenue", async (req, res) => {
         const storeOwner = cart?.storeOwner || "there";
 
         if (toEmail) {
-          const subject = "You've reached your monthly order limit – Custom Cart";
+          const subject = "You've reached your monthly order limit – Cart Plus";
           const html = buildPlanLimitReachedEmailHtml({ storeOwner, shop, plan: planName });
           await Promise.all([
             sendEmail(toEmail, subject, html),
