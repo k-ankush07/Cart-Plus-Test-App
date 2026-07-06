@@ -916,85 +916,200 @@ export const buildContactFormEmailHtml = ({ firstName, lastName, email, phone, a
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>New Contact Form Submission – Cart Plus</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
       body { font-family: 'Outfit', Arial, sans-serif; }
     </style>
   </head>
   <body style="margin:0; padding:0; background:#ffffff; font-family:'Outfit',Arial,sans-serif;">
+
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
       <tr>
-        <td align="center" style="padding:40px 16px;">
+        <td align="center">
           <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
 
-            <!-- ===================== HEADER ===================== -->
+            <!-- ===================== HEADER: Logo + Title (background image panel) ===================== -->
             <tr>
               <td
                 width="600"
-                height="220"
                 bgcolor="#1a1a1a"
-                style="padding:40px; width:100%; max-width:600px; background-color:#1a1a1a; text-align:center;"
+                background="https://cartplus.io/cartplus-img/Rectangle%201.svg"
+                style="
+                  width:100%; max-width:600px;
+                  background-color:#1a1a1a;
+                  background-image:url('https://cartplus.io/cartplus-img/Rectangle%201.svg');
+                  background-repeat:no-repeat;
+                  background-position:center center;
+                  background-size:cover;
+                  text-align:center;
+                "
               >
-                <img
-                  src="https://cartplus.io/cartplus-img/Layer_1.svg"
-                  alt="Cart Plus Logo"
-                  width="220"
-                  style="display:block; margin:0 auto 20px; border:0; outline:none; text-decoration:none;"
-                />
-                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:26px; font-weight:600; color:#ffffff;">
-                  New Contact Form Submission
-                </p>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+                  <!-- Logo -->
+                  <tr>
+                    <td align="center" valign="top" style="text-align:center; vertical-align:top; padding:50px 50px 0 50px;">
+                      <img
+                        src="https://cartplus.io/cartplus-img/Layer_1.svg"
+                        alt="Cart Plus Logo"
+                        width="220"
+                        style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
+                      />
+                    </td>
+                  </tr>
+
+                  <!-- Title -->
+                  <tr>
+                    <td align="center" valign="top" style="text-align:center; vertical-align:top; padding:20px 40px 50px 40px;">
+                      <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:34px; font-weight:400; color:#3C3C3C; line-height:1.3;">
+                        New Contact
+                      </p>
+                      <h1 style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:34px; font-weight:700; letter-spacing:-0.5px; color:#500088; line-height:1.3;">
+                        Form Submission
+                      </h1>
+                    </td>
+                  </tr>
+
+                </table>
               </td>
             </tr>
 
-            <!-- ===================== BODY: SUBMISSION DETAILS ===================== -->
+            <!-- ===================== BODY: intro text + details card (dark purple panel) ===================== -->
             <tr>
-              <td bgcolor="#F8EEFF" style="background-color:#F8EEFF; padding:50px;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                  style="background:#ffffff; border:1px solid #E5D4FA; border-radius:16px; padding:10px 24px;">
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); background-color:#2a0845; padding:50px 40px; background-repeat:no-repeat; background-position:center center; background-size:cover; text-align:center;">
+
+                <p style="margin:0 0 12px; font-family:'Outfit',Arial,sans-serif; font-size:18px; color:#ffffff;">
+                  Hello Cart Plus Team,
+                </p>
+
+                <p style="margin:0 0 12px; font-family:'Outfit',Arial,sans-serif; font-size:16px; color:#ffffff; line-height:1.6;">
+                  A new contact form has been submitted through the Cart Plus website.
+                </p>
+
+                <p style="margin:0 0 30px; font-family:'Outfit',Arial,sans-serif; font-size:16px; color:#ffffff; line-height:1.6;">
+                  Please review the customer's information below and follow up as soon as possible
+                </p>
+
+                <!-- Details card -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff; border-radius:8px;">
                   <tr>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0; width:130px;">First Name</td>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safeFirst}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0;">Last Name</td>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safeLast}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0;">Email</td>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safeEmail}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0;">Phone</td>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safePhone}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0; vertical-align:top;">Address</td>
-                    <td style="padding:14px 0; border-bottom:1px solid #F0E4FF; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${safeAddress}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:14px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#7A5AA0;">Submitted At</td>
-                    <td style="padding:14px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1A1A1A;">${new Date().toLocaleString()}</td>
+                    <td style="padding:24px 28px;">
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; font-weight:700; color:#500088; text-align:left;">First Name</td>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1a1a1a; text-align:right;">${safeFirst}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" style="border-bottom:1px solid #eeeeee; padding-bottom:8px;"></td>
+                        </tr>
+                        <tr>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; font-weight:700; color:#500088; text-align:left;">Last Name</td>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1a1a1a; text-align:right;">${safeLast}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" style="border-bottom:1px solid #eeeeee; padding-bottom:8px;"></td>
+                        </tr>
+                        <tr>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; font-weight:700; color:#500088; text-align:left;">Email</td>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1a1a1a; text-align:right;">${safeEmail}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" style="border-bottom:1px solid #eeeeee; padding-bottom:8px;"></td>
+                        </tr>
+                        <tr>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; font-weight:700; color:#500088; text-align:left;">Phone</td>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1a1a1a; text-align:right;">${safePhone}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" style="border-bottom:1px solid #eeeeee; padding-bottom:8px;"></td>
+                        </tr>
+                        <tr>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; font-weight:700; color:#500088; text-align:left;">Address</td>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1a1a1a; text-align:right;">${safeAddress}</td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" style="border-bottom:1px solid #eeeeee; padding-bottom:8px;"></td>
+                        </tr>
+                        <tr>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; font-weight:700; color:#500088; text-align:left;">Submitted At</td>
+                          <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#1a1a1a; text-align:right;">${new Date().toLocaleString()}</td>
+                        </tr>
+                      </table>
+                    </td>
                   </tr>
                 </table>
+
               </td>
             </tr>
 
             <!-- ===================== FOOTER ===================== -->
             <tr>
               <td bgcolor="#f7f7f7" style="background-color:#F8EEFF; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+
+                <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; color:#1a1a1a;">
+                  Follow us
+                </p>
+
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
+                  <tr>
+                    <td style="padding:0 6px;">
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Frame%206113%20(2).png"
+                               alt="Facebook"
+                               style="display:block; width:100%; height:100%; border:0;">
+                        </a>
+                      </div>
+                    </td>
+                    <td style="padding:0 6px;">
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Frame%206115%20(2).png" alt="Instagram" style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
+                    </td>
+                    <td style="padding:0 6px;">
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Group%201707479925%20(1).png" alt="LinkedIn" style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:16px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
                   &nbsp;|&nbsp;
-                  <a href="https://www.cartplus.io" style="color:#555555; font-size:16px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
+                  <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
+
                 <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
-                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:13px; color:#3c3c3c;">
-                  &copy; 2026 Cart Plus. All rights reserved. This is an automated notification.
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                  style="border-bottom:1px solid #dddddd; padding-bottom:20px; margin-bottom:20px;">
+                  <tr>
+                    <td align="left" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
+                      &copy; 2026 Cart Plus. All rights reserved.
+                    </td>
+                    <td align="right" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
+                      <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Preference</a>
+                      &nbsp;|&nbsp;
+                      <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Unsubscription</a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c; line-height:20px;">
+                  Thank you for choosing Cart Plus! &#128156;<br />
+                  The Cart Plus Team
                 </p>
+
               </td>
             </tr>
 
@@ -1014,56 +1129,161 @@ export const buildContactFormThankYouEmailHtml = ({ firstName }) => {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thank You – Cart Plus</title>
+    <title>Congratulations – Cart Plus</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
       body { font-family: 'Outfit', Arial, sans-serif; }
     </style>
   </head>
   <body style="margin:0; padding:0; background:#ffffff; font-family:'Outfit',Arial,sans-serif;">
+
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
       <tr>
-        <td align="center" style="padding:40px 16px;">
+        <td align="center">
           <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
 
-            <!-- HEADER -->
+            <!-- ===================== TOP: Logo + Thank you (white/gradient panel) ===================== -->
+           <!-- ===================== HEADER: Logo + Thank you (background image panel) ===================== -->
+<tr>
+  <td
+    width="600"
+    bgcolor="#1a1a1a"
+    background="https://cartplus.io/cartplus-img/Rectangle%201.svg"
+    style="
+      width:100%; max-width:600px;
+      background-color:#1a1a1a;
+      background-image:url('https://cartplus.io/cartplus-img/Rectangle%201.svg');
+      background-repeat:no-repeat;
+      background-position:center center;
+      background-size:cover;
+      text-align:center;
+    "
+  >
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+      <!-- Logo -->
+      <tr>
+        <td align="center" valign="top" style="text-align:center; vertical-align:top; padding:50px 50px 0 50px;">
+          <img
+            src="https://cartplus.io/cartplus-img/Layer_1.svg"
+            alt="Cart Plus Logo"
+            width="220"
+            style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
+          />
+        </td>
+      </tr>
+
+      <!-- Thank you heading, staggered like Figma -->
+      <tr>
+        <td align="center" valign="top" style="text-align:center; vertical-align:top; padding:20px 40px 100px 40px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr>
-              <td width="600" height="260" bgcolor="#1a1a1a" style="padding:40px; width:100%; max-width:600px; background-color:#1a1a1a; text-align:center;">
-                <img src="https://cartplus.io/cartplus-img/Layer_1.svg" alt="Cart Plus Logo" width="220" style="display:block; margin:0 auto 24px; border:0; outline:none; text-decoration:none;" />
-                <h1 style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:44px; font-weight:600; color:#ffffff; line-height:1.2;">
-                  Thank You!
+              <td align="left" style="padding-left:20px;">
+                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:144px; font-weight:600; color:#1a1a1a; line-height:1.1;">
+                  Thank
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td align="right" style="padding-right:20px; padding-top:5px;">
+                <h1 style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:144px; font-weight:700; letter-spacing:-1px; color:#500088; line-height:50px;">
+                  you
                 </h1>
               </td>
             </tr>
+          </table>
+        </td>
+      </tr>
 
-            <!-- BODY -->
+    </table>
+  </td>
+</tr>
+
+            <!-- ===================== BODY TEXT (dark purple panel) ===================== -->
             <tr>
-              <td bgcolor="#F8EEFF" style="background-color:#F8EEFF; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:17px; line-height:27px; font-weight:400; color:#1a1a1a;">
-                <p style="margin:0 0 12px;">Hi <strong>${safeFirst}</strong>,</p>
-                <p style="margin:0 0 12px;">
-                  Thanks for reaching out to <strong>Cart Plus</strong>! We've received your message and our team will get back to you shortly.
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); background-color:#2a0845; padding:50px; background-repeat:no-repeat; background-position:center center; background-size:cover; text-align:center;">
+                <p style="margin:0 0 12px; font-family:'Outfit',Arial,sans-serif; font-size:18px; color:#ffffff;">Hi <strong>${safeFirst}</strong>,</p>
+
+                <p style="margin:0 0 12px; font-family:'Outfit',Arial,sans-serif; font-size:16px; color:#ffffff; line-height:1.6;">
+                  Thank you for contacting Cart Plus.<br />
+                  We've received your message and one of our experts will review it shortly.
                 </p>
-                <p style="margin:0;">
-                  In the meantime, feel free to explore how Cart Plus can help boost your store's conversions and AOV.
+
+                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:16px; color:#ffffff; line-height:1.6;">
+                  We'll get back to you as soon as possible.<br />
+                  If your request is urgent, feel free to reach us directly using the information below.
                 </p>
               </td>
             </tr>
 
-            <!-- FOOTER -->
+            <!-- ===================== FOOTER ===================== -->
             <tr>
               <td bgcolor="#f7f7f7" style="background-color:#F8EEFF; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+
+                <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; color:#1a1a1a;">
+                  Follow us
+                </p>
+
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
+                  <tr>
+                    <td style="padding:0 6px;">
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Frame%206113%20(2).png"
+                               alt="Facebook"
+                               style="display:block; width:100%; height:100%; border:0;">
+                        </a>
+                      </div>
+                    </td>
+                    <td style="padding:0 6px;">
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Frame%206115%20(2).png" alt="Instagram" style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
+                    </td>
+                    <td style="padding:0 6px;">
+                      <div style="width:34px; height:34px;">
+                        <a href="#" style="display:block;">
+                          <img src="https://cartplus.io/cartplus-img/Group%201707479925%20(1).png" alt="LinkedIn" style="display:block; width:100%; height:100%; border:0;" />
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:16px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
                   &nbsp;|&nbsp;
-                  <a href="https://www.cartplus.io" style="color:#555555; font-size:16px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
+                  <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
+
                 <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
-                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:13px; color:#3c3c3c;">
-                  &copy; 2026 Cart Plus. All rights reserved.
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                  style="border-bottom:1px solid #dddddd; padding-bottom:20px; margin-bottom:20px;">
+                  <tr>
+                    <td align="left" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
+                      &copy; 2026 Cart Plus. All rights reserved.
+                    </td>
+                    <td align="right" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
+                      <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Preference</a>
+                      &nbsp;|&nbsp;
+                      <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Unsubscription</a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c; line-height:20px;">
+                  Thank you for choosing Cart Plus! &#128156;<br />
+                  The Cart Plus Team
                 </p>
+
               </td>
             </tr>
 
