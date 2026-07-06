@@ -596,14 +596,13 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                       <p style="margin:0; font-family:'Outfit',Arial,sans-serif; padding-top:20px; font-size:40px; font-weight:200; color:#3C3C3C; line-height:1.6;">
                         Welcome to
                       </p>
-                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:68px; font-weight:600; line-height:75px; letter-spacing:-1px; padding-bottom:30px; color:#9500FF; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display:inline-block;">
-                        Cart Plus
-                       </h1>
-                      <img src="https://cartplus.io/cartplus-img/Group%201707479975.svg"
+                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:68px; font-weight:600; line-height:75px; letter-spacing:-1px; padding-bottom:30px; color:#3C3C3C; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display:inline-block;">
+                      Cart Plus
+                      </h1>
+                      <img src="https://cartplus.io/cartplus-img/Group%201707479975.png"
                            style="display:inline-block; vertical-align:middle; border:0;" />
                     </td>
                   </tr>
-
                 </table>
               </td>
             </tr>
@@ -823,17 +822,17 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                   <tr>
                     <td style="padding:0 6px;">
                       <a href="#" style="display:inline-block; ">
-                        <img src="https://cartplus.io/cartplus-img/Frame%206113.svg" alt="Facebook" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
+                        <img src="https://cartplus.io/cartplus-img/Frame%206113.png" alt="Facebook" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                     <td style="padding:0 6px;">
                       <a href="#" style="display:inline-block;">
-                        <img src="https://cartplus.io/cartplus-img/Frame%206115.svg" alt="Instagram" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
+                        <img src="https://cartplus.io/cartplus-img/Frame%206115.png" alt="Instagram" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                     <td style="padding:0 6px;">
                       <a href="#" style="display:inline-block;">
-                        <img src="https://cartplus.io/cartplus-img/Group%201707479925.svg" alt="LinkedIn" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
+                        <img src="https://cartplus.io/cartplus-img/Frame%202121452813.png" alt="LinkedIn" width="34" height="34" style="display:inline-block; vertical-align:middle; border:0;" />
                       </a>
                     </td>
                   </tr>
