@@ -595,8 +595,8 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                       <p style="margin:0; font-family:'Outfit',Arial,sans-serif; padding-top:20px; font-size:40px; font-weight:200; color:#3C3C3C; line-height:1.6;">
                         Welcome to
                       </p>
-                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:68px; font-weight:600; line-height:75px; letter-spacing:-1px; padding-bottom:30px; color:#3C3C3C; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display:inline-block;">
-                      Cart Plus
+                      <h1 style="font-family:'Outfit',Arial,sans-serif; margin:0; font-size:68px; font-weight:600; line-height:75px; letter-spacing:-1px; padding-bottom:30px; background: linear-gradient(180deg, #000000 0%, #9500FF 174.83%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display:inline-block;">
+                        Cart Plus
                       </h1>
                       <img src="https://cartplus.io/cartplus-img/Group%201707479975.png"
                            style="display:inline-block; vertical-align:middle; border:0;" />
