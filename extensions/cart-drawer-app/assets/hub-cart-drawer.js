@@ -1,7 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // HUB DRAWER CODE
 
-const API_KEY = '8f4c2a91d7e3b6f5a8c1d9e2f7b4c6a9e1d3f8b5c2a7d4e9f6b1c8a3d7e5f2';
+const API_KEY =
+  "8f4c2a91d7e3b6f5a8c1d9e2f7b4c6a9e1d3f8b5c2a7d4e9f6b1c8a3d7e5f2";
 
 const authHeaders = (extra = {}) => ({
   "x-api-key": API_KEY,
@@ -380,7 +381,50 @@ function initCartDrawerAfterData() {
         "click",
         function (e) {
           const cartLink = e.target.closest(
-            "#cart-icon-bubble, .header__icon--cart, .cart-icon, [data-cart]",
+            [
+              "#cart-icon-bubble",
+              "#CartDrawer-Icon",
+              "#cart-icon",
+              "#CartLink",
+              "#cart-link",
+              "#CartDrawerIcon",
+              ".cart-icon",
+              ".cart-link",
+              ".site-header__cart",
+              ".header__icon--cart",
+              ".header-cart",
+              ".js-cart-toggle",
+              ".js-drawer-open-cart",
+              ".js-drawer-open-right",
+              ".js-drawer-open",
+              ".cart-toggle",
+              ".cart-notification-icon",
+              ".site-nav__link--cart",
+              ".icon-cart",
+              ".site-header__icon--cart",
+              ".header__cart-toggle",
+              ".mini-cart-link",
+              ".cart__toggle",
+              ".cart-drawer-trigger",
+              ".cart-drawer__trigger",
+              ".header-actions__cart",
+              ".navlink--cart",
+              ".cart-icon-bubble",
+              ".btn--cart",
+              ".cart-btn",
+              "[data-cart]",
+              "[data-cart-icon]",
+              "[data-cart-drawer]",
+              "[data-cart-toggle]",
+              "[data-drawer-toggle='cart']",
+              "[data-action='open-cart-drawer']",
+              "[data-open-cart]",
+              "[aria-controls='CartDrawer']",
+              "[aria-controls='cart-drawer']",
+              "[aria-controls='CartDrawer-Icon']",
+              "a[href='/cart']",
+              "a[href$='/cart']",
+            ].join(", "),
           );
           if (cartLink) {
             if (!window.__HUB_ACTIVE_CART__) return;
@@ -546,7 +590,9 @@ window.startAnnTimer = function (blockId, timeStr) {
     let hasPublishedCart = false;
 
     if (cartResult?.entitled === false) {
-      console.log("[hub] Store not entitled (free plan on a live store) — drawer disabled");
+      console.log(
+        "[hub] Store not entitled (free plan on a live store) — drawer disabled",
+      );
       const blockId = window.HUB_CART_BLOCK_ID;
       // Tear down anything already rendered (e.g. from a stale cache hit) and
       // clear active state so no premium module can read it.
@@ -620,7 +666,7 @@ window.startAnnTimer = function (blockId, timeStr) {
           headers: authHeaders(),
         }).then((r) => r.json()),
         fetch(`${apiUrl}/api/get-sticky-cart/${shop}`, {
-           headers: authHeaders(),
+          headers: authHeaders(),
         }).then((r) => r.json()),
       ]);
 
@@ -640,9 +686,14 @@ window.startAnnTimer = function (blockId, timeStr) {
       // downgrade), so re-apply when it changes too — applyCartData() then
       // tears the drawer down if the store is no longer entitled.
       const entitlementChanged =
-        (cached?.cartResult?.entitled ?? true) !== (cartResult?.entitled ?? true);
+        (cached?.cartResult?.entitled ?? true) !==
+        (cartResult?.entitled ?? true);
 
-      if (prevCart !== nextCart || prevSticky !== nextSticky || entitlementChanged) {
+      if (
+        prevCart !== nextCart ||
+        prevSticky !== nextSticky ||
+        entitlementChanged
+      ) {
         console.log("[hub] Fresh data differs from cache — re-applying");
         applyCartData(freshData);
       } else {

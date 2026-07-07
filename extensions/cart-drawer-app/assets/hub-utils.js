@@ -135,7 +135,7 @@ window.hubUtils = {
       clearTimeout(debounceTimer);
 
       const wrapper = textarea.closest(".hub-additional-notes");
-      const title = wrapper?.querySelector("p");
+      const title = wrapper?.querySelector(".hub-notes-title");
 
       title?.querySelectorAll(".hub-note-spinner").forEach((s) => s.remove());
 
@@ -155,7 +155,7 @@ window.hubUtils = {
         } catch (err) {
         } finally {
           const w2 = textarea.closest(".hub-additional-notes");
-          const t2 = w2?.querySelector("p");
+          const t2 = w2?.querySelector(".hub-notes-title");
           t2?.querySelectorAll(".hub-note-spinner").forEach((s) => s.remove());
         }
       }, 800);

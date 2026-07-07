@@ -1260,11 +1260,16 @@ span.hub-total-arrow svg {
   font-weight: 600;
   color: #000;
   margin: 0;
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   padding-bottom: 5px;
+ letter-spacing: 0px !important;
+ text-transform: capitalize; 
+}
+
+.cart-app__title.upcart-header-text {
+    letter-spacing: 0;
 }
 
 .upcart-internal-component-upsell-tile__info p {
@@ -2105,6 +2110,11 @@ span.upsell-text.suggestion-product {
   font-weight: 600;
   margin-bottom: 10px;
   line-height: 16px;
+      text-transform: capitalize;
+}
+
+.hub-discount-input:focus {
+  border: 0;
 }
 
 .upsell-container.bottom {
@@ -2400,6 +2410,11 @@ span.hub-item-discount-badge img.discount-code-img {
 
 button.hub-qty-btn span.svg-wrapper {
   width: 10px;
+}
+
+.svg-wrapper>svg {
+    height: 100%;
+    width: 100%;
 }
 
 select.hub-variant-option-select {

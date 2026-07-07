@@ -217,6 +217,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           padding: ${height};
           font-size: ${ann.fontSize || 14}px;
           text-align: center;
+          color:#000000;
           ${isAfter ? "margin-top: auto;" : ""}
         `;
         target.innerHTML = ann.text
