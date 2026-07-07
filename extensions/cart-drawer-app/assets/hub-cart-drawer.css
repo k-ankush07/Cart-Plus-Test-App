@@ -2104,6 +2104,10 @@ span.upsell-text.suggestion-product {
   padding: 20px;
 }
 
+.hub-cell-fill {
+  transition: width 0.35s ease;
+}
+
 .upsell-inner h3.upsell-heading {
   font-size: 16px;
   color: #2D2D2D;

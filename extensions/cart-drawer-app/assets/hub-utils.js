@@ -652,117 +652,139 @@ window.hubUtils = {
   <path d="M8.5 4h-3.25c-1.519 0-2.75 1.231-2.75 2.75v2.25h1.25c.414 0 .75.336.75.75s-.336.75-.75.75h-1.25v2.75c0 1.519 1.231 2.75 2.75 2.75h3.441c-.119-.133-.191-.308-.191-.5v-2c0-.414.336-.75.75-.75s.75.336.75.75v2c0 .192-.072.367-.191.5h4.941c1.519 0 2.75-1.231 2.75-2.75v-2.75h-2.75c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h2.75v-2.25c0-1.519-1.231-2.75-2.75-2.75h-4.75v2.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75v-2.25Zm.297 3.992c-.343-.756-1.097-1.242-1.928-1.242-1.173 0-2.119.954-2.119 2.122 0 1.171.95 2.128 2.125 2.128h.858c-.595.51-1.256.924-1.84 1.008-.41.058-.694.438-.635.848.058.41.438.695.848.636 1.11-.158 2.128-.919 2.803-1.53.121-.11.235-.217.341-.322.106.105.22.213.34.322.676.611 1.693 1.372 2.804 1.53.41.059.79-.226.848-.636.059-.41-.226-.79-.636-.848-.583-.084-1.244-.498-1.839-1.008h.858c1.176 0 2.125-.957 2.125-2.128 0-1.168-.946-2.122-2.119-2.122-.83 0-1.585.486-1.928 1.242l-.453.996-.453-.996Z" fill-rule="evenodd"/>
 </svg>`;
   },
-  renderRewardsBar(blockId, cart, rewards) {
-    const el = document.getElementById(`hub-rewards-${blockId}`);
-    if (!el) return;
+ renderRewardsBar(blockId, cart, rewards) {
+  const el = document.getElementById(`hub-rewards-${blockId}`);
+  if (!el) return;
 
-    // FIX: was `rewards?.enabled` — inverted, hid bar when rewards were ON
-    if (rewards?.enabled || !rewards?.tiers?.length) {
-      el.style.display = "none";
-      return;
+  if (rewards?.enabled || !rewards?.tiers?.length) {
+    el.style.display = "none";
+    return;
+  }
+
+  if (!rewards.showOnEmptyCart && cart.items.length === 0) {
+    el.style.display = "none";
+    return;
+  }
+
+  const isQuantity = rewards.calculationType === "quantity";
+  const getTierValue = (tier) =>
+    isQuantity ? tier.minQuantity || 0 : tier.minAmount || 0;
+
+  const rewardCartItems = cart.items.filter(
+    (item) => item.properties?._hub_reward,
+  );
+  const rewardDeduction = isQuantity
+    ? rewardCartItems.reduce((n, item) => n + item.quantity, 0)
+    : rewardCartItems.reduce(
+        (n, item) =>
+          n +
+          (rewards.usePreDiscount
+            ? item.original_line_price
+            : item.final_line_price),
+        0,
+      ) / 100;
+
+  const rawTotal = isQuantity
+    ? cart.item_count
+    : rewards.usePreDiscount
+      ? (cart.original_total_price || cart.total_price) / 100
+      : cart.total_price / 100;
+
+  const cartTotal = rawTotal - rewardDeduction;
+
+  const sorted = [...rewards.tiers].sort(
+    (a, b) => getTierValue(a) - getTierValue(b),
+  );
+  const len = sorted.length;
+  const maxAmount = getTierValue(sorted[len - 1]) || 1;
+
+  const trackColor = rewards.backgroundColor || "#c1c1c1";
+  const fillColor = rewards.textColor || "#000000";
+  const barLength = rewards.barLength || 4;
+  const barGap = rewards.barGap || 0;
+  const dotSize = 28 + barLength;
+
+  const getStepPosition = (index) => (100 / len) * (index + 1);
+
+  const getFillPercent = () => {
+    if (len === 0) return 0;
+    const firstTier = sorted[0];
+    if (cartTotal < getTierValue(firstTier)) {
+      return (cartTotal / getTierValue(firstTier)) * getStepPosition(0);
     }
-
-    if (!rewards.showOnEmptyCart && cart.items.length === 0) {
-      el.style.display = "none";
-      return;
-    }
-
-    const isQuantity = rewards.calculationType === "quantity";
-    const getTierValue = (tier) =>
-      isQuantity ? tier.minQuantity || 0 : tier.minAmount || 0;
-
-    const rewardCartItems = cart.items.filter(
-      (item) => item.properties?._hub_reward,
-    );
-    const rewardDeduction = isQuantity
-      ? rewardCartItems.reduce((n, item) => n + item.quantity, 0)
-      : rewardCartItems.reduce(
-          (n, item) =>
-            n +
-            (rewards.usePreDiscount
-              ? item.original_line_price
-              : item.final_line_price),
-          0,
-        ) / 100;
-
-    const rawTotal = isQuantity
-      ? cart.item_count
-      : rewards.usePreDiscount
-        ? (cart.original_total_price || cart.total_price) / 100
-        : cart.total_price / 100;
-
-    const cartTotal = rawTotal - rewardDeduction;
-
-    const sorted = [...rewards.tiers].sort(
-      (a, b) => getTierValue(a) - getTierValue(b),
-    );
-    const len = sorted.length;
-    const maxAmount = getTierValue(sorted[len - 1]) || 1;
-
-    const trackColor = rewards.backgroundColor || "#c1c1c1";
-    const fillColor = rewards.textColor || "#000000";
-    const textColor = rewards.textColor || "#000000";
-    const barLength = rewards.barLength || 4;
-    const barGap = rewards.barGap || 0;
-    const dotSize = 28 + barLength;
-
-    const getStepPosition = (index) => (100 / len) * (index + 1);
-
-    const getFillPercent = () => {
-      if (len === 0) return 0;
-      const firstTier = sorted[0];
-      if (cartTotal < getTierValue(firstTier)) {
-        return (cartTotal / getTierValue(firstTier)) * getStepPosition(0);
+    for (let i = 0; i < len - 1; i++) {
+      const curr = sorted[i];
+      const next = sorted[i + 1];
+      if (cartTotal >= getTierValue(curr) && cartTotal < getTierValue(next)) {
+        const progress =
+          (cartTotal - getTierValue(curr)) /
+          (getTierValue(next) - getTierValue(curr));
+        return (
+          getStepPosition(i) +
+          progress * (getStepPosition(i + 1) - getStepPosition(i))
+        );
       }
-      for (let i = 0; i < len - 1; i++) {
-        const curr = sorted[i];
-        const next = sorted[i + 1];
-        if (cartTotal >= getTierValue(curr) && cartTotal < getTierValue(next)) {
-          const progress =
-            (cartTotal - getTierValue(curr)) /
-            (getTierValue(next) - getTierValue(curr));
-          return (
-            getStepPosition(i) +
-            progress * (getStepPosition(i + 1) - getStepPosition(i))
-          );
-        }
-      }
-      return 100;
-    };
+    }
+    return 100;
+  };
 
-    const fillPct = getFillPercent().toFixed(2);
-    const currentTier = sorted.find((t) => cartTotal < getTierValue(t));
+  const fillPct = getFillPercent().toFixed(2);
+  const fillPctNum = parseFloat(fillPct);
+  const currentTier = sorted.find((t) => cartTotal < getTierValue(t));
 
-    let titleHtml = "";
-    if (cartTotal >= maxAmount) {
-      titleHtml = `<p class="hub-rewards-title custom-cart-public-rewards__message">${rewards.successText || "All rewards unlocked!"}</p>`;
-    } else if (currentTier) {
-      const remaining = getTierValue(currentTier) - cartTotal;
-      const amountStr = isQuantity
-        ? `${remaining} items`
-        : hubUtils.formatMoney(remaining * 100);
-      const raw = currentTier.title || "You're {AMOUNT} away!";
-      titleHtml = `<p class="hub-rewards-title custom-cart-public-rewards__message">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
+  let titleHtml = "";
+  if (cartTotal >= maxAmount) {
+    titleHtml = `<p class="hub-rewards-title custom-cart-public-rewards__message">${rewards.successText || "All rewards unlocked!"}</p>`;
+  } else if (currentTier) {
+    const remaining = getTierValue(currentTier) - cartTotal;
+    const amountStr = isQuantity
+      ? `${remaining} items`
+      : hubUtils.formatMoney(remaining * 100);
+    const raw = currentTier.title || "You're {AMOUNT} away!";
+    titleHtml = `<p class="hub-rewards-title custom-cart-public-rewards__message">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
+  }
+
+  const segFills = sorted.map((tier, index) => {
+    const segStart = index === 0 ? 0 : getStepPosition(index - 1);
+    const segEnd = getStepPosition(index);
+    let segFill = 0;
+    if (fillPctNum >= segEnd) segFill = 100;
+    else if (fillPctNum > segStart)
+      segFill = ((fillPctNum - segStart) / (segEnd - segStart)) * 100;
+    return segFill;
+  });
+
+  el.style.display = "block";
+
+  const existingFills = el.querySelectorAll(".hub-cell-fill");
+
+  if (existingFills.length === sorted.length) {
+    existingFills.forEach((fillEl, i) => {
+      fillEl.style.width = `${segFills[i].toFixed(2)}%`;
+    });
+
+    const titleEl = el.querySelector(".hub-rewards-title");
+    if (titleEl && titleHtml) {
+      titleEl.outerHTML = titleHtml;
+    } else if (!titleEl && titleHtml) {
+      el.querySelector(".hub-rewards-wrap")?.insertAdjacentHTML("afterbegin", titleHtml);
+    } else if (titleEl && !titleHtml) {
+      titleEl.remove();
     }
 
-    const fillPctNum = parseFloat(fillPct);
+    return;
+  }
 
-    const tiersHtml = sorted
-      .map((tier, index) => {
-        const segStart = index === 0 ? 0 : getStepPosition(index - 1);
-        const segEnd = getStepPosition(index);
-        let segFill = 0;
-        if (fillPctNum >= segEnd) segFill = 100;
-        else if (fillPctNum > segStart)
-          segFill = ((fillPctNum - segStart) / (segEnd - segStart)) * 100;
+  const tiersHtml = sorted
+    .map((tier, index) => {
+      const segFill = segFills[index];
+      const done = cartTotal >= getTierValue(tier);
+      const iconColor = done
+        ? rewards.completeIconColor || "#ffffff"
+        : rewards.incompleteIconColor || "#000000";
+      const dotBg = done ? fillColor : trackColor;
 
-        const done = cartTotal >= getTierValue(tier);
-        const iconColor = done
-          ? rewards.completeIconColor || "#ffffff"
-          : rewards.incompleteIconColor || "#000000";
-        const dotBg = done ? fillColor : trackColor;
-
-        return `<div class="hub-tier-cell custom-cart-public-component-segmented-progress-bar__segments-container">
+      return `<div class="hub-tier-cell custom-cart-public-component-segmented-progress-bar__segments-container">
   <div class="hub-cell-bar custom-cart-public-component-segmented-progress-bar__segment" style="background:${trackColor};height:${barLength}px">
     <div class="hub-cell-fill custom-cart-public-rewards__bar custom-cart-public-component-segmented-progress-bar" style="width:${segFill.toFixed(2)}%;background:${fillColor}"></div>
   </div>
@@ -781,18 +803,17 @@ window.hubUtils = {
   }
 
 </div>`;
-      })
-      .join("");
+    })
+    .join("");
 
-    el.style.display = "block";
-    el.innerHTML = `
+  el.innerHTML = `
     <div class="hub-rewards-wrap">
       ${titleHtml}
       <div class="hub-rewards-segments">
         ${tiersHtml}
       </div>
     </div>`;
-  },
+},
 
   // Fetches active discount codes from the hub backend (Admin API → discountNodes)
   async getDiscounts() {
