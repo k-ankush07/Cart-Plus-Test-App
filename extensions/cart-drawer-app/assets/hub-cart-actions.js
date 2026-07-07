@@ -131,6 +131,13 @@ async function updateQty(key, qty, btn = null) {
       return;
     }
 
+    const itemEl = btn?.closest("[data-item-key]");
+    const qtyInput = itemEl?.querySelector(".hub-qty-input");
+    if (qtyInput) qtyInput.value = qty;
+
+    const minusBtn = itemEl?.querySelector(".hub-qty-btn.minus");
+    if (minusBtn) minusBtn.disabled = qty <= 1;
+
     await fetch("/cart/change.js", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -307,6 +314,14 @@ async function _commitRemoval(key) {
       });
 
     _hubHideAllCartSections(blockId);
+    const rewardsSettings = window.__HUB_ACTIVE_CART__?.rewardsSettings;
+    if (rewardsSettings) {
+      hubUtils.renderRewardsBar(
+        blockId,
+        { items: [], item_count: 0, total_price: 0 },
+        rewardsSettings,
+      );
+    }
   }
 
   window._hubCommitingRemoval = true;
