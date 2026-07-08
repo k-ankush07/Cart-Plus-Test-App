@@ -10,7 +10,7 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-const apiUrl = "http://localhost:9002";
+const apiUrl = "http://hubsyntax.online";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");
