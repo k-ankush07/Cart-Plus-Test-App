@@ -10,7 +10,7 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-const apiUrl = "https://hubsyntax.online";
+const apiUrl = "http://localhost:9002";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");
@@ -235,12 +235,17 @@ function initCartDrawerAfterData() {
         const res = await fetch("/cart.js");
         const cart = await res.json();
         window._hubLastCartHadItems = (cart.items?.length || 0) > 0;
+
+        const includeAddonsInCount =
+          window.__HUB_ACTIVE_CART__?.addonsSettings?.includeInItemCount ===
+          true;
+
         const count = cart.items
           .filter(
             (i) =>
               !i.properties?._triggered_reward &&
-              !i.properties?._hub_addon &&
-              !i.properties?.__upcartAddon,
+              (includeAddonsInCount ||
+                (!i.properties?._hub_addon && !i.properties?.__upcartAddon)),
           )
           .reduce((sum, i) => sum + i.quantity, 0);
         const label = count === 1 ? "1 item" : `${count} items`;

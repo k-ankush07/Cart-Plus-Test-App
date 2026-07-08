@@ -89,12 +89,15 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const headerEl = document.querySelector(".upcart-header-text");
     if (headerEl) {
       const headerSettings = window.__HUB_ACTIVE_CART__?.headerSettings || {};
+      const includeAddonsInCount =
+        window.__HUB_ACTIVE_CART__?.addonsSettings?.includeInItemCount === true;
+
       const nonGiftQty = cart.items
         .filter(
           (i) =>
             !i.properties?._triggered_reward &&
-            !i.properties?._hub_addon &&
-            !i.properties?.__upcartAddon,
+            (includeAddonsInCount ||
+              (!i.properties?._hub_addon && !i.properties?.__upcartAddon)),
         )
         .reduce((sum, i) => sum + i.quantity, 0);
       headerEl.innerText = (
@@ -1031,6 +1034,19 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
             try {
               if (checked) {
+                const trackingProps = addonsSettings.includeTracking
+                  ? {
+                      beamAddonDesiredState: "active",
+                      "Add-on Type": isShipping
+                        ? "Shipping Protection"
+                        : "Product Add-on",
+                    }
+                  : {};
+
+                const fulfillProps =
+                  isShipping && addonsSettings.autoFulfill
+                    ? { _hub_auto_fulfill: "true" }
+                    : {};
                 await fetch("/cart/add.js", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -1042,6 +1058,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
                         ? "shipping_protection"
                         : "product_addon",
                       __upcartAddon: String(vid),
+                      ...fulfillProps,
+                      ...trackingProps,
                     },
                   }),
                 });

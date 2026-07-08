@@ -73,12 +73,15 @@ function scopeCss(css, scope) {
       const res = await fetch("/cart.js");
       const cart = await res.json();
 
+      const includeAddonsInCount =
+        window.__HUB_ACTIVE_CART__?.addonsSettings?.includeInItemCount === true;
+
       const count = cart.items
         .filter(
           (i) =>
             !i.properties?._triggered_reward &&
-            !i.properties?._hub_addon &&
-            !i.properties?.__upcartAddon,
+            (includeAddonsInCount ||
+              (!i.properties?._hub_addon && !i.properties?.__upcartAddon)),
         )
         .reduce((sum, i) => sum + i.quantity, 0);
 
@@ -217,7 +220,7 @@ function scopeCss(css, scope) {
     iconWrapper.innerHTML = getStickyIconMarkup(
       data.selectedIcon,
       data.customIconUrl,
-      data.iconSize,   
+      data.iconSize,
     );
     btn.appendChild(iconWrapper);
 
