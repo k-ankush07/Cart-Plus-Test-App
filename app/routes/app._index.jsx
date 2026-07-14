@@ -664,6 +664,31 @@ function DashboardSkeleton() {
   );
 }
 
+// ─── AppEmbedLink ──────────────────────────────────────────────────────────────
+// NOTE: this must be a real component (not a useMemo'd JSX element) so it can
+// be safely rendered with `<AppEmbedLink ... />` in multiple places.
+
+function AppEmbedLink({ shop, mainThemeId, appEmbedId }) {
+  return (
+    <Tooltip content="Enable the app embed to start showing this cart on your storefront. Click to enable in your theme editor.">
+      <span>
+        <a
+          href={`https://${shop?.myshopifyDomain}/admin/themes/${mainThemeId}/editor?context=apps&activateAppId=${appEmbedId}/app-embed`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
+        >
+          <Badge tone="warning">App embed off</Badge>
+          <span className="embed-icon" style={{ opacity: 0.9 }}>
+            <Icon source={ExternalIcon} tone="subdued" />
+          </span>
+        </a>
+      </span>
+    </Tooltip>
+  );
+}
+
 // ─── Dashboard (shell) ─────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -809,25 +834,6 @@ function DashboardInner({
 
     fetchStats();
   }, [range.start, range.end, liveCarts, apiUrl, shop?.myshopifyDomain, authHeaders]);
-
-  const AppEmbedLink = useMemo(() => (
-    <Tooltip content="Enable the app embed to start showing this cart on your storefront. Click to enable in your theme editor.">
-      <span>
-        <a
-          href={`https://${shop?.myshopifyDomain}/admin/themes/${mainThemeId}/editor?context=apps&activateAppId=${appEmbedId}/app-embed`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          style={{ display: "inline-flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
-        >
-          <Badge tone="warning">App embed off</Badge>
-          <span className="embed-icon" style={{ opacity: 0.9 }}>
-            <Icon source={ExternalIcon} tone="subdued" />
-          </span>
-        </a>
-      </span>
-    </Tooltip>
-  ), [shop?.myshopifyDomain, mainThemeId, appEmbedId]);
 
   const sparkType = useCallback((val) => (val ?? 0) > 0 ? "spike" : "flat", []);
 
@@ -1033,7 +1039,11 @@ function DashboardInner({
                             <Badge tone="success">Live</Badge>
                           ) : (
                             <span style={{ position: "relative", zIndex: 1 }}>
-                              <AppEmbedLink />
+                              <AppEmbedLink
+                                shop={shop}
+                                mainThemeId={mainThemeId}
+                                appEmbedId={appEmbedId}
+                              />
                             </span>
                           )}
                         </InlineStack>
