@@ -2126,8 +2126,24 @@ span.upsell-text.suggestion-product {
   margin-top: auto;
 }
 
+/* Default: jab upsell-bottom NAHI hai, tab notes/announcement ko auto milega */
+[id^="hub-notes-below-"],
+[id^="hub-announcement-after-"] {
+    margin-top: auto !important;
+}
+
+/* upsell-bottom ko hamesha auto chahiye */
 .hub-upsell.upsell-container.upsell-bottom {
-  margin-top: auto;
+    margin-top: auto !important;
+}
+
+/* Jab upsell-bottom present hai — notes aur announcement ka margin 0 kar do */
+.hub-cart-items-CartPreview:has(.hub-upsell.upsell-container.upsell-bottom) [id^="hub-notes-below-"] {
+    margin-top: 0 !important;
+}
+
+.hub-cart-items-CartPreview:has(.hub-upsell.upsell-container.upsell-bottom) [id^="hub-announcement-after-"] {
+    margin-top: 0 !important;
 }
 
 .hub-notes-title {
@@ -2193,9 +2209,6 @@ span.upsell-text.suggestion-product {
   opacity: 1;
 }
 
-[id^="hub-notes-below-"] {
-  margin-top: auto;
-}
 
 .hub-addon-shipping-protection img.hub-addon-sp-img {
   width: 100%;

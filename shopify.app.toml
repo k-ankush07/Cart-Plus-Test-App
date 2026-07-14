@@ -1,8 +1,8 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "0741db22a559208f286f8afcfb6dcc65"
-name = "Cart Plus"
-application_url = "http://hubsyntax.online"
+name = "Cart Plus testing"
+application_url = "https://hubsyntax.online"
 embedded = true
 
 [build]
@@ -11,28 +11,27 @@ automatically_update_urls_on_dev = true
 [webhooks]
 api_version = "2026-01"
 
-  [[webhooks.subscriptions]]
-  uri = "/webhooks/app/scopes_update"
-  topics = [ "app/scopes_update" ]
+[[webhooks.subscriptions]]
+topics = ["app/scopes_update"]
+uri = "/webhooks/app/scopes_update"
 
-  [[webhooks.subscriptions]]
-  uri = "/webhooks/orders/paid"
-  topics = [ "orders/paid" ]
+[[webhooks.subscriptions]]
+topics = ["orders/paid"]
+uri = "/webhooks/orders/paid"
 
-  [[webhooks.subscriptions]]
-  uri = "/webhooks/app/uninstalled"
-  topics = [ "app/uninstalled" ]
+[[webhooks.subscriptions]]
+topics = ["app/uninstalled"]
+uri = "/webhooks/app/uninstalled"
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "read_customers,read_discounts,read_locations,read_orders,read_pixels,read_products,read_publications,read_shipping,read_themes,write_app_proxy,write_discounts,write_files,write_orders,write_products,write_publications,write_themes"
 
 [auth]
 redirect_urls = [
-  "http://hubsyntax.online/api/auth"
+  "https://hubsyntax.online/api/auth"
 ]
 
 [app_proxy]
-url = "http://hubsyntax.online/api/proxy-order-track"
+url = "https://hubsyntax.online/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"

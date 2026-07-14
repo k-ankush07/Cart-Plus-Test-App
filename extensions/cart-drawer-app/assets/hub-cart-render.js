@@ -221,7 +221,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           font-size: ${ann.fontSize || 14}px;
           text-align: center;
           color:#000000;
-          ${isAfter ? "margin-top: auto;" : ""}
+          ${isAfter ? "margin-top: 0;" : ""}
         `;
         target.innerHTML = ann.text
           ? ann.text.replace(
