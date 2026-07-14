@@ -6,7 +6,7 @@ import "../../index.css";
 import { renameCart, togglePublishCart, getCarts } from "../../services/apiRoutes";
 
 const CartLayout = memo(function CartLayout({
-  
+
   activeTab,
   setActiveTab,
   designSettings,

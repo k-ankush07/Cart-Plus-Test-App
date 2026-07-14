@@ -32,13 +32,15 @@ export default function App() {
           data-api-key={apiKey}
         />
         <script src="//code.tidio.co/40jtopadf98eytkutwweixaa6e8tqtg8.js" async></script>
-        
+
         <Meta />
         <Links />
       </head>
       <body suppressHydrationWarning>
         <PolarisAppProvider i18n={enTranslations}>
-          <Outlet />
+          <div style={{ paddingBottom: "40px" }}>
+            <Outlet />
+          </div>
         </PolarisAppProvider>
         <ScrollRestoration />
         <Scripts />
