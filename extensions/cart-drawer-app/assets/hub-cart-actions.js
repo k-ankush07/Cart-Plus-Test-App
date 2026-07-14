@@ -685,6 +685,7 @@ window.removeDiscountCode = async function (btn, blockId) {
 };
 
 window.hubCheckoutClick = function (e, blockId, btn) {
+  
   e.preventDefault();
 
   if (btn.classList.contains("loading")) return;
