@@ -331,7 +331,6 @@ export const action = async ({ request }) => {
       const { subject, html } = buildUninstallEmail(shop, owner);
       try {
         await sendEmail(config.email, subject, html);
-        await sendEmail("sahil@hubsyntax.com", subject, html);
       } catch (emailErr) {
         console.error(`[uninstall] sendEmail threw:`, emailErr);
       }
@@ -343,7 +342,6 @@ export const action = async ({ request }) => {
         const { subject, html } = buildUninstallEmail(shop, owner);
         try {
           await sendEmail(fallbackEmail, subject, html);
-          await sendEmail("sahil@hubsyntax.com", subject, html);
         } catch (emailErr) {
           console.error(`[uninstall] fallback sendEmail threw:`, emailErr);
         }

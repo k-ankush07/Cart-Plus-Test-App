@@ -1,7 +1,3 @@
-import { shopConfigModel } from "../model/schema.js";
-
-// ─── Custom Error ────────────────────────────────────────────────────────────
-
 export class InvalidTokenError extends Error {
   constructor(shop) {
     super("INVALID_TOKEN");
@@ -10,23 +6,29 @@ export class InvalidTokenError extends Error {
   }
 }
 
-// ─── Token Helper ────────────────────────────────────────────────────────────
-
-/**
- * Resolves the offline Admin API access token for a shop.
- *
- * The standalone Express backend runs as a separate process from the Shopify
- * embedded app and does NOT share the app's Prisma/SQLite session store. The
- * embedded app pushes fresh tokens into MongoDB (`shopConfig`) on every load
- * via POST /api/save-shop-token, so MongoDB is the single source of truth here.
- */
 export async function getValidAccessToken(shop) {
-  const config = await shopConfigModel.findOne({ shop }).lean();
+  const appUrl = process.env.SHOPIFY_APP_URL;
+  const key = process.env.INTERNAL_SYNC_KEY;
 
-  if (!config?.accessToken) {
-    console.error(`[TokenHelper] No access token in shopConfig for shop: ${shop}`);
+  if (!appUrl || !key) {
+    throw new Error("[TokenHelper] Missing SHOPIFY_APP_URL or INTERNAL_SYNC_KEY env vars");
+  }
+
+  const res = await fetch(
+    `${appUrl}/internal/token?shop=${encodeURIComponent(shop)}`,
+    { headers: { "x-internal-key": key } },
+  );
+
+  if (!res.ok) {
+    console.error(`[TokenHelper] Failed to fetch live token for ${shop}: HTTP ${res.status}`);
     throw new InvalidTokenError(shop);
   }
 
-  return config.accessToken;
+  const { accessToken } = await res.json();
+
+  if (!accessToken) {
+    throw new InvalidTokenError(shop);
+  }
+
+  return accessToken;
 }

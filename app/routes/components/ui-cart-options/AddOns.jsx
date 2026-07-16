@@ -210,9 +210,9 @@ export default function AddOns({ addonsSettings, handleChange, currency, }) {
                                     autoComplete="off"
                                 />
 
-                                <Link onClick={() => update("dynamicPricing", !addonsSettings.dynamicPricing)}>
+                                {/* <Link onClick={() => update("dynamicPricing", !addonsSettings.dynamicPricing)}>
                                     Enable dynamic shipping protection pricing
-                                </Link>
+                                </Link> */}
                             </BlockStack>
                         ) : (
                             <BlockStack gap="300">
@@ -306,7 +306,7 @@ export default function AddOns({ addonsSettings, handleChange, currency, }) {
                             </Text>
                         </BlockStack>
 
-                        <BlockStack gap="100">
+                        {/* <BlockStack gap="100">
                             <InlineStack gap="200" align="start" blockAlign="center">
                                 <Checkbox
                                     label="Accept Offers by Default"
@@ -319,9 +319,9 @@ export default function AddOns({ addonsSettings, handleChange, currency, }) {
                             <Text variant="bodySm" tone="subdued">
                                 Auto-accept the add-on when the first item is added to the cart.
                             </Text>
-                        </BlockStack>
+                        </BlockStack> */}
 
-                        <Banner tone="warning">
+                        {/* <Banner tone="warning">
                             <Text variant="bodyMd" fontWeight="semibold">Removed “Accept offer by default”</Text>
                             <Text variant="bodySm">
                                 To provide a more trustworthy buyer experience, Shopify prohibits apps from automatically adding non-free items. Buyers must explicitly accept add-ons using the toggle. For more details, see{" "}
@@ -330,7 +330,7 @@ export default function AddOns({ addonsSettings, handleChange, currency, }) {
                                 </Link>{" "}
                                 of Shopify's app requirements.
                             </Text>
-                        </Banner>
+                        </Banner> */}
                     </BlockStack>
                 </Card>
 

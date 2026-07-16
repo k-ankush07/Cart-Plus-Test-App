@@ -262,7 +262,7 @@ export const action = async ({ request }) => {
     if (!planDef) return Response.json({ error: "Invalid plan" }, { status: 400 });
     const price = planDef.price.toFixed(2);
 
-    const returnUrl = `https://${session.shop}/admin/apps/cart-drawer-52/app/pricing?upgraded=${selectedPlan}`;
+    const returnUrl = `https://${session.shop}/admin/apps/cart-plus-5/app/pricing?upgraded=${selectedPlan}`;
 
     const createRes = await admin.graphql(
         `mutation AppSubscriptionCreate(

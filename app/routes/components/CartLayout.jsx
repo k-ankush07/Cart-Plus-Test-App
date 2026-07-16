@@ -199,6 +199,48 @@ const CartLayout = memo(function CartLayout({
     navigation.state === "loading" &&
     navigation.location?.pathname === backPath;
 
+  useEffect(() => {
+    let observer;
+
+    const moveToLeft = () => {
+      const host = document.getElementById("tidio-chat");
+      const root = host?.shadowRoot?.getElementById("tidio-chat-root");
+      if (root && root.classList.contains("widget-position-right")) {
+        root.classList.remove("widget-position-right");
+        root.classList.add("widget-position-left");
+      }
+      if (root && root.classList.contains("sidebar-position-right")) {
+        root.classList.remove("sidebar-position-right");
+        root.classList.add("sidebar-position-left");
+      }
+    };
+
+    moveToLeft();
+
+    observer = new MutationObserver(moveToLeft);
+    const host = document.getElementById("tidio-chat");
+    if (host?.shadowRoot) {
+      observer.observe(host.shadowRoot, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+    }
+
+    return () => {
+      if (observer) observer.disconnect();
+      const root = document
+        .getElementById("tidio-chat")
+        ?.shadowRoot?.getElementById("tidio-chat-root");
+      if (root) {
+        root.classList.remove("widget-position-left", "sidebar-position-left");
+        root.classList.add("widget-position-right", "sidebar-position-right");
+      }
+    };
+  }, []);
+
+
   return (
     <>
       <Page fullWidth>

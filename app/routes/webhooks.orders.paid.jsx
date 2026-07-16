@@ -1,6 +1,7 @@
 import { authenticate } from "../shopify.server";
 
 export const action = async ({ request }) => {
+
   console.log("[orders/paid] webhook received at", new Date().toISOString());
 
   let shop, payload, session;

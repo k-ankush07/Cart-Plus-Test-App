@@ -69,6 +69,8 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
     const isSelected = (id) => selectedVariants.includes(id);
 
     const toggleSelect = (variant) => {
+        if (!variant.available) return; // out of stock variant, block selection
+
         setSelectedCollections([]);
 
         setSelectedVariants((prev) => {
@@ -100,10 +102,19 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
     const isProductSelected = (product) =>
         product.variants.some((v) => selectedVariants.includes(v.id));
 
+    const isProductOutOfStock = (product) =>
+        product.variants.every((v) => !v.available);
+
     const toggleProduct = (product) => {
+        if (isProductOutOfStock(product)) return; // out of stock product, block selection
+
         setSelectedCollections([]);
 
-        const variantIds = product.variants.map((v) => v.id);
+        const variantIds = product.variants
+            .filter((v) => v.available)
+            .map((v) => v.id);
+
+        if (variantIds.length === 0) return;
 
         setSelectedVariants((prev) => {
             const allSelected = variantIds.every((id) =>
@@ -394,6 +405,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                         items={filteredProducts}
                         renderItem={(product) => {
                             const index = filteredProducts.indexOf(product);
+                            const outOfStock = isProductOutOfStock(product);
 
                             return (
                                 <div key={product.id}>
@@ -404,6 +416,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                                         borderBottom: index !== filteredProducts.length - 1
                                             ? "1px solid #e1e3e5"
                                             : "none",
+                                        opacity: outOfStock ? 0.5 : 1,
                                     }}>
 
                                         <InlineStack align="space-between" wrap={false} gap="500">
@@ -414,6 +427,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                                                 <Checkbox
                                                     checked={isProductSelected(product)}
                                                     onChange={() => toggleProduct(product)}
+                                                    disabled={outOfStock}
                                                 />
                                                 <div style={{ minWidth: "40px" }}>
                                                     <Thumbnail source={product.image} size="small" />
@@ -441,7 +455,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                                             </InlineStack>
 
                                             <div style={{
-                                                display: "flex", gap: "8px", justifyContent: "flex-end", minWidth: product.variants.every((v) => !v.available)
+                                                display: "flex", gap: "8px", justifyContent: "flex-end", minWidth: outOfStock
                                                     ? "165px"
                                                     : "90px",
                                             }}>
@@ -460,7 +474,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                                                         </Badge>
                                                     )}
 
-                                                    {product.variants.every((v) => !v.available) && (
+                                                    {outOfStock && (
                                                         <Badge tone="warning">Out of stock</Badge>
                                                     )}
                                                 </div>
@@ -479,6 +493,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                                                 style={{
                                                     padding: "8px 0 8px 40px",
                                                     borderBottom: "1px solid #f1f2f3",
+                                                    opacity: v.available ? 1 : 0.5,
                                                 }}
                                             >
                                                 <InlineStack align="space-between">
@@ -487,6 +502,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                                                         <Checkbox
                                                             checked={isSelected(v.id)}
                                                             onChange={() => toggleSelect(v, product)}
+                                                            disabled={!v.available}
                                                         />
 
                                                         <Thumbnail
@@ -578,4 +594,4 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
     )
 });
 
-export default ProductItemCollections
+export default ProductItemCollections;

@@ -92,6 +92,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                 status: p.node.status,
                 image: p.node.images.edges[0]?.node?.url,
                 price: p.node.variants.edges[0]?.node?.price || "0",
+                isOutOfStock: p.node.isOutOfStock,
                 variants: p.node.variants.edges.map((v) => ({
                     id: v.node.id,
                     title: v.node.title,
@@ -136,6 +137,8 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
     };
 
     const toggleSelect = (variant, product) => {
+        if (!variant.available) return; // out of stock variant, block selection
+
         let updated;
         const exists = selected.some((v) => v.id === variant.id);
 
@@ -165,6 +168,8 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
     };
 
     const toggleProduct = (product) => {
+        if (product.isOutOfStock) return; // out of stock product, block selection
+
         const firstVariant = product.variants[0];
 
         const isAlreadySelected = selected.some(
@@ -267,6 +272,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                                     index !== products.length - 1
                                         ? "1px solid #e1e3e5"
                                         : "none",
+                                opacity: product.isOutOfStock ? 0.5 : 1,
                             }}
                         >
                             <InlineStack align="space-between" wrap={false} gap="500">
@@ -277,6 +283,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                                         <Checkbox
                                             checked={isProductSelected(product)}
                                             onChange={() => toggleProduct(product)}
+                                            disabled={product.isOutOfStock}
                                         />
 
                                         <div style={{ minWidth: "40px" }}>
@@ -309,7 +316,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
 
                                 {/* RIGHT SIDE */}
                                 <div style={{
-                                    display: "flex", gap: "8px", justifyContent: "flex-end", minWidth: product.variants.every((v) => !v.available)
+                                    display: "flex", gap: "8px", justifyContent: "flex-end", minWidth: product.isOutOfStock
                                         ? "165px"
                                         : "90px",
                                 }}>
@@ -327,7 +334,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                                                 {product.status === "DRAFT" ? "Draft" : "Archived"}
                                             </Badge>
                                         )}
-                                        {product.variants.every((v) => !v.available) && (
+                                        {product.isOutOfStock && (
                                             <Badge tone="warning">Out of stock</Badge>
                                         )}
                                     </div>
@@ -348,6 +355,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                                         style={{
                                             padding: "8px 0 8px 40px",
                                             borderBottom: "1px solid #f1f2f3",
+                                            opacity: v.available ? 1 : 0.5,
                                         }}
                                     >
                                         <InlineStack align="space-between">
@@ -356,6 +364,7 @@ const Products = forwardRef(function Products({ currency, onSelect, selectedItem
                                                 <Checkbox
                                                     checked={isSelected(v.id)}
                                                     onChange={() => toggleSelect(v, product)}
+                                                    disabled={!v.available}
                                                 />
 
                                                 <Thumbnail

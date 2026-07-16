@@ -335,7 +335,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
 
             {direction === "carousel" ? (
                 <div className="upcart-slider-wrapper">
-                    {carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"></path></svg></div>)}
+                    {carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"></path></svg></div>)}
 
                     <Swiper
                         modules={[Navigation]}
@@ -358,7 +358,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                             </SwiperSlide>
                         ))}
                     </Swiper>
-                    {carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"></path></svg></div>)}
+                    {carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6"></path></svg></div>)}
                     {carouselIndicator === "progressBar" && (<div className="upsell-progress-bar">
                         <div ref={fillRef} className="upsell-progress-fill"></div>
                     </div>)}

@@ -49,5 +49,29 @@ export const loader = async ({ request }) => {
   const res = await admin.graphql(query);
   const data = await res.json();
 
-  return json(data);
+  const edges = data?.data?.products?.edges || [];
+  const enrichedEdges = edges.map((edge) => {
+    const variants = edge.node.variants.edges;
+    const isOutOfStock = variants.every(
+      (v) => v.node.availableForSale === false
+    );
+    return {
+      ...edge,
+      node: {
+        ...edge.node,
+        isOutOfStock,
+      },
+    };
+  });
+
+  return json({
+    ...data,
+    data: {
+      ...data.data,
+      products: {
+        ...data.data.products,
+        edges: enrichedEdges,
+      },
+    },
+  });
 };

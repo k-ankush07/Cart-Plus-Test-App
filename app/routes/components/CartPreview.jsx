@@ -117,7 +117,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                         </>
                     ) : (
                         <>
-                            {!emptyCart && activeTab !== "Suggested Products" && (
+                            {!emptyCart && activeTab !== "Recommended Products" && (
                                 <>
                                     <CustomHtml cartSettings={cartSettings} position="above_announcements" />
 
@@ -180,7 +180,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                                 </>
                             )}
 
-                            {activeTab === "Suggested Products" && (
+                            {activeTab === "Recommended Products" && (
                                 <Recommendation
                                     recommendationsSettings={recommendationsSettings}
                                     currency={currency}
@@ -194,11 +194,11 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                 </div>
 
                 {/* above_footer */}
-                {!emptyCart && activeTab !== "Suggested Products" && (
+                {!emptyCart && activeTab !== "Recommended Products" && (
                     <CustomHtml cartSettings={cartSettings} position="above_footer" />
                 )}
 
-                {!emptyCart && activeTab !== "Suggested Products" && (
+                {!emptyCart && activeTab !== "Recommended Products" && (
                     <CartFooter
                         designSettings={designSettings}
                         additionalNotesSettings={additionalNotesSettings}

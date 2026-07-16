@@ -80,10 +80,31 @@ const emptyForm = { id: null, title: "", discountCode: "", description: "", trig
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function triggerBadgeLabel(t) {
+function formatCurrencyValue(value, currencyCode = "USD") {
+  const safeCurrency = (currencyCode || "USD").toUpperCase();
+  const locale = safeCurrency === "INR" ? "en-IN" : "en-US";
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: safeCurrency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: safeCurrency === "JPY" ? 0 : 2,
+  }).format(Number(value) || 0);
+}
+
+function getCurrencySymbol(currencyCode = "USD") {
+  const safeCurrency = (currencyCode || "USD").toUpperCase();
+  const locale = safeCurrency === "INR" ? "en-IN" : "en-US";
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: safeCurrency,
+    currencyDisplay: "narrowSymbol",
+  }).formatToParts(0).find((part) => part.type === "currency")?.value || safeCurrency;
+}
+
+function triggerBadgeLabel(t, currencyCode = "USD") {
   if (!t) return "";
   switch (t.type) {
-    case "cart_total": return `Cart total ($${(t.minAmount || 0).toFixed(2)}+)`;
+    case "cart_total": return `Cart total (${formatCurrencyValue(t.minAmount || 0, currencyCode)}+)`;
     case "cart_quantity": return `Cart quantity (${t.minQuantity || 0}+)`;
     case "specific_products": return "Specific product";
     case "specific_collections": return "Specific collection";
@@ -93,10 +114,10 @@ function triggerBadgeLabel(t) {
   }
 }
 
-function rewardBadgeLabel(r) {
+function rewardBadgeLabel(r, currencyCode = "USD") {
   if (!r) return "";
   switch (r.type) {
-    case "cart_discount": return r.discountType === "fixed" ? `$${r.value || 0} cart discount` : `${r.value || 0}% cart discount`;
+    case "cart_discount": return r.discountType === "fixed" ? `${formatCurrencyValue(r.value || 0, currencyCode)} cart discount` : `${r.value || 0}% cart discount`;
     case "free_gift": return "Free gift";
     case "free_shipping": return "Free shipping";
     default: return r.type;
@@ -105,7 +126,7 @@ function rewardBadgeLabel(r) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function TriggerSlot({ trigger, onRemove, onEdit }) {
+function TriggerSlot({ trigger, onRemove, onEdit, currency }) {
   const meta = TRIGGER_OPTIONS.find((o) => o.type === trigger.type);
   const icon = TRIGGER_ICON[trigger.type] || CartIcon;
 
@@ -126,7 +147,7 @@ function TriggerSlot({ trigger, onRemove, onEdit }) {
   const titleLine = (() => {
     switch (trigger.type) {
       case "cart_total":
-        return `$${(trigger.minAmount || 0).toFixed(2)} or more`;
+        return `${formatCurrencyValue(trigger.minAmount || 0, currency)} or more`;
       case "cart_quantity":
         return `${trigger.minQuantity || 0} item(s) or more`;
       case "specific_products":
@@ -179,7 +200,7 @@ function TriggerSlot({ trigger, onRemove, onEdit }) {
   );
 }
 
-function RewardSlot({ reward, onRemove }) {
+function RewardSlot({ reward, onRemove, currency }) {
   const meta = REWARD_OPTIONS.find((o) => o.type === reward.type);
   const icon = REWARD_ICON[reward.type] || CartIcon;
 
@@ -187,7 +208,7 @@ function RewardSlot({ reward, onRemove }) {
     switch (reward.type) {
       case "cart_discount":
         return reward.discountType === "fixed"
-          ? `$${reward.value || 0} off`
+          ? `${formatCurrencyValue(reward.value || 0, currency)} off`
           : `${reward.value || 0}% off`;
       case "free_gift": {
         const titles = reward.items?.titles || [];
@@ -247,7 +268,9 @@ const modalRow = { padding: "12px 16px", cursor: "pointer", borderBottom: "1px s
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function SmartOffers({ triggeredRewardsSettings, handleChange, currency }) {
+
   const authenticatedFetch = useAuthenticatedFetch();
+  const currencyCode = (currency || "USD").toUpperCase();
   const update = (key, value) =>
     handleChange("triggeredRewards", (prev) => ({ ...prev, [key]: value }));
 
@@ -559,6 +582,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
                       <TriggerSlot
                         trigger={t}
                         onRemove={() => removeTrigger(i)}
+                        currency={currencyCode}
                         onEdit={
                           ["specific_products", "specific_collections", "cart_total", "cart_quantity"].includes(t.type)
                             ? () => openEditTrigger(i)
@@ -605,6 +629,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
                   {form.reward ? (
                     <RewardSlot
                       reward={form.reward}
+                      currency={currencyCode}
                       onRemove={() => updateForm("reward", null)}
                     />
                   ) : (
@@ -701,7 +726,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
                 <InlineStack gap="200" blockAlign="center" wrap>
                   <Text variant="bodySm" fontWeight="medium">Trigger type</Text>
                   {(reward.triggers || []).filter(Boolean).map((t, i) => (
-                    <Badge key={i}>{triggerBadgeLabel(t)}</Badge>
+                    <Badge key={i}>{triggerBadgeLabel(t, currencyCode)}</Badge>
                   ))}
                   {hasConditions && (
                     <button
@@ -712,7 +737,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
                     </button>
                   )}
                   <Text variant="bodySm" fontWeight="medium">Reward</Text>
-                  {reward.reward && <Badge>{rewardBadgeLabel(reward.reward)}</Badge>}
+                  {reward.reward && <Badge>{rewardBadgeLabel(reward.reward, currencyCode)}</Badge>}
                 </InlineStack>
 
                 {isExpanded && hasConditions && (
@@ -877,7 +902,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
               <Text variant="bodyMd" fontWeight="medium">Discount type</Text>
               <ButtonGroup variant="segmented">
                 <Button pressed={pendingDiscountType === "percentage"} onClick={() => setPendingDiscountType("percentage")}>Percentage (%)</Button>
-                <Button pressed={pendingDiscountType === "fixed"} onClick={() => setPendingDiscountType("fixed")}>Fixed amount ($)</Button>
+                <Button pressed={pendingDiscountType === "fixed"} onClick={() => setPendingDiscountType("fixed")}>Fixed amount ({getCurrencySymbol(currencyCode)})</Button>
               </ButtonGroup>
             </BlockStack>
             <TextField
@@ -886,7 +911,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
               value={pendingDiscountValue}
               onChange={setPendingDiscountValue}
               suffix={pendingDiscountType === "percentage" ? "%" : undefined}
-              prefix={pendingDiscountType === "fixed" ? "$" : undefined}
+              prefix={pendingDiscountType === "fixed" ? getCurrencySymbol(currencyCode) : undefined}
               autoComplete="off"
             />
           </BlockStack>

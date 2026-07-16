@@ -110,7 +110,7 @@ export default function DiscountCode({ discountCodesSettings, handleChange }) {
                             <BlockStack gap="200">
                                 <Text variant="bodyMd" fontWeight="semibold">Discount limitations</Text>
                                 <Text variant="bodySm">
-                                    Upcart is not able to support all discount functionality available in checkout. Please review the following limitations.
+                                    Cart Plus is not able to support all discount functionality available in checkout. Please review the following limitations.
                                 </Text>
                                 <Collapsible open={showLimitations} id="discount-limitations">
                                     <BlockStack gap="100">

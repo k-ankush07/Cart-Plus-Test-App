@@ -55,6 +55,7 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
             <SmartOffers
                 triggeredRewardsSettings={triggeredRewardsSettings}
                 handleChange={handleChange}
+                currency={currency}
             />
         ),
         "Recommended Products": (

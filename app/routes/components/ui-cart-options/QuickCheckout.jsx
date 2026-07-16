@@ -97,7 +97,7 @@ export default function QuickCheckout({ expressPaymentsSettings, handleChange })
                         </Banner>
 
                         <Text variant="bodySm">
-                            To get Accelerated Checkout Buttons to show up in Upcart, the buttons must already be somewhere else on the theme page. you can do one of the following:
+                            To get Accelerated Checkout Buttons to show up in Cart Plus, the buttons must already be somewhere else on the theme page. you can do one of the following:
                         </Text>
 
                         <BlockStack gap="200">
@@ -286,7 +286,7 @@ export default function QuickCheckout({ expressPaymentsSettings, handleChange })
                                 onChange={(val) => update("renderInShadowDom", val)}
                             />
                             <Text variant="bodySm" tone="subdued">
-                                Shadow DOM will ensure Upcart, and the Accelerated Checkout Buttons are not affected by the theme's CSS.
+                                Shadow DOM will ensure Cart Plus, and the Accelerated Checkout Buttons are not affected by the theme's CSS.
                             </Text>
                         </BlockStack>
                     </BlockStack>

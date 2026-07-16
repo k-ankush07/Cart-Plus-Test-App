@@ -431,7 +431,6 @@ router.get("/get-sticky-cart/:shop", async (req, res) => {
 });
 
 // Called by the Remix app after OAuth to persist the offline Admin token.
-// Only updates the DB if the token has changed.
 
 router.post("/save-shop-token", async (req, res) => {
   try {
@@ -474,15 +473,9 @@ router.post("/save-shop-token", async (req, res) => {
       const subject = "Welcome to Cart Plus 🎉";
       const html = buildWelcomeEmailHtml({ storeOwner, shop });
 
-      const tasks = [
-        sendEmail("sahil@hubsyntax.com", subject, html),
-      ];
-
       if (email) {
-        tasks.push(sendEmail(email, subject, html));
+        await sendEmail(email, subject, html);
       }
-
-      await Promise.all(tasks);
 
     } catch (emailError) {
       console.error("[hub] Email error:", emailError);
@@ -569,7 +562,6 @@ router.post("/shop-plan", async (req, res) => {
           const html = buildPlanUpgradeEmailHtml({ storeOwner, shop, plan });
           await Promise.all([
             sendEmail(toEmail, subject, html),
-            sendEmail("sahil@hubsyntax.com", subject, html),
           ]);
         } else {
           console.warn(`[hub] Plan upgrade email skipped — no email on file for shop: ${shop}`);
@@ -732,7 +724,6 @@ router.post("/order-revenue", async (req, res) => {
           const html = buildPlanLimitReachedEmailHtml({ storeOwner, shop, plan: planName });
           await Promise.all([
             sendEmail(toEmail, subject, html),
-            sendEmail("sahil@hubsyntax.com", subject, html),
           ]);
         }
       } catch (emailError) {
