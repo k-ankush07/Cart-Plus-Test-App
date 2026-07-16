@@ -74,7 +74,7 @@ export default function CartEditor() {
   const MODULE_TAB_MAP = {
     recommendations: "Recommended Products",
     rewards: "Tiered Offers",
-    "triggered-rewards": "Smart Offers",
+    "triggered-rewards": "Triggered Rewards",
     upsells: "Upsells",
     addons: "Extras",
     announcements: "Notices",
@@ -273,9 +273,11 @@ export default function CartEditor() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            cartId,
             rewards,
             discountCombinations,
             existingDiscountId,
+            cartStatus: cart?.status,
           }),
         });
 
@@ -481,6 +483,7 @@ export default function CartEditor() {
         onDiscard={handleDiscard}
         onResetToDefault={handleResetToDefault}
         isResetting={isResetting}
+        cartStatus={cart?.status}
       />
     </AppProvider>
   );

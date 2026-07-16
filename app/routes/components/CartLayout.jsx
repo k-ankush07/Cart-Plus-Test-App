@@ -39,6 +39,7 @@ const CartLayout = memo(function CartLayout({
   onDiscard,
   onResetToDefault,
   isResetting
+  
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -434,6 +435,7 @@ const CartLayout = memo(function CartLayout({
             cartSettings={cartSettings}
             triggeredRewardsSettings={triggeredRewardsSettings}
             currency={currency}
+            cartStatus={cartStatus}
           />
         </div>
 

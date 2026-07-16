@@ -100,7 +100,7 @@ const Sidebar = memo(function Sidebar({
               items: [
                 item("Announcements", MegaphoneIcon),
                 item("Tiered Offers", GiftCardIcon),
-                item("Smart Offers", AutomationIcon, false),
+                item("Triggered Rewards", AutomationIcon, false),
                 item("Recommended Products", StarIcon),
                 item("Items in Cart", CartIcon, false),
                 item("Upgrade subscription", RefreshIcon),

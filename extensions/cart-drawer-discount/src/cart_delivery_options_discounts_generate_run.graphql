@@ -32,7 +32,7 @@ query DeliveryInput {
   }
   discount {
     discountClasses
-    metafield(namespace: "$app:cart-drawer-discount", key: "config") {
+    metafield(namespace: "$app:cart-plus-discount", key: "config") {
       value
     }
   }

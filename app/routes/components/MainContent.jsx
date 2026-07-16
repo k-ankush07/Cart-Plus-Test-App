@@ -21,7 +21,7 @@ import "../../index.css";
 const MainContent = memo(function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
     announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings, upsellsSettings,
     additionalNotesSettings, addonsSettings, discountCodesSettings, expressPaymentsSettings, trustBadgesSettings, cartSettings,
-    triggeredRewardsSettings
+    triggeredRewardsSettings, cartStatus
 }) {
 
     const componentMap = useMemo(() => ({
@@ -51,11 +51,12 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
                 currency={currency}
             />
         ),
-        "Smart Offers": (
+        "Triggered Rewards": (
             <SmartOffers
                 triggeredRewardsSettings={triggeredRewardsSettings}
                 handleChange={handleChange}
                 currency={currency}
+                cartStatus={cartStatus}
             />
         ),
         "Recommended Products": (

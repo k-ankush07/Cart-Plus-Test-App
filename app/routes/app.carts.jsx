@@ -58,6 +58,7 @@ import {
     deleteCart,
     togglePublishCart,
     duplicateCart,
+    syncDiscountStatus
 } from "../services/apiRoutes";
 import "../index.css";
 
@@ -350,6 +351,11 @@ function AppCartsInner({
     const handleTogglePublish = async (id) => {
         const data = await togglePublishCart(apiUrl, id);
         if (data.success) {
+            const newStatus =
+                carts.find((c) => c.cartId === id)?.status === "published"
+                    ? "unpublished"
+                    : "published";
+
             setCarts((prev) =>
                 prev.map((c) =>
                     c.cartId === id
@@ -358,6 +364,12 @@ function AppCartsInner({
                 )
             );
             shopify.toast.show(data.message || "Cart status updated");
+
+            try {
+                await syncDiscountStatus(apiUrl, { cartId: id, cartStatus: newStatus });
+            } catch (err) {
+                console.error("[handleTogglePublish] discount sync failed:", err);
+            }
         }
     };
 

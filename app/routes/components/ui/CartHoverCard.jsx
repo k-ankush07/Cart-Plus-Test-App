@@ -32,7 +32,7 @@ export default function CartHoverCard({ cart, children }) {
     const MODULE_LABELS = [
         { key: "announcementSettings", label: "Announcement" },
         { key: "rewardsSettings", label: "Tiered Offers" },
-        { key: "triggeredRewardsSettings", label: "Smart Offers" },
+        { key: "triggeredRewardsSettings", label: "Triggered Rewards" },
         { key: "recommendationsSettings", label: "Recommendations" },
         { key: "upsellsSettings", label: "Upsells" },
         { key: "additionalNotesSettings", label: "Notes" },
@@ -53,7 +53,7 @@ export default function CartHoverCard({ cart, children }) {
         })
         .map(({ label, key }) => {
             if (key === "triggeredRewardsSettings") {
-                return `Smart Offers (${cart.triggeredRewardsSettings?.rewards?.length || 0})`;
+                return `Triggered Rewards (${cart.triggeredRewardsSettings?.rewards?.length || 0})`;
             }
 
             return label;

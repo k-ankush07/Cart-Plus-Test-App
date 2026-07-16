@@ -144,3 +144,17 @@ export const getStickyCart = async (apiUrl, shop) => {
   });
   return res.json();
 };
+
+export async function syncDiscountStatus(apiUrl, { cartId, cartStatus }) {
+    const res = await fetch(`/shopify/create-discount`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            cartId,
+            cartStatus,
+            forceDisable: cartStatus !== "published", 
+        }),
+    });
+    return res.json();
+}

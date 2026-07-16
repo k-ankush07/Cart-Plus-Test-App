@@ -254,10 +254,38 @@ function RewardSlot({ reward, onRemove, currency }) {
   );
 }
 
-function Toggle({ value, onChange }) {
+function Toggle({ value, onChange, disabled }) {
+  const displayValue = disabled ? false : value;
+
   return (
-    <button onClick={() => onChange(!value)} style={{ position: "relative", width: "36px", height: "20px", borderRadius: "10px", background: value ? "#008060" : "#bbb", border: "none", cursor: "pointer", flexShrink: 0 }}>
-      <span style={{ position: "absolute", top: "2px", left: value ? "18px" : "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#fff", transition: "left 0.2s", display: "block" }} />
+    <button
+      onClick={() => !disabled && onChange(!value)}
+      disabled={disabled}
+      style={{
+        position: "relative",
+        width: "36px",
+        height: "20px",
+        borderRadius: "10px",
+        background: disabled ? "#ddd" : displayValue ? "#008060" : "#bbb",
+        border: "none",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          top: "2px",
+          left: displayValue ? "18px" : "2px",
+          width: "16px",
+          height: "16px",
+          borderRadius: "50%",
+          background: "#fff",
+          transition: "left 0.2s",
+          display: "block",
+        }}
+      />
     </button>
   );
 }
@@ -267,10 +295,12 @@ const modalRow = { padding: "12px 16px", cursor: "pointer", borderBottom: "1px s
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function SmartOffers({ triggeredRewardsSettings, handleChange, currency }) {
+export default function SmartOffers({ triggeredRewardsSettings, handleChange, currency, cartStatus }) {
 
   const authenticatedFetch = useAuthenticatedFetch();
   const currencyCode = (currency || "USD").toUpperCase();
+  const isPublished = cartStatus === "published";
+
   const update = (key, value) =>
     handleChange("triggeredRewards", (prev) => ({ ...prev, [key]: value }));
 
@@ -486,7 +516,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
       await authenticatedFetch("/shopify/create-discount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rewards: newRewards, discountCombinations, existingDiscountId }),
+        body: JSON.stringify({ rewards: newRewards, discountCombinations, existingDiscountId, cartStatus, }),
       });
     } catch (e) {
       console.error(" [syncRewards] Failed to sync:", e);
@@ -515,7 +545,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
                 <Icon source={AutomationIcon} />
               </Box>
               <InlineStack gap="200">
-                <Text variant="headingMd" as="h2">Smart Offers</Text>
+                <Text variant="headingMd" as="h2">Triggered Rewards</Text>
               </InlineStack>
             </InlineStack>
             <InlineStack gap="200" />
@@ -653,10 +683,10 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
 
               <InlineStack align="end" blockAlign="center">
                 <ButtonGroup>
-                  <Badge tone={form.enabled ? "success" : "critical"}>
-                    {form.enabled ? "Enabled" : "Disabled"}
+                  <Badge tone={isPublished && form.enabled ? "success" : "critical"}>
+                    {isPublished && form.enabled ? "Enabled" : "Disabled"}
                   </Badge>
-                  <Toggle value={form.enabled} onChange={(v) => updateForm("enabled", v)} />
+                  <Toggle value={form.enabled} onChange={(v) => updateForm("enabled", v)} disabled={!isPublished} />
                   <Button tone="critical" onClick={handleCancel}>Cancel</Button>
                   <Button
                     variant="primary"
@@ -705,10 +735,10 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
 
                   </InlineStack>
                   <InlineStack gap="200" blockAlign="center">
-                    <Badge tone={reward.enabled ? "success" : "critical"}>
-                      {reward.enabled ? "Enabled" : "Disabled"}
+                    <Badge tone={isPublished && reward.enabled ? "success" : "critical"}>
+                      {isPublished && reward.enabled ? "Enabled" : "Disabled"}
                     </Badge>
-                    <Toggle value={reward.enabled} onChange={() => toggleReward(reward.id)} />
+                    <Toggle value={reward.enabled} onChange={() => toggleReward(reward.id)} disabled={!isPublished} />
                     <Button
                       tone="critical"
                       icon={DeleteIcon}
