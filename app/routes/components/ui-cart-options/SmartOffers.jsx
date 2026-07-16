@@ -295,7 +295,7 @@ const modalRow = { padding: "12px 16px", cursor: "pointer", borderBottom: "1px s
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function SmartOffers({ triggeredRewardsSettings, handleChange, currency, cartStatus }) {
+export default function SmartOffers({cartId, triggeredRewardsSettings, handleChange, currency, cartStatus }) {
 
   const authenticatedFetch = useAuthenticatedFetch();
   const currencyCode = (currency || "USD").toUpperCase();
@@ -403,7 +403,7 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
   };
 
   const removeTrigger = (idx) => {
-    console.log("🗑️ [removeTrigger] Removing index:", idx);
+    console.log(" [removeTrigger] Removing index:", idx);
     const t = [...form.triggers];
     t.splice(idx, 1);
     updateForm("triggers", t);
@@ -516,13 +516,13 @@ export default function SmartOffers({ triggeredRewardsSettings, handleChange, cu
       await authenticatedFetch("/shopify/create-discount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rewards: newRewards, discountCombinations, existingDiscountId, cartStatus, }),
+        body: JSON.stringify({cartId, rewards: newRewards, discountCombinations, existingDiscountId, cartStatus, }),
       });
     } catch (e) {
       console.error(" [syncRewards] Failed to sync:", e);
     }
   };
-
+  
   const deleteReward = (id) => {
     const newRewards = rewards.filter((r) => r.id !== id);
     update("rewards", newRewards);

@@ -21,7 +21,7 @@ import "../../index.css";
 const MainContent = memo(function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
     announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings, upsellsSettings,
     additionalNotesSettings, addonsSettings, discountCodesSettings, expressPaymentsSettings, trustBadgesSettings, cartSettings,
-    triggeredRewardsSettings, cartStatus
+    triggeredRewardsSettings, cartStatus, cartId
 }) {
 
     const componentMap = useMemo(() => ({
@@ -57,6 +57,7 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
                 handleChange={handleChange}
                 currency={currency}
                 cartStatus={cartStatus}
+                cartId={cartId}
             />
         ),
         "Recommended Products": (

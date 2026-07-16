@@ -484,6 +484,7 @@ export default function CartEditor() {
         onResetToDefault={handleResetToDefault}
         isResetting={isResetting}
         cartStatus={cart?.status}
+        cartId={cart?.cartId}
       />
     </AppProvider>
   );

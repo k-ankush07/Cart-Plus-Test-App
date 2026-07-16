@@ -436,6 +436,7 @@ const CartLayout = memo(function CartLayout({
             triggeredRewardsSettings={triggeredRewardsSettings}
             currency={currency}
             cartStatus={cartStatus}
+            cartId={cart?.cartId}
           />
         </div>
 
