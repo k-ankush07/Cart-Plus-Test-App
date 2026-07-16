@@ -431,28 +431,22 @@ router.get("/get-sticky-cart/:shop", async (req, res) => {
 });
 
 // Called by the Remix app after OAuth to persist the offline Admin token.
-
 router.post("/save-shop-token", async (req, res) => {
   try {
     const { shop, accessToken, email } = req.body;
-
     if (!shop || !accessToken) {
       return res.status(400).json({
         success: false,
         message: "Missing shop or accessToken",
       });
     }
-
     const existing = await shopConfigModel.findOne({ shop });
-
     const isNewStore = !existing;
     const tokenChanged = existing?.accessToken !== accessToken;
     const emailChanged = existing?.email !== email;
-
     if (!isNewStore && !tokenChanged && !emailChanged) {
       return res.json({ success: true, updated: false });
     }
-
     await shopConfigModel.findOneAndUpdate(
       { shop },
       {
@@ -466,27 +460,35 @@ router.post("/save-shop-token", async (req, res) => {
       }
     );
 
+    if (isNewStore) {
+      const existingPlan = await shopPlanModel.findOne({ shop });
+      if (!existingPlan) {
+        await shopPlanModel.create({
+          shop,
+          plan: "free",
+          price: 0,
+          status: "active",
+          isDev: false,
+        });
+      }
+    }
+    // ────────────────────────────────────────────────────────────────────
     try {
       const cart = await cartModels.findOne({ shop });
       const storeOwner = cart?.storeOwner || "there";
-
       const subject = "Welcome to Cart Plus 🎉";
       const html = buildWelcomeEmailHtml({ storeOwner, shop });
-
       if (email) {
         await sendEmail(email, subject, html);
       }
-
     } catch (emailError) {
       console.error("[hub] Email error:", emailError);
     }
-
     return res.json({
       success: true,
       updated: true,
       isNewStore,
     });
-
   } catch (error) {
     console.error("SAVE SHOP TOKEN ERROR:", error);
     return res.status(500).json({
