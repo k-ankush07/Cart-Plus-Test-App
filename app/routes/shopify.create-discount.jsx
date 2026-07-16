@@ -6,7 +6,7 @@ const jsonResponse = (data, init) =>
         headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
     });
 
-const FUNCTION_ID = "019f6060-3098-7009-a1ed-df98f6ab4c6a";
+const FUNCTION_ID = "019f6068-b424-72b2-820c-959065879ed7";
 
 // ══════════════════════════════════════════════════════════════════
 // POST /api/create-discount
