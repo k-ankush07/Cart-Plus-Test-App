@@ -468,7 +468,7 @@ router.post("/save-shop-token", async (req, res) => {
           plan: "free",
           price: 0,
           status: "active",
-          isDev: false,
+          isDev: true,
         });
       }
     }
