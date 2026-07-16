@@ -17,61 +17,59 @@ const shopify = shopifyApp({
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
   useOnlineTokens: true,
-  // NOTE: `expiringOfflineAccessTokens` is intentionally NOT enabled.
-  // The standalone Express backend reads a snapshot of the offline token from
-  // MongoDB (shopConfig) and has no way to refresh a rotating token, so an
-  // expiring/rotating offline token would go stale there → INVALID_TOKEN on
-  // storefront-facing endpoints. Long-lived offline tokens keep the Mongo
-  // snapshot valid for the lifetime of the install.
+  future: {
+    expiringOfflineAccessTokens: true,
+  },
   hooks: {
     afterAuth: async ({ session, admin }) => {
       await shopify.registerWebhooks({ session });
-
-      try {
-        const offlineSession = await shopify.sessionStorage.loadSession(
-          `offline_${session.shop}`,
-        );
-        const accessToken = offlineSession?.accessToken;
-        if (!accessToken) return;
-
-        const graphqlResponse = await admin.graphql(
-          `query ShopInfo { shop { email name myshopifyDomain } }`,
-        );
-        const { data } = await graphqlResponse.json();
-
-        const apiBaseUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
-        if (!apiBaseUrl) {
-          console.warn("[hub] PUBLIC_REACT_APP_API_URL not set — skipping.");
-          return;
-        }
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10_000);
-
-        await fetch(`${apiBaseUrl}/api/save-shop-token`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": process.env.VITE_API_SECRET_KEY || "",
-          },
-          body: JSON.stringify({
-            shop: session.shop,
-            accessToken,
-            email: data?.shop?.email ?? null,
-          }),
-          signal: controller.signal,
-        }).finally(() => clearTimeout(timeoutId));
-
-        console.log(`[hub] Token synced for ${session.shop}`);
-      } catch (err) {
-        console.warn("[hub] Could not sync shop token:", err.message);
-      }
+      await syncTokenToBackend(session.shop, admin);
     },
   },
   ...(process.env.SHOP_CUSTOM_DOMAIN
     ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
     : {}),
 });
+
+async function syncTokenToBackend(shop, admin) {
+  try {
+    const offlineSession = await shopify.sessionStorage.loadSession(`offline_${shop}`);
+    const accessToken = offlineSession?.accessToken;
+    if (!accessToken) return;
+
+    const graphqlResponse = await admin.graphql(
+      `query ShopInfo { shop { email name myshopifyDomain } }`,
+    );
+    const { data } = await graphqlResponse.json();
+
+    const apiBaseUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
+    if (!apiBaseUrl) {
+      console.warn("[hub] PUBLIC_REACT_APP_API_URL not set — skipping.");
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10_000);
+
+    await fetch(`${apiBaseUrl}/api/save-shop-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.VITE_API_SECRET_KEY || "",
+      },
+      body: JSON.stringify({
+        shop,
+        accessToken,
+        email: data?.shop?.email ?? null,
+      }),
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
+
+    console.log(`[hub] Token synced for ${shop}`);
+  } catch (err) {
+    console.warn("[hub] Could not sync shop token:", err.message);
+  }
+}
 
 export const sessionStorage = shopify.sessionStorage;
 export default shopify;
