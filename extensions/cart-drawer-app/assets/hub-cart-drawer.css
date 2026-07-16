@@ -248,7 +248,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding:0;
+  padding: 0;
   transition: background 0.15s;
 }
 
@@ -773,7 +773,7 @@ span.hub-offers-title {
   align-items: center;
   justify-content: center;
   gap: 25px;
-  padding:20px;
+  padding: 20px;
 }
 
 h3.styles_CartPreview__empty__ {
@@ -1264,12 +1264,12 @@ span.hub-total-arrow svg {
   overflow: hidden;
   text-overflow: ellipsis;
   padding-bottom: 5px;
- letter-spacing: 0px !important;
- text-transform: capitalize; 
+  letter-spacing: 0px !important;
+  text-transform: capitalize;
 }
 
 .cart-app__title.upcart-header-text {
-    letter-spacing: 0;
+  letter-spacing: 0;
 }
 
 .upcart-internal-component-upsell-tile__info p {
@@ -1346,6 +1346,8 @@ span.hub-total-arrow svg {
   border-radius: 4px;
   background: #f9f9f9;
   font-size: 12px;
+  outline: none;
+  box-shadow: none;
 }
 
 .upcart-internal-component-upsell-tile__variant-row button {
@@ -1578,7 +1580,7 @@ span.hub-total-arrow svg {
   margin-bottom: 4px;
   line-height: 1.4;
   margin-top: 0;
-  color:black;
+  color: black;
 }
 
 .hub-addon-sp-desc {
@@ -1689,7 +1691,7 @@ span.hub-total-arrow svg {
   padding: 2px 5px;
   border-radius: 15px;
   line-height: 15px;
-      margin: 0;
+  margin: 0;
 }
 
 .hub-undo-toast {
@@ -2110,7 +2112,7 @@ span.upsell-text.suggestion-product {
 }
 
 .hub-swiper .swiper-wrapper {
-    gap: 0 !important;
+  gap: 0 !important;
 }
 
 .upsell-inner h3.upsell-heading {
@@ -2120,7 +2122,7 @@ span.upsell-text.suggestion-product {
   margin-bottom: 10px;
   line-height: 16px;
   text-transform: capitalize;
-  text-align:left
+  text-align: left
 }
 
 .hub-discount-input:focus {
@@ -2134,21 +2136,21 @@ span.upsell-text.suggestion-product {
 /* Default: jab upsell-bottom NAHI hai, tab notes/announcement ko auto milega */
 [id^="hub-notes-below-"],
 [id^="hub-announcement-after-"] {
-    margin-top: auto !important;
+  margin-top: auto !important;
 }
 
 /* upsell-bottom ko hamesha auto chahiye */
 .hub-upsell.upsell-container.upsell-bottom {
-    margin-top: auto !important;
+  margin-top: auto !important;
 }
 
 /* Jab upsell-bottom present hai — notes aur announcement ka margin 0 kar do */
 .hub-cart-items-CartPreview:has(.hub-upsell.upsell-container.upsell-bottom) [id^="hub-notes-below-"] {
-    margin-top: 0 !important;
+  margin-top: 0 !important;
 }
 
 .hub-cart-items-CartPreview:has(.hub-upsell.upsell-container.upsell-bottom) [id^="hub-announcement-after-"] {
-    margin-top: 0 !important;
+  margin-top: 0 !important;
 }
 
 .hub-notes-title {
@@ -2160,7 +2162,7 @@ span.upsell-text.suggestion-product {
 }
 
 .hub-notes-title {
-    margin: 0 !important;
+  margin: 0 !important;
 }
 
 .hub-notes-title {
@@ -2436,8 +2438,8 @@ button.hub-qty-btn span.svg-wrapper {
 }
 
 .svg-wrapper>svg {
-    height: 100%;
-    width: 100%;
+  height: 100%;
+  width: 100%;
 }
 
 select.hub-variant-option-select {
