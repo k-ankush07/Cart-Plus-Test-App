@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // HUB DRAWER CODE
+
 const API_KEY =
   "8f4c2a91d7e3b6f5a8c1d9e2f7b4c6a9e1d3f8b5c2a7d4e9f6b1c8a3d7e5f2";
 
@@ -54,6 +55,95 @@ function trackCartImpressionUnique() {
 
 window.__HUB_RATINGS_URL__ = apiUrl;
 
+// ── AUTO-HIDE ANY NON-HUB CART DRAWER/DIALOG ─────────────────────────────────
+// This runs independently of the manual selector list below. It watches the
+// whole DOM for any element that looks like a cart drawer/dialog (by tag,
+// "open" attribute, or aria-modal) and — as long as it's not one of our own
+// "hub-" elements — closes/removes it immediately. This catches themes we
+// haven't explicitly listed in the selector array in initCartDrawerAfterData().
+(function () {
+  function isHubElement(el) {
+    return (
+      el.id?.startsWith("hub-") ||
+      el.closest?.("[id^='hub-'], [class*='hub-']") !== null
+    );
+  }
+
+  function shouldSuppress(el) {
+    if (!el || el.nodeType !== 1) return false;
+    if (isHubElement(el)) return false;
+
+    const tag = el.tagName?.toLowerCase();
+    const isDialogLike =
+      tag === "dialog" ||
+      tag === "cart-drawer" ||
+      tag === "theme-drawer" ||
+      el.hasAttribute("open") ||
+      el.getAttribute("aria-modal") === "true";
+
+    if (!isDialogLike) return false;
+
+    const idClass = `${el.id || ""} ${el.className || ""}`.toLowerCase();
+    return (
+      /cart/.test(idClass) ||
+      !!el.querySelector?.("[id*='cart' i], [class*='cart' i]")
+    );
+  }
+
+  function suppress(el) {
+    try {
+      if (typeof el.close === "function") el.close();
+      el.removeAttribute("open");
+      el.style.display = "none";
+      el.remove();
+    } catch (_) {}
+  }
+
+  function sweepExisting() {
+    document
+      .querySelectorAll("[open], dialog, cart-drawer, theme-drawer")
+      .forEach((el) => {
+        if (shouldSuppress(el)) suppress(el);
+      });
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      m.addedNodes?.forEach((node) => {
+        if (node.nodeType !== 1) return;
+        if (shouldSuppress(node)) {
+          suppress(node);
+          return;
+        }
+        node
+          .querySelectorAll?.("[open], dialog, cart-drawer, theme-drawer")
+          .forEach((el) => {
+            if (shouldSuppress(el)) suppress(el);
+          });
+      });
+
+      if (m.type === "attributes" && m.attributeName === "open") {
+        if (shouldSuppress(m.target)) suppress(m.target);
+      }
+    }
+  });
+
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["open"],
+  });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", sweepExisting);
+  } else {
+    sweepExisting();
+  }
+
+  window.__hubSuppressThemeDrawer = observer;
+})();
+
 function initCartDrawerAfterData() {
   const blockId = window.HUB_CART_BLOCK_ID;
   if (!blockId) return;
@@ -63,15 +153,53 @@ function initCartDrawerAfterData() {
 
   if (window.__HUB_ACTIVE_CART__) {
     document
-      .querySelectorAll(
-        "cart-drawer, #CartDrawer, .cart-drawer, ajax-cart, cart-notification",
-      )
-      .forEach((el) => {
-        if (typeof el.renderContents === "function")
-          el.renderContents = () => {};
-        if (typeof el.open === "function") el.open = () => {};
-        el.remove();
-      });
+  .querySelectorAll(
+    [
+      "theme-drawer",
+      "cart-drawer",
+      "#cart-drawer",
+      "#CartDrawer",
+      "#CartDrawer-Icon",
+      ".cart-drawer",
+      ".drawer",
+      "cart-notification",
+      "#cart-notification",
+      ".cart-notification",
+      "cart-notification-product",
+
+      "ajax-cart",
+      "#AjaxCart",
+      ".ajax-cart",
+      "#CartContainer",
+      "#mini-cart",
+      ".mini-cart",
+      "#MiniCart",
+      ".mini-cart-drawer",
+      "#sidebar-cart",
+      ".sidebar-cart",
+      "#CartDrawer-Form",
+      "#CartPopup",
+      ".cart-popup",
+      "#slide-cart",
+      ".slide-cart",
+      "#CartSlideout",
+      ".cart-slideout",
+      "quick-cart-drawer",
+      "#quick-cart",
+      ".quick-cart",
+
+      "#shopify-section-cart-drawer",
+      ".drawer--cart",
+      "[data-cart-drawer]",
+      "[data-drawer='cart']",
+    ].join(", "),
+  )
+  .forEach((el) => {
+    if (typeof el.renderContents === "function")
+      el.renderContents = () => {};
+    if (typeof el.open === "function") el.open = () => {};
+    el.remove();
+  });
   }
 
   document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
