@@ -1305,7 +1305,7 @@ router.post("/contact", async (req, res) => {
       const thankYouSubject = "Thanks for reaching out – Cart Plus";
       const thankYouHtml = buildContactFormThankYouEmailHtml({ firstName });
        await Promise.all([
-        sendEmail("sahil@hubsyntax.com", subject, html),
+        sendEmail("support@cartplus.io", subject, html),
         sendEmail(email, thankYouSubject, thankYouHtml),
       ]);
     } catch (emailError) {
