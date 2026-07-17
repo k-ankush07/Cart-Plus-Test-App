@@ -681,6 +681,17 @@ window.hubCartRender = async function (drawer, opts = {}) {
         ),
     );
 
+    async function safeFetchJson(url, options) {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.error(`Non-JSON response from ${url}:`, text.slice(0, 300));
+        throw new Error(`Failed to parse JSON from ${url}`);
+      }
+    }
+
     // Store full product data keyed by handle for selling plans lookup too
     const _productDataByHandle = {};
 
@@ -689,8 +700,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       await Promise.all(
         uncachedHandles.map(async (handle) => {
           try {
-            const r = await fetch(`/products/${handle}.js`);
-            const data = await r.json();
+            const data = await safeFetchJson(`/products/${handle}.js`);
             _productDataByHandle[handle] = data;
             (data.variants || []).forEach((v) => {
               window._hubCompareCache[`${handle}_${v.id}`] =

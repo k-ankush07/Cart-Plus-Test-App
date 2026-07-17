@@ -23,53 +23,74 @@ const shopify = shopifyApp({
   hooks: {
     afterAuth: async ({ session, admin }) => {
       await shopify.registerWebhooks({ session });
-      await syncTokenToBackend(session.shop, admin);
+
+      try {
+        const offlineSession = await shopify.sessionStorage.loadSession(
+          `offline_${session.shop}`,
+        );
+
+        console.log(
+          `[hub] offline session for ${session.shop}:`,
+          offlineSession
+            ? "FOUND"
+            : "NOT FOUND — was offline access scope granted at install?",
+        );
+
+        const accessToken = offlineSession?.accessToken;
+        if (!accessToken) {
+          console.warn(
+            `[hub] Skipping DB sync — no offline accessToken for ${session.shop}`,
+          );
+          return;
+        }
+
+        const graphqlResponse = await admin.graphql(
+          `query ShopInfo { shop { email name myshopifyDomain } }`,
+        );
+        const { data } = await graphqlResponse.json();
+
+        const apiBaseUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
+        if (!apiBaseUrl) {
+          console.warn("[hub] PUBLIC_REACT_APP_API_URL not set — skipping.");
+          return;
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10_000);
+
+        const syncRes = await fetch(`${apiBaseUrl}/api/save-shop-token`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.VITE_API_SECRET_KEY || "",
+          },
+          body: JSON.stringify({
+            shop: session.shop,
+            accessToken,
+            email: data?.shop?.email ?? null,
+          }),
+          signal: controller.signal,
+        }).finally(() => clearTimeout(timeoutId));
+
+        const syncBody = await syncRes.text();
+        if (!syncRes.ok) {
+          console.error(
+            `[hub] save-shop-token failed: HTTP ${syncRes.status} — ${syncBody.slice(0, 200)}`,
+          );
+        } else {
+          console.log(
+            `[hub] Token synced for ${session.shop} — response: ${syncBody.slice(0, 200)}`,
+          );
+        }
+      } catch (err) {
+        console.warn("[hub] Could not sync shop token:", err.message);
+      }
     },
   },
   ...(process.env.SHOP_CUSTOM_DOMAIN
     ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
     : {}),
 });
-
-async function syncTokenToBackend(shop, admin) {
-  try {
-    const offlineSession = await shopify.sessionStorage.loadSession(`offline_${shop}`);
-    const accessToken = offlineSession?.accessToken;
-    if (!accessToken) return;
-
-    const graphqlResponse = await admin.graphql(
-      `query ShopInfo { shop { email name myshopifyDomain } }`,
-    );
-    const { data } = await graphqlResponse.json();
-
-    const apiBaseUrl = process.env.PUBLIC_REACT_APP_API_URL?.trim();
-    if (!apiBaseUrl) {
-      console.warn("[hub] PUBLIC_REACT_APP_API_URL not set — skipping.");
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10_000);
-
-    await fetch(`${apiBaseUrl}/api/save-shop-token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.VITE_API_SECRET_KEY || "",
-      },
-      body: JSON.stringify({
-        shop,
-        accessToken,
-        email: data?.shop?.email ?? null,
-      }),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timeoutId));
-
-    console.log(`[hub] Token synced for ${shop}`);
-  } catch (err) {
-    console.warn("[hub] Could not sync shop token:", err.message);
-  }
-}
 
 export const sessionStorage = shopify.sessionStorage;
 export default shopify;

@@ -1,4 +1,6 @@
 import { unauthenticated } from "../shopify.server";
+import prisma from "../db.server";
+import { ensureFreshAccessToken } from "./components/utils/refreshShopifyToken";
 
 export const loader = async ({ request }) => {
   const url = new URL(request.url);
@@ -10,6 +12,28 @@ export const loader = async ({ request }) => {
   }
   if (!shop) return new Response("Missing shop", { status: 400 });
 
-  const { session } = await unauthenticated.admin(shop);
-  return Response.json({ accessToken: session.accessToken });
+  const sessionId = `offline_${shop}`;
+  const sessionRecord = await prisma.session.findUnique({ where: { id: sessionId } });
+
+  if (!sessionRecord) {
+    return new Response("No session found", { status: 500 });
+  }
+
+  try {
+    const { accessToken } = await ensureFreshAccessToken(shop, sessionRecord, async (shop, updated) => {
+      await prisma.session.update({
+        where: { id: sessionId },
+        data: {
+          accessToken: updated.accessToken,
+          refreshToken: updated.refreshToken,
+          expires: updated.expires,
+        },
+      });
+    });
+
+    return Response.json({ accessToken });
+  } catch (err) {
+    console.error(`[internal/token] Refresh failed for ${shop}:`, err.message);
+    return new Response("Token refresh failed", { status: 500 });
+  }
 };
