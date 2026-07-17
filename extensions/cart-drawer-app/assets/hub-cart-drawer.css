@@ -629,24 +629,24 @@ span.hub-offers-title {
 }
 
 .hub-coupon-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  background: #2271b4;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 700;
-  padding: 14px 20px;
-  min-width: 36px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  flex-shrink: 0;
-  border-left: 3px dashed;
-  border-radius: 0 5px 5px 0px;
-  line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    background: #2271b4;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 10px 15px;
+    min-width: 36px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    border-left: 3px dashed;
+    border-radius: 0 5px 5px 0px;
+    line-height: 1;
 }
 
 .hub-coupon-body {
@@ -664,7 +664,7 @@ span.hub-offers-title {
 }
 
 .hub-coupon-code {
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
   line-height: 1;

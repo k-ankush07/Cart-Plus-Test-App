@@ -1433,9 +1433,9 @@ function hubRenderOffersPanel(
         : `<button class="hub-coupon-action-btn apply" onclick="hubApplyOfferCodeFromList('${label}','${blockId}', this)">APPLY</button>`;
       return `
       <div class="hub-coupon-card">
-        <div class="hub-coupon-badge">${label}</div>
+        <div class="hub-coupon-badge" title="${label}">${label.length > 12 ? label.slice(0, 12) + "..." : label}</div>
         <div class="hub-coupon-body">
-          <div class="hub-coupon-top"><span class="hub-coupon-code">${label}</span>${actionBtn}</div>
+          <div class="hub-coupon-top"><span class="hub-coupon-code" title="${label}">${label.length > 22 ? label.slice(0, 22) + "..." : label}</span>${actionBtn}</div>
           ${savings ? `<div class="hub-coupon-savings">${savings}</div>` : ""}
           ${subtitle ? `<div class="hub-coupon-desc">${subtitle}</div>` : ""}
           <div class="hub-coupon-error" id="coupon-error-${label}" style="color:black;font-size:12px;margin-top:5px;"></div>
