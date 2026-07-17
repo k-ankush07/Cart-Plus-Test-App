@@ -1,4 +1,3 @@
-import { unauthenticated } from "../shopify.server";
 import prisma from "../db.server";
 import { ensureFreshAccessToken } from "./components/utils/refreshShopifyToken";
 
