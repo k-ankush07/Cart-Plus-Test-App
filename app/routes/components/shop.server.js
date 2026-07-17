@@ -1,6 +1,7 @@
 import { authenticate } from "../../shopify.server";
 
 const _shopCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000; 
 
 export const shopLoader = async (request) => {
   try {
@@ -14,16 +15,18 @@ export const shopLoader = async (request) => {
     const accessToken = session?.accessToken;
     const shopDomain = session?.shop;
 
-    // ── Return cached static data immediately if available ─────────────────
-    if (_shopCache.has(shopDomain)) {
+    const cachedEntry = _shopCache.get(shopDomain);
+    const isCacheValid = cachedEntry && (Date.now() - cachedEntry.cachedAt < CACHE_TTL_MS);
+
+    if (isCacheValid) {
       return {
-        ..._shopCache.get(shopDomain),
-        accessToken, // always fresh from the current session
-        admin,       // always fresh — not safe to cache
+        ...cachedEntry.data,
+        accessToken,
+        admin,
       };
     }
 
-    // ── First load: fetch from Shopify ─────────────────────────────────────
+    // ── Fetch fresh from Shopify (cache miss ya expired) ────────────────────
     const shopRes = await admin.graphql(`
       {
         shop {
@@ -54,7 +57,7 @@ export const shopLoader = async (request) => {
       mainThemeId,
     };
 
-    _shopCache.set(shopDomain, cached);
+    _shopCache.set(shopDomain, { data: cached, cachedAt: Date.now() });
 
     return {
       ...cached,

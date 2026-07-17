@@ -1106,7 +1106,7 @@ function DashboardInner({
                             size="slim"
                             onClick={(e) => {
                               e.stopPropagation();
-                              window.open(`https://${shop.myshopifyDomain}`, "_blank");
+                             window.open(`https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`, "_blank");
                             }}
                           >
                             Preview

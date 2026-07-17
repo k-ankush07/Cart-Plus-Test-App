@@ -594,7 +594,7 @@ function AppCartsInner({
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         if (cart.status === "published") {
-                                                            window.open(`https://${shop.myshopifyDomain}`, "_blank");
+                                                           window.open(`https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`, "_blank");
                                                         }
                                                     }}
                                                 />
