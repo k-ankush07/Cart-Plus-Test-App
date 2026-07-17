@@ -209,7 +209,7 @@ const buildUninstallEmail = (shop, owner) => {
                   <tr>
                     <td style="padding:0 6px;">
                      <div style="width:34px; height:34px;">
-                     <a href="#" style="display:block;">
+                     <a href="https://www.facebook.com/profile.php?id=61591767910161" style="display:block;">
                        <img src="https://cartplus.io/cartplus-img/Frame%206113%20(2).png"
                         alt="Facebook"
                         style="display:block; width:100%; height:100%; border:0;">
@@ -218,14 +218,14 @@ const buildUninstallEmail = (shop, owner) => {
                     </td>
                     <td style="padding:0 6px;">
                       <div style="width:34px; height:34px;">
-                        <a href="#" style="display:block;">
+                        <a href="https://www.instagram.com/cart__plus/" style="display:block;">
                           <img src="https://cartplus.io/cartplus-img/Frame%206115%20(2).png" alt="Instagram"  style="display:block; width:100%; height:100%; border:0;" />
                         </a>
                       </div>
                     </td>
                     <td style="padding:0 6px;">
                       <div style="width:34px; height:34px;">
-                        <a href="#" style="display:block;">
+                        <a href="https://www.linkedin.com/in/cart-plus-2375a5422/" style="display:block;">
                           <img src="https://cartplus.io/cartplus-img/Group%201707479925%20(1).png" alt="LinkedIn"  style="display:block; width:100%; height:100%; border:0;" />
                         </a>
                       </div>
