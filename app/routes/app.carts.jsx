@@ -135,9 +135,30 @@ async function fetchCurrentMonthOrders(apiUrl, shopDomain) {
 
 // ─── Loader ────────────────────────────────────────────────────────────────────
 
+async function getMainThemeId(shopDomain, accessToken) {
+    try {
+        const res = await fetch(
+            `https://${shopDomain}/admin/api/2025-10/themes.json`,
+            {
+                headers: {
+                    "X-Shopify-Access-Token": accessToken,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        const data = await res.json();
+        const mainTheme = data.themes?.find((t) => t.role === "main");
+        return mainTheme?.id || null;
+    } catch (_) {
+        return null;
+    }
+}
+
 export const loader = async ({ request }) => {
-    const { shop, apiUrl, accessToken, currency, mainThemeId } =
+    const { shop, apiUrl, accessToken, currency } =
         await shopLoader(request);
+
+    const mainThemeId = await getMainThemeId(shop.myshopifyDomain, accessToken);
 
     const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 
