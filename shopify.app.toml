@@ -2,7 +2,7 @@
 
 client_id = "777e08bc2cc25f680c35f7e5dbf9779c"
 name = "Cart Plus"
-application_url = "https://survivors-spatial-sharing-oral.trycloudflare.com"
+application_url = "https://app.cartplus.io"
 embedded = true
 
 [build]
@@ -28,10 +28,10 @@ scopes = "read_customers,read_discounts,read_locations,read_orders,read_pixels,r
 
 [auth]
 redirect_urls = [
-  "https://survivors-spatial-sharing-oral.trycloudflare.com/api/auth"
+  "https://app.cartplus.io/api/auth"
 ]
 
 [app_proxy]
-url = "https://survivors-spatial-sharing-oral.trycloudflare.com/api/proxy-order-track"
+url = "https://app.cartplus.io/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"
