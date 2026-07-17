@@ -131,7 +131,7 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                                 borderRadius="300"
                                 borderWidth="025"
                                 borderColor="border"
-                                   height="100%" 
+                                height="100%"
                             >
                                 <RadioButton
                                     label="Cart total ($)"
@@ -399,8 +399,10 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                         label="Reward description"
                         value={current?.description || ""}
                         onChange={(val) => updateTier("description", val)}
+                        maxLength={15}
+                        showCharacterCount
                     />
-
+                    
                     <BlockStack gap="100">
                         <InlineStack align="space-between" blockAlign="center">
                             <Text variant="bodyMd" fontWeight="medium">

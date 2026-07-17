@@ -1,3 +1,10 @@
+// app/components/utils/refreshShopifyToken.js
+import fetch from "node-fetch";
+
+/**
+ * Refresh expiring offline access token using refresh token.
+ * Docs: https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/offline-access-tokens#token-refresh
+ */
 export async function refreshAccessToken(shop, refreshToken) {
   const res = await fetch(`https://${shop}/admin/oauth/access_token`, {
     method: "POST",
@@ -16,7 +23,12 @@ export async function refreshAccessToken(shop, refreshToken) {
   const text = await res.text();
 
   if (!res.ok) {
-    console.error(`[TokenRefresh] Failed for ${shop}: HTTP ${res.status} — ${text.slice(0, 300)}`);
+    console.error(
+      `[TokenRefresh] Failed for ${shop}: HTTP ${res.status} — ${text.slice(
+        0,
+        300,
+      )}`,
+    );
     throw new Error(`Refresh failed for ${shop}: HTTP ${res.status}`);
   }
 
@@ -24,7 +36,12 @@ export async function refreshAccessToken(shop, refreshToken) {
   try {
     data = JSON.parse(text);
   } catch {
-    console.error(`[TokenRefresh] Non-JSON response for ${shop}: ${text.slice(0, 300)}`);
+    console.error(
+      `[TokenRefresh] Non-JSON response for ${shop}: ${text.slice(
+        0,
+        300,
+      )}`,
+    );
     throw new Error(`Refresh returned non-JSON for ${shop}`);
   }
 
@@ -36,13 +53,22 @@ export async function refreshAccessToken(shop, refreshToken) {
   };
 }
 
+/**
+ * Ensures we always have a fresh access token:
+ * - If current token is still valid (with 5 min buffer), use it
+ * - Otherwise refresh using refresh_token
+ * - Save updated token + expiry via `saveFn`
+ */
 export async function ensureFreshAccessToken(shop, sessionRecord, saveFn) {
   const now = Date.now();
-  const bufferMs = 5 * 60 * 1000;
-  const expiresAtMs = sessionRecord.expires ? new Date(sessionRecord.expires).getTime() : 0;
+  const bufferMs = 5 * 60 * 1000; // 5 minutes
+  const expiresAtMs = sessionRecord.expires
+    ? new Date(sessionRecord.expires).getTime()
+    : 0;
 
   const needsRefresh = !expiresAtMs || expiresAtMs - now < bufferMs;
 
+  // Still valid → direct use
   if (!needsRefresh) {
     return { accessToken: sessionRecord.accessToken };
   }
@@ -62,7 +88,9 @@ export async function ensureFreshAccessToken(shop, sessionRecord, saveFn) {
     expires: newExpires,
   });
 
-  console.log(`[TokenRefresh] Refreshed token for ${shop}, new expiry: ${newExpires.toISOString()}`);
+  console.log(
+    `[TokenRefresh] Refreshed token for ${shop}, new expiry: ${newExpires.toISOString()}`,
+  );
 
   return { accessToken: refreshed.accessToken };
 }

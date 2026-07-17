@@ -779,7 +779,8 @@ window.startAnnTimer = function (blockId, timeStr) {
   }
 
   async function fetchCartSettings() {
-    const shop = window.__SHOPIFY_SHOP__?.domain;
+    const shop = window.__SHOPIFY_SHOP__?.myshopify_domain || window.__SHOPIFY_SHOP__?.permanent_domain || window.__SHOPIFY_SHOP__?.domain;
+   
     if (!shop) {
       console.warn("Shop not set");
       return;

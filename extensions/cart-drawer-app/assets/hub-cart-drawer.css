@@ -119,14 +119,12 @@
   border-radius: 5px;
   overflow: hidden;
   border: 1px solid #E8E8E8;
-  padding: 5px;
 }
 
 .hub-item-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 5px;
 }
 
 .hub-item-info {
@@ -1233,7 +1231,6 @@ span.hub-total-arrow svg {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5px;
   border: 1.3px solid #E8E8E8;
 }
 
@@ -1613,11 +1610,18 @@ span.hub-total-arrow svg {
 }
 
 .hub-addon-product-img {
-  width: 48px;
-  height: 48px;
+  width: 100%;
   object-fit: cover;
-  border-radius: 4px;
   flex-shrink: 0;
+}
+
+.hub-addon-product-img-wrapper.custom-cart-addons-image-wrapper.custom-cart-public-addons__image-wrapper {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #E8E8E8;
 }
 
 .hub-addon-product-info {
@@ -2225,11 +2229,14 @@ span.upsell-text.suggestion-product {
 }
 
 .upcart-internal-addons__image-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 60px;
-  width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    width: 50px;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #E8E8E8;
 }
 
 .hub-addon-product-price {
@@ -2433,10 +2440,30 @@ span.hub-item-discount-badge img.discount-code-img {
   justify-content: center;
 }
 
+.cart-app:empty {
+  display: block !important;
+}
+
+a:empty,
+ul:empty,
+dl:empty,
+div:empty,
+section:empty,
+article:empty,
+p:empty,
+h1:empty,
+h2:empty,
+h3:empty,
+h4:empty,
+h5:empty,
+h6:empty {
+  display: block !important;
+}
+
 button.hub-qty-btn span.svg-wrapper {
-     width: 10px;
-    display: flex;
-    align-items: center;
+  width: 10px;
+  display: flex;
+  align-items: center;
 }
 
 .svg-wrapper>svg {

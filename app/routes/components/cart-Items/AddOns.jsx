@@ -1,8 +1,26 @@
 import { useState } from "react";
 
 const ShippingIcon = () => (
-    <div style={{ position: "relative", width: "44px", height: "44px", flexShrink: 0 }}>
-        <img src="https://cdn.shopify.com/s/files/1/0733/2531/4260/files/shipping-protection.png" alt="" style={{ width: '100%' }} />
+    <div
+        style={{
+            position: "relative",
+            width: "50px",
+            height: "50px",
+            borderRadius: "5px",
+            overflow: "hidden",
+            border: "1px solid #E8E8E8",
+            flexShrink: 0,
+        }}
+    >
+        <img
+            src="https://cdn.shopify.com/s/files/1/0733/2531/4260/files/shipping-protection.png"
+            alt="Shipping Protection"
+            style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+            }}
+        />
     </div>
 );
 
@@ -61,14 +79,18 @@ export default function AddOns({ addonsSettings, currency }) {
             {isShipping ? (
                 <ShippingIcon />
             ) : (
-                <div className="upcart-addons-image-wrapper custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper" style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 6,
-                    overflow: "hidden",
-                    flexShrink: 0,
-                    background: "#f0f0f0",
-                }}>
+                <div
+                    className="upcart-addons-image-wrapper custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper"
+                    style={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: 5,
+                        overflow: "hidden",
+                        border: "1px solid #E8E8E8",
+                        flexShrink: 0,
+                        background: "#f0f0f0",
+                    }}
+                >
                     {product?.image && (
                         <img
                             src={product.image}

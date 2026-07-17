@@ -197,7 +197,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
                                   />
                                 </td>
                                 <td style="padding-left:16px; vertical-align:middle;">
-                                  <a href="mailto:Support@cartplus.io"
+                                  <a href="mailto:support@cartplus.io"
                                     style="font-family:'Outfit',Arial,sans-serif; font-size:17px; font-weight:500; color:#ffffff; text-decoration:none;">
                                     Contact Support
                                   </a>
@@ -252,7 +252,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
                   </tr>
                 </table>
                <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+                  <a href="mailto:support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">support@cartplus.io</a>
                   &nbsp;|&nbsp;
                   <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
@@ -509,7 +509,7 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
                 </table>
 
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+                  <a href="mailto:support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">support@cartplus.io</a>
                   &nbsp;|&nbsp;
                   <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
@@ -811,7 +811,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                                   />
                                 </td>
                                 <td style="padding-left:16px; vertical-align:middle;">
-                                  <a href="mailto:Support@cartplus.io"
+                                  <a href="mailto:support@cartplus.io"
                                     style="font-family:'Outfit',Arial,sans-serif; font-size:17px; font-weight:500; color:#ffffff; text-decoration:none;">
                                     Contact Support
                                   </a>
@@ -866,7 +866,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                 </table>
 
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+                  <a href="mailto:support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">support@cartplus.io</a>
                   &nbsp;|&nbsp;
                   <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
@@ -982,7 +982,6 @@ export const buildContactFormEmailHtml = ({ firstName, lastName, email, phone, a
             <!-- ===================== BODY: intro text + details card (dark purple panel) ===================== -->
             <tr>
               <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); background-color:#2a0845; padding:50px 40px; background-repeat:no-repeat; background-position:center center; background-size:cover; text-align:center;">
-
                 <p style="margin:0 0 12px; font-family:'Outfit',Arial,sans-serif; font-size:18px; color:#ffffff;">
                   Hello Cart Plus Team,
                 </p>
@@ -1043,7 +1042,6 @@ export const buildContactFormEmailHtml = ({ firstName, lastName, email, phone, a
                     </td>
                   </tr>
                 </table>
-
               </td>
             </tr>
 
@@ -1084,7 +1082,7 @@ export const buildContactFormEmailHtml = ({ firstName, lastName, email, phone, a
                 </table>
 
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+                  <a href="mailto:support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">support@cartplus.io</a>
                   &nbsp;|&nbsp;
                   <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
@@ -1258,7 +1256,7 @@ export const buildContactFormThankYouEmailHtml = ({ firstName }) => {
                 </table>
 
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:Support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+                  <a href="mailto:support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">support@cartplus.io</a>
                   &nbsp;|&nbsp;
                   <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>

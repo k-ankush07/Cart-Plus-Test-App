@@ -1011,7 +1011,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           const selected = addonsSettings.selectedProduct;
           addonsEl.innerHTML = `
     <div class="hub-addon-product custom-cart-public-addons custom-cart-addons">
-      ${selected.image ? `<img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper"/>` : ""}
+     ${selected.image ? `<div class="hub-addon-product-img-wrapper custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper"><img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img"/></div>` : ""}
       <div class="hub-addon-product-info custom-cart-public-addons__content-wrapper">
         <p class="hub-addon-product-title custom-cart-public-addons__content-title-wrapper custom-cart-addons-title">${selected.title || ""}</p>
         <span class="hub-addon-product-price custom-cart-public-addons__content-price">${price}</span>

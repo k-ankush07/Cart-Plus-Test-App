@@ -149,7 +149,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                                         designSettings={designSettings}
                                     />
 
-                                    {!upsellsSettings.enabled && upsellsSettings.showSuggestedProduct && (
+                                    {!upsellsSettings.enabled && upsellsSettings.showSuggestedProduct && upsellsSettings?.suggestedProduct?.items?.titles?.length > 0 && (
                                         <div className="upsell-suggestion">
                                             <label className="upsell-checkbox-wrapper">
                                                 <input type="checkbox" />

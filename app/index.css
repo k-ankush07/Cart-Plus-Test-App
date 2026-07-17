@@ -221,10 +221,8 @@ body,
 
 /* IMAGE */
 .cart-app-item__image img {
-    width: 70px;
-    height: 70px;
+    width: 100%;
     object-fit: cover;
-    border-radius: 6px;
 }
 
 /* CONTENT */
@@ -758,7 +756,7 @@ span.svg-wrapper {
 .sale-price {
     color: #000;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 11px;
     display: flex;
     align-items: center;
     gap: 5px;
@@ -1322,7 +1320,6 @@ span.upcart-rewards-tier-icon {
     border-radius: 5px;
     overflow: hidden;
     border: 1px solid #E8E8E8;
-    padding: 5px;
 }
 
 .hub-discount-heading {

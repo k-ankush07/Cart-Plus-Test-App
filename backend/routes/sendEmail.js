@@ -15,7 +15,7 @@ export const sendEmail = async (to, subject, html, text = "", attachments = []) 
   });
 
   await transporter.sendMail({
-    from: `"HubSyntax" <${process.env.EMAIL_USER}>`,
+    from: `"Cart Plus" <${process.env.EMAIL_USER}>`,
     to: recipients,
     subject,
     html,
