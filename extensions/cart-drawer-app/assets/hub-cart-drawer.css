@@ -2440,23 +2440,23 @@ span.hub-item-discount-badge img.discount-code-img {
   justify-content: center;
 }
 
-.cart-app:empty {
+.hub-cart-drawer.cart-app :empty {
   display: block !important;
 }
 
-a:empty,
-ul:empty,
-dl:empty,
-div:empty,
-section:empty,
-article:empty,
-p:empty,
-h1:empty,
-h2:empty,
-h3:empty,
-h4:empty,
-h5:empty,
-h6:empty {
+.hub-cart-drawer.cart-app a:empty,
+.hub-cart-drawer.cart-app ul:empty,
+.hub-cart-drawer.cart-app dl:empty,
+.hub-cart-drawer.cart-app div:empty,
+.hub-cart-drawer.cart-app section:empty,
+.hub-cart-drawer.cart-app article:empty,
+.hub-cart-drawer.cart-app p:empty,
+.hub-cart-drawer.cart-app h1:empty,
+.hub-cart-drawer.cart-app h2:empty,
+.hub-cart-drawer.cart-app h3:empty,
+.hub-cart-drawer.cart-app h4:empty,
+.hub-cart-drawer.cart-app h5:empty,
+.hub-cart-drawer.cart-app h6:empty {
   display: block !important;
 }
 

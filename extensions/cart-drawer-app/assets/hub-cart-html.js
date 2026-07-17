@@ -265,7 +265,6 @@ window.injectCartHTML = function (blockId, root) {
     "beforeend",
     `
     <div id="hub-cart-bg-${blockId}" class="hub-cart-bg custom-cart"></div>
-
    <div id="hub-cart-drawer-${blockId}" 
   class="hub-cart-drawer cart-app upcart-cart ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"}"
   style="background-color:${designSettings.backgroundColor || ""};

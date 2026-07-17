@@ -981,7 +981,7 @@ export const buildContactFormEmailHtml = ({ firstName, lastName, email, phone, a
 
             <!-- ===================== BODY: intro text + details card (dark purple panel) ===================== -->
             <tr>
-              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); background-color:#2a0845; padding:50px 40px; background-repeat:no-repeat; background-position:center center; background-size:cover; text-align:center;">
+              <td style="background-image:url('https://cartplus.io/cartplus-img/ezgif.com-svg-to-png-converter.png'); background-color:#2a0845; padding:50px 40px; background-repeat:no-repeat; background-position:center center; background-size:cover; text-align:center;">
                 <p style="margin:0 0 12px; font-family:'Outfit',Arial,sans-serif; font-size:18px; color:#ffffff;">
                   Hello Cart Plus Team,
                 </p>
