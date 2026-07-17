@@ -2434,7 +2434,9 @@ span.hub-item-discount-badge img.discount-code-img {
 }
 
 button.hub-qty-btn span.svg-wrapper {
-  width: 10px;
+     width: 10px;
+    display: flex;
+    align-items: center;
 }
 
 .svg-wrapper>svg {
