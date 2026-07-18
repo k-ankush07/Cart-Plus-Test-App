@@ -192,12 +192,15 @@ window.injectCartHTML = function (blockId, root) {
   const positionClass =
     positionMap[cartSettings.cartPosition] || "hub-cart-right";
   const disableFixedFooter = cartSettings.disableFixedFooter || false;
-  const goToCartPageOnCheckout = cartSettings.goToCartPageOnCheckout || false;
+  const goToCartPageOnCheckout =
+    cartSettings.goToCartPageOnCheckout === true ||
+    cartSettings.goToCartPageOnCheckout === "true";
+
   const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
   const checkoutButtonText = goToCartPageOnCheckout
     ? cartSettings.viewCartName || "View cart"
     : cartSettings.checkoutButtonText || "Proceed to checkout";
-    
+
   const continueShoppingText =
     cartSettings.continueShoppingText || "Or continue shopping";
 

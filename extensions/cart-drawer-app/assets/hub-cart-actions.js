@@ -473,12 +473,16 @@ async function _commitRemoval(key) {
           `hub-checkout-btn-${blockId}`,
         );
         if (checkoutBtn) {
-          const cs = window.__HUB_ACTIVE_CART__?.cartSettings || {};
-          const rawText = cs.checkoutButtonText || "Proceed to checkout";
-          checkoutBtn.textContent = rawText.replace(
-            "{{total_price}}",
-            newTotalFmt,
-          );
+          const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+          const goToCartPageOnCheckout =
+            cartSettings.goToCartPageOnCheckout === true ||
+            cartSettings.goToCartPageOnCheckout === "true";
+
+          const rawText = goToCartPageOnCheckout
+            ? cartSettings.viewCartName || "View cart"
+            : cartSettings.checkoutButtonText || "Proceed to checkout";
+
+          checkoutBtn.textContent = hubUtils.getCheckoutButtonText(cartSettings, newTotalFmt);
         }
       }
 
@@ -685,7 +689,6 @@ window.removeDiscountCode = async function (btn, blockId) {
 };
 
 window.hubCheckoutClick = function (e, blockId, btn) {
-  
   e.preventDefault();
 
   if (btn.classList.contains("loading")) return;
@@ -961,13 +964,18 @@ window.hubChangeVariantOption = async function (selectEl) {
         `hub-checkout-btn-${blockId}`,
       );
       if (checkoutBtn) {
-        const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
-        const rawText =
-          cartSettings.checkoutButtonText || "Proceed to checkout";
-        checkoutBtn.textContent = rawText.replace(
-          "{{total_price}}",
-          fmt(grandTotal),
-        );
+        const cs = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+        const goToCartPageOnCheckout =
+          cs.goToCartPageOnCheckout === true ||
+          cs.goToCartPageOnCheckout === "true";
+
+        const rawText = goToCartPageOnCheckout
+          ? cs.viewCartName || "View cart"
+          : cs.checkoutButtonText || "Proceed to checkout";
+
+        checkoutBtn.textContent = goToCartPageOnCheckout
+          ? rawText
+          : rawText.replace("{{total_price}}", newTotalFmt);
       }
 
       const container = document.querySelector(

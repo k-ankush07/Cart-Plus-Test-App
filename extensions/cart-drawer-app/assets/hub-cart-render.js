@@ -308,10 +308,12 @@ window.hubCartRender = async function (drawer, opts = {}) {
       const checkoutBtn = document.getElementById(
         `hub-checkout-btn-${blockId}`,
       );
+
       if (checkoutBtn) {
         const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
         const goToCartPageOnCheckout =
-          cartSettings.goToCartPageOnCheckout || false;
+          cartSettings.goToCartPageOnCheckout === true ||
+          cartSettings.goToCartPageOnCheckout === "true";
 
         const rawText = goToCartPageOnCheckout
           ? cartSettings.viewCartName || "View cart"
@@ -321,7 +323,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
           ? rawText
           : rawText.replace("{{total_price}}", fmt(grandTotal));
       }
-
     })();
 
     const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};

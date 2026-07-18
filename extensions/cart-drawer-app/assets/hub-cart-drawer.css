@@ -268,7 +268,7 @@ button.hub-qty-btn.plus {
   cursor: not-allowed;
 }
 
-.hub-qty-input {
+input.hub-qty-input{
   width: 30px;
   height: 26px;
   border: none;
