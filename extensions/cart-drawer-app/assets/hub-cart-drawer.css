@@ -200,6 +200,7 @@
 
 .hub-cart-item.hub-cart-item--subscription span.hub-item-discount-badge {
   margin: 0;
+  min-width: 100px;
 }
 
 .hub-cart-item--modern-title {
@@ -629,24 +630,24 @@ span.hub-offers-title {
 }
 
 .hub-coupon-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    transform: rotate(180deg);
-    background: #2271b4;
-    color: #fff;
-    font-size: 16px;
-    font-weight: 700;
-    padding: 10px 15px;
-    min-width: 36px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    flex-shrink: 0;
-    border-left: 3px dashed;
-    border-radius: 0 5px 5px 0px;
-    line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  background: #2271b4;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 15px;
+  min-width: 36px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  border-left: 3px dashed;
+  border-radius: 0 5px 5px 0px;
+  line-height: 1;
 }
 
 .hub-coupon-body {
@@ -1237,7 +1238,6 @@ span.hub-total-arrow svg {
 .upcart-internal-component-upsell-tile__image-container img {
   max-width: 100%;
   max-height: 100%;
-  border-radius: 5px;
   object-fit: contain;
 }
 
@@ -1633,6 +1633,7 @@ span.hub-total-arrow svg {
   font-weight: 500;
   line-height: 18px;
   margin: 0;
+  color: black;
 }
 
 .hub-discount-input-row {
@@ -2086,6 +2087,10 @@ span.upsell-text.suggestion-product {
   border: 0;
   padding: 10px 15px;
   cursor: pointer;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .hub-subscription-view .hub-selling-plan-select {
@@ -2098,6 +2103,8 @@ span.upsell-text.suggestion-product {
   outline: none;
   box-shadow: none;
   cursor: pointer;
+  height: 40px;
+  border: 1px solid #dddddd;
 }
 
 .hub-item-subscription-label {
@@ -2180,6 +2187,10 @@ span.upsell-text.suggestion-product {
   padding: 10px 20px 10px;
 }
 
+.custom-cart-announcement {
+    line-height: 22px;
+}
+
 .hub-additional-notes textarea {
   box-shadow: none;
   width: 100%;
@@ -2187,6 +2198,8 @@ span.upsell-text.suggestion-product {
   border-radius: 5px;
   padding: 20px;
   outline: none;
+  color: black;
+  font-size: 14px;
 }
 
 .hub-additional-notes.top_of_footer {
@@ -2229,14 +2242,14 @@ span.upsell-text.suggestion-product {
 }
 
 .upcart-internal-addons__image-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 50px;
-    width: 50px;
-    border-radius: 5px;
-    overflow: hidden;
-    border: 1px solid #E8E8E8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  width: 50px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #E8E8E8;
 }
 
 .hub-addon-product-price {
@@ -2458,6 +2471,14 @@ span.hub-item-discount-badge img.discount-code-img {
 .hub-cart-drawer.cart-app h5:empty,
 .hub-cart-drawer.cart-app h6:empty {
   display: block !important;
+}
+
+.hub-cart-drawer.cart-app select {
+  appearance: auto !important;
+  -webkit-appearance: menulist !important;
+  -moz-appearance: menulist !important;
+  background-image: none !important;
+  padding-right: 8px !important;
 }
 
 button.hub-qty-btn span.svg-wrapper {

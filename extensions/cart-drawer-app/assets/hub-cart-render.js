@@ -744,7 +744,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       );
     }
 
-    // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
+   // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
     document.addEventListener("click", (e) => {
       const btn = e.target.closest(".hub-upgrade-btn");
       if (!btn) return;
@@ -766,6 +766,59 @@ window.hubCartRender = async function (drawer, opts = {}) {
         if (text) text.style.display = "inline-block";
         wrapper.classList.add("show-subscription");
       }, 3000);
+    });
+
+    // ── SELLING PLAN SELECT HANDLER (attach once, not inside item loop) ───
+    document.addEventListener("change", async (e) => {
+      const select = e.target.closest(".hub-selling-plan-select");
+      if (!select) return;
+
+      const itemKey = select.dataset.key;
+      const sellingPlanId = select.value;
+      if (!itemKey || !sellingPlanId) return;
+
+      const itemEl =
+        select.closest(".hub-cart-item") ||
+        select.closest(".hub-selling-plan-wrapper");
+
+      select.disabled = true;
+      if (itemEl) {
+        itemEl.style.opacity = "0.6";
+        itemEl.style.pointerEvents = "none";
+      }
+
+      try {
+        const res = await fetch("/cart/change.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: itemKey,
+            selling_plan: Number(sellingPlanId),
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to apply selling plan");
+
+        document.dispatchEvent(new CustomEvent("cart:updated"));
+
+        // Re-render cart so new subscription price/state shows immediately
+        const drawer = select.closest(
+          `.hub-cart-block-${window.HUB_CART_BLOCK_ID}`,
+        );
+        if (drawer) {
+          await window.hubCartRender(drawer);
+        } else if (itemEl) {
+          itemEl.style.opacity = "";
+          itemEl.style.pointerEvents = "";
+          select.disabled = false;
+        }
+      } catch (err) {
+        console.error("Selling plan apply error:", err);
+        select.disabled = false;
+        if (itemEl) {
+          itemEl.style.opacity = "";
+          itemEl.style.pointerEvents = "";
+        }
+      }
     });
 
     // ── ITEM RENDERING LOOP (no fetches inside — uses pre-built cache) ────
