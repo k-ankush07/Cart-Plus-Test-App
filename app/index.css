@@ -564,6 +564,10 @@ button.cart-app-item__qty-btn.upcart-product-quantity-minus.custom-cart-public-c
     font-family: inherit;
     width: 100%;
     line-height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
 }
 
 .upcart-internal-upsell__shop-now-button a {
@@ -1403,7 +1407,7 @@ span.custom-cart-public-component-product-tile__discount-codes {
 .discount-bgColor {
     background: rgba(0, 0, 0, .05);
     padding: 3px 8px;
-    border-radius:20px;
+    border-radius: 20px;
 }
 
 span.hub-coupon-code {
