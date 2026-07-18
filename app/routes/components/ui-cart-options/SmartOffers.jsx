@@ -51,7 +51,7 @@ const TRIGGER_OPTIONS = [
   { type: "cart_total", label: "Cart total", description: "Combined value of all items before discounts" },
   { type: "cart_quantity", label: "Cart quantity", description: "Total quantity of all items in the cart" },
   { type: "subscription", label: "Subscription", description: "Any item in the cart has a subscription" },
-  // { type: "customer_logged_in", label: "Customer is logged in", description: "Targeted customer who is logged in" },
+  { type: "customer_logged_in", label: "Customer is logged in", description: "Targeted customer who is logged in" },
 ];
 
 const REWARD_OPTIONS = [
