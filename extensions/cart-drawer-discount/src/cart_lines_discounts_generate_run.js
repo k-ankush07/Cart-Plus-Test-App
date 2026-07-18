@@ -51,6 +51,7 @@ export function cartLinesDiscountsGenerateRun(input) {
   );
 
   const operations = [];
+  const productDiscountCandidates = [];
 
   for (const reward of enabledRewards) {
     if (!reward.reward) continue;
@@ -73,38 +74,64 @@ export function cartLinesDiscountsGenerateRun(input) {
       ? { percentage: { value: discountValue } }
       : { fixedAmount: { amount: discountValue } };
 
-    if (rewardType === 'cart_discount' && hasOrderClass) {
-      operations.push({
-        orderDiscountsAdd: {
-          candidates: [
-            {
-              message: reward.title || reward.discountCode || 'Cart Discount',
-              targets: [{ orderSubtotal: { excludedCartLineIds: [] } }],
+    if (rewardType === 'cart_discount') {
+      // 🔑 Agar reward ke triggers mein specific_products / specific_collections
+      // hai, to discount SIRF un matching cart lines par lagao — poore order
+      // subtotal par nahi. Warna (jaise sirf cart_total/cart_quantity trigger
+      // ho) purana behavior hi rahega: poore cart subtotal par discount.
+      const restrictedLineIds = getRestrictedLineIds(reward.triggers, cartLines);
+
+      if (restrictedLineIds !== null) {
+        // Specific product/collection trigger mila — line-level discount
+        if (hasProductClass && restrictedLineIds.length > 0) {
+          for (const lineId of restrictedLineIds) {
+            productDiscountCandidates.push({
+              message: reward.title || reward.discountCode || 'Product Discount',
+              targets: [{ cartLine: { id: lineId } }],
               value: discountValueObj,
-            },
-          ],
-          selectionStrategy: OrderDiscountSelectionStrategy.First,
-        },
-      });
+            });
+          }
+        }
+        // restrictedLineIds.length === 0 → matching product/collection cart
+        // mein hai hi nahi (theoretically shouldn't happen since triggersPass
+        // already confirmed presence), so kuch add nahi karte.
+      } else if (hasOrderClass) {
+        // Koi product/collection restriction nahi — poore cart par discount
+        // (jaise pehle se tha)
+        operations.push({
+          orderDiscountsAdd: {
+            candidates: [
+              {
+                message: reward.title || reward.discountCode || 'Cart Discount',
+                targets: [{ orderSubtotal: { excludedCartLineIds: [] } }],
+                value: discountValueObj,
+              },
+            ],
+            selectionStrategy: OrderDiscountSelectionStrategy.First,
+          },
+        });
+      }
     }
 
     if (rewardType === 'free_gift' && hasProductClass) {
       const giftLine = findGiftLine(cartLines, reward.reward.items);
       if (giftLine) {
-        operations.push({
-          productDiscountsAdd: {
-            candidates: [
-              {
-                message: reward.title || 'Free Gift',
-                targets: [{ cartLine: { id: giftLine.id } }],
-                value: { percentage: { value: 100 } },
-              },
-            ],
-            selectionStrategy: ProductDiscountSelectionStrategy.First,
-          },
+        productDiscountCandidates.push({
+          message: reward.title || 'Free Gift',
+          targets: [{ cartLine: { id: giftLine.id } }],
+          value: { percentage: { value: 100 } },
         });
       }
     }
+  }
+
+  if (productDiscountCandidates.length > 0) {
+    operations.push({
+      productDiscountsAdd: {
+        candidates: productDiscountCandidates,
+        selectionStrategy: ProductDiscountSelectionStrategy.All,
+      },
+    });
   }
 
   return { operations };
@@ -148,6 +175,40 @@ function triggerPass(trigger, { cartTotal, cartQty, isLoggedIn, hasSubscription,
     default:
       return true;
   }
+}
+
+// 🔑 Reward ke triggers mein se specific_products / specific_collections dhoondo
+// aur un cart lines ke IDs return karo jo match karti hain. Agar koi bhi
+// product/collection trigger na ho, to `null` return karo (matlab: poore
+// cart/order par discount lagao, koi restriction nahi).
+function getRestrictedLineIds(triggers, cartLines) {
+  if (!triggers || triggers.length === 0) return null;
+
+  const productTrigger = triggers.find(t => t.type === 'specific_products');
+  const collectionTrigger = triggers.find(t => t.type === 'specific_collections');
+
+  if (!productTrigger && !collectionTrigger) return null;
+
+  const matchedIds = new Set();
+
+  if (productTrigger) {
+    const productGids = new Set((productTrigger.items?.products || []).filter(Boolean));
+    const variantGids = new Set((productTrigger.items?.variants || []).filter(Boolean));
+
+    for (const line of cartLines) {
+      const pid = line.merchandise?.product?.id;
+      const vid = line.merchandise?.id;
+      if ((pid && productGids.has(pid)) || (vid && variantGids.has(vid))) {
+        matchedIds.add(line.id);
+      }
+    }
+  }
+
+  if (collectionTrigger) {
+
+  }
+
+  return [...matchedIds];
 }
 
 function findGiftLine(cartLines, items) {

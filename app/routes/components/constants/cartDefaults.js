@@ -180,6 +180,7 @@ export const defaultCartSettings = {
   goToCartPageOnCheckout: true,
   showSavingsBelowPrices: true,
   enableLoadingPreview: true,
+  viewCartName:"View Cart",
   // Advanced settings
   showDiscountsFromBasePrice: false,
   showCompareAtPriceSavingsInFooter: false,

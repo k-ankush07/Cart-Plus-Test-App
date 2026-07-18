@@ -33,7 +33,7 @@ const getIcon = (type) => {
   }
 };
 
-export default function TieredRewards({ rewardsSettings }) {
+export default function TieredRewards({ rewardsSettings, currency }) {
   const tiers = rewardsSettings?.tiers || [];
 
   const totalCart = 1400;
@@ -125,7 +125,7 @@ export default function TieredRewards({ rewardsSettings }) {
                   "{AMOUNT}",
                   isQuantity
                     ? `${getRemainingAmount(currentTier)} items`
-                    : `$${getRemainingAmount(currentTier)}`
+                    : `${currency}${getRemainingAmount(currentTier)}`
                 ),
           }}
         />

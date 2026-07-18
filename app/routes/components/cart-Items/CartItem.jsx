@@ -140,7 +140,7 @@ function QtyStepper({ qty, onDecrement, onIncrement, onQtyChange, loadingType })
 }
 
 // ─── Classic Layout ───────────────────────────────────────────────────────────
-function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings, deleteLoading }) {
+function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings, deleteLoading, currency }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile" style={{ flexDirection: "column" }}>
       <div style={{ display: "flex", gap: "10px", width: "100%" }}>
@@ -169,9 +169,9 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
           {/* Right */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "5px", flexShrink: 0, lineHeight: '12px' }}>
             <div className="custom-cart-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$200.00</span>
+              <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>{currency} 200.00</span>
               {showStrikethrough && (
-                <span className="custom-cart-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
+                <span className="custom-cart-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>{currency} 400.00</span>
               )}
             </div>
             {cartSettings.showSavingsBelowPrices && (
@@ -225,7 +225,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
 }
 
 // ─── Subscription Layout ──────────────────────────────────────────────────────
-function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings, deleteLoading }) {
+function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings, deleteLoading, currency }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile upcart-layout-subscription">
       <div className="cart-app-item__image custom-cart-bundle-item-image-wrapper upcart-product-image-wrapper custom-cart-public-component-product-tile__image-wrapper" style={{ width: "72px", height: "72px", flexShrink: 0 }}>
@@ -262,9 +262,9 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
         </div>
 
         <div className="custom-cart-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-          <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$27.00</span>
+          <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>{currency} 27.00</span>
           {showStrikethrough && (
-            <span style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }} className="custom-cart-item-compare-price">$40.00</span>
+            <span style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }} className="custom-cart-item-compare-price">{currency} 40.00</span>
           )}
           {cartSettings.showSavingsBelowPrices && (
             <span className="custom-cart-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 600, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>
@@ -294,7 +294,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
 }
 
 // ─── Modern Layout ────────────────────────────────────────────────────────────
-function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings, designSettings, deleteLoading }) {
+function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings, designSettings, deleteLoading, currency }) {
   return (
     <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile upcart-layout-modern">
 
@@ -393,9 +393,9 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
               )}
             </button>
             {showStrikethrough && (
-              <span className="custom-cart-public-component-product-tile__product-pricing custom-cart-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>$400.00</span>
+              <span className="custom-cart-public-component-product-tile__product-pricing custom-cart-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>{currency} 400.00</span>
             )}
-            <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>$200.00</span>
+            <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>{currency} 200.00</span>
             <DiscountBadge code="MEGA20" color={designSettings?.discountBageColor || "#1e7e34"} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
               <QtyStepper
@@ -430,7 +430,8 @@ export default function CartItem({
   productName = "The Monaco - Black",
   qty,
   setQty,
-  designSettings
+  designSettings,
+  currency
 }) {
   const [loadingType, setLoadingType] = useState(null);
   const [isRemoved, setIsRemoved] = useState(false);
@@ -509,7 +510,8 @@ export default function CartItem({
     Subscription,
     productName,
     designSettings,
-    deleteLoading
+    deleteLoading,
+    currency
   };
 
   return (

@@ -51,7 +51,7 @@ const TRIGGER_OPTIONS = [
   { type: "cart_total", label: "Cart total", description: "Combined value of all items before discounts" },
   { type: "cart_quantity", label: "Cart quantity", description: "Total quantity of all items in the cart" },
   { type: "subscription", label: "Subscription", description: "Any item in the cart has a subscription" },
-  { type: "customer_logged_in", label: "Customer is logged in", description: "Targeted customer who is logged in" },
+  // { type: "customer_logged_in", label: "Customer is logged in", description: "Targeted customer who is logged in" },
 ];
 
 const REWARD_OPTIONS = [
@@ -295,7 +295,7 @@ const modalRow = { padding: "12px 16px", cursor: "pointer", borderBottom: "1px s
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function SmartOffers({cartId, triggeredRewardsSettings, handleChange, currency, cartStatus }) {
+export default function SmartOffers({ cartId, triggeredRewardsSettings, handleChange, currency, cartStatus }) {
 
   const authenticatedFetch = useAuthenticatedFetch();
   const currencyCode = (currency || "USD").toUpperCase();
@@ -337,6 +337,7 @@ export default function SmartOffers({cartId, triggeredRewardsSettings, handleCha
   const [pendingDiscountType, setPendingDiscountType] = useState("percentage");
   const [pendingDiscountValue, setPendingDiscountValue] = useState("0");
   const [editingTriggerIdx, setEditingTriggerIdx] = useState(null);
+  const [pendingDiscountError, setPendingDiscountError] = useState("");
 
   const [pagination, setPagination] = useState({
     hasPrevious: false,
@@ -459,7 +460,12 @@ export default function SmartOffers({cartId, triggeredRewardsSettings, handleCha
     const parsed = parseFloat(pendingDiscountValue);
 
     if (isNaN(parsed) || parsed <= 0) {
-      alert("Enter valid discount value");
+      setPendingDiscountError("Enter a valid discount value");
+      return;
+    }
+
+    if (pendingDiscountType === "percentage" && parsed > 100) {
+      setPendingDiscountError("Percentage discount cannot exceed 100%");
       return;
     }
 
@@ -469,6 +475,7 @@ export default function SmartOffers({cartId, triggeredRewardsSettings, handleCha
       value: parsed,
     });
 
+    setPendingDiscountError("");
     setCartDiscountOpen(false);
   };
 
@@ -516,13 +523,13 @@ export default function SmartOffers({cartId, triggeredRewardsSettings, handleCha
       await authenticatedFetch("/shopify/create-discount", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({cartId, rewards: newRewards, discountCombinations, existingDiscountId, cartStatus, }),
+        body: JSON.stringify({ cartId, rewards: newRewards, discountCombinations, existingDiscountId, cartStatus, }),
       });
     } catch (e) {
       console.error(" [syncRewards] Failed to sync:", e);
     }
   };
-  
+
   const deleteReward = (id) => {
     const newRewards = rewards.filter((r) => r.id !== id);
     update("rewards", newRewards);
@@ -931,19 +938,34 @@ export default function SmartOffers({cartId, triggeredRewardsSettings, handleCha
             <BlockStack gap="100">
               <Text variant="bodyMd" fontWeight="medium">Discount type</Text>
               <ButtonGroup variant="segmented">
-                <Button pressed={pendingDiscountType === "percentage"} onClick={() => setPendingDiscountType("percentage")}>Percentage (%)</Button>
-                <Button pressed={pendingDiscountType === "fixed"} onClick={() => setPendingDiscountType("fixed")}>Fixed amount ({getCurrencySymbol(currencyCode)})</Button>
+                <Button
+                  pressed={pendingDiscountType === "percentage"}
+                  onClick={() => { setPendingDiscountType("percentage"); setPendingDiscountError(""); }}
+                >
+                  Percentage (%)
+                </Button>
+                <Button
+                  pressed={pendingDiscountType === "fixed"}
+                  onClick={() => { setPendingDiscountType("fixed"); setPendingDiscountError(""); }}
+                >
+                  Fixed amount ({getCurrencySymbol(currencyCode)})
+                </Button>
               </ButtonGroup>
+              <TextField
+                label={pendingDiscountType === "percentage" ? "Discount percentage" : "Discount amount"}
+                type="number"
+                value={pendingDiscountValue}
+                onChange={(v) => {
+                  setPendingDiscountValue(v);
+                  setPendingDiscountError("");
+                }}
+                max={pendingDiscountType === "percentage" ? 100 : undefined}
+                suffix={pendingDiscountType === "percentage" ? "%" : undefined}
+                prefix={pendingDiscountType === "fixed" ? getCurrencySymbol(currencyCode) : undefined}
+                autoComplete="off"
+                error={pendingDiscountError}
+              />
             </BlockStack>
-            <TextField
-              label={pendingDiscountType === "percentage" ? "Discount percentage" : "Discount amount"}
-              type="number"
-              value={pendingDiscountValue}
-              onChange={setPendingDiscountValue}
-              suffix={pendingDiscountType === "percentage" ? "%" : undefined}
-              prefix={pendingDiscountType === "fixed" ? getCurrencySymbol(currencyCode) : undefined}
-              autoComplete="off"
-            />
           </BlockStack>
         </Modal.Section>
       </Modal>

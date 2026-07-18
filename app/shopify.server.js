@@ -20,21 +20,38 @@ const shopify = shopifyApp({
   future: {
     expiringOfflineAccessTokens: true,
   },
+
   hooks: {
     afterAuth: async ({ session, admin }) => {
       await shopify.registerWebhooks({ session });
-
       try {
+        if (session.refreshToken) {
+          await prisma.session.update({
+            where: { id: `offline_${session.shop}` },
+            data: {
+              refreshToken: session.refreshToken,
+              refreshTokenExpires: session.refreshTokenExpires
+                ? new Date(session.refreshTokenExpires)
+                : null,
+            },
+          });
+          console.log(`[hub] refreshToken manually saved for ${session.shop}`);
+        } else {
+          console.warn(
+            `[hub] session object has NO refreshToken for ${session.shop} — isOnline=${session.isOnline}. If this is the online session, the offline session may carry it separately.`,
+          );
+        }
+
         const offlineSession = await shopify.sessionStorage.loadSession(
           `offline_${session.shop}`,
         );
 
-        console.log(
-          `[hub] offline session for ${session.shop}:`,
-          offlineSession
-            ? "FOUND"
-            : "NOT FOUND — was offline access scope granted at install?",
-        );
+        if (offlineSession) {
+          console.log(
+            "[DEBUG] offlineSession.refreshToken:",
+            offlineSession.refreshToken,
+          );
+        }
 
         const accessToken = offlineSession?.accessToken;
         if (!accessToken) {

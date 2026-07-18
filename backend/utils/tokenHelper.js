@@ -3,17 +3,11 @@
 import prisma from "../../app/db.server.js";
 import { ensureFreshAccessToken } from "../../app/routes/components/utils/refreshShopifyToken.js";
 
-/**
- * Custom error type for token-related failures.
- * Reason can be:
- *  - "no_offline_session"   → Prisma me offline_{shop} session hi nahi mila
- *  - "missing_access_token" → ensureFreshAccessToken ke baad bhi token null
- *  - "refresh_failed"       → refresh flow me koi exception
- */
+
 export class InvalidTokenError extends Error {
   /**
-   * @param {string} shop   - normalized shop domain (e.g. "himayush.myshopify.com")
-   * @param {string} reason - short code explaining what went wrong
+   * @param {string} shop   
+   * @param {string} reason 
    */
   constructor(shop, reason) {
     super(reason ? `INVALID_TOKEN: ${reason}` : "INVALID_TOKEN");
@@ -36,7 +30,6 @@ export class InvalidTokenError extends Error {
 export async function getValidAccessToken(shop) {
   const sessionId = `offline_${shop}`;
 
-  // 1) Prisma se offline session load karo
   const sessionRecord = await prisma.session.findUnique({
     where: { id: sessionId },
   });
@@ -46,7 +39,6 @@ export async function getValidAccessToken(shop) {
     throw new InvalidTokenError(shop, "no_offline_session");
   }
 
-  // 2) ensureFreshAccessToken se refresh / validate karo
   try {
     const { accessToken } = await ensureFreshAccessToken(
       shop,

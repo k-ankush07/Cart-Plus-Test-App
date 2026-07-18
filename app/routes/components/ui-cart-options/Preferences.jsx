@@ -159,6 +159,11 @@ export default function Preferences({ handleChange, cartSettings }) {
                                         checked={cartSettings.goToCartPageOnCheckout}
                                         onChange={(v) => update("goToCartPageOnCheckout", v)}
                                     />
+                                    
+                                    {cartSettings.goToCartPageOnCheckout && (
+                                        <TextField label="View cart button text" value={cartSettings.viewCartName} onChange={(v) => update("viewCartName", v)} />
+                                    )}
+
                                     <Checkbox
                                         label="Show savings with product prices"
                                         checked={cartSettings.showSavingsBelowPrices}

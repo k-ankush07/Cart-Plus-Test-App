@@ -25,6 +25,10 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
         }, 2000);
     }
 
+    const buttonText = cartSettings.goToCartPageOnCheckout
+        ? cartSettings.viewCartName
+        : checkoutText;
+
     return (
         <div
             className="cart-app__footer custom-cart-footer"
@@ -99,7 +103,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                         }}
                         onClick={handleCheckout}
                     >
-                        {loading ? (<span className="loader"></span>) : (checkoutText)}
+                        {loading ? (<span className="loader"></span>) : (buttonText)}
                     </button>
                 </div>
 

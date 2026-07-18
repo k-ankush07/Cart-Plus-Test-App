@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, memo } from "react";
 import { useNavigate, useLocation, useNavigation } from "react-router-dom";
 import "../../index.css";
 import { renameCart, togglePublishCart, getCarts } from "../../services/apiRoutes";
+import {getCurrencySymbol} from "./utils/currency"
 
 const CartLayout = memo(function CartLayout({
 
@@ -241,6 +242,7 @@ const CartLayout = memo(function CartLayout({
     };
   }, []);
 
+  const symbol = getCurrencySymbol(currency);
 
   return (
     <>
@@ -631,7 +633,7 @@ const CartLayout = memo(function CartLayout({
           expressPaymentsSettings={expressPaymentsSettings}
           trustBadgesSettings={trustBadgesSettings}
           cartSettings={cartSettings}
-          currency={currency}
+          currency={symbol}
           activeTab={activeTab}
           previewMode={previewMode}
           onClosePreview={() => setIsPreviewVisible(false)}

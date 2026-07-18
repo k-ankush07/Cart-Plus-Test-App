@@ -105,7 +105,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                     {emptyCart ? (
                         <>
                             {!rewardsSettings.enabled && rewardsSettings.showOnEmptyCart && (
-                                <TieredReward rewardsSettings={rewardsSettings} />
+                                <TieredReward rewardsSettings={rewardsSettings} currency={currency} />
                             )}
                             <Recommendation
                                 recommendationsSettings={recommendationsSettings}
@@ -131,7 +131,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                                     )}
 
                                     {!rewardsSettings.enabled && (
-                                        <TieredReward rewardsSettings={rewardsSettings} />)}
+                                        <TieredReward rewardsSettings={rewardsSettings} currency={currency}/>)}
 
                                     {!upsellsSettings.enabled && upsellsSettings?.position === "top" && (
                                         <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings} />
@@ -147,6 +147,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                                         setQty={setQty}
                                         qty={qty}
                                         designSettings={designSettings}
+                                        currency={currency}
                                     />
 
                                     {!upsellsSettings.enabled && upsellsSettings.showSuggestedProduct && upsellsSettings?.suggestedProduct?.items?.titles?.length > 0 && (

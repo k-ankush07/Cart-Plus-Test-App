@@ -310,13 +310,18 @@ window.hubCartRender = async function (drawer, opts = {}) {
       );
       if (checkoutBtn) {
         const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
-        const rawText =
-          cartSettings.checkoutButtonText || "Proceed to checkout";
-        checkoutBtn.textContent = rawText.replace(
-          "{{total_price}}",
-          fmt(grandTotal),
-        );
+        const goToCartPageOnCheckout =
+          cartSettings.goToCartPageOnCheckout || false;
+
+        const rawText = goToCartPageOnCheckout
+          ? cartSettings.viewCartName || "View cart"
+          : cartSettings.checkoutButtonText || "Proceed to checkout";
+
+        checkoutBtn.textContent = goToCartPageOnCheckout
+          ? rawText
+          : rawText.replace("{{total_price}}", fmt(grandTotal));
       }
+
     })();
 
     const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
@@ -744,7 +749,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       );
     }
 
-   // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
+    // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
     document.addEventListener("click", (e) => {
       const btn = e.target.closest(".hub-upgrade-btn");
       if (!btn) return;

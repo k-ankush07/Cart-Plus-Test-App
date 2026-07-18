@@ -53,44 +53,66 @@ export async function refreshAccessToken(shop, refreshToken) {
   };
 }
 
-/**
- * Ensures we always have a fresh access token:
- * - If current token is still valid (with 5 min buffer), use it
- * - Otherwise refresh using refresh_token
- * - Save updated token + expiry via `saveFn`
- */
+const refreshLocks = new Map();
+
 export async function ensureFreshAccessToken(shop, sessionRecord, saveFn) {
   const now = Date.now();
-  const bufferMs = 5 * 60 * 1000; // 5 minutes
+  const bufferMs = 5 * 60 * 1000;
+
   const expiresAtMs = sessionRecord.expires
     ? new Date(sessionRecord.expires).getTime()
-    : 0;
+    : null;
 
-  const needsRefresh = !expiresAtMs || expiresAtMs - now < bufferMs;
+  const hasRefreshToken = !!sessionRecord.refreshToken;
 
-  // Still valid → direct use
+  if (!hasRefreshToken) {
+    console.error(
+      `[TokenRefresh] No refresh_token for ${shop}. This session is using an old non-expiring token, which the Admin API no longer accepts. Reinstall / re-auth the app for this shop.`,
+    );
+    throw new Error(
+      `[TokenRefresh] Missing refresh_token for ${shop}. Needs expiring offline token migration.`
+    );
+  }
+
+  // Agar expires set hi nahi hai, to abhi ke liye current access token use karo
+  // (naya rotating token aane ke baad yeh set hoga)
+  if (!expiresAtMs) {
+    return { accessToken: sessionRecord.accessToken };
+  }
+
+  const needsRefresh = expiresAtMs - now < bufferMs;
+
   if (!needsRefresh) {
     return { accessToken: sessionRecord.accessToken };
   }
 
-  if (!sessionRecord.refreshToken) {
-    throw new Error(
-      `[TokenRefresh] No refresh_token stored for ${shop} — cannot refresh. Reinstall required.`,
-    );
+  // Agar kisi aur request ne already refresh start kar diya hai, to uska wait karo
+  if (refreshLocks.has(shop)) {
+    return refreshLocks.get(shop);
   }
 
-  const refreshed = await refreshAccessToken(shop, sessionRecord.refreshToken);
-  const newExpires = new Date(now + refreshed.expiresIn * 1000);
+  const refreshPromise = (async () => {
+    const refreshed = await refreshAccessToken(shop, sessionRecord.refreshToken);
+    const newExpires = new Date(Date.now() + refreshed.expiresIn * 1000);
 
-  await saveFn(shop, {
-    accessToken: refreshed.accessToken,
-    refreshToken: refreshed.refreshToken,
-    expires: newExpires,
-  });
+    await saveFn(shop, {
+      accessToken: refreshed.accessToken,
+      refreshToken: refreshed.refreshToken,
+      expires: newExpires,
+    });
 
-  console.log(
-    `[TokenRefresh] Refreshed token for ${shop}, new expiry: ${newExpires.toISOString()}`,
-  );
+    console.log(
+      `[TokenRefresh] Refreshed token for ${shop}, new expiry: ${newExpires.toISOString()}`,
+    );
 
-  return { accessToken: refreshed.accessToken };
+    return { accessToken: refreshed.accessToken };
+  })();
+
+  refreshLocks.set(shop, refreshPromise);
+
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshLocks.delete(shop);
+  }
 }

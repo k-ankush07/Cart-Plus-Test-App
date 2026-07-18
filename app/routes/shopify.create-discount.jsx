@@ -12,24 +12,6 @@ const DISCOUNT_TITLE = "Cart Plus - Triggered Rewards";
 const API_URL = process.env.PUBLIC_REACT_APP_API_URL;
 const API_SECRET_KEY = process.env.VITE_API_SECRET_KEY || "";
 
-// ══════════════════════════════════════════════════════════════════
-// POST /api/create-discount
-//
-// Syncs ALL triggered rewards into ONE automatic app discount.
-//   - Only the PUBLISHED cart is allowed to sync — otherwise saving
-//     an unpublished cart's settings silently overwrites the live
-//     discount that the published cart depends on.
-//   - If existingDiscountId is provided → update its metafield only
-//   - If not provided (or stale) → look up by title first, then
-//     update if found, or create if truly missing
-//   - If rewards/discountCombinations aren't sent in the body (e.g.
-//     publish triggered from the carts list, not the editor), the
-//     cart's real settings are fetched server-side by cartId so the
-//     discount is never re-enabled with an empty/stale reward set.
-//
-// Body: { cartId, rewards?, discountCombinations?, existingDiscountId?, cartStatus, forceDisable? }
-// ══════════════════════════════════════════════════════════════════
-
 async function findExistingDiscountId(admin) {
     const query = `
         query FindExistingDiscount($query: String!) {
@@ -234,7 +216,11 @@ export const action = async ({ request }) => {
         shippingDiscounts: !!discountCombinations.shippingDiscounts,
     };
 
-    const metafieldConfig = JSON.stringify({ cartId, rewards });
+    const validRewards = rewards.filter(
+        r => Array.isArray(r?.triggers) && r.triggers.length > 0 && r?.reward?.type
+    );
+
+    const metafieldConfig = JSON.stringify({ cartId, rewards: validRewards });
 
     // ── Resolve which discount ID to target ─────────────────────
     let targetId = existingDiscountId || null;

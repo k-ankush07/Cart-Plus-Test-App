@@ -194,8 +194,10 @@ window.injectCartHTML = function (blockId, root) {
   const disableFixedFooter = cartSettings.disableFixedFooter || false;
   const goToCartPageOnCheckout = cartSettings.goToCartPageOnCheckout || false;
   const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
-  const checkoutButtonText =
-    cartSettings.checkoutButtonText || "Proceed to checkout";
+  const checkoutButtonText = goToCartPageOnCheckout
+    ? cartSettings.viewCartName || "View cart"
+    : cartSettings.checkoutButtonText || "Proceed to checkout";
+    
   const continueShoppingText =
     cartSettings.continueShoppingText || "Or continue shopping";
 
