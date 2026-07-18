@@ -2258,6 +2258,10 @@ span.upsell-text.suggestion-product {
   color: #0e0e0e;
 }
 
+span.hub-rating-count {
+    line-height: 15px;
+}
+
 .hub-discount-input-row {
   display: flex;
   flex-wrap: wrap;
