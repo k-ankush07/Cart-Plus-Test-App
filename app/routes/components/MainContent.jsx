@@ -127,6 +127,7 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
             <CartItem
                 handleChange={handleChange}
                 cartSettings={cartSettings}
+                currency={currency}
             />
         ),
         "Order Summary": (

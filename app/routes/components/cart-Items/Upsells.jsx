@@ -218,7 +218,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                                 className="sale-price custom-cart-public-component-upsell-tile__price"
                                 style={{ color: designSettings.textColor || "#6b7280" }}
                             >
-                                {selectedVariant.price} {currency}
+                                {currency} {selectedVariant.price}
                             </span>
 
                             {selectedVariant.compareAtPrice &&
@@ -229,7 +229,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                                             className="compare-price custom-cart-public-component-upsell-tile__price-compare-at"
                                             style={{ color: designSettings.textColor || "#6b7280" }}
                                         >
-                                            {selectedVariant.compareAtPrice} {currency}
+                                            {currency} {selectedVariant.compareAtPrice}
                                         </span>
 
                                         <span
@@ -242,14 +242,19 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                                                 padding: "5px 7px",
                                                 borderRadius: "14px",
                                                 lineHeight: 1,
+                                                display:"flex",
+                                                gap:"2px"
                                             }}
                                         >
-                                            {cartSettings.savingsText} {""}
-                                            {(
-                                                parseFloat(selectedVariant.compareAtPrice) -
-                                                parseFloat(selectedVariant.price)
-                                            ).toFixed(2)}{" "}
-                                            {currency}
+                                            <span>{currency}</span>
+
+                                            <span>
+                                                {cartSettings.savingsText} {""}
+                                                {(
+                                                    parseFloat(selectedVariant.compareAtPrice) -
+                                                    parseFloat(selectedVariant.price)
+                                                ).toFixed(2)}{" "}
+                                            </span>
                                         </span>
                                     </>
                                 )}

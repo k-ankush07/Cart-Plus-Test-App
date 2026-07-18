@@ -115,7 +115,7 @@ export default function AddOns({ addonsSettings, currency }) {
                                 {product?.compareAtPrice && (
                                     <span className="cart-addon-tile__compare custom-cart-addons-compare-price custom-cart-public-addons__compare-at-price">${product.compareAtPrice}</span>
                                 )}
-                                <span>{product?.price || ""} {currency}</span>
+                                <span>{currency} {product?.price || ""} </span>
                             </>
                         )}
                     </span>
@@ -126,7 +126,7 @@ export default function AddOns({ addonsSettings, currency }) {
                         : product?.description || ""}
                 </p>
             </div>
-            {isShipping && (<span className="cart-addon-tile__price custom-cart-addons-price custom-cart-public-addons__price">{addonsSettings.price} {currency}</span>)}
+            {isShipping && (<span className="cart-addon-tile__price custom-cart-addons-price custom-cart-public-addons__price"> {currency} {addonsSettings.price}</span>)}
 
             {/* TOGGLE */}
             <div className="upcart-addons-toggle custom-cart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">

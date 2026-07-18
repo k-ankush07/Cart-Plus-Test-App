@@ -23,6 +23,8 @@ import {
     CartIcon,           // Upsells
 } from "@shopify/polaris-icons";
 
+import { getCurrencySymbol } from "../utils/currency";
+
 const DEFAULT_IMAGE = "https://cdn.shopify.com/s/files/1/0642/9435/5203/products/campstool-1.jpg";
 
 const CHECKMARK = (
@@ -98,13 +100,15 @@ function LayoutWrapper({ value, selected, onSelect, children }) {
     );
 }
 
-export default function CartItems({ handleChange, cartSettings }) {
+export default function CartItems({ handleChange, cartSettings, currency }) {
     const selected = cartSettings.cartItemLayout || "classic";
     const deleteBehavior = cartSettings.deleteBehavior || "undo";
 
     const onSelect = (value) => handleChange("cartSettings", (prev) => ({ ...prev, cartItemLayout: value }));
 
     const onDeleteBehaviorChange = (behavior) => handleChange("cartSettings", (prev) => ({ ...prev, deleteBehavior: behavior }));
+
+    const symbol = getCurrencySymbol(currency);
 
     return (
         <BlockStack gap="100">
@@ -153,7 +157,7 @@ export default function CartItems({ handleChange, cartSettings }) {
                                             <div style={{ marginTop: "4px" }}>
                                                 <span className="discount-bgColor" style={{
                                                     display: "inline-flex", alignItems: "center", gap: "4px",
-                                                     color: "#1e7e34",
+                                                    color: "#1e7e34",
                                                     fontSize: "11px", fontWeight: 600,
                                                     padding: "3px 10px", borderRadius: "20px",
                                                 }}>
@@ -170,9 +174,9 @@ export default function CartItems({ handleChange, cartSettings }) {
                                         </BlockStack>
                                         <BlockStack gap="200" align="end" inlineAlign="end">
                                             <InlineStack gap="150" blockAlign="center">
-                                                <Text variant="bodyMd" fontWeight="bold">$200.00</Text>
+                                                <Text variant="bodyMd" fontWeight="bold">{symbol} 200.00</Text>
                                                 <Text variant="bodyXs" tone="subdued">
-                                                    <span style={{ textDecoration: "line-through" }}>$400.00</span>
+                                                    <span style={{ textDecoration: "line-through" }}>{symbol} 400.00</span>
                                                 </Text>
                                             </InlineStack>
                                             <div style={{
@@ -234,7 +238,7 @@ export default function CartItems({ handleChange, cartSettings }) {
                                             <span className="discount-bgColor" style={{
                                                 display: "inline-flex", alignItems: "center", gap: "4px",
                                                 color: "#1e7e34", fontSize: "11px", fontWeight: 600,
-                                                marginTop:"5px"
+                                                marginTop: "5px"
                                             }}>
                                                 <svg viewBox="0 0 20 20" style={{ width: "15px", fill: "#10812f" }}>
                                                     <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z" />
@@ -249,9 +253,9 @@ export default function CartItems({ handleChange, cartSettings }) {
                                     </InlineStack>
                                     <div style={{ marginTop: "4px" }}>
                                         <InlineStack gap="150" blockAlign="center" wrap={false}>
-                                            <Text variant="bodyMd" fontWeight="bold">$27.00</Text>
+                                            <Text variant="bodyMd" fontWeight="bold">{symbol} 27.00</Text>
                                             <Text variant="bodyXs" tone="subdued">
-                                                <span style={{ textDecoration: "line-through" }}>$40.00</span>
+                                                <span style={{ textDecoration: "line-through" }}>{symbol} 40.00</span>
                                             </Text>
                                             <span style={{
                                                 background: "#e6f4ea", color: "#1e7e34",
@@ -354,9 +358,9 @@ export default function CartItems({ handleChange, cartSettings }) {
                                                 <TrashIcon />
                                             </button>
                                             <Text variant="bodyXs" tone="subdued">
-                                                <span style={{ textDecoration: "line-through" }}>$400.00</span>
+                                                <span style={{ textDecoration: "line-through" }}>{symbol} 400.00</span>
                                             </Text>
-                                            <Text variant="bodyLg" fontWeight="bold">$200.00</Text>
+                                            <Text variant="bodyLg" fontWeight="bold">{symbol} 200.00</Text>
                                             <span className="discount-bgColor" style={{
                                                 display: "inline-flex", alignItems: "center", gap: "4px",
                                                 color: "#1e7e34", fontSize: "11px", fontWeight: 600,
