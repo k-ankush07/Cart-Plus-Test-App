@@ -430,7 +430,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     ) {
       const layout = settings.layout || "block";
       let swiperInstance = null;
-
+      
       const rendered = products
         .map((p) => ({
           p,
@@ -452,16 +452,17 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (layout === "carousel") {
         await loadSwiper();
         const indicator = settings.carouselIndicator || "progressBar";
+         const btnColor = designSettings.buttonColor || "#000000";
         const slidesHTML = rendered
           .map(({ html }) => `<div class="swiper-slide">${html}</div>`)
           .join("");
         container.style.display = "";
         container.innerHTML = `
           <div class="hub-swiper-wrapper">
-            ${indicator === "buttons" ? `<div class="hub-swiper-prev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></div>` : ""}
+            ${indicator === "buttons" ? `<div class="hub-swiper-prev" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></div>` : ""}
             <div class="hub-swiper swiper"><div class="swiper-wrapper">${slidesHTML}</div></div>
-            ${indicator === "buttons" ? `<div class="hub-swiper-next"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>` : ""}
-            ${indicator === "progressBar" ? `<div class="hub-progress-bar"><div class="hub-progress-bar-fill"></div></div>` : ""}
+            ${indicator === "buttons" ? `<div class="hub-swiper-next" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>` : ""}
+            ${indicator === "progressBar" ? `<div class="hub-progress-bar"><div class="hub-progress-bar-fill" style = "background-color:${btnColor}"></div></div>` : ""}
           </div>`;
       } else {
         container.style.display = "";

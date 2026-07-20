@@ -821,7 +821,6 @@ span.svg-wrapper {
     z-index: 10;
     width: 25px;
     height: 25px;
-    border: 0.83px solid #4e4e4e;
     box-shadow: 0px 0px 5px 0px #00000066;
     border-radius: 100%;
     cursor: pointer;
