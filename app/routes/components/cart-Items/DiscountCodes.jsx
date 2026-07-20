@@ -107,12 +107,12 @@ export default function DiscountCode({
       {/* ── Inline discount row ── */}
       <div className="cart-discount-row custom-cart-discount-code-row upcart-discount-code-row upcart-discount-code-module custom-cart-public-discount-code">
         <div className="upcart-discount-code-input-wrapper custom-cart-discount-code-input-wrapper custom-cart-discount-code-module custom-cart-public-discount-code__input-wrapper">
-          <div
+          {discountCodesSettings.showTitle && <div
             className="hub-discount-heading"
             style={{ color: discountCodesSettings?.couponHeadingColor || "#000000" }}
           >
-            Coupon Code
-          </div>
+            {discountCodesSettings?.title}
+          </div>}
 
           <div className="hub-discount-input-row">
             <div className="hub-discount-input-wrapped">

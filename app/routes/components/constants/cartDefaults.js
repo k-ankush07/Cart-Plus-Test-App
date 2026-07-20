@@ -151,6 +151,8 @@ export const defaultDiscountCodesSettings = {
   couponHeadingColor: "#000000", 
   viewAllOffersColor: "#000000",
   viewAllOffersBgColor: "#ffffff", 
+  title:"Coupon Code",
+  showTitle:true,
 };
 
 export const defaultExpressPaymentsSettings = {

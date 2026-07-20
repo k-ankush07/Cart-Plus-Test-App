@@ -62,6 +62,22 @@ export default function DiscountCode({ discountCodesSettings, handleChange }) {
             <BlockStack gap="400">
                 <Card>
                     <BlockStack gap="300">
+                        {/* Checkbox — Show Offer Box */}
+                        <InlineStack>
+                            <Checkbox
+                                label="Show Discount Code Title"
+                                checked={discountCodesSettings.showTitle ?? false}
+                                onChange={(val) => update("showTitle", val)}
+                            />
+                        </InlineStack>
+
+                        {discountCodesSettings.showTitle && <TextField
+                            label="Discount Code Title"
+                            value={discountCodesSettings.title}
+                            onChange={(val) => update("title", val)}
+                            autoComplete="off"
+                        />}
+
                         <TextField
                             label="Discount input placeholder"
                             value={discountCodesSettings.placeholder}

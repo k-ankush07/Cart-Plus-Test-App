@@ -57,6 +57,9 @@ window.injectCartHTML = function (blockId, root) {
   const showOfferBox = discountCodesSettings.showOfferBox ?? false;
   const couponHeadingColor =
     discountCodesSettings.couponHeadingColor ?? "#000000";
+  const couponHeadingText = discountCodesSettings.title ?? "Coupon Code";
+  const showTitle = discountCodesSettings.showTitle ?? false;
+
   const viewAllOffersBgColor =
     discountCodesSettings.viewAllOffersBgColor ?? "#000000";
   const viewAllOffersColor =
@@ -370,7 +373,11 @@ window.injectCartHTML = function (blockId, root) {
         
         <div class="hub-discount-input-row-items custom-cart-discount-code-row custom-cart-public-discount-code custom-cart-discount-code-input-wrapper custom-cart-discount-code-module custom-cart-public-discount-code__input-wrapper" 
          id="hub-discount-row-${blockId}">
-         <div class="hub-discount-heading" style="color:${couponHeadingColor}">Coupon Code</div>
+         ${
+        showTitle
+           ? `<div class="hub-discount-heading" style="color:${couponHeadingColor}">${couponHeadingText}</div>`
+              : ""
+         }
         <div class="hub-discount-input-row">
         <div id="hub-discount-status-${blockId}" class="hub-discount-status-code"></div>
          <div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}">
