@@ -2,14 +2,31 @@ import { useState, useRef } from "react";
 
 const PRODUCT_IMAGE = "https://cdn.shopify.com/s/files/1/0642/9435/5203/products/campstool-1.jpg";
 
-const TrashIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-    <path d="M10 11v6" /><path d="M14 11v6" />
-    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-  </svg>
-);
+const TrashIcon = ({ color, hoverColor = "red" }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={isHovered ? hoverColor : (color || "currentColor")}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ transition: "stroke 0.15s ease", cursor: "pointer" }}
+    >
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" /><path d="M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  );
+};
 
 function hexToRGBA(hex, opacity) {
   const r = parseInt(hex.substring(1, 3), 16);
@@ -104,20 +121,21 @@ function UndoToast({ message, onUndo, onDismiss }) {
 }
 
 // ─── Qty Stepper ──────────────────────────────────────────────────────────────
-function QtyStepper({ qty, onDecrement, onIncrement, onQtyChange, loadingType }) {
+function QtyStepper({ qty, onDecrement, onIncrement, onQtyChange, loadingType, designSettings}) {
+  const iconColor = designSettings.iconColor;
+
   return (
     <div className="cart-app-item__qty custom-cart-public-component-product-tile__quantity-selector">
       <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus custom-cart-public-component-product-tile__quantity-minus">
         {loadingType === "dec"
           ? <span className="loader"></span>
-          : <span className="svg-wrapper">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-minus" viewBox="0 0 10 2">
+          : <span className="svg-wrapper" style={{ color: iconColor }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-minus" viewBox="0 0 10 2" style={{ color: iconColor }}>
               <path fill="currentColor" fillRule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clipRule="evenodd"></path>
             </svg>
           </span>
         }
       </button>
-
       <input
         type="text"
         min="1"
@@ -128,8 +146,8 @@ function QtyStepper({ qty, onDecrement, onIncrement, onQtyChange, loadingType })
       <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus custom-cart-public-component-product-tile__quantity-plus">
         {loadingType === "inc"
           ? <span className="loader"></span>
-          : <span className="svg-wrapper">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-plus" viewBox="0 0 10 10">
+          : <span className="svg-wrapper" style={{ color: iconColor }}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" className="icon icon-plus" viewBox="0 0 10 10" style={{ color: iconColor }}>
               <path fill="currentColor" fillRule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clipRule="evenodd"></path>
             </svg>
           </span>
@@ -138,7 +156,6 @@ function QtyStepper({ qty, onDecrement, onIncrement, onQtyChange, loadingType })
     </div>
   );
 }
-
 // ─── Classic Layout ───────────────────────────────────────────────────────────
 function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings, deleteLoading, currency }) {
   return (
@@ -198,6 +215,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
                 onQtyChange={(newQty) => {
                   if (newQty >= 1) setQty(newQty);
                 }}
+                designSettings={designSettings}
               />
               <button
                 className="cart-app-item__remove custom-cart-public-component-product-tile__remove-button"
@@ -206,7 +224,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
                 {deleteLoading ? (
                   <span className="loader"></span>
                 ) : (
-                  <TrashIcon />
+                   <TrashIcon color={designSettings.iconColor} />
                 )}
               </button>
             </div>
@@ -255,7 +273,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
                 {deleteLoading ? (
                   <span className="loader"></span>
                 ) : (
-                  <TrashIcon />
+                   <TrashIcon color={designSettings.iconColor} />
                 )}
               </button>
               <DiscountBadge code="MEGA20" color={designSettings.discountBageColor || "#1e7e34"} />
@@ -283,6 +301,7 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
               onQtyChange={(newQty) => {
                 if (newQty >= 1) setQty(newQty);
               }}
+              designSettings={designSettings}
             />
           </div>
 
@@ -395,7 +414,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
                 {deleteLoading ? (
                   <span className="loader"></span>
                 ) : (
-                  <TrashIcon />
+                   <TrashIcon color={designSettings.iconColor} />
                 )}
               </button>
               {showStrikethrough && (
@@ -412,6 +431,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
                   onQtyChange={(newQty) => {
                     if (newQty >= 1) setQty(newQty);
                   }}
+                  designSettings={designSettings}
                 />
               </div>
             </div>

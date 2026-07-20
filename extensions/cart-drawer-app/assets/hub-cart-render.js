@@ -453,15 +453,17 @@ window.hubCartRender = async function (drawer, opts = {}) {
         await loadSwiper();
         const indicator = settings.carouselIndicator || "progressBar";
          const btnColor = designSettings.buttonColor || "#000000";
+        const iconColor = designSettings.iconColor || "#000000";
+
         const slidesHTML = rendered
           .map(({ html }) => `<div class="swiper-slide">${html}</div>`)
           .join("");
         container.style.display = "";
         container.innerHTML = `
           <div class="hub-swiper-wrapper">
-            ${indicator === "buttons" ? `<div class="hub-swiper-prev" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></div>` : ""}
+            ${indicator === "buttons" ? `<div class="hub-swiper-prev" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></div>` : ""}
             <div class="hub-swiper swiper"><div class="swiper-wrapper">${slidesHTML}</div></div>
-            ${indicator === "buttons" ? `<div class="hub-swiper-next" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>` : ""}
+            ${indicator === "buttons" ? `<div class="hub-swiper-next" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>` : ""}
             ${indicator === "progressBar" ? `<div class="hub-progress-bar"><div class="hub-progress-bar-fill" style = "background-color:${btnColor}"></div></div>` : ""}
           </div>`;
       } else {
@@ -864,6 +866,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         const discountColor = designSettings.discountBageColor || "#1e7e34";
         const showStrikethrough = designSettings.showStrikethrough || false;
         const savingsColor = designSettings.savingsColor || "#16a34a";
+        const iconColor = designSettings.iconColor || "#000000";
 
         // FIX: read from pre-built cache — zero fetches here
         const cacheKey = `${item.handle}_${item.variant_id}`;
@@ -993,7 +996,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           !!item.properties?._hub_reward ||
           !!item.properties?._triggered_reward;
         const isTriggeredReward = !!item.properties?._triggered_reward;
-
+ 
         const layoutCtx = {
           item,
           colorItems,
@@ -1016,6 +1019,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           customHtmlBlocks,
           showSavingsBelowPrices,
           discountColor,
+          iconColor
         };
 
         const layoutFn =

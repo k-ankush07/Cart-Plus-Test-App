@@ -16,28 +16,6 @@ router.get("/product-ratings", async (req, res, next) => {
 
     const gids = idList.map((id) => `gid://shopify/Product/${id}`);
 
-    const gql = `
-      query ProductRatings($ids: [ID!]!) {
-        nodes(ids: $ids) {
-          ... on Product {
-            legacyResourceId
-            metafields(first: 100) {
-              edges {
-                node {
-                  namespace
-                  key
-                  value
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
-
-    const data = await makeShopifyGraphQL(shop, gql, { ids: gids });
-    const ratings = {};
-
     const parseNumeric = (raw) => {
       if (raw === null || raw === undefined || raw === "") return null;
       try {
@@ -80,15 +58,56 @@ router.get("/product-ratings", async (req, res, next) => {
       return null;
     };
 
-    for (const node of data?.data?.nodes ?? []) {
-      if (!node?.legacyResourceId) continue;
+   
+    const fetchAllMetafields = async (gid) => {
+      let all = [];
+      let cursor = null;
+      let hasNextPage = true;
 
-      const metafields = (node.metafields?.edges ?? []).map((e) => e.node);
+      while (hasNextPage) {
+        const gql = `
+          query ProductMetafields($id: ID!, $cursor: String) {
+            product(id: $id) {
+              legacyResourceId
+              metafields(first: 250, after: $cursor) {
+                edges {
+                  cursor
+                  node { namespace key value }
+                }
+                pageInfo { hasNextPage }
+              }
+            }
+          }
+        `;
+
+        const data = await makeShopifyGraphQL(shop, gql, { id: gid, cursor });
+        const product = data?.data?.product;
+        if (!product) break;
+
+        const edges = product.metafields?.edges ?? [];
+        all = all.concat(edges.map((e) => e.node));
+
+        hasNextPage = product.metafields?.pageInfo?.hasNextPage ?? false;
+        cursor = edges.length ? edges[edges.length - 1].cursor : null;
+
+        if (!cursor) break; 
+      }
+
+      return { legacyResourceId: gid, metafields: all };
+    };
+
+    const results = await Promise.all(gids.map((gid) => fetchAllMetafields(gid)));
+
+    const ratings = {};
+
+    for (const result of results) {
+      const legacyId = result.legacyResourceId.split("/").pop();
+      const metafields = result.metafields;
 
       const rating = findByPatterns(metafields, RATING_KEY_PATTERNS);
       const count = findByPatterns(metafields, COUNT_KEY_PATTERNS);
 
-      ratings[node.legacyResourceId] = {
+      ratings[legacyId] = {
         rating,
         count: count !== null ? Math.round(count) : null,
       };

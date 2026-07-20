@@ -1503,6 +1503,10 @@ span.hub-total-arrow svg {
   color: #fff;
 }
 
+.hub-delete-btn:hover .hub-trash-icon {
+  stroke: var(--trash-hover-color, red) !important;
+}
+
 .hub-progress-bar {
   width: 100%;
   height: 5px;
@@ -1977,13 +1981,17 @@ span.upsell-text.suggestion-product {
 
 .hub-coupon-success-icon {
   width: 50px;
+  height: 50px;
   display: inline-flex;
   position: absolute;
   top: -24px;
   left: 50%;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: white;
+  background-image: url("https://cartplus.io/cartplus-img/Group%201707479973.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .hub-coupon-success-icon img.discount-code-img {
@@ -2196,10 +2204,10 @@ span.upsell-text.suggestion-product {
 
 .hub-notes-title {
   display: flex;
-  gap: 3px;
+  gap: 5px;
   align-items: center;
-  line-height: 1;
   margin: 0;
+  line-height: 1;
 }
 
 .hub-notes-title {
@@ -2209,7 +2217,6 @@ span.upsell-text.suggestion-product {
 .hub-notes-title {
   color: #2D2D2D;
   font-weight: 600;
-  padding-bottom: 10px;
   margin: 0;
 }
 
@@ -2231,6 +2238,7 @@ span.upsell-text.suggestion-product {
   color: black;
   font-size: 14px;
   height: 90px;
+  margin-top: 10px;
 }
 
 .hub-additional-notes.top_of_footer {
@@ -2238,18 +2246,18 @@ span.upsell-text.suggestion-product {
 }
 
 .hub-additional-notes span.drop-icon {
-  padding-left: 10px;
+  padding-left: 5px;
   cursor: pointer;
+  display: flex;
 }
 
-
-.drop-icon img {
-  transform: rotate(180deg);
+.drop-icon svg {
+  transform: rotate(0deg);
   transition: transform 0.3s ease;
 }
 
-.hub-additional-notes.open .drop-icon img {
-  transform: rotate(0deg);
+.hub-additional-notes.open .drop-icon svg {
+  transform: rotate(180deg);
 }
 
 .hub-notes-content {

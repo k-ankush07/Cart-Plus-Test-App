@@ -171,7 +171,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                                     <CustomHtml cartSettings={cartSettings} position="below_cart_items" />
 
                                     {!additionalNotesSettings.enabled && additionalNotesSettings.placement === "below_items" && (
-                                        <AdditionalNotes additionalNotesSettings={additionalNotesSettings} />
+                                        <AdditionalNotes additionalNotesSettings={additionalNotesSettings} designSettings={designSettings}/>
                                     )}
 
                                     {!announcementSettings.enabled &&

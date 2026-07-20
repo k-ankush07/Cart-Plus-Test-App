@@ -39,7 +39,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
             }}
         >
             {!additionalNotesSettings?.enabled && additionalNotesSettings.placement === "top_of_footer" && (
-                <AdditionalNotes additionalNotesSettings={additionalNotesSettings} />
+                <AdditionalNotes additionalNotesSettings={additionalNotesSettings} designSettings={designSettings} />
             )}
 
             <div>
@@ -56,7 +56,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                                 <span className="hub-total-label" style={{ color: designSettings.subtotalColor }}>Estimated Total</span>
                                 <span className="hub-total-arrow" style={{ transform: breakdownOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>
                                     <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                                        <path d="M1 1L6 6L11 1" stroke={designSettings.iconColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                                     </svg>
                                 </span>
                             </div>

@@ -1,9 +1,10 @@
 import { useState } from "react";
 
-export default function AdditionalNotes({ additionalNotesSettings }) {
+export default function AdditionalNotes({ additionalNotesSettings, designSettings }) {
     const [open, setOpen] = useState(false);
 
     const isBelowItems = additionalNotesSettings?.placement === "below_items";
+    const iconColor = designSettings?.iconColor || "#000000";
 
     return (
         <div
@@ -15,17 +16,25 @@ export default function AdditionalNotes({ additionalNotesSettings }) {
                 onClick={() => setOpen((prev) => !prev)}
             >
                 <span className="custom-cart-public-notes__text-container" style={{ display: 'flex', gap: '4px', lineHeight: '1' }}>
-                    <div><img src="https://hubsyntax.com/cart-images/Group.svg" alt="icon" /></div>
+                    <div>
+                        {/* Pencil / edit icon (was Group.svg) */}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                        </svg>
+                    </div>
                     <span dangerouslySetInnerHTML={{ __html: additionalNotesSettings?.title || "Add special instructions" }} />
                     <span
                         className="custom-cart-public-component-collapse__expand-icon"
                         style={{
                             display: 'inline-flex',
                             transition: 'transform 0.3s ease',
-                            transform: open ? 'rotate(0deg)' : 'rotate(180deg)',
+                            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
                         }}
                     >
-                        <img src="https://hubsyntax.com/cart-images/Vector%20(3).svg" alt="icon" />
+                        <svg  viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
                     </span>
                 </span>
             </button>

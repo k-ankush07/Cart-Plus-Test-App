@@ -59,6 +59,7 @@ window.injectCartHTML = function (blockId, root) {
     discountCodesSettings.couponHeadingColor ?? "#000000";
   const couponHeadingText = discountCodesSettings.title ?? "Coupon Code";
   const showTitle = discountCodesSettings.showTitle ?? false;
+  const iconsColor = designSettings.iconColor ?? '#0000';
 
   const viewAllOffersBgColor =
     discountCodesSettings.viewAllOffersBgColor ?? "#000000";
@@ -381,7 +382,7 @@ window.injectCartHTML = function (blockId, root) {
         <div class="hub-discount-input-row">
         <div id="hub-discount-status-${blockId}" class="hub-discount-status-code"></div>
          <div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}">
-            <svg viewBox="0 0 20 20" style="fill: #111;">
+            <svg viewBox="0 0 20 20" style="fill: ${iconsColor}">
           <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
          <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
          <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
@@ -415,7 +416,7 @@ window.injectCartHTML = function (blockId, root) {
               <span class="hub-total-label" style="color:${subtotalColor}">Estimated Total</span>
               <span class="hub-total-arrow">
              <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M1 1L6 6L11 1" stroke=${iconsColor} stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             </span>
             </div>
@@ -483,7 +484,7 @@ window.injectCartHTML = function (blockId, root) {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <div class="hub-coupon-success-icon">
-          <svg viewBox="0 0 20 20" style="fill: #111;">
+          <svg viewBox="0 0 20 20" style="fill: ${iconsColor}">
           <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
          <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
          <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
@@ -525,7 +526,7 @@ window.injectCartHTML = function (blockId, root) {
          <div class="hub-offers-input-row">
           <div class="hub-offers-input-wrap">
            <div class="hub-offers-input">
-            <svg viewBox="0 0 20 20" style="fill: #111;">
+             <svg viewBox="0 0 20 20" style="fill: ${iconsColor}">
           <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
          <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
          <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>

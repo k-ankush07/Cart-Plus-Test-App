@@ -76,17 +76,24 @@ window.hubUtils = {
 
   getAdditionalNotesHTML(blockId, settings, note = "") {
     if (settings?.enabled !== false) return "";
+    const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
+    const iconColor = designSettings.iconColor || "";
 
     return `
 <div class="custom-cart-public-notes hub-additional-notes ${settings.placement}">
   <div class="hub-notes-title custom-cart-public-component-collapse__dropdown-container">
-    <div class="hub-notes-icon">
-      <img src="https://hubsyntax.com/cart-images/Group.svg" alt="icon">
+     <div class="hub-notes-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+      </svg>
     </div>
     ${settings.title}
-    <span class="drop-icon custom-cart-public-component-collapse__expand-icon">
-      <img src="https://hubsyntax.com/cart-images/Vector%20(3).svg" alt="icon">
-    </span>
+  <span class="drop-icon custom-cart-public-component-collapse__expand-icon">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+</span>
   </div>
 
   <div class="hub-notes-content custom-cart-public-notes__textarea">
@@ -327,7 +334,6 @@ window.hubUtils = {
         { headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }) },
       );
       const { ratings } = await res.json();
-      console.log("[hub] ratings response:", ratings);
 
       // cache update karo
       Object.entries(ratings || {}).forEach(([pid, r]) => {
@@ -950,6 +956,9 @@ window.hubUtils = {
       `#hub-discount-row-${blockId} .hub-discount-apply-btn`,
     );
 
+    const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
+    const iconColor = designSettings.iconColor || "";
+
     if (!discountStatus || !inputWrap || !applyBtn) return;
 
     const hasDiscount = allDiscounts.length > 0;
@@ -973,7 +982,7 @@ window.hubUtils = {
         <div class="hub-discount-left">
           
           <div class="hub-discount-image">
-            <svg viewBox="0 0 20 20" style="fill: #111;">
+            <svg viewBox="0 0 20 20" style="fill: ${iconColor};">
           <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
          <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
          <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>

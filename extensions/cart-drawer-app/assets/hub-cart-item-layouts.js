@@ -7,29 +7,32 @@ function hexToRGBA(hex, opacity) {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
-const _trashIcon = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+const _trashIcon = (color = "currentColor", hoverColor = "red") => `
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
+    class="hub-trash-icon"
+    style="stroke:${color}; --trash-hover-color:${hoverColor};"
+    stroke-width="1.8">
     <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
   </svg>`;
 
-function _qtyControl(key, quantity) {
+function _qtyControl(key, quantity, iconColor = "currentColor") {
   return `
     <div class="hub-qty-control custom-cart-public-component-product-tile__quantity-selector">
       <button class="hub-qty-btn minus custom-cart-public-component-product-tile__quantity-minus" data-type="minus" onclick="updateQty('${key}', ${quantity - 1}, this); _hubDisableQtySiblings(this)"${quantity <= 1 ? " disabled" : ""}>
-        <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"></path></svg></span>
+        <span class="svg-wrapper" style="color:${iconColor}"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"></path></svg></span>
       </button>
       <input type="text" value="${quantity}" class="hub-qty-input" oninput="handleQtyInput('${key}', this.value)" />
       <button class="hub-qty-btn plus custom-cart-public-component-product-tile__quantity-plus" data-type="plus" onclick="updateQty('${key}', ${quantity + 1}, this); _hubDisableQtySiblings(this)">
-        <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"></path></svg></span>
+        <span class="svg-wrapper" style="color:${iconColor}"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"></path></svg></span>
       </button>
     </div>`;
 }
 
-function _deleteBtn(key, title) {
+function _deleteBtn(key, title, iconColor = "currentColor") {
   const safeTitle = title?.replace(/'/g, "\\'") || "";
   return `
     <button class="hub-delete-btn" onclick="removeItem('${key}', '${safeTitle}')" aria-label="Remove item">
-      ${_trashIcon}
+      ${_trashIcon(iconColor)}
     </button>`;
 }
 
@@ -101,7 +104,8 @@ function classicItemHTML(ctx) {
     effectiveCompare,
     unitSave,
     saveHtml,
-    discountColor
+    discountColor,
+    iconColor 
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
@@ -115,7 +119,7 @@ function classicItemHTML(ctx) {
     ? `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
         <div style="display:flex;align-items:center;gap:8px">
           <span class="hub-price hub-price-free">FREE</span>
-          ${_deleteBtn(item.key, item.product_title)}
+          ${_deleteBtn(item.key, item.product_title, iconColor)}
         </div>
         <div style="display:flex;align-items:center;gap:6px">
           <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
@@ -140,8 +144,8 @@ function classicItemHTML(ctx) {
       </div>
       ${saveHtml}
       <div class="hub-item-actions" style="justify-content:flex-end;">
-        ${_qtyControl(item.key, item.quantity)}
-        ${_deleteBtn(item.key, item.product_title)}
+        ${_qtyControl(item.key, item.quantity, iconColor)}
+        ${_deleteBtn(item.key, item.product_title, iconColor)}
       </div>`;
 
   const inner = `
@@ -189,7 +193,8 @@ function subscriptionItemHTML(ctx) {
     effectiveCompare,
     unitSave,
     saveHtml,
-    discountColor
+    discountColor,
+    iconColor 
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
@@ -227,7 +232,7 @@ function subscriptionItemHTML(ctx) {
         <div style="width: 100%; display:flex;justify-content:space-between;align-items:flex-start">
           <a href="/products/${item.handle}" class="hub-item-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-            ${_deleteBtn(item.key, item.product_title)}
+            ${_deleteBtn(item.key, item.product_title, iconColor)}
             ${discountBadges}
           </div>
         </div>
@@ -240,7 +245,7 @@ function subscriptionItemHTML(ctx) {
           isReward
             ? ""
             : `<div class="hub-item-actions" style="flex-direction:column;align-items:flex-start;gap:8px;">
-                 ${_qtyControl(item.key, item.quantity)}
+                 ${_qtyControl(item.key, item.quantity, iconColor)}
                </div>`
         }
       </div>
@@ -272,7 +277,8 @@ function modernItemHTML(ctx) {
     effectiveCompare,
     unitSave,
     saveHtml,
-    discountColor
+    discountColor,
+    iconColor 
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
@@ -390,14 +396,14 @@ function modernItemHTML(ctx) {
             ${propertiesHtml}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
-           ${_deleteBtn(item.key, item.product_title)}
+           ${_deleteBtn(item.key, item.product_title,iconColor )}
             ${priceBlock}
             ${
               isReward
                 ? ""
                 : `<div class="hub-item-actions" style="justify-content:space-between;">
                      <div></div>
-                     ${_qtyControl(item.key, item.quantity)}
+                     ${_qtyControl(item.key, item.quantity, iconColor)}
                    </div>`
             }
           </div>
