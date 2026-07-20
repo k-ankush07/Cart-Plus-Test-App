@@ -273,11 +273,36 @@ window.hubCartRender = async function (drawer, opts = {}) {
         `hub-discount-mrp-row-${blockId}`,
       );
       const discMrpEl = document.getElementById(`hub-discount-mrp-${blockId}`);
+      const discMrpLabelEl = document.getElementById(
+        `hub-discount-mrp-label-${blockId}`,
+      );
+
       if (discMrpRow && discMrpEl) {
         if (lineSaving > 0) {
           discMrpEl.textContent = `-${fmt(lineSaving)}`;
           discMrpRow.style.display = "";
-        } else discMrpRow.style.display = "none";
+
+          if (discMrpLabelEl) {
+            const lineDiscountTitles = [
+              ...new Set(
+                cart.items.flatMap((item) =>
+                  (item.line_level_discount_allocations || [])
+                    .map((d) => d.discount_application?.title)
+                    .filter(Boolean),
+                ),
+              ),
+            ];
+
+            const baseLabel =
+              window.__HUB_ACTIVE_CART__?.cartSettings?.discountsSavingsText ||
+              "Discount";
+            discMrpLabelEl.textContent = lineDiscountTitles.length
+              ? `${baseLabel} (${lineDiscountTitles.join(", ")})`
+              : baseLabel;
+          }
+        } else {
+          discMrpRow.style.display = "none";
+        }
       }
 
       const couponRow = document.getElementById(`hub-coupon-row-${blockId}`);
