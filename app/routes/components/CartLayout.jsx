@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, memo } from "react";
 import { useNavigate, useLocation, useNavigation } from "react-router-dom";
 import "../../index.css";
 import { renameCart, togglePublishCart, getCarts } from "../../services/apiRoutes";
-import {getCurrencySymbol} from "./utils/currency"
+import { getCurrencySymbol } from "./utils/currency"
 
 const CartLayout = memo(function CartLayout({
 
@@ -40,7 +40,7 @@ const CartLayout = memo(function CartLayout({
   onDiscard,
   onResetToDefault,
   isResetting
-  
+
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -203,41 +203,58 @@ const CartLayout = memo(function CartLayout({
 
   useEffect(() => {
     let observer;
+    let pollId;
 
-    const moveToLeft = () => {
-      const host = document.getElementById("tidio-chat");
-      const root = host?.shadowRoot?.getElementById("tidio-chat-root");
-      if (root && root.classList.contains("widget-position-right")) {
+    const moveToLeft = (root) => {
+      if (!root) return;
+      if (root.classList.contains("widget-position-right")) {
         root.classList.remove("widget-position-right");
         root.classList.add("widget-position-left");
       }
-      if (root && root.classList.contains("sidebar-position-right")) {
+      if (root.classList.contains("sidebar-position-right")) {
         root.classList.remove("sidebar-position-right");
         root.classList.add("sidebar-position-left");
       }
+      root.style.bottom = "-50px";
     };
 
-    moveToLeft();
+    const trySetup = () => {
+      const host = document.getElementById("tidio-chat");
+      const root = host?.shadowRoot?.getElementById("tidio-chat-root");
 
-    observer = new MutationObserver(moveToLeft);
-    const host = document.getElementById("tidio-chat");
-    if (host?.shadowRoot) {
-      observer.observe(host.shadowRoot, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["class"],
-      });
-    }
+      if (host?.shadowRoot && root) {
+        moveToLeft(root);
+
+        observer = new MutationObserver(() => {
+          const currentRoot = host.shadowRoot.getElementById("tidio-chat-root");
+          moveToLeft(currentRoot);
+        });
+
+        observer.observe(host.shadowRoot, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+
+        clearInterval(pollId);
+      }
+    };
+
+    pollId = setInterval(trySetup, 300);
+    trySetup();
 
     return () => {
+      clearInterval(pollId);
       if (observer) observer.disconnect();
+
       const root = document
         .getElementById("tidio-chat")
         ?.shadowRoot?.getElementById("tidio-chat-root");
       if (root) {
         root.classList.remove("widget-position-left", "sidebar-position-left");
         root.classList.add("widget-position-right", "sidebar-position-right");
+        root.style.bottom = "";
       }
     };
   }, []);
