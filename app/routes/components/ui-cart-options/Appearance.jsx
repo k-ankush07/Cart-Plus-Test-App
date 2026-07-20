@@ -115,6 +115,13 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                         value={designSettings.discountBageColor || "#1e7e34"}
                         onChange={(val) => handleChange("discountBageColor", val)}
                     />
+
+                    <ColorInput
+                        label="Icon color"
+                        value={designSettings.iconColor || "#ABABAB"}
+                        onChange={(val) => handleChange("iconColor", val)}
+                    />
+
                     <ColorInput
                         label="Estimated text color"
                         value={designSettings.subtotalColor}
@@ -151,13 +158,13 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                                 />
                             </div>
                             <div className="styles_ButtonRadiusWrapper_ltYpX"
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                width: "80%",
-                                marginLeft: "12px",
-                            }}>
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    width: "80%",
+                                    marginLeft: "12px",
+                                }}>
                                 <div className="styles_ButtonRadiusIcon__ZFqx_">
                                     <svg viewBox="0 0 20 20" style={{ width: 20, height: 20, }} focusable="false" aria-hidden="true">
                                         <path fillRule="evenodd" d="M5.25 5a.25.25 0 0 0-.25.25v10.5a.75.75 0 0 1-1.5 0v-10.5c0-.966.784-1.75 1.75-1.75h10.5a.75.75 0 0 1 0 1.5h-10.5Z" />

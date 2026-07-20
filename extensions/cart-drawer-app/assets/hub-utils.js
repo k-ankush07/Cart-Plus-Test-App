@@ -312,13 +312,12 @@ window.hubUtils = {
       }
     });
 
-    // Step 2: sirf un ids ke liye fetch karo jo cache mein nahi hain
     const missingIds = [...slots]
       .map((s) => s.dataset.pid)
       .filter((id) => !window._hubRatingsCache[id]);
 
     const uniqueMissing = [...new Set(missingIds)];
-    if (!uniqueMissing.length) return; // sab cached tha, fetch ki zaroorat nahi
+    if (!uniqueMissing.length) return;
 
     const ids = uniqueMissing.join(",");
 
@@ -328,6 +327,7 @@ window.hubUtils = {
         { headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }) },
       );
       const { ratings } = await res.json();
+      console.log("[hub] ratings response:", ratings);
 
       // cache update karo
       Object.entries(ratings || {}).forEach(([pid, r]) => {

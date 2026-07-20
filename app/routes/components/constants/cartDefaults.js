@@ -14,6 +14,7 @@ export const defaultSettings = {
   buttonColor: "#000000",
   buttonTextColor: "#FFFFFF",
   buttonHoverColor: "#e9e9e9",
+  iconColor:"#ABABAB",
   continueshopping: false,
 };
 

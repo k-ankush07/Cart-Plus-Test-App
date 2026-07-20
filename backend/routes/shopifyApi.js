@@ -21,8 +21,15 @@ router.get("/product-ratings", async (req, res, next) => {
         nodes(ids: $ids) {
           ... on Product {
             legacyResourceId
-            rating: metafield(namespace: "reviews", key: "rating") { value }
-            ratingCount: metafield(namespace: "reviews", key: "rating_count") { value }
+            metafields(first: 100) {
+              edges {
+                node {
+                  namespace
+                  key
+                  value
+                }
+              }
+            }
           }
         }
       }
@@ -31,24 +38,59 @@ router.get("/product-ratings", async (req, res, next) => {
     const data = await makeShopifyGraphQL(shop, gql, { ids: gids });
     const ratings = {};
 
+    const parseNumeric = (raw) => {
+      if (raw === null || raw === undefined || raw === "") return null;
+      try {
+        const parsed = JSON.parse(raw);
+        const num = parseFloat(parsed?.value ?? parsed);
+        return Number.isNaN(num) ? null : num;
+      } catch {
+        const num = parseFloat(raw);
+        return Number.isNaN(num) ? null : num;
+      }
+    };
+
+    const RATING_KEY_PATTERNS = [
+      /^rating$/i,
+      /avg[_-]?rating/i,
+      /rating[_-]?avg/i,
+      /average[_-]?rating/i,
+      /reviews?[_-]?avg/i,
+      /reviews?_avg_score/i,
+      /star[_-]?rating/i,
+    ];
+
+    const COUNT_KEY_PATTERNS = [
+      /^rating[_-]?count$/i,
+      /^review[_-]?count$/i,
+      /^reviews?[_-]?count$/i,
+      /num[_-]?reviews?/i,
+      /total[_-]?reviews?/i,
+      /count/i,
+    ];
+
+    const findByPatterns = (metafields, patterns) => {
+      for (const pattern of patterns) {
+        const match = metafields.find((m) => pattern.test(m.key));
+        if (match) {
+          const val = parseNumeric(match.value);
+          if (val !== null) return val;
+        }
+      }
+      return null;
+    };
+
     for (const node of data?.data?.nodes ?? []) {
       if (!node?.legacyResourceId) continue;
 
-      let ratingValue = null;
-      if (node.rating?.value) {
-        try {
-          const parsed = JSON.parse(node.rating.value);
-          ratingValue = parseFloat(parsed.value ?? parsed);
-        } catch {
-          ratingValue = parseFloat(node.rating.value);
-        }
-      }
+      const metafields = (node.metafields?.edges ?? []).map((e) => e.node);
+
+      const rating = findByPatterns(metafields, RATING_KEY_PATTERNS);
+      const count = findByPatterns(metafields, COUNT_KEY_PATTERNS);
 
       ratings[node.legacyResourceId] = {
-        rating: ratingValue,
-        count: node.ratingCount?.value
-          ? parseInt(node.ratingCount.value, 10)
-          : null,
+        rating,
+        count: count !== null ? Math.round(count) : null,
       };
     }
 
