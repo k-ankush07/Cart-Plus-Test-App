@@ -278,6 +278,18 @@ input.hub-qty-input {
   outline: none;
   background: transparent;
   box-shadow: none !important;
+  padding: 0 !important;
+}
+
+input.hub-qty-input:focus {
+  outline: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+input.hub-qty-input:hover {
+  border: 0 !important;
+  outline: none !important;
 }
 
 .hub-delete-btn {
@@ -579,6 +591,18 @@ span.hub-offers-title {
   background: transparent;
   outline: none;
   box-shadow: none;
+  border: 0;
+}
+
+.hub-offers-input-wrap input:focus {
+  outline: none;
+  border: 0;
+  box-shadow: none;
+}
+
+.hub-offers-input-wrap input:hover {
+  border: 0;
+  outline: none;
 }
 
 .hub-offers-code-input {
@@ -1265,6 +1289,7 @@ span.hub-total-arrow svg {
   padding-bottom: 5px;
   letter-spacing: 0px !important;
   text-transform: capitalize;
+  line-height: 13px;
 }
 
 .cart-app__title.upcart-header-text {
@@ -1362,6 +1387,7 @@ span.hub-total-arrow svg {
   align-items: center;
   justify-content: center;
   height: 37px;
+  font-size: 14px;
 }
 
 .hub-add-btn {
@@ -2201,10 +2227,11 @@ span.upsell-text.suggestion-product {
   width: 100%;
   border: 1px solid #E8E8E8;
   border-radius: 5px;
-  padding: 20px;
+  padding: 10px;
   outline: none;
   color: black;
   font-size: 14px;
+  height: 90px;
 }
 
 .hub-additional-notes.top_of_footer {

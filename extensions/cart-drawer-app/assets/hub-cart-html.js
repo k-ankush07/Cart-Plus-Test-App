@@ -141,13 +141,15 @@ window.injectCartHTML = function (blockId, root) {
             : "margin:0;";
       return `
         <div style="${wrapperStyle}" class="custom-cart-header-logo">
-          <img
-            class="upcart-header-logo"
-            src="${src}"
-            alt="Logo"
-            style="max-width:${headerSettings.logoSize || 120}px;display:block;${marginStyle}"
-            onerror="this.src='${fallback}'"
-          />
+          <div style="max-width:${headerSettings.logoSize || 120}px;display:block;${marginStyle}">
+            <img
+              class="upcart-header-logo"
+              src="${src}"
+              alt="Logo"
+              style="width:100%;"
+              onerror="this.src='${fallback}'"
+            />
+          </div>
         </div>`;
     }
 

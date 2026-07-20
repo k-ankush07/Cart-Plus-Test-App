@@ -719,6 +719,7 @@ span.svg-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 14px;
 }
 
 .custom-cart-internal-style__title-large {
