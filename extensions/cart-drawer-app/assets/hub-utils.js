@@ -500,7 +500,6 @@ window.hubUtils = {
           fmt(grandTotal),
         );
       }
-
     } catch (err) {
       console.error("Shipping Calculation Error:", err);
     }
@@ -755,13 +754,27 @@ window.hubUtils = {
     const existingFills = el.querySelectorAll(".hub-cell-fill");
 
     if (existingFills.length === sorted.length) {
-      existingFills.forEach((fillEl, i) => {
-        fillEl.style.width = `${segFills[i].toFixed(2)}%`;
+      const dots = el.querySelectorAll(".hub-rewards-dot");
+      const icons = el.querySelectorAll(".hub-rewards-dot svg");
+
+      sorted.forEach((tier, i) => {
+        existingFills[i].style.width = `${segFills[i].toFixed(2)}%`;
+
+        const done = cartTotal >= getTierValue(tier);
+        const dotBg = done ? fillColor : trackColor;
+        const iconColor = done
+          ? rewards.completeIconColor || "#ffffff"
+          : rewards.incompleteIconColor || "#000000";
+
+        if (dots[i]) dots[i].style.background = dotBg;
+        if (icons[i]) icons[i].setAttribute("fill", iconColor);
       });
 
       const titleEl = el.querySelector(".hub-rewards-title");
       if (titleEl && titleHtml) {
-        titleEl.outerHTML = titleHtml;
+        const tmp = document.createElement("div");
+        tmp.innerHTML = titleHtml;
+        titleEl.innerHTML = tmp.firstElementChild.innerHTML;
       } else if (!titleEl && titleHtml) {
         el.querySelector(".hub-rewards-wrap")?.insertAdjacentHTML(
           "afterbegin",
@@ -770,7 +783,6 @@ window.hubUtils = {
       } else if (titleEl && !titleHtml) {
         titleEl.remove();
       }
-
       return;
     }
 

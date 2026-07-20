@@ -420,6 +420,10 @@ button.cart-app-item__qty-btn.upcart-product-quantity-minus.custom-cart-public-c
     margin-top: 10px;
 }
 
+.cart_plus_subscription {
+    margin-top: 10px;
+}
+
 /* Segmented flex bar */
 .segments-flex {
     display: flex;
@@ -450,7 +454,10 @@ button.cart-app-item__qty-btn.upcart-product-quantity-minus.custom-cart-public-c
     flex-direction: column;
     align-items: center;
     flex-shrink: 0;
+    margin: 0 -2px;
+    z-index: 3;
 }
+
 
 /* ICON */
 .icon-circle {

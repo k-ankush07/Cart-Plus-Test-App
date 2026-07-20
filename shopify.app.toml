@@ -2,7 +2,7 @@
 
 client_id = "777e08bc2cc25f680c35f7e5dbf9779c"
 name = "Cart Plus"
-application_url = "https://bedroom-qld-expansion-medications.trycloudflare.com"
+application_url = "https://highly-hydrocodone-heritage-almost.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,10 +28,10 @@ scopes = "read_customers,read_discounts,read_locations,read_orders,read_pixels,r
 
 [auth]
 redirect_urls = [
-  "https://bedroom-qld-expansion-medications.trycloudflare.com/api/auth"
+  "https://highly-hydrocodone-heritage-almost.trycloudflare.com/api/auth"
 ]
 
 [app_proxy]
-url = "https://bedroom-qld-expansion-medications.trycloudflare.com/api/proxy-order-track"
+url = "https://highly-hydrocodone-heritage-almost.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"

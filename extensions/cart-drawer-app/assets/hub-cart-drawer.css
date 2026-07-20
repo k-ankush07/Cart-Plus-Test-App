@@ -268,7 +268,7 @@ button.hub-qty-btn.plus {
   cursor: not-allowed;
 }
 
-input.hub-qty-input{
+input.hub-qty-input {
   width: 30px;
   height: 26px;
   border: none;
@@ -1049,6 +1049,8 @@ span.hub-total-arrow svg {
   transition: background 0.3s;
   box-sizing: border-box;
   flex-shrink: 0;
+  margin: 0 -2px;
+  z-index: 3;
 }
 
 .hub-rewards-dot-label {
@@ -2188,7 +2190,7 @@ span.upsell-text.suggestion-product {
 }
 
 .custom-cart-announcement {
-    line-height: 22px;
+  line-height: 22px;
 }
 
 .hub-additional-notes textarea {
@@ -2259,7 +2261,7 @@ span.upsell-text.suggestion-product {
 }
 
 span.hub-rating-count {
-    line-height: 15px;
+  line-height: 13px;
 }
 
 .hub-discount-input-row {
