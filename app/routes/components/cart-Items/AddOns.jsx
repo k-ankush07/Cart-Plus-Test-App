@@ -4,8 +4,8 @@ const ShippingIcon = () => (
     <div
         style={{
             position: "relative",
-            width: "50px",
-            height: "50px",
+            width: "60px",
+            height: "60px",
             borderRadius: "5px",
             overflow: "hidden",
             border: "1px solid #E8E8E8",
@@ -74,6 +74,11 @@ export default function AddOns({ addonsSettings, currency }) {
         }, 200);
     };
 
+    const truncateText = (text, limit = 50) => {
+        if (!text) return "";
+        return text.length > limit ? text.slice(0, limit).trim() + "..." : text;
+    };
+
     return (
         <div className="cart-addon-tile upcart-addons custom-cart-public-addons custom-cart-addons">
             {isShipping ? (
@@ -82,8 +87,8 @@ export default function AddOns({ addonsSettings, currency }) {
                 <div
                     className="upcart-addons-image-wrapper custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper"
                     style={{
-                        width: 50,
-                        height: 50,
+                        width: 60,
+                        height: 60,
                         borderRadius: 5,
                         overflow: "hidden",
                         border: "1px solid #E8E8E8",
@@ -105,7 +110,7 @@ export default function AddOns({ addonsSettings, currency }) {
             <div className="cart-addon-tile__info custom-cart-public-addons__content-wrapper">
                 <div className="cart-addon-tile__title-row custom-cart-public-addons__content-title-wrapper custom-cart-addons-title">
                     <span className="cart-addon-tile__title upcart-addons-title custom-cart-public-addons__content-title">
-                        {isShipping ? addonsSettings.title : product?.title || "Product add-on"}
+                        {truncateText(isShipping ? addonsSettings.title : product?.title || "Product add-on")}
                     </span>
                     <span className="cart-addon-tile__price upcart-addons-price upcart-public-addons__price custom-cart-public-addons__content-price">
                         {isShipping ? (
@@ -121,9 +126,7 @@ export default function AddOns({ addonsSettings, currency }) {
                     </span>
                 </div>
                 <p className="cart-addon-tile__desc custom-cart-addons-product-description custom-cart-public-addons__content-description upcart-addons-product-description upcart-public-addons__content-description">
-                    {isShipping
-                        ? addonsSettings.description
-                        : product?.description || ""}
+                    {truncateText(isShipping ? addonsSettings.description : product?.description || "", 60)}
                 </p>
             </div>
             {isShipping && (<span className="cart-addon-tile__price custom-cart-addons-price custom-cart-public-addons__price"> {currency} {addonsSettings.price}</span>)}

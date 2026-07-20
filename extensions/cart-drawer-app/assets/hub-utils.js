@@ -296,10 +296,31 @@ window.hubUtils = {
     const shop = window.__SHOPIFY_SHOP__?.domain;
     if (!ratingsUrl || !shop) return;
 
+    window._hubRatingsCache = window._hubRatingsCache || {};
+
     const slots = container.querySelectorAll(".hub-rating-slot[data-pid]");
     if (!slots.length) return;
 
-    const ids = [...new Set([...slots].map((s) => s.dataset.pid))].join(",");
+    // Step 1: turant cached ratings dikhao (agar available hain), koi flicker nahi
+    slots.forEach((slot) => {
+      const cached = window._hubRatingsCache[slot.dataset.pid];
+      if (cached?.rating) {
+        slot.innerHTML = `
+        <span class="hub-stars" style="--rating: ${cached.rating};" aria-label="Rating: ${cached.rating} out of 5"></span>
+        ${cached.count ? `<span class="hub-rating-count">(${cached.count})</span>` : ""}
+      `;
+      }
+    });
+
+    // Step 2: sirf un ids ke liye fetch karo jo cache mein nahi hain
+    const missingIds = [...slots]
+      .map((s) => s.dataset.pid)
+      .filter((id) => !window._hubRatingsCache[id]);
+
+    const uniqueMissing = [...new Set(missingIds)];
+    if (!uniqueMissing.length) return; // sab cached tha, fetch ki zaroorat nahi
+
+    const ids = uniqueMissing.join(",");
 
     try {
       const res = await fetch(
@@ -308,13 +329,18 @@ window.hubUtils = {
       );
       const { ratings } = await res.json();
 
+      // cache update karo
+      Object.entries(ratings || {}).forEach(([pid, r]) => {
+        window._hubRatingsCache[pid] = r;
+      });
+
       slots.forEach((slot) => {
         const r = ratings[slot.dataset.pid];
         if (!r?.rating) return;
         slot.innerHTML = `
-          <span class="hub-stars" style="--rating: ${r.rating};" aria-label="Rating: ${r.rating} out of 5"></span>
-          ${r.count ? `<span class="hub-rating-count">(${r.count})</span>` : ""}
-        `;
+        <span class="hub-stars" style="--rating: ${r.rating};" aria-label="Rating: ${r.rating} out of 5"></span>
+        ${r.count ? `<span class="hub-rating-count">(${r.count})</span>` : ""}
+      `;
       });
     } catch (err) {
       console.warn("[hub] Could not fetch ratings:", err);

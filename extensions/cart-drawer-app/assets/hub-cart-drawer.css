@@ -1582,11 +1582,14 @@ span.hub-total-arrow svg {
   color: black;
 }
 
+
 .hub-addon-sp-desc {
-  font-size: 12px;
+  font-size: 10px;
   color: #666;
   margin: 0;
   line-height: 14px;
+  font-weight: 400;
+  opacity: 0.7;
 }
 
 .hub-addon-sp-right {
@@ -1631,7 +1634,7 @@ span.hub-total-arrow svg {
 }
 
 .hub-addon-product-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 18px;
   margin: 0;
@@ -1788,7 +1791,7 @@ span.hub-total-arrow svg {
   color: var(--icon-color);
   transition: background 0.3s ease;
   cursor: pointer;
-  padding: 5px;
+  padding: 0px;
   display: flex;
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius);

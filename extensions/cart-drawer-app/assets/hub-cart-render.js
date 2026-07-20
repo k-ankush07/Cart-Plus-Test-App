@@ -1048,16 +1048,29 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
         const shouldBeChecked = isInCart;
 
+        const truncateText = (text, limit = 50) => {
+          if (!text) return "";
+          return text.length > limit
+            ? text.slice(0, limit).trim() + "..."
+            : text;
+        };
+
         if (isShipping) {
+          const spTitle = truncateText(
+            addonsSettings.title || "Shipping Protection",
+            50,
+          );
+          const spDesc = truncateText(addonsSettings.description || "", 60);
+
           addonsEl.innerHTML = `
             <div class="hub-addon-shipping-protection">
               <div class="upcart-internal-addons__image-wrapper">
                 <img src="https://cdn.shopify.com/s/files/1/0733/2531/4260/files/shipping-protection.png" alt="Shipping Protection" class="hub-addon-sp-img"/>
               </div>
               <div class="hub-addon-sp-info">
-                <p class="hub-addon-sp-title">${addonsSettings.title || "Shipping Protection"}</p>
-                <p class="hub-addon-sp-desc">${addonsSettings.description || ""}</p>
-              </div>
+        <p class="hub-addon-sp-title">${spTitle}</p>
+        <p class="hub-addon-sp-desc">${spDesc}</p>
+      </div>
               <div class="hub-addon-sp-right">
                 <span class="hub-addon-sp-price">${price}</span>
                 <label class="hub-addon-sp-toggle">
@@ -1068,11 +1081,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
             </div>`;
         } else {
           const selected = addonsSettings.selectedProduct;
+          const productTitle = truncateText(selected.title || "", 50);
+
           addonsEl.innerHTML = `
     <div class="hub-addon-product custom-cart-public-addons custom-cart-addons">
      ${selected.image ? `<div class="hub-addon-product-img-wrapper custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper"><img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img"/></div>` : ""}
       <div class="hub-addon-product-info custom-cart-public-addons__content-wrapper">
-        <p class="hub-addon-product-title custom-cart-public-addons__content-title-wrapper custom-cart-addons-title">${selected.title || ""}</p>
+        <p class="hub-addon-product-title custom-cart-public-addons__content-title-wrapper custom-cart-addons-title">${productTitle}</p>
         <span class="hub-addon-product-price custom-cart-public-addons__content-price">${price}</span>
       </div>
       <label class="hub-addon-sp-toggle custom-cart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
@@ -1184,30 +1199,39 @@ window.hubCartRender = async function (drawer, opts = {}) {
           : document.getElementById(`hub-upsell-bottom-${blockId}`);
 
       if (upsellContainer) {
-        upsellContainer.classList.add("upsell-container");
-        upsellContainer.classList.add(
-          position === "bottom" ? "upsell-bottom" : "upsell-top",
-        );
-        upsellContainer.innerHTML = "";
+        const newHandles = upsellProducts
+          .map((p) => p.handle)
+          .sort()
+          .join(",");
+        const prevHandles = upsellContainer.dataset.renderedHandles || "";
 
-        if (upsellProducts.length > 0) {
-          const wrapper = document.createElement("div");
-          wrapper.className = "upsell-inner";
-          const heading = document.createElement("h3");
-          heading.className = "upsell-heading";
-          heading.innerHTML = headingUpsell;
-          heading.style.color = textColor;
-          const productsDiv = document.createElement("div");
-          productsDiv.className = "upsell-products";
-          wrapper.appendChild(heading);
-          wrapper.appendChild(productsDiv);
-          upsellContainer.appendChild(wrapper);
-          window.renderProducts(productsDiv, upsellProducts, {
-            layout: upsellSettings.direction,
-            showReviews: upsellSettings.showReviews,
-            carouselIndicator: upsellSettings.carouselIndicator,
-            showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,
-          });
+        if (newHandles === prevHandles && upsellContainer.children.length > 0) {
+        } else {
+          upsellContainer.classList.add("upsell-container");
+          upsellContainer.classList.add(
+            position === "bottom" ? "upsell-bottom" : "upsell-top",
+          );
+          upsellContainer.innerHTML = "";
+
+          if (upsellProducts.length > 0) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "upsell-inner";
+            const heading = document.createElement("h3");
+            heading.className = "upsell-heading";
+            heading.innerHTML = headingUpsell;
+            heading.style.color = textColor;
+            const productsDiv = document.createElement("div");
+            productsDiv.className = "upsell-products";
+            wrapper.appendChild(heading);
+            wrapper.appendChild(productsDiv);
+            upsellContainer.appendChild(wrapper);
+            window.renderProducts(productsDiv, upsellProducts, {
+              layout: upsellSettings.direction,
+              showReviews: upsellSettings.showReviews,
+              carouselIndicator: upsellSettings.carouselIndicator,
+              showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,
+            });
+          }
         }
       }
     }
