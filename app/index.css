@@ -115,22 +115,19 @@ body,
     position: relative;
 }
 
-.announcement-after,
-.notes-below-items {
+.cart-app__bottom-group {
     margin-top: auto !important;
+    display: flex;
+    flex-direction: column;
 }
 
-.hub-upsell-product,
-[class*="hub-upsell"] {
-    margin-top: auto !important;
-}
-
-.cart-app__body:has([class*="hub-upsell"]) .announcement-after {
+.cart-app__bottom-group > * {
     margin-top: 0 !important;
 }
 
-.cart-app__body:has([class*="hub-upsell"]) .notes-below-items {
-    margin-top: 0 !important;
+[id*="hub-upsell"]:empty {
+    display: none !important;
+    margin: 0 !important;
 }
 
 .cart-app__body::-webkit-scrollbar {

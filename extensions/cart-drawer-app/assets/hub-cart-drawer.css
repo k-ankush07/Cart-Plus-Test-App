@@ -2495,14 +2495,13 @@ span.hub-item-discount-badge img.discount-code-img {
   justify-content: center;
 }
 
-.hub-cart-drawer.cart-app :empty {
+.hub-cart-drawer.cart-app :empty:not(.hub-announcement):not([style*="display:none"]) {
   display: block !important;
 }
 
 .hub-cart-drawer.cart-app a:empty,
 .hub-cart-drawer.cart-app ul:empty,
 .hub-cart-drawer.cart-app dl:empty,
-.hub-cart-drawer.cart-app div:empty,
 .hub-cart-drawer.cart-app section:empty,
 .hub-cart-drawer.cart-app article:empty,
 .hub-cart-drawer.cart-app p:empty,

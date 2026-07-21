@@ -131,7 +131,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                                     )}
 
                                     {!rewardsSettings.enabled && (
-                                        <TieredReward rewardsSettings={rewardsSettings} currency={currency}/>)}
+                                        <TieredReward rewardsSettings={rewardsSettings} currency={currency} />)}
 
                                     {!upsellsSettings.enabled && upsellsSettings?.position === "top" && (
                                         <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings} />
@@ -164,20 +164,22 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
 
                                     <CustomHtml cartSettings={cartSettings} position="between_line_items" />
 
-                                    {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && (
-                                        <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings} />
-                                    )}
-
-                                    <CustomHtml cartSettings={cartSettings} position="below_cart_items" />
-
-                                    {!additionalNotesSettings.enabled && additionalNotesSettings.placement === "below_items" && (
-                                        <AdditionalNotes additionalNotesSettings={additionalNotesSettings} designSettings={designSettings}/>
-                                    )}
-
-                                    {!announcementSettings.enabled &&
-                                        announcementSettings.position === "after" && (
-                                            <Announcements announcementSettings={announcementSettings} cartSettings={cartSettings} />
+                                    <div className="cart-app__bottom-group">
+                                        {!upsellsSettings.enabled && upsellsSettings?.position === "bottom" && (
+                                            <Upsells upsellsSettings={upsellsSettings} designSettings={designSettings} currency={currency} cartSettings={cartSettings} />
                                         )}
+
+                                        <CustomHtml cartSettings={cartSettings} position="below_cart_items" />
+
+                                        {!additionalNotesSettings.enabled && additionalNotesSettings.placement === "below_items" && (
+                                            <AdditionalNotes additionalNotesSettings={additionalNotesSettings} designSettings={designSettings} />
+                                        )}
+
+                                        {!announcementSettings.enabled &&
+                                            announcementSettings.position === "after" && (
+                                                <Announcements announcementSettings={announcementSettings} cartSettings={cartSettings} />
+                                            )}
+                                    </div>
                                 </>
                             )}
 

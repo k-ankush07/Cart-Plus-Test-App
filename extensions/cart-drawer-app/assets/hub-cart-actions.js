@@ -704,7 +704,7 @@ window.hubCheckoutClick = function (e, blockId, btn) {
   // on checkout_completed so it only fires on confirmed orders.
 
   fetch(
-    `${window.__HUB_API_URL__ || "https://app.cartplus.io"}/api/track-event`,
+    `${window.__HUB_API_URL__ || "http://localhost:6002"}/api/track-event`,
     {
       method: "POST",
       headers: {
