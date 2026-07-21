@@ -1903,8 +1903,8 @@ span.hub-total-arrow svg {
   cursor: pointer;
 }
 
-.upsell-checkbox-wrapper input[type="checkbox"] {
-  display: none;
+.hub-cart-drawer.cart-app .upsell-suggestion  .upsell-checkbox-wrapper input[type="checkbox"] {
+  display: none !important;
 }
 
 .custom-checkbox {

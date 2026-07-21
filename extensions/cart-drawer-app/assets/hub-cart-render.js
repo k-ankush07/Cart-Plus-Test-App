@@ -50,6 +50,17 @@ window.hubCartRender = async function (drawer, opts = {}) {
     _footer.classList.add("hub-empty-footer");
   }
 
+  if (window._hubLastCartHadItems === false) {
+    const _trustTop = document.getElementById(
+      `hub-trust-badges-top-${blockId}`,
+    );
+    const _trustBottom = document.getElementById(
+      `hub-trust-badges-bottom-${blockId}`,
+    );
+    if (_trustTop) _trustTop.style.display = "none";
+    if (_trustBottom) _trustBottom.style.display = "none";
+  }
+
   try {
     // ── FETCH 1: cart (the only guaranteed fetch) ─────────────────────────
     const res = await fetch("/cart.js");
@@ -108,38 +119,23 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const notesSettings = window.__HUB_ACTIVE_CART__?.additionalNotesSettings;
     const belowEl = document.getElementById(`hub-notes-below-${blockId}`);
     const footerEl = document.getElementById(`hub-notes-footer-${blockId}`);
-    if (belowEl) belowEl.innerHTML = "";
-    if (footerEl) footerEl.innerHTML = "";
-    drawer
-      .querySelectorAll(".hub-additional-notes")
-      .forEach((el) => el.remove());
-
-    if (
+    const _shouldShowBelow =
       notesSettings?.enabled === false &&
       notesSettings.placement === "below_items" &&
-      cart.items.length > 0
-    ) {
-      if (belowEl)
-        belowEl.innerHTML = hubUtils.getAdditionalNotesHTML(
-          blockId,
-          notesSettings,
-          cart.note,
-        );
-      hubUtils.initNoteListener(blockId);
-    }
-    if (
+      cart.items.length > 0;
+    const _shouldShowFooter =
       notesSettings?.enabled === false &&
       notesSettings.placement === "top_of_footer" &&
-      cart.items.length > 0
-    ) {
-      if (footerEl)
-        footerEl.innerHTML = hubUtils.getAdditionalNotesHTML(
-          blockId,
-          notesSettings,
-          cart.note,
-        );
-      hubUtils.initNoteListener(blockId);
-    }
+      cart.items.length > 0;
+
+    if (!_shouldShowBelow && belowEl) belowEl.innerHTML = "";
+    if (!_shouldShowFooter && footerEl) footerEl.innerHTML = "";
+
+    drawer.querySelectorAll(".hub-additional-notes").forEach((el) => {
+      const inBelow = belowEl?.contains(el);
+      const inFooter = footerEl?.contains(el);
+      if (!inBelow && !inFooter) el.remove();
+    });
 
     const footer = drawer.querySelector(".hub-cart-footer");
     if (footer) {
@@ -430,7 +426,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     ) {
       const layout = settings.layout || "block";
       let swiperInstance = null;
-      
+
       const rendered = products
         .map((p) => ({
           p,
@@ -452,7 +448,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (layout === "carousel") {
         await loadSwiper();
         const indicator = settings.carouselIndicator || "progressBar";
-         const btnColor = designSettings.buttonColor || "#000000";
+        const btnColor = designSettings.buttonColor || "#000000";
         const iconColor = designSettings.iconColor || "#000000";
 
         const slidesHTML = rendered
@@ -605,6 +601,15 @@ window.hubCartRender = async function (drawer, opts = {}) {
         _suggestedEl.innerHTML = "";
       }
 
+      const trustTop = document.getElementById(
+        `hub-trust-badges-top-${blockId}`,
+      );
+      const trustBottom = document.getElementById(
+        `hub-trust-badges-bottom-${blockId}`,
+      );
+      if (trustTop) trustTop.style.display = "none";
+      if (trustBottom) trustBottom.style.display = "none";
+
       const recommendations =
         window.__HUB_ACTIVE_CART__?.recommendationsSettings;
       const emptyCartMessage = cartSettings.emptyCartMessage;
@@ -672,6 +677,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
           loadCartRecommendations(recommendations);
         }
       }
+      hubUtils.hideCartSkeleton(blockId);
+      hubUtils.revealCartItems(blockId);
       const bottomOfCartEl = drawer.querySelector(".hub-bottom-of-cart");
       if (bottomOfCartEl) bottomOfCartEl.style.display = "none";
       return;
@@ -679,6 +686,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     const bottomOfCartEl = drawer.querySelector(".hub-bottom-of-cart");
     if (bottomOfCartEl) bottomOfCartEl.style.display = "";
+
+    const trustTop = document.getElementById(`hub-trust-badges-top-${blockId}`);
+    const trustBottom = document.getElementById(
+      `hub-trust-badges-bottom-${blockId}`,
+    );
+    if (trustTop) trustTop.style.display = "block";
+    if (trustBottom) trustBottom.style.display = "block";
 
     const footerRec = document.getElementById(`hub-footer-rec-${blockId}`);
     if (footerRec) footerRec.innerHTML = "";
@@ -996,7 +1010,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           !!item.properties?._hub_reward ||
           !!item.properties?._triggered_reward;
         const isTriggeredReward = !!item.properties?._triggered_reward;
- 
+
         const layoutCtx = {
           item,
           colorItems,
@@ -1019,7 +1033,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           customHtmlBlocks,
           showSavingsBelowPrices,
           discountColor,
-          iconColor
+          iconColor,
         };
 
         const layoutFn =
@@ -1029,7 +1043,50 @@ window.hubCartRender = async function (drawer, opts = {}) {
     );
 
     container.innerHTML = itemsHTML.join("");
+    hubUtils.hideCartSkeleton(blockId);
+    hubUtils.revealCartItems(blockId);
 
+    if (_shouldShowBelow) {
+      const alreadyRendered = belowEl?.querySelector(".hub-additional-notes");
+      if (belowEl && !alreadyRendered) {
+        belowEl.innerHTML = hubUtils.getAdditionalNotesHTML(
+          blockId,
+          notesSettings,
+          cart.note,
+        );
+        hubUtils.initNoteListener(blockId);
+      } else if (belowEl) {
+        const ta = belowEl.querySelector(".hub-notes-textarea");
+        if (
+          ta &&
+          document.activeElement !== ta &&
+          ta.value !== (cart.note || "")
+        ) {
+          ta.value = cart.note || "";
+        }
+      }
+    }
+
+    if (_shouldShowFooter) {
+      const alreadyRendered = footerEl?.querySelector(".hub-additional-notes");
+      if (footerEl && !alreadyRendered) {
+        footerEl.innerHTML = hubUtils.getAdditionalNotesHTML(
+          blockId,
+          notesSettings,
+          cart.note,
+        );
+        hubUtils.initNoteListener(blockId);
+      } else if (footerEl) {
+        const ta = footerEl.querySelector(".hub-notes-textarea");
+        if (
+          ta &&
+          document.activeElement !== ta &&
+          ta.value !== (cart.note || "")
+        ) {
+          ta.value = cart.note || "";
+        }
+      }
+    }
     // ── ADDONS ────────────────────────────────────────────────────────────
     const addonsSettings = window.__HUB_ACTIVE_CART__?.addonsSettings;
     const addonsEl = document.getElementById(`hub-addons-${blockId}`);
@@ -1214,19 +1271,69 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     // ── UPSELLS ───────────────────────────────────────────────────────────
     const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
+    let _hubUpsellHasProducts = false;
     if (!upsellSettings?.enabled && cart.items.length > 0) {
       const productId = cart.items[0].product_id;
-      const upsellProducts = await window.getUpsellProducts(
-        upsellSettings,
-        productId,
-      );
-      const headingUpsell = upsellSettings.title;
-      const textColor = designSettings?.textColor || "#000";
+
       const position = upsellSettings.position || "bottom";
       const upsellContainer =
         position === "top"
           ? document.getElementById(`hub-upsell-top-${blockId}`)
           : document.getElementById(`hub-upsell-bottom-${blockId}`);
+
+      const _hasRenderedProducts =
+        !!upsellContainer?.querySelector(".hub-rec-product") &&
+        !upsellContainer?.querySelector(".hub-rec-skeleton-card");
+      const _hasCachedUpsell =
+        !!window._upsellCache[productId] || _hasRenderedProducts;
+
+      if (upsellContainer && !_hasCachedUpsell) {
+        upsellContainer.classList.add("upsell-container");
+        upsellContainer.classList.add(
+          position === "bottom" ? "upsell-bottom" : "upsell-top",
+        );
+        upsellContainer.innerHTML = `
+      <div class="upsell-inner">
+        <div class="hub-rec-product hub-rec-skeleton-card" style="display:flex;gap:12px;align-items:flex-start;padding:20px;border:1px solid #e5e5e5;border-radius:8px;">
+          <div class="hub-skeleton hub-skeleton-img" style="width:60px;height:60px;flex-shrink:0;border-radius:8px;">&nbsp;</div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+            <div class="hub-skeleton hub-skeleton-line" style="width:85%;height:14px;">&nbsp;</div>
+            <div class="hub-skeleton hub-skeleton-line" style="width:40%;height:12px;">&nbsp;</div>
+            <div class="hub-skeleton hub-skeleton-line" style="width:70px;height:28px;border-radius:4px;margin-top:4px;">&nbsp;</div>
+          </div>
+        </div>
+      </div>`;
+        upsellContainer.style.display = "";
+
+        delete upsellContainer.dataset.renderedHandles;
+      }
+
+      let upsellProducts;
+
+      if (window._upsellCache[productId]) {
+        upsellProducts = window._upsellCache[productId];
+      } else if (window._hubUpsellPrefetch) {
+        const pre = await window._hubUpsellPrefetch;
+        window._hubUpsellPrefetch = null;
+        if (pre && String(pre.productId) === String(productId)) {
+          upsellProducts = pre.products;
+        } else {
+          upsellProducts = await window.getUpsellProducts(
+            upsellSettings,
+            productId,
+          );
+        }
+      } else {
+        upsellProducts = await window.getUpsellProducts(
+          upsellSettings,
+          productId,
+        );
+      }
+
+      window._upsellCache[productId] = upsellProducts;
+      _hubUpsellHasProducts = upsellProducts.length > 0;
+      const headingUpsell = upsellSettings.title;
+      const textColor = designSettings?.textColor || "#000";
 
       if (upsellContainer) {
         const newHandles = upsellProducts
@@ -1234,8 +1341,16 @@ window.hubCartRender = async function (drawer, opts = {}) {
           .sort()
           .join(",");
         const prevHandles = upsellContainer.dataset.renderedHandles || "";
+        const _alreadyShowingRealCards =
+          !!upsellContainer.querySelector(".hub-rec-product") &&
+          !upsellContainer.querySelector(".hub-rec-skeleton-card");
 
-        if (newHandles === prevHandles && upsellContainer.children.length > 0) {
+        if (
+          newHandles === prevHandles &&
+          upsellContainer.children.length > 0 &&
+          _alreadyShowingRealCards
+        ) {
+          // genuinely already rendered with real cards — skip re-render
         } else {
           upsellContainer.classList.add("upsell-container");
           upsellContainer.classList.add(
@@ -1261,11 +1376,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
               carouselIndicator: upsellSettings.carouselIndicator,
               showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,
             });
+          } else {
+            upsellContainer.style.display = "none";
           }
+          upsellContainer.dataset.renderedHandles = newHandles;
         }
       }
     }
-
     // ── SUGGESTED PRODUCT ─────────────────────────────────────────────────
     const suggestedEl = document.getElementById(
       `hub-suggested-product-${blockId}`,
@@ -1276,6 +1393,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         suggestedEl.innerHTML = "";
       } else {
         const sp = upsellSettings?.suggestedProduct;
+
         const showSuggested =
           upsellSettings?.showSuggestedProduct && !upsellSettings?.enabled;
         if (
@@ -1363,11 +1481,11 @@ window.hubCartRender = async function (drawer, opts = {}) {
     });
   } catch (err) {
     console.error("Cart render error:", err);
+    hubUtils.hideCartSkeleton(blockId);
+    hubUtils.revealCartItems(blockId);
   } finally {
     window._hubRenderInProgress = false;
     window._hubRewardUpdating = false;
-    hubUtils.hideCartSkeleton(blockId);
-    hubUtils.revealCartItems(blockId);
 
     if (window._hubPendingRender) {
       const pending = window._hubPendingRender;

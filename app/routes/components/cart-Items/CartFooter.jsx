@@ -26,7 +26,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
     }
 
     const buttonText = cartSettings.goToCartPageOnCheckout
-        ? cartSettings.viewCartName
+        ? cartSettings.viewCartName || 'View Cart'
         : checkoutText;
 
     return (

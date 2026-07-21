@@ -313,6 +313,14 @@ async function _commitRemoval(key) {
         if (k) updates[k] = 0;
       });
 
+    Object.keys(_hubPendingRemovals).forEach((otherKey) => {
+      const otherP = _hubPendingRemovals[otherKey];
+      if (otherP.timer) clearTimeout(otherP.timer);
+      otherP.toastEl?.remove();
+      updates[otherKey] = 0;
+      delete _hubPendingRemovals[otherKey];
+    });
+
     _hubHideAllCartSections(blockId);
     const rewardsSettings = window.__HUB_ACTIVE_CART__?.rewardsSettings;
     if (rewardsSettings) {
@@ -482,7 +490,10 @@ async function _commitRemoval(key) {
             ? cartSettings.viewCartName || "View cart"
             : cartSettings.checkoutButtonText || "Proceed to checkout";
 
-          checkoutBtn.textContent = hubUtils.getCheckoutButtonText(cartSettings, newTotalFmt);
+          checkoutBtn.textContent = hubUtils.getCheckoutButtonText(
+            cartSettings,
+            newTotalFmt,
+          );
         }
       }
 
@@ -704,7 +715,7 @@ window.hubCheckoutClick = function (e, blockId, btn) {
   // on checkout_completed so it only fires on confirmed orders.
 
   fetch(
-    `${window.__HUB_API_URL__ || "http://localhost:6002"}/api/track-event`,
+    `${window.__HUB_API_URL__ || "https://app.cartplus.io"}/api/track-event`,
     {
       method: "POST",
       headers: {

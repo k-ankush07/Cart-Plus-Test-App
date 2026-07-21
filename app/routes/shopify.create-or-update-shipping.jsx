@@ -45,7 +45,7 @@ export const action = async ({ request }) => {
 
     const existingRes = await admin.graphql(`
       query {
-        products(first: 1, query: "product_type:hub-app") {
+        products(first: 1, query: "product_type:Cart Plus - Shipping Protection") {
           edges {
             node {
               id
@@ -145,7 +145,7 @@ export const action = async ({ request }) => {
             input: {
               title,
               descriptionHtml: description || "",
-              productType: "hub-app",
+              productType: "Cart Plus - Shipping Protection",
               status: "ACTIVE",
             },
           },

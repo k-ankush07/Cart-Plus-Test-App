@@ -10,7 +10,7 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-const apiUrl = "http://localhost:6002";
+const apiUrl = "https://app.cartplus.io";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");
@@ -19,6 +19,25 @@ function getSessionId() {
     sessionStorage.setItem("hub_session_id", sessionId);
   }
   return sessionId;
+}
+
+async function hubFetchAllProducts(baseUrl) {
+  let allProducts = [],
+    page = 1,
+    done = false;
+  while (!done) {
+    const results = await Promise.all(
+      [page, page + 1, page + 2].map((p) =>
+        fetch(`${baseUrl}?limit=250&page=${p}`)
+          .then((r) => r.json())
+          .catch(() => ({ products: [] })),
+      ),
+    );
+    for (const data of results) allProducts.push(...(data.products || []));
+    if (!results[2].products?.length) done = true;
+    else page += 3;
+  }
+  return allProducts;
 }
 
 window._hubGetSessionId = getSessionId;
@@ -153,53 +172,53 @@ function initCartDrawerAfterData() {
 
   if (window.__HUB_ACTIVE_CART__) {
     document
-  .querySelectorAll(
-    [
-      "theme-drawer",
-      "cart-drawer",
-      "#cart-drawer",
-      "#CartDrawer",
-      "#CartDrawer-Icon",
-      ".cart-drawer",
-      ".drawer",
-      "cart-notification",
-      "#cart-notification",
-      ".cart-notification",
-      "cart-notification-product",
+      .querySelectorAll(
+        [
+          "theme-drawer",
+          "cart-drawer",
+          "#cart-drawer",
+          "#CartDrawer",
+          "#CartDrawer-Icon",
+          ".cart-drawer",
+          ".drawer",
+          "cart-notification",
+          "#cart-notification",
+          ".cart-notification",
+          "cart-notification-product",
 
-      "ajax-cart",
-      "#AjaxCart",
-      ".ajax-cart",
-      "#CartContainer",
-      "#mini-cart",
-      ".mini-cart",
-      "#MiniCart",
-      ".mini-cart-drawer",
-      "#sidebar-cart",
-      ".sidebar-cart",
-      "#CartDrawer-Form",
-      "#CartPopup",
-      ".cart-popup",
-      "#slide-cart",
-      ".slide-cart",
-      "#CartSlideout",
-      ".cart-slideout",
-      "quick-cart-drawer",
-      "#quick-cart",
-      ".quick-cart",
+          "ajax-cart",
+          "#AjaxCart",
+          ".ajax-cart",
+          "#CartContainer",
+          "#mini-cart",
+          ".mini-cart",
+          "#MiniCart",
+          ".mini-cart-drawer",
+          "#sidebar-cart",
+          ".sidebar-cart",
+          "#CartDrawer-Form",
+          "#CartPopup",
+          ".cart-popup",
+          "#slide-cart",
+          ".slide-cart",
+          "#CartSlideout",
+          ".cart-slideout",
+          "quick-cart-drawer",
+          "#quick-cart",
+          ".quick-cart",
 
-      "#shopify-section-cart-drawer",
-      ".drawer--cart",
-      "[data-cart-drawer]",
-      "[data-drawer='cart']",
-    ].join(", "),
-  )
-  .forEach((el) => {
-    if (typeof el.renderContents === "function")
-      el.renderContents = () => {};
-    if (typeof el.open === "function") el.open = () => {};
-    el.remove();
-  });
+          "#shopify-section-cart-drawer",
+          ".drawer--cart",
+          "[data-cart-drawer]",
+          "[data-drawer='cart']",
+        ].join(", "),
+      )
+      .forEach((el) => {
+        if (typeof el.renderContents === "function")
+          el.renderContents = () => {};
+        if (typeof el.open === "function") el.open = () => {};
+        el.remove();
+      });
   }
 
   document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
@@ -419,6 +438,7 @@ function initCartDrawerAfterData() {
           showSkeleton &&
           window._hubLastCartHadItems !== false &&
           (!drawerIsOpen || !hasRenderedItems);
+
         if (shouldShowSkeleton) {
           const itemsEl = document.getElementById(`hub-cart-items-${blockId}`);
           if (itemsEl) {
@@ -454,6 +474,42 @@ function initCartDrawerAfterData() {
             `hub-footer-rec-${blockId}`,
           );
           if (footerRec) footerRec.innerHTML = "";
+
+          // ── NEW: show upsell skeleton immediately (don't wait for hubCartRender's awaits) ──
+          const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
+          if (!upsellSettings?.enabled) {
+            const position = upsellSettings?.position || "bottom";
+            const upsellContainer =
+              position === "top"
+                ? document.getElementById(`hub-upsell-top-${blockId}`)
+                : document.getElementById(`hub-upsell-bottom-${blockId}`);
+
+            // Only show if we don't already have resolved data for the current product
+            const cartHandles =
+              window._hubUpsellPrefetch || window._upsellCache;
+            const hasAnyCache =
+              window._upsellCache &&
+              Object.keys(window._upsellCache).length > 0;
+
+            if (upsellContainer && !hasAnyCache) {
+              upsellContainer.classList.add("upsell-container");
+              upsellContainer.classList.add(
+                position === "bottom" ? "upsell-bottom" : "upsell-top",
+              );
+              upsellContainer.style.display = "";
+              upsellContainer.innerHTML = `
+            <div class="upsell-inner">
+              <div class="hub-rec-product hub-rec-skeleton-card" style="display:flex;gap:12px;align-items:flex-start;padding:20px;border:1px solid #e5e5e5;border-radius:8px;">
+                <div class="hub-skeleton hub-skeleton-img" style="width:60px;height:60px;flex-shrink:0;border-radius:8px;">&nbsp;</div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+                  <div class="hub-skeleton hub-skeleton-line" style="width:85%;height:14px;">&nbsp;</div>
+                  <div class="hub-skeleton hub-skeleton-line" style="width:40%;height:12px;">&nbsp;</div>
+                  <div class="hub-skeleton hub-skeleton-line" style="width:70px;height:28px;border-radius:4px;margin-top:4px;">&nbsp;</div>
+                </div>
+              </div>
+            </div>`;
+            }
+          }
         }
 
         if (window.hubCartRender && !window._hubRenderInProgress) {
@@ -693,6 +749,8 @@ window.startAnnTimer = function (blockId, timeStr) {
 (function () {
   const CACHE_TTL = 5 * 60 * 1000;
 
+  let _hubApplyingCartData = false;
+
   function getCacheKey(shop) {
     return `hub-cart-settings-${shop}`;
   }
@@ -719,68 +777,99 @@ window.startAnnTimer = function (blockId, timeStr) {
   }
 
   function applyCartData({ cartResult, stickyResult }) {
-    let hasPublishedCart = false;
+    if (_hubApplyingCartData) return;
+    _hubApplyingCartData = true;
 
-    if (cartResult?.entitled === false) {
-      console.log(
-        "[hub] Store not entitled (free plan on a live store) — drawer disabled",
-      );
-      const blockId = window.HUB_CART_BLOCK_ID;
-      // Tear down anything already rendered (e.g. from a stale cache hit) and
-      // clear active state so no premium module can read it.
-      document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
-      document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
-      document.getElementById("hub-sticky-cart-btn")?.remove();
-      window.__HUB_ACTIVE_CART__ = null;
-      return;
-    }
+    try {
+      let hasPublishedCart = false;
 
-    if (cartResult?.success && cartResult.data?.length) {
-      const publishedCart = cartResult.data.find(
-        (cart) => cart.status === "published",
-      );
-      if (publishedCart) {
-        console.log("Published cart found:", publishedCart);
-        window.__HUB_ACTIVE_CART__ = publishedCart;
-        hasPublishedCart = true;
-        initCartDrawerAfterData();
-        window._hubRecPrefetch = window._hubFetchRecProducts?.(
-          publishedCart.recommendationsSettings,
+      if (cartResult?.entitled === false) {
+        console.log(
+          "[hub] Store not entitled (free plan on a live store) — drawer disabled",
         );
+        const blockId = window.HUB_CART_BLOCK_ID;
+        document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
+        document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
+        document.getElementById("hub-sticky-cart-btn")?.remove();
+        window.__HUB_ACTIVE_CART__ = null;
+        return;
+      }
 
-        trackCartImpressionUnique();
-        queueMicrotask(() => {
-          const drawerEl = document.getElementById(
-            `hub-cart-drawer-${window.HUB_CART_BLOCK_ID}`,
+      if (cartResult?.success && cartResult.data?.length) {
+        const publishedCart = cartResult.data.find(
+          (cart) => cart.status === "published",
+        );
+        if (publishedCart) {
+          console.log("Published cart found:", publishedCart);
+          window.__HUB_ACTIVE_CART__ = publishedCart;
+          hasPublishedCart = true;
+          initCartDrawerAfterData();
+          window._hubRecPrefetch = window._hubFetchRecProducts?.(
+            publishedCart.recommendationsSettings,
           );
-          if (drawerEl && window.hubCartRender) {
-            window.hubCartRender(drawerEl, { showSkeleton: true });
-          }
-        });
-      } else {
-        console.log("No published cart found");
-      }
-    } else {
-      console.log("No carts found for this shop");
-    }
 
-    if (stickyResult?.success) {
-      console.log("Sticky Cart found:", stickyResult.data);
-      window.__HUB_STICKY_CART__ = stickyResult.data;
-      if (hasPublishedCart) {
-        renderStickyCart();
+          window._upsellCache = window._upsellCache || {};
+          window._hubUpsellPrefetch = (async () => {
+            try {
+              const cartRes = await fetch("/cart.js");
+              const cart = await cartRes.json();
+              if (!cart.items?.length) return null;
+              const productId = cart.items[0].product_id;
+              const products = await window.getUpsellProducts(
+                publishedCart.upsellsSettings,
+                productId,
+              );
+              window._upsellCache[productId] = products;
+              return { productId, products };
+            } catch (e) {
+              console.error("[hub] upsell prefetch failed:", e);
+              return null;
+            }
+          })();
+
+          trackCartImpressionUnique();
+          if (!window._hubCartRenderQueued) {
+            window._hubCartRenderQueued = true;
+            queueMicrotask(() => {
+              window._hubCartRenderQueued = false;
+              const drawerEl = document.getElementById(
+                `hub-cart-drawer-${window.HUB_CART_BLOCK_ID}`,
+              );
+              if (drawerEl && window.hubCartRender) {
+                window.hubCartRender(drawerEl, { showSkeleton: true });
+              }
+            });
+          }
+        } else {
+          console.log("No published cart found");
+        }
       } else {
-        const existingBtn = document.getElementById("hub-sticky-cart-btn");
-        if (existingBtn) existingBtn.remove();
+        console.log("No carts found for this shop");
       }
-    } else {
-      console.log("No sticky cart found");
+
+      if (stickyResult?.success) {
+        console.log("Sticky Cart found:", stickyResult.data);
+        window.__HUB_STICKY_CART__ = stickyResult.data;
+        if (hasPublishedCart) {
+          renderStickyCart();
+        } else {
+          const existingBtn = document.getElementById("hub-sticky-cart-btn");
+          if (existingBtn) existingBtn.remove();
+        }
+      } else {
+        console.log("No sticky cart found");
+      }
+    } finally {
+      _hubApplyingCartData = false;
     }
   }
 
   async function fetchCartSettings() {
-    const shop = window.__SHOPIFY_SHOP__?.myshopify_domain || window.__SHOPIFY_SHOP__?.permanent_domain || window.__SHOPIFY_SHOP__?.domain;
-   
+    const shop =
+      window.__SHOPIFY_SHOP__?.myshopify_domain ||
+      window.__SHOPIFY_SHOP__?.permanent_domain ||
+      window.__SHOPIFY_SHOP__?.domain;
+
     if (!shop) {
       console.warn("Shop not set");
       return;
@@ -873,17 +962,7 @@ window._hubFetchRecProducts = async function (settings = {}) {
       settings?.selectedItems?.products?.map((gid) => gid.split("/").pop()) ||
       [];
     if (selectedProductIds.length) {
-      let allProducts = [],
-        page = 1,
-        more = true;
-      while (more) {
-        const res = await fetch(`/products.json?limit=250&page=${page}`);
-        const data = await res.json();
-        if (data.products.length > 0) {
-          allProducts.push(...data.products);
-          page++;
-        } else more = false;
-      }
+      const allProducts = await hubFetchAllProducts("/products.json");
       finalProducts = allProducts.filter((p) =>
         selectedProductIds.includes(String(p.id)),
       );
@@ -919,18 +998,7 @@ window._hubFetchRecProducts = async function (settings = {}) {
   }
 
   if (!finalProducts.length) {
-    let allProducts = [],
-      page = 1,
-      more = true;
-    while (more) {
-      const res = await fetch(`/products.json?limit=250&page=${page}`);
-      const data = await res.json();
-      if (data.products.length > 0) {
-        allProducts.push(...data.products);
-        page++;
-      } else more = false;
-    }
-    finalProducts = allProducts;
+    finalProducts = await hubFetchAllProducts("/products.json");
   }
 
   finalProducts = finalProducts
@@ -963,13 +1031,32 @@ window.loadCartRecommendations = async function (settings = {}) {
   try {
     const container = document.getElementById("hub-rec-products");
     if (!container) return;
+
+    // ── Show single skeleton card while products load ──────────────────
+    container.innerHTML = `
+      <div class="upcart-internal-upsell__vertical-layout-wrapper">
+        <div class="hub-rec-product hub-rec-skeleton-card" style="display:flex;gap:12px;align-items:flex-start;padding:20px;border:1px solid #e5e5e5;border-radius:8px;">
+          <div class="hub-skeleton hub-skeleton-img" style="width:60px;height:60px;flex-shrink:0;border-radius:8px;">&nbsp;</div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+            <div class="hub-skeleton hub-skeleton-line" style="width:85%;height:14px;">&nbsp;</div>
+            <div class="hub-skeleton hub-skeleton-line" style="width:40%;height:12px;">&nbsp;</div>
+            <div class="hub-skeleton hub-skeleton-line" style="width:70px;height:28px;border-radius:4px;margin-top:4px;">&nbsp;</div>
+          </div>
+        </div>
+      </div>`;
+    container.style.display = "";
+
     const prefetched = window._hubRecPrefetch;
     window._hubRecPrefetch = null;
     const finalProducts = await (prefetched ||
       window._hubFetchRecProducts(settings));
+
+    // renderProducts overwrites innerHTML with real cards (or hides if empty)
     window.renderProducts(container, finalProducts, settings);
   } catch (err) {
     console.error("Recommendations error:", err);
+    container.innerHTML = "";
+    container.style.display = "none";
   }
 };
 

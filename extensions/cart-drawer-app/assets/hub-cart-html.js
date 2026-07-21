@@ -59,7 +59,7 @@ window.injectCartHTML = function (blockId, root) {
     discountCodesSettings.couponHeadingColor ?? "#000000";
   const couponHeadingText = discountCodesSettings.title ?? "Coupon Code";
   const showTitle = discountCodesSettings.showTitle ?? false;
-  const iconsColor = designSettings.iconColor ?? '#0000';
+  const iconsColor = designSettings?.iconColor || "#000000";
 
   const viewAllOffersBgColor =
     discountCodesSettings.viewAllOffersBgColor ?? "#000000";
