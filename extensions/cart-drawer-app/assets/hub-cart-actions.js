@@ -381,7 +381,7 @@ async function _commitRemoval(key) {
         const showRecsBlock = !rec.enabled;
         container.innerHTML = `
           <div class="hub-cart-empty">
-            <h3 class="hub-empty-title styles_CartPreview__empty__">
+            <h3 class="hub-empty-title styles_CartPreview__empty__" >
               ${cs.emptyCartMessage || "Your cart is empty"}
             </h3>
             ${

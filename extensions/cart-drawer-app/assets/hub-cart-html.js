@@ -132,7 +132,7 @@ window.injectCartHTML = function (blockId, root) {
 
     if (titleType === "logo") {
       const fallback =
-        "https://cdn.shopify.com/s/files/1/0733/2531/4260/files/upcart_header_logo_1775234624267.png";
+        "https://cartplus.io/cartplus-img/Frame%202121452442.svg";
       const src =
         headerSettings.logo && headerSettings.logo !== ""
           ? headerSettings.logo
