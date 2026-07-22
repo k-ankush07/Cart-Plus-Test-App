@@ -85,6 +85,7 @@ const DEFAULT_PRODUCTS = [
 
 export default function Upsells({ upsellsSettings, designSettings, currency, cartSettings }) {
     const [products, setProducts] = useState([]);
+    const [loadingProducts, setLoadingProducts] = useState(true);
     const [selectedVariants, setSelectedVariants] = useState({});
     const prevRef = useRef(null);
     const nextRef = useRef(null);
@@ -118,6 +119,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                 initial[p.id] = p.variants[0];
             });
             setSelectedVariants(initial);
+            setLoadingProducts(false);
             return;
         }
 
@@ -136,8 +138,11 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                 initial[p.id] = p.variants[0];
             });
             setSelectedVariants(initial);
+            setLoadingProducts(false);
             return;
         }
+
+        setLoadingProducts(true);
 
         fetch("/shopify/get-products", {
             method: "POST",
@@ -158,6 +163,10 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                     if (p.variants.length) initial[p.id] = p.variants[0];
                 });
                 setSelectedVariants(initial);
+                setLoadingProducts(false);
+            })
+            .catch(() => {
+                setLoadingProducts(false);
             });
     }, [
         useAiRecommended,
@@ -172,6 +181,42 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
         const variant = product.variants.find((v) => v.id === variantId);
         setSelectedVariants((prev) => ({ ...prev, [productId]: variant }));
     };
+
+    const SkeletonCard = () => (
+        <div
+            className="hub-rec-product hub-rec-skeleton-card"
+            style={{
+                display: "flex",
+                gap: "12px",
+                alignItems: "flex-start",
+                padding: "20px",
+                margin:"20px",
+                border: "1px solid #e5e5e5",
+                borderRadius: "8px",
+            }}
+        >
+            <div
+                className="hub-skeleton hub-skeleton-img"
+                style={{ width: "60px", height: "60px", flexShrink: 0, borderRadius: "8px" }}
+            >
+                &nbsp;
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div className="hub-skeleton hub-skeleton-line" style={{ width: "85%", height: "14px" }}>
+                    &nbsp;
+                </div>
+                <div className="hub-skeleton hub-skeleton-line" style={{ width: "40%", height: "12px" }}>
+                    &nbsp;
+                </div>
+                <div
+                    className="hub-skeleton hub-skeleton-line"
+                    style={{ width: "70px", height: "28px", borderRadius: "4px", marginTop: "4px" }}
+                >
+                    &nbsp;
+                </div>
+            </div>
+        </div>
+    );
 
     const ProductCard = ({ product }) => {
         const [loading, setLoading] = useState(false);
@@ -321,6 +366,14 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
             }
         });
     }, [carouselIndicator]);
+
+    if (loadingProducts) {
+        return (
+            <div className="upcart-internal-upsell__vertical-layout-wrapper block">
+                <SkeletonCard />
+            </div>
+        );
+    }
 
     if (!products.length) return null;
 

@@ -58,6 +58,7 @@ const DEFAULT_PRODUCT = {
 export default function Recommendation({ recommendationsSettings, currency, cartSettings, upsellsSettings, designSettings }) {
 
     const [products, setProducts] = useState([]);
+    const [loadingProducts, setLoadingProducts] = useState(true);
     const [selectedVariants, setSelectedVariants] = useState({});
 
     const { selectedItems = [], sourceType, maxRecommendations } = recommendationsSettings;
@@ -86,8 +87,11 @@ export default function Recommendation({ recommendationsSettings, currency, cart
             setSelectedVariants({
                 [DEFAULT_PRODUCT.id]: DEFAULT_PRODUCT.variants[0]
             });
+            setLoadingProducts(false);
             return;
         }
+
+        setLoadingProducts(true);
 
         fetch("/shopify/get-products", {
             method: "POST",
@@ -109,6 +113,10 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     }
                 });
                 setSelectedVariants(initial);
+                setLoadingProducts(false);
+            })
+            .catch(() => {
+                setLoadingProducts(false);
             });
 
     }, [
@@ -126,6 +134,42 @@ export default function Recommendation({ recommendationsSettings, currency, cart
             [productId]: variant
         }));
     };
+
+    const SkeletonCard = () => (
+        <div
+            className="hub-rec-product hub-rec-skeleton-card"
+            style={{
+                display: "flex",
+                gap: "12px",
+                alignItems: "flex-start",
+                padding: "20px",
+                border: "1px solid #e5e5e5",
+                borderRadius: "8px",
+            }}
+        >
+            <div
+                className="hub-skeleton hub-skeleton-img"
+                style={{ width: "60px", height: "60px", flexShrink: 0, borderRadius: "8px" }}
+            >
+                &nbsp;
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div className="hub-skeleton hub-skeleton-line" style={{ width: "85%", height: "14px" }}>
+                    &nbsp;
+                </div>
+                <div className="hub-skeleton hub-skeleton-line" style={{ width: "40%", height: "12px" }}>
+                    &nbsp;
+                </div>
+                <div
+                    className="hub-skeleton hub-skeleton-line"
+                    style={{ width: "70px", height: "28px", borderRadius: "4px", marginTop: "4px" }}
+                >
+                    &nbsp;
+                </div>
+            </div>
+        </div>
+    );
+
 
     const ProductCard = ({ product }) => {
         const [loading, setLoading] = useState(false);
@@ -353,9 +397,13 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     }} />
                 </div>
 
-                {recommendationsSettings.layout === "carousel" ? (
+                {loadingProducts ? (
+                    <div className="upcart-internal-upsell__vertical-layout-wrapper block">
+                        <SkeletonCard />
+                    </div>
+                ) : recommendationsSettings.layout === "carousel" ? (
                     <div className="custom-cart-slider-wrapper">
-                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev" style={{ backgroundColor: designSettings.buttonColor,}}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} stroke-width="2">
+                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev" style={{ backgroundColor: designSettings.buttonColor, }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} stroke-width="2">
                             <path d="M15 18l-6-6 6-6"></path>
                         </svg></div>)}
                         <Swiper
@@ -388,12 +436,12 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                             {renderProducts()}
                         </Swiper>
 
-                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next" style={{ backgroundColor: designSettings.buttonColor,}}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} stroke-width="2">
+                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next" style={{ backgroundColor: designSettings.buttonColor, }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} stroke-width="2">
                             <path d="M9 6l6 6-6 6"></path>
                         </svg></div>)}
                         {indicator === "progressBar" && (
                             <div className="upsell-progress-bar">
-                                <div ref={fillRef} className="upsell-progress-fill" style={{ backgroundColor: designSettings.buttonColor,}}></div>
+                                <div ref={fillRef} className="upsell-progress-fill" style={{ backgroundColor: designSettings.buttonColor, }}></div>
                             </div>
                         )}
                     </div>

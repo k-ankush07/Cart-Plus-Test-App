@@ -1903,6 +1903,16 @@ span.hub-offers-title {
     line-height: 14px;
 }
 
+.hub-skeleton {
+    background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+    background-size: 200% 100%;
+    animation: hub-shimmer 1.4s infinite;
+}
+@keyframes hub-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 /* Responsive Styles */
 
 @media screen and (max-width:1024px) {
