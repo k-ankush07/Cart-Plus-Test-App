@@ -1525,7 +1525,7 @@ function hubRenderOffersPanel(
           <div class="hub-coupon-top"><span class="hub-coupon-code" title="${label}">${label.length > 22 ? label.slice(0, 22) + "..." : label}</span>${actionBtn}</div>
           ${savings ? `<div class="hub-coupon-savings">${savings}</div>` : ""}
           ${subtitle ? `<div class="hub-coupon-desc">${subtitle}</div>` : ""}
-          <div class="hub-coupon-error" id="coupon-error-${label}" style="color:black;font-size:12px;margin-top:5px;"></div>
+          <div class="hub-coupon-error" id="coupon-error-${label}" style="font-size:12px;margin-top:5px;"></div>
         </div>
       </div>`;
     })

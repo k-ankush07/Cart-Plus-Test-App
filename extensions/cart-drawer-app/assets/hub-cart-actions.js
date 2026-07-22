@@ -593,6 +593,33 @@ function showMessage(el, text, color = "black") {
   }, 4000);
 }
 
+window.hubShowCouponSuccess = function (
+  blockId,
+  { code = "", headline = "Coupon applied!", desc = "" } = {},
+) {
+  const overlay = document.getElementById(`hub-coupon-success-${blockId}`);
+  if (!overlay) return;
+
+  const appliedEl = document.getElementById(
+    `hub-coupon-success-applied-${blockId}`,
+  );
+  const headlineEl = document.getElementById(
+    `hub-coupon-success-headline-${blockId}`,
+  );
+  const descEl = document.getElementById(`hub-coupon-success-desc-${blockId}`);
+
+  if (appliedEl) appliedEl.textContent = code ? `Code "${code}" applied` : "";
+  if (headlineEl) headlineEl.textContent = headline;
+  if (descEl) descEl.textContent = desc;
+
+  overlay.style.display = "flex";
+};
+
+window.hubCloseCouponSuccess = function (blockId) {
+  const overlay = document.getElementById(`hub-coupon-success-${blockId}`);
+  if (overlay) overlay.style.display = "none";
+};
+
 window.applyDiscountCode = async function (btn) {
   const wrapper = btn.closest(".hub-discount-input-row-items");
 
@@ -653,6 +680,12 @@ window.applyDiscountCode = async function (btn) {
       showMessage(newMessage, "Discount applied successfully", "green");
 
       localStorage.setItem("appliedDiscount", code);
+      const blockId = window.HUB_CART_BLOCK_ID;
+      window.hubShowCouponSuccess(blockId, {
+        code,
+        headline: "You saved on your order!",
+        desc: "Your discount has been applied to the cart total.",
+      });
     } else {
       showMessage(newMessage, "Enter a valid discount code", "red");
     }

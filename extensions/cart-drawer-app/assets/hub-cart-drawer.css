@@ -2447,6 +2447,7 @@ button.remove-btn {
 
 .hub-coupon-error {
     line-height: 14px;
+    color: red;
 }
 
 span.hub-item-discount-badge {
