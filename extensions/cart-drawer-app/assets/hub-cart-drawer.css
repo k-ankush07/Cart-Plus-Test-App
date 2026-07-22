@@ -2445,6 +2445,10 @@ button.remove-btn {
   margin-bottom: 3px;
 }
 
+.hub-coupon-error {
+    line-height: 14px;
+}
+
 span.hub-item-discount-badge {
   display: inline-flex;
   gap: 5px;
