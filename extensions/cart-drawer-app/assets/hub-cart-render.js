@@ -816,62 +816,92 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }, 3000);
     });
 
-    // ── SELLING PLAN SELECT HANDLER (attach once, not inside item loop) ───
-    document.addEventListener("change", async (e) => {
-      const select = e.target.closest(".hub-selling-plan-select");
-      if (!select) return;
+    if (!window._hubSellingPlanListenerAttached) {
+      window._hubSellingPlanListenerAttached = true;
+      document.addEventListener("change", async (e) => {
+        const select = e.target.closest(".hub-selling-plan-select");
+        if (!select) return;
 
-      const itemKey = select.dataset.key;
-      const sellingPlanId = select.value;
-      if (!itemKey || !sellingPlanId) return;
+        const sellingPlanId = select.value;
+        if (!sellingPlanId) return;
 
-      const itemEl =
-        select.closest(".hub-cart-item") ||
-        select.closest(".hub-selling-plan-wrapper");
+        const variantId = select.dataset.variantId;
+        const currentPlanId = select.dataset.currentPlan || "";
 
-      select.disabled = true;
-      if (itemEl) {
-        itemEl.style.opacity = "0.6";
-        itemEl.style.pointerEvents = "none";
-      }
+        const wrapper = select.closest(".hub-selling-plan-wrapper");
+        const itemEl = select.closest(".hub-cart-item") || wrapper;
 
-      try {
-        const currentCart = await (await fetch("/cart.js")).json();
-        const currentItem = currentCart.items.find((i) => i.key === itemKey);
-        const qty = currentItem ? currentItem.quantity : 1;
-
-        const res = await fetch("/cart/change.js", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: itemKey,
-            quantity: qty, 
-            selling_plan: Number(sellingPlanId),
-          }),
-        });
-        if (!res.ok) throw new Error("Failed to apply selling plan");
-
-        document.dispatchEvent(new CustomEvent("cart:updated"));
-
-        const drawer = select.closest(
-          `.hub-cart-block-${window.HUB_CART_BLOCK_ID}`,
-        );
-        if (drawer) {
-          await window.hubCartRender(drawer);
-        } else if (itemEl) {
-          itemEl.style.opacity = "";
-          itemEl.style.pointerEvents = "";
-          select.disabled = false;
-        }
-      } catch (err) {
-        console.error("Selling plan apply error:", err);
-        select.disabled = false;
+        select.disabled = true;
         if (itemEl) {
-          itemEl.style.opacity = "";
-          itemEl.style.pointerEvents = "";
+          itemEl.style.opacity = "0.6";
+          itemEl.style.pointerEvents = "none";
         }
-      }
-    });
+
+        let spinner = wrapper?.querySelector(".hub-plan-loading-indicator");
+        if (wrapper && !spinner) {
+          spinner = document.createElement("span");
+          spinner.className = "hub-plan-loading-indicator";
+          spinner.innerHTML = ``;
+          spinner.style.cssText =
+            "display:flex;align-items:center;gap:6px;font-size:12px;opacity:0.8;margin-top:4px;";
+          wrapper.appendChild(spinner);
+        }
+
+        try {
+          if (!variantId) {
+            throw new Error("Selling plan select is missing data-variant-id");
+          }
+
+          const currentCart = await (await fetch("/cart.js")).json();
+          const currentItem = currentCart.items.find((i) => {
+            if (String(i.variant_id) !== String(variantId)) return false;
+            const itemPlanId = i.selling_plan_allocation
+              ? String(i.selling_plan_allocation.selling_plan.id)
+              : "";
+            return itemPlanId === currentPlanId;
+          });
+
+          if (!currentItem) {
+            throw new Error(
+              `No matching cart line for variant ${variantId} / plan "${currentPlanId}" — cart changed`,
+            );
+          }
+
+          const res = await fetch("/cart/change.js", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: currentItem.key,
+              quantity: currentItem.quantity,
+              selling_plan: Number(sellingPlanId),
+            }),
+          });
+
+          if (!res.ok) {
+            const errBody = await res.json().catch(() => null);
+            throw new Error(
+              errBody?.message ||
+                errBody?.description ||
+                `Failed (status ${res.status})`,
+            );
+          }
+
+          document.dispatchEvent(new CustomEvent("cart:updated"));
+          const drawer = select.closest(
+            `.hub-cart-block-${window.HUB_CART_BLOCK_ID}`,
+          );
+          if (drawer) await window.hubCartRender(drawer);
+        } catch (err) {
+          console.error("Selling plan apply error:", err);
+          select.disabled = false;
+          if (itemEl) {
+            itemEl.style.opacity = "";
+            itemEl.style.pointerEvents = "";
+          }
+          spinner?.remove();
+        }
+      });
+    }
 
     // ── ITEM RENDERING LOOP (no fetches inside — uses pre-built cache) ────
     const itemsHTML = await Promise.all(
@@ -942,7 +972,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
                 </button>
               </div>
               <div class="hub-subscription-view">
-                <select class="hub-selling-plan-select" data-key="${item.key}">
+               <select class="hub-selling-plan-select"
+                     data-variant-id="${item.variant_id}" data-current-plan="${sellingPlan ? sellingPlan.selling_plan.id : ""}">
                   <option value="" disabled ${!sellingPlan ? "selected" : ""}>${planHeadingText}</option>
                   ${options}
                 </select>
@@ -1127,13 +1158,16 @@ window.hubCartRender = async function (drawer, opts = {}) {
         );
         const isInCart = !!matchedAddonItem;
         const addonLineKey = matchedAddonItem?.key || "";
-        const addonPriceCents = Math.round(
-          Number(
-            isShipping
-              ? addonsSettings.price
-              : addonsSettings.selectedProduct?.price,
-          ) * 100,
-        );
+        const addonPriceCents = matchedAddonItem
+          ? matchedAddonItem.price
+          : Math.round(
+              Number(
+                isShipping
+                  ? addonsSettings.price
+                  : addonsSettings.selectedProduct?.price,
+              ) * 100,
+            );
+            
         const price = hubUtils.formatMoney(addonPriceCents);
         addonsEl.style.display = "block";
 

@@ -958,6 +958,8 @@ window.hubUtils = {
 
     const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
     const iconColor = designSettings.iconColor || "";
+    const discountColor = designSettings.discountBageColor || "#1e7e34";
+    const savingsColor = designSettings.savingsColor || "#16a34a";
 
     if (!discountStatus || !inputWrap || !applyBtn) return;
 
@@ -992,7 +994,7 @@ window.hubUtils = {
 
           <div class="hub-discount-chip">
             <div class="hub-discount-title-btn">
-              <span class="code">${app.title}</span>
+              <span class="code-cart" style="background:${hexToRGBA(discountColor, 0.1)}; color:${discountColor};">${app.title}</span>
 
               ${
                 isManual
@@ -1006,7 +1008,7 @@ window.hubUtils = {
 
             ${
               app.total_allocated_amount
-                ? `<div class="saved-badge">
+                ? `<div class="saved-badge" style="background:${hexToRGBA(savingsColor, 0.1)}; color:${savingsColor};">
                     Saved ${hubUtils.formatMoney(app.total_allocated_amount)}
                    </div>`
                 : ""
