@@ -132,7 +132,7 @@ window.injectCartHTML = function (blockId, root) {
 
     if (titleType === "logo") {
       const fallback =
-        "https://cartplus.io/cartplus-img/Frame%202121452442.svg";
+        "https://cartplus.io/cartplus-img/Group%201707479942%20(1).png";
       const src =
         headerSettings.logo && headerSettings.logo !== ""
           ? headerSettings.logo

@@ -84,12 +84,12 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                             src={
                                 headerSettings.logo && headerSettings.logo !== ""
                                     ? headerSettings.logo
-                                    : "https://cartplus.io/cartplus-img/Frame%202121452442.svg"
+                                    : "https://cartplus.io/cartplus-img/Group%201707479942%20(1).png"
                             }
                             alt="Logo"
                             onError={(e) => {
                                 e.target.src =
-                                    "https://cartplus.io/cartplus-img/Frame%202121452442.svg";
+                                    "https://cartplus.io/cartplus-img/Group%201707479942%20(1).png";
                             }}
                             style={{
                                 maxWidth: `${headerSettings.logoSize || 120}px`,
