@@ -190,7 +190,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                 gap: "12px",
                 alignItems: "flex-start",
                 padding: "20px",
-                margin:"20px",
+                margin: "20px",
                 border: "1px solid #e5e5e5",
                 borderRadius: "8px",
             }}
@@ -287,8 +287,8 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                                                 padding: "5px 7px",
                                                 borderRadius: "14px",
                                                 lineHeight: 1,
-                                                display:"flex",
-                                                gap:"2px"
+                                                display: "flex",
+                                                gap: "2px"
                                             }}
                                         >
                                             <span>{currency}</span>
@@ -367,6 +367,14 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
         });
     }, [carouselIndicator]);
 
+    const [navReady, setNavReady] = useState(false);
+
+    useEffect(() => {
+        if (carouselIndicator === "buttons" && prevRef.current && nextRef.current) {
+            setNavReady(true);
+        }
+    }, [carouselIndicator, products]);
+
     if (loadingProducts) {
         return (
             <div className="upcart-internal-upsell__vertical-layout-wrapper block">
@@ -393,20 +401,22 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
 
             {direction === "carousel" ? (
                 <div className="upcart-slider-wrapper">
-                    {carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev" style={{ backgroundColor: designSettings.buttonColor,}}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} strokeWidth="2"><path d="M15 18l-6-6 6-6"></path></svg></div>)}
+                    {carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev" style={{ backgroundColor: designSettings.buttonColor, }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} strokeWidth="2"><path d="M15 18l-6-6 6-6"></path></svg></div>)}
 
                     <Swiper
                         modules={[Navigation]}
+                        navigation={
+                            carouselIndicator === "buttons" && navReady
+                                ? { prevEl: prevRef.current, nextEl: nextRef.current }
+                                : false
+                        }
                         onInit={(swiper) => {
                             swiperRef.current = swiper;
-                            swiper.params.navigation.prevEl = prevRef.current;
-                            swiper.params.navigation.nextEl = nextRef.current;
-                            swiper.navigation.init();
-                            swiper.navigation.update();
+                            if (carouselIndicator === "progressBar") {
+                                updateProgress(swiper);
+                            }
                         }}
-                        onSlideChange={(swiper) => {
-                            updateProgress(swiper);
-                        }}
+                        onSlideChange={(swiper) => updateProgress(swiper)}
                         spaceBetween={12}
                         slidesPerView={products.length <= 1 ? 1 : 1.2}
                     >
@@ -416,9 +426,9 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                             </SwiperSlide>
                         ))}
                     </Swiper>
-                    {carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next" style={{ backgroundColor: designSettings.buttonColor,}}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} strokeWidth="2"><path d="M9 6l6 6-6 6"></path></svg></div>)}
+                    {carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next" style={{ backgroundColor: designSettings.buttonColor, }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} strokeWidth="2"><path d="M9 6l6 6-6 6"></path></svg></div>)}
                     {carouselIndicator === "progressBar" && (<div className="upsell-progress-bar">
-                        <div ref={fillRef} className="upsell-progress-fill" style={{ backgroundColor: designSettings.buttonColor,}}></div>
+                        <div ref={fillRef} className="upsell-progress-fill" style={{ backgroundColor: designSettings.buttonColor, }}></div>
                     </div>)}
                 </div>
             ) : (
