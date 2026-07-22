@@ -30,7 +30,7 @@ function scopeCss(css, scope) {
 
 const CartPreview = memo(function CartPreview({ currency, designSettings, headerSettings, announcementSettings, rewardsSettings,
     recommendationsSettings, activeTab, subscriptionUpgradesSettings, upsellsSettings, additionalNotesSettings,
-    addonsSettings, discountCodesSettings, trustBadgesSettings, cartSettings, previewMode, onClosePreview }) {
+    addonsSettings, discountCodesSettings, trustBadgesSettings, cartSettings, previewMode, onClosePreview, shop, apiUrl }) {
 
     const emptyCart = previewMode === "empty";
 
@@ -215,6 +215,8 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                         breakdownOpen={breakdownOpen}
                         setOfferOpen={setOfferOpen}
                         offerOpen={offerOpen}
+                        shop={shop}
+                        apiUrl={apiUrl}
                     />
                 )}
 

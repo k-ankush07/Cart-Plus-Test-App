@@ -121,7 +121,7 @@ body,
     flex-direction: column;
 }
 
-.cart-app__bottom-group > * {
+.cart-app__bottom-group>* {
     margin-top: 0 !important;
 }
 
@@ -1413,7 +1413,7 @@ span.custom-cart-public-component-product-tile__discount-codes {
 }
 
 span.hub-coupon-code {
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 700;
     color: #1a1a1a;
     line-height: 1;
@@ -1694,7 +1694,6 @@ span.hub-offers-title {
 .hub-coupon-card {
     display: flex;
     align-items: stretch;
-    border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 0px 5.61px 11.23px -4.21px #23272F1F;
     background: white;
@@ -1706,19 +1705,31 @@ span.hub-offers-title {
     justify-content: center;
     writing-mode: vertical-rl;
     text-orientation: mixed;
-    transform: rotate(180deg);
-    background: #2271b4;
     color: #fff;
     font-size: 20px;
     font-weight: 700;
-    padding: 14px 20px;
     min-width: 36px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     flex-shrink: 0;
-    border-left: 3px dashed;
     border-radius: 0 5px 5px 0px;
     line-height: 1;
+    position: relative;
+}
+
+
+.hub-coupon-badge__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.hub-coupon-badge__text {
+    position: relative;
+    z-index: 1;
 }
 
 .hub-coupon-body {
@@ -1739,7 +1750,7 @@ span.hub-offers-title {
     font-size: 14px;
     font-weight: 400;
     color: #1a8c4e;
-    border-bottom: 1px solid #EEEEEE;
+    border-bottom: 2px dashed #EEEEEE;
     padding-bottom: 10px;
     line-height: 1;
     padding-top: 10px;
@@ -1908,9 +1919,25 @@ span.hub-offers-title {
     background-size: 200% 100%;
     animation: hub-shimmer 1.4s infinite;
 }
+
 @keyframes hub-shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.hub-cart-disounts {
+    overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.hub-cart-disounts::-webkit-scrollbar {
+    display: none;
 }
 
 /* Responsive Styles */

@@ -1475,6 +1475,7 @@ function hubRenderOffersPanel(
   allDiscountCodes,
   activeDiscountCodes,
   cart,
+  showOfferBgColor
 ) {
   const totalEl = document.getElementById(`hub-offers-cart-total-${blockId}`);
   if (totalEl)
@@ -1510,8 +1511,15 @@ function hubRenderOffersPanel(
       const savings = d.discountValue
         ? d.discountValue.type === "percentage"
           ? `Save ${d.discountValue.value}% on this order!`
-          : `Save ${d.discountValue.value} on this order!`
+          : `Save ${hubUtils.formatMoney(d.discountValue.value * 100)} on this order!`
         : "";
+
+    const badgeText = d.discountValue
+  ? d.discountValue.type === "percentage"
+    ? `${d.discountValue.value}% OFF`
+    : `${hubUtils.formatMoney(d.discountValue.value * 100).replace(/\.00$/, "")} OFF`
+  : "OFFER";
+
       const subtitle = d.minimumRequirement
         ? `Use code ${d.title.toUpperCase()} & get discount on orders above ${hubUtils.formatMoney(d.minimumRequirement)}`
         : `Use code ${d.title.toUpperCase()} & enjoy this offer`;
@@ -1520,7 +1528,24 @@ function hubRenderOffersPanel(
         : `<button class="hub-coupon-action-btn apply" onclick="hubApplyOfferCodeFromList('${label}','${blockId}', this)">APPLY</button>`;
       return `
       <div class="hub-coupon-card">
-        <div class="hub-coupon-badge" title="${label}">${label.length > 12 ? label.slice(0, 12) + "..." : label}</div>
+
+      <div class="hub-coupon-badge">
+            <svg
+              class="hub-coupon-badge__bg"
+              width="250"
+              height="460"
+              viewBox="0 0 124 460"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M124 460H40C17.9086 460 4.02715e-07 442.091 0 420V348.34C9.56574 348.34 17.3203 340.585 17.3203 331.02C17.3203 321.454 9.56574 313.699 0 313.699V280.699C9.56574 280.699 17.3203 272.945 17.3203 263.379C17.3203 253.813 9.56574 246.059 0 246.059V213.059C9.56574 213.059 17.3203 205.304 17.3203 195.738C17.3203 186.173 9.56574 178.418 0 178.418V145.418C9.56574 145.418 17.3203 137.663 17.3203 128.098C17.3203 118.532 9.56574 110.777 0 110.777V40C0 17.9086 17.9086 0 40 0H124V460Z"
+                fill=${showOfferBgColor}
+              />
+            </svg>
+            <div class="hub-coupon-badge__text">${badgeText}</div>
+          </div> 
+
         <div class="hub-coupon-body">
           <div class="hub-coupon-top"><span class="hub-coupon-code" title="${label}">${label.length > 22 ? label.slice(0, 22) + "..." : label}</span>${actionBtn}</div>
           ${savings ? `<div class="hub-coupon-savings">${savings}</div>` : ""}

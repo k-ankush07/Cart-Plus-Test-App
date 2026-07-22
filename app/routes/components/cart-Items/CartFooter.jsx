@@ -7,7 +7,7 @@ import CustomHtml from "./CustomHtml";
 
 export default function CartFooter({ designSettings, additionalNotesSettings,
     addonsSettings, currency, discountCodesSettings, trustBadgesSettings, disableFixedFooter,
-    cartSettings, breakdownOpen, setBreakdownOpen, offerOpen, setOfferOpen }) {
+    cartSettings, breakdownOpen, setBreakdownOpen, offerOpen, setOfferOpen, shop, apiUrl }) {
 
     const [loading, setLoading] = useState(false);
 
@@ -47,7 +47,11 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 <DiscountCode discountCodesSettings={discountCodesSettings}
                     setOfferOpen={setOfferOpen}
                     offerOpen={offerOpen}
-                    designSettings={designSettings} />
+                    designSettings={designSettings}
+                    currency={currency}
+                    shop={shop.myshopifyDomain}
+                    apiUrl={apiUrl}
+                     />
 
                 {designSettings.enableSubtotal && (
                     <div className="hub-total-summary custom-cart-savings-row custom-cart-savings-amount" onClick={() => setBreakdownOpen(prev => !prev)} style={{ cursor: "pointer" }}>

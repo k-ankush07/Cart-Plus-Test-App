@@ -122,6 +122,13 @@ export default function DiscountCode({ discountCodesSettings, handleChange }) {
                             </BlockStack>
                         )}
 
+                        <ColorInput
+                            label="Offer Background Color"
+                            value={discountCodesSettings.showOfferBgColor ?? "#000000"}
+                            onChange={(val) => update("showOfferBgColor", val)}
+                            autoComplete="off"
+                        />
+
                         <Banner tone="warning">
                             <BlockStack gap="200">
                                 <Text variant="bodyMd" fontWeight="semibold">Discount limitations</Text>

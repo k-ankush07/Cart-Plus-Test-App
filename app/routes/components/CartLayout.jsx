@@ -653,6 +653,8 @@ const CartLayout = memo(function CartLayout({
           currency={symbol}
           activeTab={activeTab}
           previewMode={previewMode}
+          shop={shop}
+          apiUrl={apiUrl}
           onClosePreview={() => setIsPreviewVisible(false)}
         />
       </div>

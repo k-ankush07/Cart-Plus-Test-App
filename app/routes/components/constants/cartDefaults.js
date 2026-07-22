@@ -154,6 +154,7 @@ export const defaultDiscountCodesSettings = {
   viewAllOffersBgColor: "#ffffff", 
   title:"Coupon Code",
   showTitle:true,
+  showOfferBgColor:"#6C4DFF",
 };
 
 export const defaultExpressPaymentsSettings = {

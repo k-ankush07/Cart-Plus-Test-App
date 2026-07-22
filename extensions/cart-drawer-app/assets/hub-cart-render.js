@@ -350,6 +350,12 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const customHtmlBlocks = cartSettings.customHtmlBlocks || {};
     const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
 
+    const discountCodesSettings =
+      window.__HUB_ACTIVE_CART__?.discountCodesSettings;
+
+    const showOfferBgColor =
+      discountCodesSettings?.showOfferBgColor || "#6C4DFF";
+
     hubUtils.applyCustomCSS(blockId, cartSettings.customCss);
     hubUtils.executeBeforeLoadScripts(
       customHtmlBlocks.scripts_before_load,
@@ -366,6 +372,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           allDiscountCodes,
           activeDiscountCodes,
           cart,
+          showOfferBgColor
         );
       });
 
@@ -1167,7 +1174,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
                   : addonsSettings.selectedProduct?.price,
               ) * 100,
             );
-            
+
         const price = hubUtils.formatMoney(addonPriceCents);
         addonsEl.style.display = "block";
 
