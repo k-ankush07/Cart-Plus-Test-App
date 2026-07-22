@@ -836,11 +836,16 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }
 
       try {
+        const currentCart = await (await fetch("/cart.js")).json();
+        const currentItem = currentCart.items.find((i) => i.key === itemKey);
+        const qty = currentItem ? currentItem.quantity : 1;
+
         const res = await fetch("/cart/change.js", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: itemKey,
+            quantity: qty, 
             selling_plan: Number(sellingPlanId),
           }),
         });
@@ -848,7 +853,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
         document.dispatchEvent(new CustomEvent("cart:updated"));
 
-        // Re-render cart so new subscription price/state shows immediately
         const drawer = select.closest(
           `.hub-cart-block-${window.HUB_CART_BLOCK_ID}`,
         );
