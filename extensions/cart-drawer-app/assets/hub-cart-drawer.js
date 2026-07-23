@@ -10,7 +10,7 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-const apiUrl = "https://app.cartplus.io";
+const apiUrl = " http://localhost:6002";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");

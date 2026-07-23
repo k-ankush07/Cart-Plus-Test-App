@@ -381,8 +381,25 @@ window.hubUtils = {
 
     if (!shippingRow || !shippingCostEl) return;
 
+    const fmt = hubUtils.formatMoney;
+
+    const updateGrandTotalAndCheckout = (shippingCents) => {
+      const finalTotal = window._hubCartFinalTotal || 0;
+      const grandTotal = finalTotal + shippingCents;
+      const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
+      if (grandEl) grandEl.textContent = fmt(grandTotal);
+
+      const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
+      if (checkoutBtn) {
+        checkoutBtn.textContent = hubUtils.getCheckoutButtonText(
+          window.__HUB_ACTIVE_CART__?.cartSettings || {},
+          fmt(grandTotal),
+        );
+      }
+    };
+
     try {
-      // ─── STEP 1: /api/discounts se saare discounts fetch karo ─────────────
+      // ─── STEP 1: Free shipping discount check ──────────────────────────
       const { allDiscountCodes = [], activeDiscountCodes = [] } =
         await hubUtils.getDiscounts();
 
@@ -395,53 +412,30 @@ window.hubUtils = {
         return true;
       });
 
-      // ─── STEP 2: Free shipping type discount dhoondo (EXACT field match) ──
       const isFreeShippingType = (d) => d.type === "DiscountAutomaticFreeShipping";
-
       const isActive = (d) => d.status === "ACTIVE";
-
       const cartTotalRupees = (cartTotalCents || 0) / 100;
 
-      // FIX: field naam "value" hai, "amount" nahi
       const getMinRequirement = (d) => {
-        if (!d.minimumRequirement) return 0; // koi minimum set nahi = hamesha applicable
+        if (!d.minimumRequirement) return 0;
         return parseFloat(d.minimumRequirement.value || 0);
       };
 
       const eligibleFreeShipping = uniqueDiscounts.find((d) => {
         if (!isFreeShippingType(d)) return false;
         if (!isActive(d)) return false;
-
-        const minRequired = getMinRequirement(d);
-        return cartTotalRupees >= minRequired;
+        return cartTotalRupees >= getMinRequirement(d);
       });
 
       if (eligibleFreeShipping) {
         window._hubShippingPriceCents = 0;
-
         shippingRow.style.display = "";
         shippingCostEl.textContent = "Free";
-
-        const finalTotal = window._hubCartFinalTotal || 0;
-        const grandTotal = finalTotal;
-        const fmt = hubUtils.formatMoney;
-
-        const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
-        if (grandEl) grandEl.textContent = fmt(grandTotal);
-
-        const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
-        if (checkoutBtn) {
-          checkoutBtn.textContent = hubUtils.getCheckoutButtonText(
-            window.__HUB_ACTIVE_CART__?.cartSettings || {},
-            fmt(grandTotal),
-          );
-        }
-        return; // zone/rate calculation skip
+        updateGrandTotalAndCheckout(0);
+        return;
       }
 
-      // ─── STEP 3: Free shipping discount nahi mila / condition met nahi ────
-      // → normal shipping-zone rate calculation
-
+      // ─── STEP 2: Shipping-zone rate calculation ────────────────────────
       if (!window._hubShippingZonesCache) {
         if (window._hubShippingZonesPromise) {
           await window._hubShippingZonesPromise;
@@ -450,13 +444,26 @@ window.hubUtils = {
           const res = await fetch(url, {
             headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }),
           });
-          if (!res.ok) return;
+          if (!res.ok) {
+            // FIX: hide row instead of leaving stale state
+            window._hubShippingPriceCents = 0;
+            shippingRow.style.display = "none";
+            updateGrandTotalAndCheckout(0);
+            return;
+          }
           window._hubShippingZonesCache = await res.json();
         }
       }
 
       const data = window._hubShippingZonesCache;
-      if (!data?.shipping) return;
+
+      // FIX: agar zone data hi nahi hai to row hide karo, silently return mat karo
+      if (!data?.shipping) {
+        window._hubShippingPriceCents = 0;
+        shippingRow.style.display = "none";
+        updateGrandTotalAndCheckout(0);
+        return;
+      }
 
       const input = document.querySelector('input[name="country_code"]');
       const countryCode =
@@ -464,7 +471,13 @@ window.hubUtils = {
         window.__SHOPIFY_COUNTRY_CODE__ ||
         window.__SHOPIFY_SHOP__?.locale?.split("-")[1];
 
-      if (!countryCode) return;
+      // FIX: country code na mile to bhi row hide karo
+      if (!countryCode) {
+        window._hubShippingPriceCents = 0;
+        shippingRow.style.display = "none";
+        updateGrandTotalAndCheckout(0);
+        return;
+      }
 
       const shopCurrency = window.__SHOPIFY_SHOP__?.currency;
       const activeCurrency = window.__SHOPIFY_CURRENCY__?.code;
@@ -509,7 +522,13 @@ window.hubUtils = {
         });
       });
 
-      if (!matchedRate) return;
+      // FIX: koi rate match na ho to row explicitly hide karo (stale state prevent)
+      if (!matchedRate) {
+        window._hubShippingPriceCents = 0;
+        shippingRow.style.display = "none";
+        updateGrandTotalAndCheckout(0);
+        return;
+      }
 
       const basePrice = parseFloat(matchedRate.price || 0);
       const price = basePrice * rate;
@@ -518,28 +537,20 @@ window.hubUtils = {
       window._hubShippingPriceCents = shippingCents;
 
       shippingRow.style.display = "";
-      shippingCostEl.textContent = price === 0 ? "Free" : hubUtils.formatMoney(shippingCents);
+      shippingCostEl.textContent = price === 0 ? "Free" : fmt(shippingCents);
 
-      const finalTotal = window._hubCartFinalTotal || 0;
-      const grandTotal = finalTotal + shippingCents;
-      const fmt = hubUtils.formatMoney;
-
-      const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
-      if (grandEl) grandEl.textContent = fmt(grandTotal);
-
-      const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
-      if (checkoutBtn) {
-        checkoutBtn.textContent = hubUtils.getCheckoutButtonText(
-          window.__HUB_ACTIVE_CART__?.cartSettings || {},
-          fmt(grandTotal),
-        );
-      }
+      updateGrandTotalAndCheckout(shippingCents);
     } catch (err) {
       console.error("Shipping Calculation Error:", err);
+      // FIX: error case mein bhi row ko hide/reset karo, stale state mat chhodo
+      window._hubShippingPriceCents = 0;
+      if (shippingRow) shippingRow.style.display = "none";
+      updateGrandTotalAndCheckout(0);
     }
   },
 
   async maybeUpdateRewardProducts(cart, rewards) {
+    // FIX: was `rewards?.enabled` — inverted logic, ran when rewards were OFF
     if (rewards?.enabled || !rewards?.tiers?.length) return false;
     if (window._hubRewardUpdating) return false;
 
