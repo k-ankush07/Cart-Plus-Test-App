@@ -80,7 +80,7 @@ function _hubHideAllCartSections(blockId) {
     suggestedEl.innerHTML = "";
   }
 
-  const headerEl = document.querySelector(".upcart-header-text");
+  const headerEl = document.querySelector(".cart-plus-header-text");
   if (headerEl) {
     const hs = window.__HUB_ACTIVE_CART__?.headerSettings || {};
     headerEl.innerText = (hs.titleText || "Cart • {{cart_quantity}}").replace(
@@ -174,10 +174,10 @@ async function removeItem(key, title) {
 
   const removedQty = Number(el.querySelector(".hub-qty-input")?.value || 1);
   const badgeText = document.querySelector(
-    ".custom-cart-sticky-cart-quantity-icon-text",
+    ".cart-plus-sticky-cart-quantity-icon-text",
   );
   const badgeWrapper = document.querySelector(
-    ".custom-cart-sticky-cart-quantity-icon",
+    ".cart-plus-sticky-cart-quantity-icon",
   );
 
   function _applyBadgeCount(count) {
@@ -748,7 +748,7 @@ window.hubCheckoutClick = function (e, blockId, btn) {
   // on checkout_completed so it only fires on confirmed orders.
 
   fetch(
-    `${window.__HUB_API_URL__ || "http://localhost:6002"}/api/track-event`,
+    `${window.__HUB_API_URL__ || "https://app.cartplus.io"}/api/track-event`,
     {
       method: "POST",
       headers: {

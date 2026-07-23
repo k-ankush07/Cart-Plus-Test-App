@@ -87,12 +87,12 @@ function scopeCss(css, scope) {
 
       // ── Uses new class instead of id ──
       const badgeText = document.querySelector(
-        ".custom-cart-sticky-cart-quantity-icon-text",
+        ".cart-plus-sticky-cart-quantity-icon-text",
       );
       const badgeWrapper = document.querySelector(
-        ".custom-cart-sticky-cart-quantity-icon",
+        ".cart-plus-sticky-cart-quantity-icon",
       );
-      const widget = document.querySelector(".custom-cart-sticky-widget");
+      const widget = document.querySelector(".cart-plus-sticky-widget");
 
       if (badgeText && badgeWrapper) {
         badgeText.textContent = count > 99 ? "99+" : count;
@@ -120,7 +120,7 @@ function scopeCss(css, scope) {
       (data.device === "mobile" && !isMobile) ||
       (data.device === "desktop" && isMobile)
     ) {
-      const existing = document.querySelector(".custom-cart-sticky-widget");
+      const existing = document.querySelector(".cart-plus-sticky-widget");
       if (existing) existing.remove();
       return;
     }
@@ -133,7 +133,7 @@ function scopeCss(css, scope) {
       });
     }
 
-    if (document.querySelector(".custom-cart-sticky-widget")) {
+    if (document.querySelector(".cart-plus-sticky-widget")) {
       // Widget already exists (e.g. re-render call) — just refresh badge/visibility state
       updateStickyBadge();
       return;
@@ -142,7 +142,7 @@ function scopeCss(css, scope) {
     // ── Root button ──
     const btn = document.createElement("div");
     btn.classList.add(
-      "custom-cart-sticky-widget",
+      "cart-plus-sticky-widget",
       `hub-sticky-scope-${blockId}`,
     );
 
@@ -183,7 +183,7 @@ function scopeCss(css, scope) {
 
     // ── Badge wrapper ──
     const badgeWrapper = document.createElement("div");
-    badgeWrapper.classList.add("custom-cart-sticky-cart-quantity-icon");
+    badgeWrapper.classList.add("cart-plus-sticky-cart-quantity-icon");
     Object.assign(badgeWrapper.style, {
       position: "absolute",
       top: "5px",
@@ -203,7 +203,7 @@ function scopeCss(css, scope) {
 
     // ── Badge text ──
     const badgeText = document.createElement("span");
-    badgeText.classList.add("custom-cart-sticky-cart-quantity-icon-text");
+    badgeText.classList.add("cart-plus-sticky-cart-quantity-icon-text");
     Object.assign(badgeText.style, {
       color: data.qTextColor || "#fff",
       fontSize: "14px",
@@ -216,7 +216,7 @@ function scopeCss(css, scope) {
 
     // ── Icon wrapper ──
     const iconWrapper = document.createElement("div");
-    iconWrapper.classList.add("custom-cart-sticky-cart-icon");
+    iconWrapper.classList.add("cart-plus-sticky-cart-icon");
     iconWrapper.innerHTML = getStickyIconMarkup(
       data.selectedIcon,
       data.customIconUrl,

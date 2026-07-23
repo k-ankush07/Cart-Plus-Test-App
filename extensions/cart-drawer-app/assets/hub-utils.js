@@ -93,8 +93,8 @@ window.hubUtils = {
     const iconColor = designSettings.iconColor || "";
 
     return `
-<div class="custom-cart-public-notes hub-additional-notes ${settings.placement}">
-  <div class="hub-notes-title custom-cart-public-component-collapse__dropdown-container">
+<div class="cart-plus-public-notes hub-additional-notes ${settings.placement}">
+  <div class="hub-notes-title cart-plus-public-component-collapse__dropdown-container">
      <div class="hub-notes-icon">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 20h9"/>
@@ -102,14 +102,14 @@ window.hubUtils = {
       </svg>
     </div>
     ${settings.title}
-  <span class="drop-icon custom-cart-public-component-collapse__expand-icon">
+  <span class="drop-icon cart-plus-public-component-collapse__expand-icon">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M6 9l6 6 6-6" />
   </svg>
 </span>
   </div>
 
-  <div class="hub-notes-content custom-cart-public-notes__textarea">
+  <div class="hub-notes-content cart-plus-public-notes__textarea">
     <textarea 
       id="hub-cart-note-${blockId}" 
       class="hub-notes-textarea"
@@ -205,7 +205,7 @@ window.hubUtils = {
     el.style.display = "block";
 
     el.innerHTML = `
-    <div class="hub-trust-badges-inner cart-trust-badges__img upcart-trust-badge-image custom-cart-public-trust-badges__image custom-cart-trust-badge-image">
+    <div class="hub-trust-badges-inner cart-trust-badges__img upcart-trust-badge-image cart-plus-public-trust-badges__image cart-plus-trust-badge-image">
       <img src="${img}" alt="Trust badges" class="hub-trust-badges-img"/>
     </div>
   `;
@@ -235,7 +235,7 @@ window.hubUtils = {
       .join("");
 
     const ratingHTML = settings.showReviews
-      ? `<div class="upcart-internal-component-upsell-tile__rating hub-rating-slot custom-cart-public-component-upsell-tile__rating-row"
+      ? `<div class="upcart-internal-component-upsell-tile__rating hub-rating-slot cart-plus-public-component-upsell-tile__rating-row"
        data-pid="${product.id}"></div>`
       : "";
 
@@ -253,7 +253,7 @@ window.hubUtils = {
       : 0;
 
     const comparePriceHTML = hasDiscount
-      ? `<span class="hub-compare-price custom-cart-public-component-upsell-tile__price-compare-at">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
+      ? `<span class="hub-compare-price cart-plus-public-component-upsell-tile__price-compare-at">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
      <span class="hub-item-save" style="background: ${hexToRGBA(designSettings?.savingsColor, 0.1)}; color: ${designSettings.savingsColor};">
      ${savingsText}  ${hubUtils.formatMoney(Math.round((comparePrice - salePrice) * 100))} 
      </span>`
@@ -266,23 +266,23 @@ window.hubUtils = {
     const textColor = designSettings.buttonTextColor || "#ffffff";
 
     return `
-    <div class="hub-rec-product upcart-internal-component-upsell-tile custom-cart-public-component-upsell-tile" style="background-color: ${designSettings.accentColor};">
-      <div class="upcart-internal-component-upsell-tile__info_count custom-cart-public-component-upsell-tile">
-        <div class="upcart-internal-component-upsell-tile__image-container custom-cart-public-component-upsell-tile__image-container">
-          <img class="hub-product-img custom-cart-public-component-upsell-tile__image"
+    <div class="hub-rec-product upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" style="background-color: ${designSettings.accentColor};">
+      <div class="upcart-internal-component-upsell-tile__info_count cart-plus-public-component-upsell-tile">
+        <div class="upcart-internal-component-upsell-tile__image-container cart-plus-public-component-upsell-tile__image-container">
+          <img class="hub-product-img cart-plus-public-component-upsell-tile__image"
                src="${mainImage}"
                alt="${product.title}" />
         </div>
-        <div class="upcart-internal-component-upsell-tile__info custom-cart-internal-component-upsell-tile__info">
+        <div class="upcart-internal-component-upsell-tile__info cart-plus-internal-component-upsell-tile__info">
           <a href="/products/${product.handle}"
-            class="upcart-internal-component-upsell-tile__title-link custom-cart-internal-component-upsell-tile__title-link" style="color:${designSettings.textColor};">
-            <h4 class="upcart-internal-component-upsell-tile__title custom-cart-public-component-upsell-tile__title" style="color:${designSettings.textColor};">
+            class="upcart-internal-component-upsell-tile__title-link cart-plus-internal-component-upsell-tile__title-link" style="color:${designSettings.textColor};">
+            <h4 class="upcart-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title" style="color:${designSettings.textColor};">
               ${product.title}
             </h4>
           </a>
           ${ratingHTML}
-          <div class="price custom-cart-public-component-upsell-tile__price-row" style="color:${designSettings.textColor};">
-            <span class="sale-price custom-cart-public-component-upsell-tile__price" style="color:${designSettings.textColor};">
+          <div class="price cart-plus-public-component-upsell-tile__price-row" style="color:${designSettings.textColor};">
+            <span class="sale-price cart-plus-public-component-upsell-tile__price" style="color:${designSettings.textColor};">
               ${hubUtils.formatMoney(Math.round(salePrice * 100))}
             </span>
             ${comparePriceHTML}
@@ -292,12 +292,12 @@ window.hubUtils = {
       <div class="upcart-internal-component-upsell-tile__variant-row">
            ${
              hasMultipleVariants
-               ? `<select class="hub-variant-select custom-cart-public-component-upsell-tile__variant-row" style="color:${designSettings.textColor};">
+               ? `<select class="hub-variant-select cart-plus-public-component-upsell-tile__variant-row" style="color:${designSettings.textColor};">
                      ${variantOptions}
                    </select>`
                : ""
            }
-          <button class="hub-add-btn custom-cart-public-component__button" data-variant="${firstVariant?.id}" 
+          <button class="hub-add-btn cart-plus-public-component__button" data-variant="${firstVariant?.id}" 
           style="
           --btn-bg:${btnColor};
           --btn-hover:${btnHoverColor};
@@ -377,51 +377,94 @@ window.hubUtils = {
     const blockId = window.HUB_CART_BLOCK_ID;
 
     const shippingRow = document.getElementById(`hub-shipping-row-${blockId}`);
-
-    const shippingCostEl = document.getElementById(
-      `hub-shipping-cost-${blockId}`,
-    );
+    const shippingCostEl = document.getElementById(`hub-shipping-cost-${blockId}`);
 
     if (!shippingRow || !shippingCostEl) return;
 
     try {
-      // ─── Fetch Shipping Zones ─────────────────────────────
+      // ─── STEP 1: /api/discounts se saare discounts fetch karo ─────────────
+      const { allDiscountCodes = [], activeDiscountCodes = [] } =
+        await hubUtils.getDiscounts();
+
+      const combined = [...activeDiscountCodes, ...allDiscountCodes];
+      const seenIds = new Set();
+      const uniqueDiscounts = combined.filter((d) => {
+        const id = d.id || d.title;
+        if (seenIds.has(id)) return false;
+        seenIds.add(id);
+        return true;
+      });
+
+      // ─── STEP 2: Free shipping type discount dhoondo (EXACT field match) ──
+      const isFreeShippingType = (d) => d.type === "DiscountAutomaticFreeShipping";
+
+      const isActive = (d) => d.status === "ACTIVE";
+
+      const cartTotalRupees = (cartTotalCents || 0) / 100;
+
+      // FIX: field naam "value" hai, "amount" nahi
+      const getMinRequirement = (d) => {
+        if (!d.minimumRequirement) return 0; // koi minimum set nahi = hamesha applicable
+        return parseFloat(d.minimumRequirement.value || 0);
+      };
+
+      const eligibleFreeShipping = uniqueDiscounts.find((d) => {
+        if (!isFreeShippingType(d)) return false;
+        if (!isActive(d)) return false;
+
+        const minRequired = getMinRequirement(d);
+        return cartTotalRupees >= minRequired;
+      });
+
+      if (eligibleFreeShipping) {
+        window._hubShippingPriceCents = 0;
+
+        shippingRow.style.display = "";
+        shippingCostEl.textContent = "Free";
+
+        const finalTotal = window._hubCartFinalTotal || 0;
+        const grandTotal = finalTotal;
+        const fmt = hubUtils.formatMoney;
+
+        const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
+        if (grandEl) grandEl.textContent = fmt(grandTotal);
+
+        const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
+        if (checkoutBtn) {
+          checkoutBtn.textContent = hubUtils.getCheckoutButtonText(
+            window.__HUB_ACTIVE_CART__?.cartSettings || {},
+            fmt(grandTotal),
+          );
+        }
+        return; // zone/rate calculation skip
+      }
+
+      // ─── STEP 3: Free shipping discount nahi mila / condition met nahi ────
+      // → normal shipping-zone rate calculation
 
       if (!window._hubShippingZonesCache) {
         if (window._hubShippingZonesPromise) {
           await window._hubShippingZonesPromise;
         } else {
           const url = `${ratingsUrl}/api/shipping-zones?shop=${shop}`;
-
           const res = await fetch(url, {
             headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }),
           });
-
           if (!res.ok) return;
-
           window._hubShippingZonesCache = await res.json();
         }
       }
 
       const data = window._hubShippingZonesCache;
-
       if (!data?.shipping) return;
 
-      // ─── Country Code ────────────────────────────────────
-
       const input = document.querySelector('input[name="country_code"]');
-
       const countryCode =
         input?.value ||
         window.__SHOPIFY_COUNTRY_CODE__ ||
         window.__SHOPIFY_SHOP__?.locale?.split("-")[1];
 
       if (!countryCode) return;
-
-      // ─── Currency Conversion Rate ────────────────────────
-      // shipping_zones returns prices in shop base currency.
-      // _hubCartFinalTotal & cartTotalCents come from /cart.js → presentment currency.
-      // Apply a rate so the shipping value matches whatever currency the customer sees.
 
       const shopCurrency = window.__SHOPIFY_SHOP__?.currency;
       const activeCurrency = window.__SHOPIFY_CURRENCY__?.code;
@@ -430,75 +473,37 @@ window.hubUtils = {
       const rate = sameCurrency
         ? 1
         : parseFloat(
-            window.__SHOPIFY_CURRENCY_RATE__ ||
-              window.Shopify?.currency?.rate ||
-              1,
+            window.__SHOPIFY_CURRENCY_RATE__ || window.Shopify?.currency?.rate || 1,
           ) || 1;
-
-      // ─── Cart Total ──────────────────────────────────────
-      // cartTotal is in presentment; conditions are in base — divide by rate
-      // so the comparison happens in a single currency.
 
       const cartTotalBase = (cartTotalCents || 0) / 100 / rate;
 
       let matchedRate = null;
 
-      // ─── Find Matching Zone ──────────────────────────────
-
       data.shipping.forEach((profile) => {
         profile.zones.forEach((zone) => {
-          const hasCountry = zone.countries.some(
-            (country) => country.code === countryCode,
-          );
-
+          const hasCountry = zone.countries.some((country) => country.code === countryCode);
           if (!hasCountry) return;
 
-          zone.shipping_rates.forEach((rate) => {
+          zone.shipping_rates.forEach((r) => {
             let isApplicable = true;
-
-            // ─── Check Conditions ────────────────────────
-
-            if (rate.conditions?.length) {
-              rate.conditions.forEach((condition) => {
+            if (r.conditions?.length) {
+              r.conditions.forEach((condition) => {
                 const amount = parseFloat(condition.amount || 0);
-
-                // Minimum Cart Condition
-
-                if (
-                  condition.field === "TOTAL_PRICE" &&
-                  condition.operator === "GREATER_THAN_OR_EQUAL_TO"
-                ) {
-                  if (cartTotalBase < amount) {
-                    isApplicable = false;
-                  }
+                if (condition.field === "TOTAL_PRICE" && condition.operator === "GREATER_THAN_OR_EQUAL_TO") {
+                  if (cartTotalBase < amount) isApplicable = false;
                 }
-
-                // Maximum Cart Condition
-
-                if (
-                  condition.field === "TOTAL_PRICE" &&
-                  condition.operator === "LESS_THAN_OR_EQUAL_TO"
-                ) {
-                  if (cartTotalBase > amount) {
-                    isApplicable = false;
-                  }
+                if (condition.field === "TOTAL_PRICE" && condition.operator === "LESS_THAN_OR_EQUAL_TO") {
+                  if (cartTotalBase > amount) isApplicable = false;
                 }
               });
             }
-
-            // ─── Pick Best Shipping Method ───────────────
-
             if (isApplicable) {
-              // Prefer Free Shipping
-              if (parseFloat(rate.price || 0) === 0) {
-                matchedRate = rate;
+              if (parseFloat(r.price || 0) === 0) {
+                matchedRate = r;
                 return;
               }
-
-              // Fallback Paid Shipping
-              if (!matchedRate) {
-                matchedRate = rate;
-              }
+              if (!matchedRate) matchedRate = r;
             }
           });
         });
@@ -506,41 +511,23 @@ window.hubUtils = {
 
       if (!matchedRate) return;
 
-      // ─── Shipping Price (converted to presentment) ───────
-
       const basePrice = parseFloat(matchedRate.price || 0);
       const price = basePrice * rate;
       const shippingCents = Math.round(price * 100);
 
       window._hubShippingPriceCents = shippingCents;
 
-      // ─── Update UI ──────────────────────────────────────
-
       shippingRow.style.display = "";
-
-      shippingCostEl.textContent =
-        price === 0 ? "Free" : hubUtils.formatMoney(shippingCents);
-
-      // ─── Grand Total ────────────────────────────────────
+      shippingCostEl.textContent = price === 0 ? "Free" : hubUtils.formatMoney(shippingCents);
 
       const finalTotal = window._hubCartFinalTotal || 0;
-
       const grandTotal = finalTotal + shippingCents;
-
       const fmt = hubUtils.formatMoney;
 
       const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
+      if (grandEl) grandEl.textContent = fmt(grandTotal);
 
-      if (grandEl) {
-        grandEl.textContent = fmt(grandTotal);
-      }
-
-      // ─── Checkout Button ────────────────────────────────
-
-      const checkoutBtn = document.getElementById(
-        `hub-checkout-btn-${blockId}`,
-      );
-
+      const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
       if (checkoutBtn) {
         checkoutBtn.textContent = hubUtils.getCheckoutButtonText(
           window.__HUB_ACTIVE_CART__?.cartSettings || {},
@@ -553,7 +540,6 @@ window.hubUtils = {
   },
 
   async maybeUpdateRewardProducts(cart, rewards) {
-    // FIX: was `rewards?.enabled` — inverted logic, ran when rewards were OFF
     if (rewards?.enabled || !rewards?.tiers?.length) return false;
     if (window._hubRewardUpdating) return false;
 
@@ -776,14 +762,14 @@ window.hubUtils = {
 
     let titleHtml = "";
     if (cartTotal >= maxAmount) {
-      titleHtml = `<p class="hub-rewards-title custom-cart-public-rewards__message">${rewards.successText || "All rewards unlocked!"}</p>`;
+      titleHtml = `<p class="hub-rewards-title cart-plus-public-rewards__message">${rewards.successText || "All rewards unlocked!"}</p>`;
     } else if (currentTier) {
       const remaining = getTierValue(currentTier) - cartTotal;
       const amountStr = isQuantity
         ? `${remaining} items`
         : hubUtils.formatMoney(remaining * 100);
       const raw = currentTier.title || "You're {AMOUNT} away!";
-      titleHtml = `<p class="hub-rewards-title custom-cart-public-rewards__message">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
+      titleHtml = `<p class="hub-rewards-title cart-plus-public-rewards__message">${raw.replace("{AMOUNT}", `<strong>${amountStr}</strong>`)}</p>`;
     }
 
     const segFills = sorted.map((tier, index) => {
@@ -842,19 +828,19 @@ window.hubUtils = {
           : rewards.incompleteIconColor || "#000000";
         const dotBg = done ? fillColor : trackColor;
 
-        return `<div class="hub-tier-cell custom-cart-public-component-segmented-progress-bar__segments-container">
-  <div class="hub-cell-bar custom-cart-public-component-segmented-progress-bar__segment" style="background:${trackColor};height:${barLength}px">
-    <div class="hub-cell-fill custom-cart-public-rewards__bar custom-cart-public-component-segmented-progress-bar" style="width:${segFill.toFixed(2)}%;background:${fillColor}"></div>
+        return `<div class="hub-tier-cell cart-plus-public-component-segmented-progress-bar__segments-container">
+  <div class="hub-cell-bar cart-plus-public-component-segmented-progress-bar__segment" style="background:${trackColor};height:${barLength}px">
+    <div class="hub-cell-fill cart-plus-public-rewards__bar cart-plus-public-component-segmented-progress-bar" style="width:${segFill.toFixed(2)}%;background:${fillColor}"></div>
   </div>
 
   ${
     tier.showIcon
       ? `
-    <div class="hub-circle-wrap custom-cart-public-component-segmented-progress-bar__milestone--middle icon-circle" style="padding:0 ${barGap}px">
-      <div class="hub-rewards-dot custom-cart-public-component-segmented-progress-bar__segment" style="background:${dotBg};width:${dotSize}px;height:${dotSize}px">
+    <div class="hub-circle-wrap cart-plus-public-component-segmented-progress-bar__milestone--middle icon-circle" style="padding:0 ${barGap}px">
+      <div class="hub-rewards-dot cart-plus-public-component-segmented-progress-bar__segment" style="background:${dotBg};width:${dotSize}px;height:${dotSize}px">
         ${hubUtils.getTierIcon(tier.type, iconColor)}
       </div>
-      <span class="hub-rewards-dot-label custom-cart-public-component-segmented-progress-bar__milestone-label--align-center">${tier.description || ""}</span>
+      <span class="hub-rewards-dot-label cart-plus-public-component-segmented-progress-bar__milestone-label--align-center">${tier.description || ""}</span>
     </div>
   `
       : ""

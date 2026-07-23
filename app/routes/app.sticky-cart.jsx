@@ -278,10 +278,10 @@ function renderCartIcon(selectedIcon, customIconUrl, iconColor, iconSize) {
 }
 
 const CSS_CLASSES = [
-  "custom-cart-sticky-widget",
-  "custom-cart-sticky-cart-quantity-icon",
-  "custom-cart-sticky-cart-quantity-icon-text",
-  "custom-cart-sticky-cart-icon",
+  "cart-plus-sticky-widget",
+  "cart-plus-sticky-cart-quantity-icon",
+  "cart-plus-sticky-cart-quantity-icon-text",
+  "cart-plus-sticky-cart-icon",
 ];
 
 const POSITION_OPTIONS = [

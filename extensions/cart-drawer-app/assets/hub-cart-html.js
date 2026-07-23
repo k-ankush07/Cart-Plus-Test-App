@@ -98,12 +98,12 @@ window.injectCartHTML = function (blockId, root) {
   const closeButtonHTML = `
     <button
       id="hub-close-${blockId}"
-      class="hub-cart-close cart-app__close custom-close-btn upcart-header-close-button custom-close-btn custom-cart-public-header__close-button custom-cart-header-close-button"
+      class="hub-cart-close cart-app__close cart-plus-close-btn cart-plus-header-close-button  cart-plus-cart-public-header__close-button cart-plus-cart-header-close-button"
       aria-label="Close cart"
       style="flex-shrink:0;${closeBtnVars};"
     >
       <svg
-        class="upcart-header-close-button-icon custom-cart-public-header__close-button-icon custom-cart-header-close-button-icon" 
+        class="cart-plus-header-close-button-icon cart-plus-cart-public-header__close-button-icon cart-plus-cart-header-close-button-icon" 
         width="${iconSizePx}" height="${iconSizePx}"
         viewBox="0 0 24 24" fill="none"
         stroke="currentColor"
@@ -144,10 +144,10 @@ window.injectCartHTML = function (blockId, root) {
             ? "margin:0 0 0 auto;"
             : "margin:0;";
       return `
-        <div style="${wrapperStyle}" class="custom-cart-header-logo">
+        <div style="${wrapperStyle}" class="cart-plus-header-logo">
           <div style="max-width:${headerSettings.logoSize || 120}px;display:block;${marginStyle}">
             <img
-              class="upcart-header-logo"
+              class="cart-plus-header-logo"
               src="${src}"
               alt="Logo"
               style="width:100%;"
@@ -161,7 +161,7 @@ window.injectCartHTML = function (blockId, root) {
       return `
         <div style="${wrapperStyle}">
           <span
-            class="cart-app__title upcart-header-text"
+            class="cart-app__title cart-plus-header-text"
             style="color:${headerSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${headerSettings.fontSize}px;display:block;margin:0;"
           >${titleDisplayText}</span>
         </div>`;
@@ -172,7 +172,7 @@ window.injectCartHTML = function (blockId, root) {
     return `
       <div style="${wrapperStyle}">
         <${HeadingTag}
-          class="cart-app__title upcart-header-text"
+          class="cart-app__title cart-plus-header-text"
           style="margin:0;color:${designSettings.textColor};font-weight:${getFontWeight(headerSettings.fontWeight)};font-size:${getHeadingSize(headerSettings.heading)};"
         >${titleDisplayText}</${HeadingTag}>
       </div>`;
@@ -275,9 +275,9 @@ window.injectCartHTML = function (blockId, root) {
   root.insertAdjacentHTML(
     "beforeend",
     `
-    <div id="hub-cart-bg-${blockId}" class="hub-cart-bg custom-cart"></div>
+    <div id="hub-cart-bg-${blockId}" class="hub-cart-bg cart-plus-drawer"></div>
    <div id="hub-cart-drawer-${blockId}" 
-  class="hub-cart-drawer cart-app upcart-cart ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"}"
+  class="hub-cart-drawer cart-app cart-plus ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"}"
   style="background-color:${designSettings.backgroundColor || ""};
   width:${designSettings.desktopWidth === "wide" ? "500px" : "440px"};
   overflow-y:${disableFixedFooter ? "auto" : "unset"};
@@ -286,11 +286,11 @@ window.injectCartHTML = function (blockId, root) {
 
       <!-- HEADER -->
       <div
-        class="cart-app__header-top upcart-header hub-cart-header custom-cart-public-header custom-cart-header"
+        class="cart-app__header-top upcart-header hub-cart-header cart-plus-public-header cart-plus-header"
         style="padding:${headerPadding}; background:${headerSettings.backgroundColor};"
       >
         <div
-          class="cart-app__row-between custom-cart-header-text"
+          class="cart-app__row-between cart-plus-header-text"
           style="display:flex;align-items:center;justify-content:space-between;"
         >
           ${headerInner}
@@ -305,16 +305,16 @@ window.injectCartHTML = function (blockId, root) {
       <div>${renderCustomHTML(customHtmlBlocks.below_header)}</div>
 
       <!-- ITEMS (scrollable) -->
-      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview ${disableFixedFooter ? "scroll-auto" : "scroll-unset"} custom-cart-body">
+      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview ${disableFixedFooter ? "scroll-auto" : "scroll-unset"} cart-plus-body">
         <!-- ANNOUNCEMENT (position: before) -->
         <div>${renderCustomHTML(customHtmlBlocks.above_announcements)}</div>
         <div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>
 
         <!-- TRUST BADGES (position: top of cart) -->
-        <div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges custom-cart-trust-badge upcart-trust-badge custom-cart-public-trust-badges" style="display:none;"></div>
+        <div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges cart-plus-trust-badge upcart-trust-badge cart-plus-public-trust-badges" style="display:none;"></div>
 
         <!-- REWARDS -->
-        <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;" class="custom-cart-internal-rewards custom-cart-public-rewards tier-card upcart-rewards"></div>
+        <div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;" class="cart-plus-internal-rewards cart-plus-public-rewards tier-card upcart-rewards"></div>
 
         <!-- UPSELLS (position: top of cart) -->
         <div id="hub-upsell-top-${blockId}" class="hub-upsell"></div>
@@ -355,7 +355,7 @@ window.injectCartHTML = function (blockId, root) {
       <!-- FOOTER (fixed bottom) -->
       <div id="hub-footer-rec-${blockId}"></div>
 
-      <div class="hub-cart-footer cart-app__footer custom-cart-footer" style="background-color:${designSettings.accentColor || ""};">
+      <div class="hub-cart-footer cart-app__footer cart-plus-footer" style="background-color:${designSettings.accentColor || ""};">
 
         <!-- skeleton shown while cart data loads -->
         <div id="hub-footer-skeleton-${blockId}" class="hub-footer-skeleton" style="display:none;">
@@ -372,7 +372,7 @@ window.injectCartHTML = function (blockId, root) {
         <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
         <!-- DISCOUNT -->
         
-        <div class="hub-discount-input-row-items custom-cart-discount-code-row custom-cart-public-discount-code custom-cart-discount-code-input-wrapper custom-cart-discount-code-module custom-cart-public-discount-code__input-wrapper" 
+        <div class="hub-discount-input-row-items cart-plus-discount-code-row cart-plus-public-discount-code cart-plus-discount-code-input-wrapper cart-plus-discount-code-module cart-plus-public-discount-code__input-wrapper" 
          id="hub-discount-row-${blockId}">
          ${
         showTitle
@@ -389,8 +389,8 @@ window.injectCartHTML = function (blockId, root) {
          <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
          </svg>
             
-          <input type="text" id="discount-code-input-${blockId}" placeholder="Discount code" class="hub-discount-input custom-cart-discount-code-text custom-cart-discount-code-input" />
-          <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn custom-cart-public-discount-code__button custom-cart-discount-code-button">Apply</button>
+          <input type="text" id="discount-code-input-${blockId}" placeholder="Discount code" class="hub-discount-input cart-plus-discount-code-text cart-plus-discount-code-input" />
+          <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn cart-plus-public-discount-code__button cart-plus-discount-code-button">Apply</button>
           </div>
           <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
          ${
@@ -472,7 +472,7 @@ window.injectCartHTML = function (blockId, root) {
         }
 
         <!-- TRUST BADGES (position: top of footer) -->
-        <div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges custom-cart-trust-badge upcart-trust-badge custom-cart-public-trust-badges" style="display:none;"></div>
+        <div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges cart-plus-trust-badge upcart-trust-badge cart-plus-public-trust-badges" style="display:none;"></div>
       </div>
 
      <div class="hub-bottom-of-cart">${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>
@@ -532,9 +532,9 @@ window.injectCartHTML = function (blockId, root) {
          <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
          <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
          </svg>
-            <input type="text" id="hub-offers-input-${blockId}" placeholder="Enter Coupon Code" class="hub-offers-code-input custom-cart-discount-code-text custom-cart-discount-code-input" />
+            <input type="text" id="hub-offers-input-${blockId}" placeholder="Enter Coupon Code" class="hub-offers-code-input cart-plus-discount-code-text cart-plus-discount-code-input" />
           </div>
-           <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn custom-cart-public-discount-code__button custom-cart-discount-code-button">APPLY</button>
+           <button onclick="hubApplyOfferCode('${blockId}', this)" class="hub-offers-apply-btn cart-plus-public-discount-code__button cart-plus-discount-code-button">APPLY</button>
            </div>
         </div>
          <div id="hub-offers-msg-${blockId}" class="hub-discount-message"></div>

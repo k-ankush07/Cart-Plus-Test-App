@@ -1316,7 +1316,7 @@ span.hub-total-arrow svg {
   line-height: 13px;
 }
 
-.cart-app__title.upcart-header-text {
+.cart-app__title.cart-plus-header-text {
   letter-spacing: 0;
 }
 
@@ -1673,7 +1673,7 @@ span.hub-total-arrow svg {
   flex-shrink: 0;
 }
 
-.hub-addon-product-img-wrapper.custom-cart-addons-image-wrapper.custom-cart-public-addons__image-wrapper {
+.hub-addon-product-img-wrapper.cart-plus-addons-image-wrapper.cart-plus-public-addons__image-wrapper {
   width: 60px;
   height: 60px;
   flex-shrink: 0;
@@ -1839,7 +1839,7 @@ span.hub-total-arrow svg {
   border-radius: inherit;
 }
 
-.custom-close-btn {
+.cart-plus-close-btn {
   background: var(--icon-bg);
   color: var(--icon-color);
   transition: background 0.3s ease;
@@ -1850,7 +1850,7 @@ span.hub-total-arrow svg {
   border-radius: var(--border-radius);
 }
 
-.custom-close-btn:hover {
+.cart-plus-close-btn:hover {
   background: var(--icon-hover-bg);
   color: var(--icon-hover-color);
   border-color: var(--icon-border-hover);
@@ -2248,7 +2248,7 @@ span.upsell-text.suggestion-product {
   padding: 10px 20px 10px;
 }
 
-.custom-cart-announcement {
+.cart-plus-announcement {
   line-height: 22px;
 }
 
@@ -2521,7 +2521,7 @@ span.hub-item-discount-badge img.discount-code-img {
   padding: 0;
 }
 
-.custom-cart-sticky-cart-icon {
+.cart-plus-sticky-cart-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2596,26 +2596,26 @@ select.hub-variant-option-select {
 /* ====== responsive styles ====== */
 
 @media screen and (max-width:440px) {
-  .custom-cart-public-component-product-title-container {
+  .cart-plus-public-component-product-title-container {
     width: 100%;
   }
 
-  .custom-cart-public-component-product-title-container {
+  .cart-plus-public-component-product-title-container {
     flex-wrap: wrap;
     justify-content: right !important;
   }
 
-  .custom-cart-sticky-widget {
+  .cart-plus-sticky-widget {
     width: 60px !important;
     height: 60px !important;
   }
 
-  .custom-cart-sticky-cart-icon svg {
+  .cart-plus-sticky-cart-icon svg {
     width: 30px !important;
     height: 30px !important;
   }
 
-  .custom-cart-sticky-cart-quantity-icon {
+  .cart-plus-sticky-cart-quantity-icon {
     min-width: 18px !important;
     height: 18px !important;
     top: 0 !important;
@@ -2623,7 +2623,7 @@ select.hub-variant-option-select {
     padding: 0 !important;
   }
 
-  span.custom-cart-sticky-cart-quantity-icon-text {
+  span.cart-plus-sticky-cart-quantity-icon-text {
     font-size: 11px !important;
   }
 

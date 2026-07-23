@@ -97,7 +97,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       cart.items.map((i) => String(i.product_id)),
     );
 
-    const headerEl = document.querySelector(".upcart-header-text");
+    const headerEl = document.querySelector(".cart-plus-header-text");
     if (headerEl) {
       const headerSettings = window.__HUB_ACTIVE_CART__?.headerSettings || {};
       const includeAddonsInCount =
@@ -207,7 +207,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
         const timerText = ann.timer || "10:00";
         const isAfter = ann.position === "after";
         target.className =
-          "custom-cart-public-announcement custom-cart-announcement upcart-announcement";
+          "cart-plus-public-announcement cart-plus-announcement upcart-announcement";
         target.style.cssText = `
           display: block;
           background-color: ${ann.backgroundColor || "#ffffff"};
@@ -654,7 +654,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       if (!recommendations?.enabled) {
         recHTML = `
           <div class="hub-cart-recommendations">
-            <h3 class="hub-rec-title hub-public-upsell__title custom-cart-internal-style__title-large" style="color:${designSettings.textColor};">
+            <h3 class="hub-rec-title hub-public-upsell__title cart-plus-internal-style__title-large" style="color:${designSettings.textColor};">
               ${recommendations.productHeaderText || "You may also like"}
             </h3>
             <div id="hub-rec-products"></div>
@@ -662,19 +662,19 @@ window.hubCartRender = async function (drawer, opts = {}) {
       }
 
       container.innerHTML = `
-        <div class="hub-cart-empty cart_CartPreview__empty__body custom-cart-recommendation-module">
+        <div class="hub-cart-empty cart_CartPreview__empty__body cart-plus-recommendation-module">
           <div>${hubUtils.renderCustomHTML(customHtmlBlocks.empty_cart)}</div>
-          <h3 class="hub-empty-title styles_CartPreview__empty__ custom-cart-recommendations-title">${emptyCartMessage}</h3>
+          <h3 class="hub-empty-title styles_CartPreview__empty__ cart-plus-recommendations-title">${emptyCartMessage}</h3>
           ${
             !recommendations?.enabled
               ? `
-            <p class="hub-rec-subtitle hub-public-upsell__header custom-cart-internal-upsell__header" style="color:${designSettings.textColor};">
+            <p class="hub-rec-subtitle hub-public-upsell__header cart-plus-internal-upsell__header" style="color:${designSettings.textColor};">
               ${recommendations?.headerText || ""}
             </p>
             ${
               recommendations?.showShopNowButton
                 ? `
-              <a href="${recommendations.buttonUrl}" class="hub-rec-btn hub-public-upsell__shop-now-button custom-cart-internal-style__title-large_button custom-cart-recommendations-shop-now-button"
+              <a href="${recommendations.buttonUrl}" class="hub-rec-btn hub-public-upsell__shop-now-button cart-plus-internal-style__title-large_button cart-plus-recommendations-shop-now-button"
                 style="--btn-bg:${btnColor};--btn-hover:${btnHoverColor};--btn-text:${textColor};border-radius:${designSettings.buttonRadius}px;">
                 ${recommendations.buttonText || "Shop Now"}
               </a>`
@@ -1055,7 +1055,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
             ? item.options_with_values
                 .map(
                   (opt) =>
-                    `<p class="hub-item-variant custom-cart-public-component-product-tile__variant" style="color:${colorItems}"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`,
+                    `<p class="hub-item-variant cart-plus-public-component-product-tile__variant" style="color:${colorItems}"><span class="hub-item-variant-name">${opt.name}:</span> <span class="hub-item-variant-value">${opt.value}</span></p>`,
                 )
                 .join("")
             : "";
@@ -1243,13 +1243,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
           const productTitle = truncateText(selected.title || "", 50);
 
           addonsEl.innerHTML = `
-    <div class="hub-addon-product custom-cart-public-addons custom-cart-addons">
-     ${selected.image ? `<div class="hub-addon-product-img-wrapper custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper"><img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img"/></div>` : ""}
-      <div class="hub-addon-product-info custom-cart-public-addons__content-wrapper">
-        <p class="hub-addon-product-title custom-cart-public-addons__content-title-wrapper custom-cart-addons-title">${productTitle}</p>
-        <span class="hub-addon-product-price custom-cart-public-addons__content-price">${price}</span>
+    <div class="hub-addon-product cart-plus-public-addons cart-plus-addons">
+     ${selected.image ? `<div class="hub-addon-product-img-wrapper cart-plus-addons-image-wrapper cart-plus-public-addons__image-wrapper"><img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img"/></div>` : ""}
+      <div class="hub-addon-product-info cart-plus-public-addons__content-wrapper">
+        <p class="hub-addon-product-title cart-plus-public-addons__content-title-wrapper cart-plus-addons-title">${productTitle}</p>
+        <span class="hub-addon-product-price cart-plus-public-addons__content-price">${price}</span>
       </div>
-      <label class="hub-addon-sp-toggle custom-cart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
+      <label class="hub-addon-sp-toggle cart-plus-addons-toggle upcart-public-addons__toggle-wrapper cart-plus-public-addons__toggle-wrapper">
         <input type="checkbox" id="hub-addon-toggle-${blockId}" class="hub-addon-checkbox" data-variant="${variantId}" data-line-key="${addonLineKey}" data-price-cents="${addonPriceCents}" ${shouldBeChecked ? "checked" : ""}/>
         <span class="hub-addon-sp-slider"></span>
       </label>
