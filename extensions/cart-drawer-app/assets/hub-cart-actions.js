@@ -748,7 +748,7 @@ window.hubCheckoutClick = function (e, blockId, btn) {
   // on checkout_completed so it only fires on confirmed orders.
 
   fetch(
-    `${window.__HUB_API_URL__ || "https://app.cartplus.io"}/api/track-event`,
+    `${window.__HUB_API_URL__ || "http://localhost:6002"}/api/track-event`,
     {
       method: "POST",
       headers: {
@@ -983,9 +983,16 @@ window.hubChangeVariantOption = async function (selectEl) {
       const couponEl = document.getElementById(`hub-coupon-${blockId}`);
       if (couponRow && couponEl) {
         if (couponSaving > 0) {
-          couponEl.textContent = `-${fmt(couponSaving)}`;
+          const pctApp = (cart.cart_level_discount_applications || []).find(
+            (a) => a.value_type === "percentage",
+          );
+          couponEl.textContent = pctApp
+            ? `-${parseFloat(pctApp.value)}%`
+            : `-${fmt(couponSaving)}`;
           couponRow.style.display = "";
-        } else couponRow.style.display = "none";
+        } else {
+          couponRow.style.display = "none";
+        }
       }
 
       const shippingRow = document.getElementById(

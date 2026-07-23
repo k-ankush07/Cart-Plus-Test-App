@@ -275,7 +275,15 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
       if (discMrpRow && discMrpEl) {
         if (lineSaving > 0) {
-          discMrpEl.textContent = `-${fmt(lineSaving)}`;
+          const linePctApp = cart.items
+            .flatMap((item) => item.line_level_discount_allocations || [])
+            .map((d) => d.discount_application)
+            .find((app) => app?.value_type === "percentage");
+
+          discMrpEl.textContent = linePctApp
+            ? `-${parseFloat(linePctApp.value)}%`
+            : `-${fmt(lineSaving)}`;
+
           discMrpRow.style.display = "";
 
           if (discMrpLabelEl) {
@@ -305,9 +313,16 @@ window.hubCartRender = async function (drawer, opts = {}) {
       const couponEl = document.getElementById(`hub-coupon-${blockId}`);
       if (couponRow && couponEl) {
         if (couponSaving > 0) {
-          couponEl.textContent = `-${fmt(couponSaving)}`;
+          const pctApp = (cart.cart_level_discount_applications || []).find(
+            (a) => a.value_type === "percentage",
+          );
+          couponEl.textContent = pctApp
+            ? `-${parseFloat(pctApp.value)}%`
+            : `-${fmt(couponSaving)}`;
           couponRow.style.display = "";
-        } else couponRow.style.display = "none";
+        } else {
+          couponRow.style.display = "none";
+        }
       }
 
       const shippingRow = document.getElementById(
@@ -372,7 +387,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           allDiscountCodes,
           activeDiscountCodes,
           cart,
-          showOfferBgColor
+          showOfferBgColor,
         );
       });
 
@@ -787,19 +802,31 @@ window.hubCartRender = async function (drawer, opts = {}) {
       window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;
 
     if (!subscriptionSettings?.enabled) {
+      const uniqueHandleVariantPairs = [
+        ...new Set(
+          sortedItems
+            .filter((i) => !i.properties?._hub_addon)
+            .map((i) => `${i.handle}::${i.variant_id}`)
+            .filter(Boolean),
+        ),
+      ];
+
       await Promise.all(
-        uniqueHandles.map(async (handle) => {
+        uniqueHandleVariantPairs.map(async (pairKey) => {
+          const [handle, variantId] = pairKey.split("::");
           try {
-            _sellingPlansByHandle[handle] =
-              await hubUtils.getSellingPlans(handle);
+            _sellingPlansByHandle[pairKey] = await hubUtils.getSellingPlans(
+              handle,
+              variantId,
+            );
           } catch (e) {
-            _sellingPlansByHandle[handle] = [];
+            _sellingPlansByHandle[pairKey] = [];
           }
         }),
       );
     }
 
-    // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
+     // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
     document.addEventListener("click", (e) => {
       const btn = e.target.closest(".hub-upgrade-btn");
       if (!btn) return;

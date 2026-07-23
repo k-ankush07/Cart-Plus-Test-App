@@ -31,7 +31,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
 
     return (
         <div
-            className="cart-app__footer custom-cart-footer"
+            className="cart-app__footer cart-plus-footer"
             style={{
                 backgroundColor: designSettings.accentColor,
                 zIndex: 20,
@@ -54,39 +54,39 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                      />
 
                 {designSettings.enableSubtotal && (
-                    <div className="hub-total-summary custom-cart-savings-row custom-cart-savings-amount" onClick={() => setBreakdownOpen(prev => !prev)} style={{ cursor: "pointer" }}>
-                        <div className="hub-total-header">
-                            <div className="hub-total-header-left">
-                                <span className="hub-total-label" style={{ color: designSettings.subtotalColor }}>Estimated Total</span>
-                                <span className="hub-total-arrow" style={{ transform: breakdownOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>
+                    <div className="cart-plus-savings-row cart-plus-savings-amount" onClick={() => setBreakdownOpen(prev => !prev)} style={{ cursor: "pointer" }}>
+                        <div className="cart-plus-total-header">
+                            <div className="cart-plus-total-header-left">
+                                <span className="cart-plus-total-label" style={{ color: designSettings.subtotalColor }}>Estimated Total</span>
+                                <span className="cart-plus-total-arrow" style={{ transform: breakdownOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s ease" }}>
                                     <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M1 1L6 6L11 1" stroke={designSettings.iconColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                                     </svg>
                                 </span>
                             </div>
-                            <div className="hub-total-header-right">
-                                <span className="hub-total-original"></span>
-                                <span className="hub-total-final" style={{ color: designSettings.subtotalColor }}>$200.00</span>
+                            <div className="cart-plus-total-header-right">
+                                <span className="cart-plus-total-original"></span>
+                                <span className="cart-plus-total-final" style={{ color: designSettings.subtotalColor }}>$200.00</span>
                             </div>
                         </div>
                     </div>
                 )}
 
-                <div className={`hub-total-breakdown ${breakdownOpen ? "hub-breakdown-open" : ""}`}>
-                    <div className="custom-cart-breakdown-header custom-cart-public-cart-summary__slide-codes">
-                        <div className="hub-breakdown-row custom-cart-public-cart-summary__total-discount">
+                <div className={`cart-plus-total-breakdown ${breakdownOpen ? "cart-plus-breakdown-open" : ""}`}>
+                    <div className="cart-plus-cart-breakdown-header cart-plus-public-cart-summary__slide-codes">
+                        <div className="cart-plus-breakdown-row cart-plus-public-cart-summary__total-discount">
                             <span style={{ color: designSettings.textColor }}>Total MRP</span>
                             <span style={{ color: designSettings.textColor }}>$200.00</span>
                         </div>
-                        <div className="hub-breakdown-row custom-cart-public-cart-summary__discount-label">
+                        <div className="cart-plus-breakdown-row cart-plus-public-cart-summary__discount-label">
                             <span style={{ color: designSettings.textColor }}>{cartSettings.discountsSavingsText}</span>
-                            <span className="custom-cart-public-cart-summary__discount-codes" style={{ color: '#10812F' }}>MEGA20</span>
+                            <span className="cart-plus-public-cart-summary__discount-codes" style={{ color: '#10812F' }}>MEGA20</span>
                         </div>
-                        <div className="hub-breakdown-row">
+                        <div className="cart-plus-breakdown-row">
                             <span style={{ color: designSettings.textColor }}>Shipping</span>
                             <span style={{ color: '#10812F' }}>Free</span>
                         </div>
-                        <div className="hub-breakdown-row hub-breakdown-grand">
+                        <div className="cart-plus-breakdown-row cart-plus-breakdown-grand">
                             <span style={{ color: designSettings.textColor }}>Grand Total</span>
                             <span style={{ color: designSettings.textColor }}>$200.00</span>
                         </div>
@@ -96,9 +96,9 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 {/* above_checkout */}
                 <CustomHtml cartSettings={cartSettings} position="above_checkout" />
 
-                <div className="upcart-checkout-button-container custom-cart-checkout-button">
+                <div className="cart-plus-checkout-button-container cart-plus-checkout-button">
                     <button
-                        className="cart-app__checkout upcart-checkout-button custom-cart-checkout-button-container"
+                        className="cart-app__checkout cart-plus-checkout-button cart-plus-checkout-button-container"
                         style={{
                             borderRadius: `${designSettings.buttonRadius}px`,
                             backgroundColor: designSettings.buttonColor,
@@ -115,7 +115,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                 <CustomHtml cartSettings={cartSettings} position="below_checkout" />
 
                 {designSettings.continueshopping && (
-                    <div className="custom-cart-continue-shopping styles_Footer__continueShopping__ upcart-continue-shopping"
+                    <div className="cart-plus-continue-shopping styles_Footer__continueShopping__ cart-plus-continue-shopping"
                         style={{ color: designSettings.textColor }}>
                         <p>{cartSettings.continueShoppingText}</p>
                     </div>

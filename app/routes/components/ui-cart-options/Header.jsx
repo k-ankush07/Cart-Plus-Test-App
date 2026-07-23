@@ -316,10 +316,10 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
                 value={headerSettings.logoSize || 24}
                 onChange={(val) => updateHeader("logoSize", val)}
                 min={14}
-                max={48}
+                max={100}
                 step={1}
                 prefix={<Text>14px</Text>}
-                suffix={<Text>48px</Text>}
+                suffix={<Text>100px</Text>}
                 output
               />
 

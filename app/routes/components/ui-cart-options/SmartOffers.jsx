@@ -883,7 +883,21 @@ export default function SmartOffers({ cartId, triggeredRewardsSettings, handleCh
         secondaryActions={[{ content: "Back", onAction: () => { setCartTotalOpen(false); setTriggerListOpen(true); } }]}
       >
         <Modal.Section>
-          <TextField label="Cart total minimum amount" type="number" value={pendingCartTotal} onChange={setPendingCartTotal} autoComplete="off" />
+          <TextField
+            label="Cart total minimum amount"
+            type="number"
+            min="0"
+            value={pendingCartTotal}
+            onChange={(val) => {
+              if (val === "") {
+                setPendingCartTotal("");
+                return;
+              }
+              const num = Math.max(0, Number(val));
+              setPendingCartTotal(String(num));
+            }}
+            autoComplete="off"
+          />
         </Modal.Section>
       </Modal>
 
@@ -892,7 +906,21 @@ export default function SmartOffers({ cartId, triggeredRewardsSettings, handleCh
         secondaryActions={[{ content: "Back", onAction: () => { setCartQuantityOpen(false); setTriggerListOpen(true); } }]}
       >
         <Modal.Section>
-          <TextField label="Item count minimum amount" type="number" value={pendingCartQty} onChange={setPendingCartQty} autoComplete="off" />
+          <TextField
+            label="Item count minimum amount"
+            type="number"
+            min="0"
+            value={pendingCartQty}
+            onChange={(val) => {
+              if (val === "") {
+                setPendingCartQty("");
+                return;
+              }
+              const num = Math.max(0, Number(val));
+              setPendingCartQty(String(num));
+            }}
+            autoComplete="off"
+          />
         </Modal.Section>
       </Modal>
 
@@ -954,12 +982,28 @@ export default function SmartOffers({ cartId, triggeredRewardsSettings, handleCh
               <TextField
                 label={pendingDiscountType === "percentage" ? "Discount percentage" : "Discount amount"}
                 type="number"
+                min="0"
+                max={pendingDiscountType === "percentage" ? 100 : undefined}
                 value={pendingDiscountValue}
                 onChange={(v) => {
-                  setPendingDiscountValue(v);
                   setPendingDiscountError("");
+
+                  if (v === "") {
+                    setPendingDiscountValue("");
+                    return;
+                  }
+
+                  let num = Number(v);
+                  if (isNaN(num)) return;
+
+                  num = Math.max(0, num);
+
+                  if (pendingDiscountType === "percentage") {
+                    num = Math.min(100, num);
+                  }
+
+                  setPendingDiscountValue(String(num));
                 }}
-                max={pendingDiscountType === "percentage" ? 100 : undefined}
                 suffix={pendingDiscountType === "percentage" ? "%" : undefined}
                 prefix={pendingDiscountType === "fixed" ? getCurrencySymbol(currencyCode) : undefined}
                 autoComplete="off"

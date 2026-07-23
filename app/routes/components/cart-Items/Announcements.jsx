@@ -41,7 +41,7 @@ export default function Announcements({ announcementSettings }) {
 
     return (
         <div
-            className={`custom-cart-public-announcement custom-cart-announcement upcart-announcement  ${announcementSettings?.position === "after" ? "announcement-after" : ""
+            className={`cart-plus-public-announcement cart-plus-announcement  ${announcementSettings?.position === "after" ? "announcement-after" : ""
                 }`}
             style={{
                 padding: paddingMap[announcementSettings.height],

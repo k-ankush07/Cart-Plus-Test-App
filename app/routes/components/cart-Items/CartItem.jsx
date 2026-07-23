@@ -39,7 +39,7 @@ function hexToRGBA(hex, opacity) {
 function DiscountBadge({ code = "MEGA20", color = "#1e7e34" }) {
   return (
     <span
-      className="custom-cart-public-component-product-tile__discount-codes"
+      className="cart-plus-public-component-product-tile__discount-codes"
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -125,8 +125,8 @@ function QtyStepper({ qty, onDecrement, onIncrement, onQtyChange, loadingType, d
   const iconColor = designSettings.iconColor;
 
   return (
-    <div className="cart-app-item__qty custom-cart-public-component-product-tile__quantity-selector">
-      <button onClick={onDecrement} className="cart-app-item__qty-btn upcart-product-quantity-minus custom-cart-public-component-product-tile__quantity-minus">
+    <div className="cart-app-item__qty cart-plus-public-component-product-tile__quantity-selector">
+      <button onClick={onDecrement} className="cart-app-item__qty-btn cart-plus-product-quantity-minus cart-plus-public-component-product-tile__quantity-minus">
         {loadingType === "dec"
           ? <span className="loader"></span>
           : <span className="svg-wrapper" style={{ color: iconColor }}>
@@ -141,9 +141,9 @@ function QtyStepper({ qty, onDecrement, onIncrement, onQtyChange, loadingType, d
         min="1"
         value={qty}
         onChange={(e) => onQtyChange && onQtyChange(Number(e.target.value))}
-        className="cart-app-item__qty-value upcart-product-quantity-input custom-cart-public-component-product-tile__quantity-plus"
+        className="cart-app-item__qty-value cart-plus-product-quantity-input cart-plus-public-component-product-tile__quantity-plus"
       />
-      <button onClick={onIncrement} className="cart-app-item__qty-btn upcart-product-quantity-plus custom-cart-public-component-product-tile__quantity-plus">
+      <button onClick={onIncrement} className="cart-app-item__qty-btn cart-plus-product-quantity-plus cart-plus-public-component-product-tile__quantity-plus">
         {loadingType === "inc"
           ? <span className="loader"></span>
           : <span className="svg-wrapper" style={{ color: iconColor }}>
@@ -159,25 +159,25 @@ function QtyStepper({ qty, onDecrement, onIncrement, onQtyChange, loadingType, d
 // ─── Classic Layout ───────────────────────────────────────────────────────────
 function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings, deleteLoading, currency }) {
   return (
-    <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile" style={{ flexDirection: "column" }}>
+    <div className="cart-app-item cart-plus-product-item cart-plus-public-component-product-tile" style={{ flexDirection: "column" }}>
       <div style={{ display: "flex", gap: "10px", width: "100%" }}>
-        <div className="cart-app-item__image upcart-product-image-wrapper custom-cart-bundle-item-image-wrapper custom-cart-public-component-product-tile__image-wrapper">
-          <img className="upcart-public-component-product-tile__image custom-cart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" />
+        <div className="cart-app-item__image cart-plus-product-image-wrapper cart-plus-bundle-item-image-wrapper cart-plus-public-component-product-tile__image-wrapper">
+          <img className="cart-plus-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" />
         </div>
 
-        <div className="custom-cart-public-component-product-tile__info" style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", minWidth: 0 }}>
+        <div className="cart-plus-public-component-product-tile__info" style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", minWidth: 0 }}>
 
           {/* Left */}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
-            <div className="cart-app-item__title custom-cart-product-title upcart-product-title custom-cart-bundle-item-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, wordBreak: "break-word", overflowWrap: "break-word" }}>
-              <a href="#" className="custom-cart-product-title-link" onClick={(e) => e.preventDefault()} style={{ color: textColor, textDecoration: "none" }}>
+            <div className="cart-app-item__title cart-plus-product-title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, wordBreak: "break-word", overflowWrap: "break-word" }}>
+              <a href="#" className="cart-plus-product-title-link" onClick={(e) => e.preventDefault()} style={{ color: textColor, textDecoration: "none" }}>
                 {productName}
               </a>
             </div>
-            <div className=" custom-cart-bundle-item-variant-title cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
+            <div className="cart-plus-bundle-item-variant-title cart-app-item__variant cart-plus-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
               Size: STANDARD
             </div>
-            <div className=" custom-cart-bundle-item-variant-title cart-app-item__variant custom-cart-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
+            <div className=" cart-plus-bundle-item-variant-title cart-app-item__variant cart-plus-public-component-product-tile__variant" style={{ color: textColor, fontSize: "10px", lineHeight: '8px', }}>
               Color: BLACK
             </div>
             <DiscountBadge code="MEGA20" color={designSettings.discountBageColor || "#1e7e34"} />
@@ -185,15 +185,15 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
 
           {/* Right */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "5px", flexShrink: 0, lineHeight: '12px' }}>
-            <div className="custom-cart-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>{currency} 200.00</span>
+            <div className="cart-plus-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span className="cart-plus-public-component-product-tile__price-group cart-plus-item-prices-row cart-plus-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>{currency} 200.00</span>
               {showStrikethrough && (
-                <span className="custom-cart-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>{currency} 400.00</span>
+                <span className="cart-plus-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>{currency} 400.00</span>
               )}
             </div>
             {cartSettings.showSavingsBelowPrices && (
               <div
-                className="custom-cart-public-component-product-tile__savings"
+                className="cart-plus-public-component-product-tile__savings"
                 style={{
                   background: hexToRGBA(savingColor, 0.1),
                   color: savingColor,
@@ -206,7 +206,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
                 {cartSettings.savingsText} 50%
               </div>
             )}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }} className="custom-cart-public-component-product-tile__controls">
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }} className="cart-plus-public-component-product-tile__controls">
               <QtyStepper
                 qty={qty}
                 loadingType={loadingType}
@@ -218,7 +218,7 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
                 designSettings={designSettings}
               />
               <button
-                className="cart-app-item__remove custom-cart-public-component-product-tile__remove-button"
+                className="cart-app-item__remove cart-plus-public-component-product-tile__remove-button"
                 onClick={onRemoveClick}
               >
                 {deleteLoading ? (
@@ -246,20 +246,20 @@ function ClassicLayout({ productName, qty, loadingType, updateQty, onRemoveClick
 function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, cartSettings, savingColor, subscriptionUpgradesSettings, Subscription, designSettings, deleteLoading, currency }) {
   return (
     <>
-      <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile upcart-layout-subscription">
-        <div className="cart-app-item__image custom-cart-bundle-item-image-wrapper upcart-product-image-wrapper custom-cart-public-component-product-tile__image-wrapper" style={{ width: "72px", height: "72px", flexShrink: 0 }}>
-          <img className="upcart-public-component-product-tile__image custom-cart-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" />
+      <div className="cart-app-item cart-plus-product-item cart-plus-public-component-product-tile cart-plus-layout-subscription">
+        <div className="cart-app-item__image cart-plus-bundle-item-image-wrapper cart-plus-product-image-wrapper cart-plus-public-component-product-tile__image-wrapper" style={{ width: "72px", height: "72px", flexShrink: 0 }}>
+          <img className="cart-plus-public-component-product-tile__image cart-plus-public-component-product-tile__image" src={PRODUCT_IMAGE} alt="product" />
         </div>
-        <div className="custom-cart-public-component-product-tile__info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px", minWidth: 0 }}>
+        <div className="cart-plus-public-component-product-tile__info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px", minWidth: 0 }}>
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <div className="cart-app-item__title custom-cart-product-title custom-cart-bundle-item-product-title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
-                <a href="#" className="custom-cart-product-title-link" onclick={(e) => e.preventDefault()} style={{ color: textColor, textDecoration: "none" }}>
+              <div className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title  cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}>
+                <a href="#" className="cart-plus-product-title-link" onclick={(e) => e.preventDefault()} style={{ color: textColor, textDecoration: "none" }}>
                   {productName}
                 </a>
               </div>
-              <div className="custom-cart-bundle-item-variant-title custom-cart-public-component-product-tile__variant" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "10px", color: textColor }}>
+              <div className="cart-plus-bundle-item-variant-title cart-plus-public-component-product-tile__variant" style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "10px", color: textColor }}>
                 <span style={{ color: textColor }}>Qty: 100ml</span>
                 <span style={{ color: "#ccc" }}>|</span>
                 <span style={{ color: textColor }}>Bottles: 1</span>
@@ -280,13 +280,13 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
             </div>
           </div>
 
-          <div className="custom-cart-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-            <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>{currency} 27.00</span>
+          <div className="cart-plus-public-component-product-tile__product-pricing" style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+            <span className="cart-plus-public-component-product-tile__price-group cart-plus-item-prices-row cart-plus-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>{currency} 27.00</span>
             {showStrikethrough && (
-              <span style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }} className="custom-cart-item-compare-price">{currency} 40.00</span>
+              <span style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }} className="cart-plus-item-compare-price">{currency} 40.00</span>
             )}
             {cartSettings.showSavingsBelowPrices && (
-              <span className="custom-cart-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 600, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>
+              <span className="cart-plus-public-component-product-tile__savings" style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 600, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>
                 {cartSettings.savingsText} 10%
               </span>
             )}
@@ -321,27 +321,27 @@ function SubscriptionLayout({ productName, qty, loadingType, updateQty, onRemove
 function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick, showStrikethrough, textColor, savingColor, subscriptionUpgradesSettings, Subscription, cartSettings, designSettings, deleteLoading, currency }) {
   return (
     <>
-      <div className="cart-app-item upcart-product-item custom-cart-public-component-product-tile upcart-layout-modern">
+      <div className="cart-app-item cart-plus-product-item cart-plus-public-component-product-tile cart-plus-layout-modern">
 
         <div style={{ position: "relative", flexShrink: 0, display: "flex", flexDirection: "column", gap: "4px" }}>
           {cartSettings.showSavingsBelowPrices && (
-            <span className="custom-cart-public-component-product-tile__savings"
+            <span className="cart-plus-public-component-product-tile__savings"
               style={{ background: "#e6f4ea", color: savingColor, fontSize: "10px", fontWeight: 600, padding: "2px 10px", borderRadius: "14px", lineHeight: '18px' }}>{cartSettings.savingsText} 50%</span>
           )}
-          <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }} className="cart-app-item__image custom-cart-bundle-item-image-wrapper custom-cart-public-component-product-tile__image-wrapper">
-            <img className="upcart-public-component-product-tile__image custom-cart-public-component-product-tile__image " src={PRODUCT_IMAGE} alt="product" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          <div style={{ width: "80px", height: "80px", borderRadius: "6px", overflow: "hidden" }} className="cart-app-item__image cart-plus-bundle-item-image-wrapper cart-plus-public-component-product-tile__image-wrapper">
+            <img className="cart-plus-public-component-product-tile__image " src={PRODUCT_IMAGE} alt="product" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           </div>
         </div>
 
-        <div className="custom-cart-public-component-product-tile__info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", minWidth: 0 }}>
+        <div className="cart-plus-public-component-product-tile__info" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", minWidth: 0 }}>
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", lineHeight: '8px', }}>
             <div>
-              <div className="cart-app-item__title custom-cart-product-title custom-cart-bundle-item-product-title upcart-product-title custom-cart-public-component-product-tile__header custom-cart-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, lineHeight: 1 }}>
-                <span dangerouslySetInnerHTML={{ __html: productName }} className="custom-cart-product-title-link" />
+              <div className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style={{ color: textColor, fontSize: "14px", fontWeight: 500, lineHeight: 1 }}>
+                <span dangerouslySetInnerHTML={{ __html: productName }} className="cart-plus-product-title-link" />
               </div>
               <div
-                className="custom-cart-public-component-product-tile__variant custom-cart-bundle-item-variant-title"
+                className="cart-plus-public-component-product-tile__variant cart-plus-bundle-item-variant-title"
                 style={{
                   display: "flex",
                   gap: "6px",
@@ -350,7 +350,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
                 }}
               >
                 <div
-                  className="cart-app-item__variant custom-cart-public-component-product-tile__variant"
+                  className="cart-app-item__variant cart-plus-public-component-product-tile__variant"
                   style={{
                     color: textColor,
                     fontSize: "10px",
@@ -378,7 +378,7 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
                 </div>
 
                 <div
-                  className="cart-app-item__variant custom-cart-public-component-product-tile__variant"
+                  className="cart-app-item__variant cart-plus-public-component-product-tile__variant"
                   style={{
                     color: textColor,
                     fontSize: "10px",
@@ -418,9 +418,9 @@ function ModernLayout({ productName, qty, loadingType, updateQty, onRemoveClick,
                 )}
               </button>
               {showStrikethrough && (
-                <span className="custom-cart-public-component-product-tile__product-pricing custom-cart-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>{currency} 400.00</span>
+                <span className="cart-plus-public-component-product-tile__product-pricing cart-plus-item-compare-price" style={{ color: textColor, textDecoration: "line-through", fontSize: "9px" }}>{currency} 400.00</span>
               )}
-              <span className="custom-cart-public-component-product-tile__price-group custom-cart-item-prices-row custom-cart-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>{currency} 200.00</span>
+              <span className="cart-plus-public-component-product-tile__price-group cart-plus-item-prices-row cart-plus-public-component-product-tile__price" style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}>{currency} 200.00</span>
               <DiscountBadge code="MEGA20" color={designSettings?.discountBageColor || "#1e7e34"} />
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
                 <QtyStepper
@@ -543,10 +543,10 @@ export default function CartItem({
   };
 
   return (
-    <div style={{ position: 'relative' }} className="custom-cart-public-cart-items custom-cart-products-section">
+    <div style={{ position: 'relative' }} className="cart-plus-public-cart-items cart-plus-products-section">
       {/* Item wrapper — dimmed when removed */}
       <div
-        className="upcart-products-section cart-app__items custom-cart-public-cart-item custom-cart-product-item"
+        className="cart-plus-products-section cart-app__items cart-plus-public-cart-item cart-plus-product-item"
         style={{
           opacity: isDeleting ? 0 : isRemoved ? 0.4 : 1,
           pointerEvents: isRemoved ? "none" : "auto",

@@ -128,6 +128,7 @@ const CartLayout = memo(function CartLayout({
   const otherCarts = useMemo(() => allCarts.filter((c) => c.cartId !== cart?.cartId), [allCarts, cart?.cartId]);
 
   const switcherItems = useMemo(() => [
+
     {
       items: [
         {
@@ -194,9 +195,6 @@ const CartLayout = memo(function CartLayout({
   const fromPage = searchParams.get("from");
   const backPath = fromPage === "home" ? "/app" : "/app/carts";
 
-  // Pending state so the back button gives instant feedback while the
-  // destination route's loader (shopLoader → authenticate.admin) resolves,
-  // instead of the screen appearing frozen for 2-3s after the click.
   const isNavigatingBack =
     navigation.state === "loading" &&
     navigation.location?.pathname === backPath;
@@ -265,7 +263,7 @@ const CartLayout = memo(function CartLayout({
     <>
       <Page fullWidth>
         {/* ── Top bar ── */}
-        <div className={`header-wrapper ${isPreviewVisible ? 'preview-visible' : ''} ${designSettings?.desktopWidth === "wide" ? 'wide' : 'normal'}`}>
+        <div className={`cart-plus-header-wrapper ${isPreviewVisible ? 'preview-visible' : ''} ${designSettings?.desktopWidth === "wide" ? 'wide' : 'normal'}`}>
 
           {/* Left: cart switcher + badge */}
           <InlineStack gap="200" blockAlign="center">
@@ -631,7 +629,7 @@ const CartLayout = memo(function CartLayout({
 
 
       <div
-        className={`cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
+        className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
         style={{
           width: isPreviewVisible ? undefined : "0px",
         }}

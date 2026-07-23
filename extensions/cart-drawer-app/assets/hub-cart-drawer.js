@@ -10,7 +10,7 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-const apiUrl = "https://app.cartplus.io";
+const apiUrl = "http://localhost:6002";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");
@@ -1475,7 +1475,7 @@ function hubRenderOffersPanel(
   allDiscountCodes,
   activeDiscountCodes,
   cart,
-  showOfferBgColor
+  showOfferBgColor,
 ) {
   const totalEl = document.getElementById(`hub-offers-cart-total-${blockId}`);
   if (totalEl)
@@ -1494,9 +1494,9 @@ function hubRenderOffersPanel(
   const validCodes = (allDiscountCodes || []).filter(
     (d) =>
       d.title &&
-      d.status !== "EXPIRED" &&
       d.type !== "DiscountAutomaticApp" &&
-      d.type !== "DiscountAutomaticBasic",
+      d.type !== "DiscountAutomaticBasic" &&
+      d.type !== "DiscountAutomaticFreeShipping",
   );
 
   if (validCodes.length === 0) {
@@ -1514,15 +1514,24 @@ function hubRenderOffersPanel(
           : `Save ${hubUtils.formatMoney(d.discountValue.value * 100)} on this order!`
         : "";
 
-    const badgeText = d.discountValue
-  ? d.discountValue.type === "percentage"
-    ? `${d.discountValue.value}% OFF`
-    : `${hubUtils.formatMoney(d.discountValue.value * 100).replace(/\.00$/, "")} OFF`
-  : "OFFER";
+      const badgeText = d.discountValue
+        ? d.discountValue.type === "percentage"
+          ? `${d.discountValue.value}% OFF`
+          : `${hubUtils.formatMoney(d.discountValue.value * 100).replace(/\.00$/, "")} OFF`
+        : "OFFER";
 
-      const subtitle = d.minimumRequirement
-        ? `Use code ${d.title.toUpperCase()} & get discount on orders above ${hubUtils.formatMoney(d.minimumRequirement)}`
-        : `Use code ${d.title.toUpperCase()} & enjoy this offer`;
+      const subtitle = (() => {
+        const mr = d.minimumRequirement;
+        if (!mr) return `Use code ${d.title.toUpperCase()} & enjoy this offer`;
+
+        if (mr.type === "quantity") {
+          const qty = parseInt(mr.value, 10) || 0;
+          return `Use code ${d.title.toUpperCase()} & get discount on orders with ${qty}+ item${qty === 1 ? "" : "s"}`;
+        }
+
+        const amount = parseFloat(mr.value) || 0;
+        return `Use code ${d.title.toUpperCase()} & get discount on orders above ${hubUtils.formatMoney(Math.round(amount * 100))}`;
+      })();
       const actionBtn = isActive
         ? `<button class="hub-coupon-action-btn remove" onclick="hubRemoveOfferCode('${label}','${blockId}', this)">REMOVE</button>`
         : `<button class="hub-coupon-action-btn apply" onclick="hubApplyOfferCodeFromList('${label}','${blockId}', this)">APPLY</button>`;

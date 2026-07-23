@@ -113,10 +113,10 @@ export default function TieredRewards({ rewardsSettings, currency }) {
   };
 
   return (
-    <div className="custom-cart-internal-rewards custom-cart-public-rewards tier-card upcart-rewards">
+    <div className="cart-plus-internal-rewards cart-plus-public-rewards tier-card cart-plus-rewards">
       <div className="tier-content">
         <p
-          className="tier-title upcart-rewards-message custom-cart-public-rewards__message"
+          className="tier-title cart-plus-rewards-message cart-plus-public-rewards__message"
           dangerouslySetInnerHTML={{
             __html:
               totalValue >= maxAmount
@@ -132,7 +132,7 @@ export default function TieredRewards({ rewardsSettings, currency }) {
 
         <div className="progress-wrapper">
           <div className="progress-track">
-            <div className="segments-flex custom-cart-public-component-segmented-progress-bar__segments-container">
+            <div className="segments-flex cart-plus-public-component-segmented-progress-bar__segments-container">
               {sortedTiers.map((tier, index) => {
                 const segStart = index === 0 ? 0 : getStepPosition(index - 1);
                 const segEnd = getStepPosition(index);
@@ -144,16 +144,16 @@ export default function TieredRewards({ rewardsSettings, currency }) {
                 const reached = totalValue >= getTierValue(tier);
 
                 return (
-                  <div key={tier.id} className="tier-cell upcart-rewards-tier custom-cart-public-component-segmented-progress-bar__segment">
+                  <div key={tier.id} className="tier-cell cart-plus-rewards-tier cart-plus-public-component-segmented-progress-bar__segment">
                     <div
-                      className="cell-bar upcart-rewards-bar-background custom-cart-public-rewards__bar"
+                      className="cell-bar cart-plus-rewards-bar-background cart-plus-public-rewards__bar"
                       style={{
                         backgroundColor: rewardsSettings.backgroundColor,
                         height: `${rewardsSettings.barLength}px`,
                       }}
                     >
                       <div
-                        className="cell-fill upcart-rewards-bar-foreground custom-cart-public-component-segmented-progress-bar"
+                        className="cell-fill cart-plus-rewards-bar-foreground cart-plus-public-component-segmented-progress-bar"
                         style={{
                           width: `${segFill}%`,
                           backgroundColor: rewardsSettings.textColor,
@@ -164,7 +164,7 @@ export default function TieredRewards({ rewardsSettings, currency }) {
                       {tier.showIcon !== false && (
                         <>
                           <div
-                            className={`custom-cart-public-component-segmented-progress-bar__milestone--middle icon-circle upcart-rewards-tier-circle ${reached ? "active" : ""}`}
+                            className={`cart-plus-public-component-segmented-progress-bar__milestone--middle icon-circle upcart-rewards-tier-circle ${reached ? "active" : ""}`}
                             style={{
                               backgroundColor: reached
                                 ? rewardsSettings.textColor
@@ -174,11 +174,11 @@ export default function TieredRewards({ rewardsSettings, currency }) {
                                 : rewardsSettings.incompleteIconColor,
                             }}
                           >
-                            <span className="upcart-rewards-tier-icon custom-cart-public-component-segmented-progress-bar__segment">
+                            <span className="cart-plus-rewards-tier-icon cart-plus-public-component-segmented-progress-bar__segment">
                               {getIcon(tier.type)}
                             </span>
                           </div>
-                          <p className="step-text upcart-rewards-tier-description custom-cart-public-component-segmented-progress-bar__milestone-label--align-center">
+                          <p className="step-text cart-plus-rewards-tier-description cart-plus-public-component-segmented-progress-bar__milestone-label--align-center">
                             {tier.description}
                           </p>
                         </>

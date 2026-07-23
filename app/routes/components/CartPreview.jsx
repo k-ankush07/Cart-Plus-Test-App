@@ -41,7 +41,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
 
     return (
         <div
-            className={`cart-app custom-cart ${designSettings.inheritFonts ? "" : "cart-app--customFont"}`}
+            className={`cart-app cart-plus ${designSettings.inheritFonts ? "" : "cart-app--customFont"}`}
             style={{
                 backgroundColor: designSettings.backgroundColor,
                 maxWidth: designSettings.desktopWidth === "wide" ? "500px" : "440px",
@@ -99,7 +99,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                 {/* below_header */}
                 <CustomHtml cartSettings={cartSettings} position="below_header" />
 
-                <div className="cart-app__body custom-cart-body" style={{
+                <div className="cart-app__body cart-plus-body" style={{
                     overflowY: cartSettings?.disableFixedFooter ? "unset" : "auto",
                 }}>
                     {emptyCart ? (

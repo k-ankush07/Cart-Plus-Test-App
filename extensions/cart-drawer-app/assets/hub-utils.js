@@ -68,10 +68,23 @@ window.hubUtils = {
     return content || "";
   },
 
-  async getSellingPlans(handle) {
+  async getSellingPlans(handle, variantId) {
     const res = await fetch(`/products/${handle}.js`);
     const product = await res.json();
-    return product.selling_plan_groups || [];
+
+    const variant = product.variants?.find(
+      (v) => String(v.id) === String(variantId),
+    );
+
+    const allowedPlanIds = new Set(
+      (variant?.selling_plan_allocations || []).map(
+        (a) => a.selling_plan_group_id,
+      ),
+    );
+
+    return (product.selling_plan_groups || []).filter((g) =>
+      allowedPlanIds.has(g.id),
+    );
   },
 
   getAdditionalNotesHTML(blockId, settings, note = "") {
@@ -221,7 +234,6 @@ window.hubUtils = {
       )
       .join("");
 
-    // Only render rating slot if merchant enabled showReviews
     const ratingHTML = settings.showReviews
       ? `<div class="upcart-internal-component-upsell-tile__rating hub-rating-slot custom-cart-public-component-upsell-tile__rating-row"
        data-pid="${product.id}"></div>`
@@ -229,6 +241,9 @@ window.hubUtils = {
 
     const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
     const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
+    const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+
+    const savingsText = cartSettings.savingsText || "Save";
 
     const salePrice = Number(firstVariant?.price || 0);
     const comparePrice = Number(firstVariant?.compare_at_price || 0);
@@ -240,7 +255,7 @@ window.hubUtils = {
     const comparePriceHTML = hasDiscount
       ? `<span class="hub-compare-price custom-cart-public-component-upsell-tile__price-compare-at">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
      <span class="hub-item-save" style="background: ${hexToRGBA(designSettings?.savingsColor, 0.1)}; color: ${designSettings.savingsColor};">
-       ${hubUtils.formatMoney(Math.round((comparePrice - salePrice) * 100))} 
+     ${savingsText}  ${hubUtils.formatMoney(Math.round((comparePrice - salePrice) * 100))} 
      </span>`
       : "";
 
@@ -1006,13 +1021,18 @@ window.hubUtils = {
 
             </div>
 
-            ${
-              app.total_allocated_amount
-                ? `<div class="saved-badge" style="background:${hexToRGBA(savingsColor, 0.1)}; color:${savingsColor};">
-                    Saved ${hubUtils.formatMoney(app.total_allocated_amount)}
-                   </div>`
-                : ""
-            }
+             ${
+               app.total_allocated_amount
+                 ? `<div class="saved-badge" style="background:${hexToRGBA(savingsColor, 0.1)}; color:${savingsColor};">
+        Saved ${
+          app.value_type === "percentage" && app.value
+            ? `${parseFloat(app.value)}%`
+            : hubUtils.formatMoney(app.total_allocated_amount)
+        }
+       </div>`
+                 : ""
+             }
+
 
           </div>
         </div>

@@ -184,7 +184,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
 
     const SkeletonCard = () => (
         <div
-            className="hub-rec-product hub-rec-skeleton-card"
+            className="cart-plus-rec-product cart-plus-rec-skeleton-card"
             style={{
                 display: "flex",
                 gap: "12px",
@@ -196,20 +196,20 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
             }}
         >
             <div
-                className="hub-skeleton hub-skeleton-img"
+                className="cart-plus-skeleton cart-plus-skeleton-img"
                 style={{ width: "60px", height: "60px", flexShrink: 0, borderRadius: "8px" }}
             >
                 &nbsp;
             </div>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
-                <div className="hub-skeleton hub-skeleton-line" style={{ width: "85%", height: "14px" }}>
+                <div className="cart-plus-skeleton cart-plus-skeleton-line" style={{ width: "85%", height: "14px" }}>
                     &nbsp;
                 </div>
-                <div className="hub-skeleton hub-skeleton-line" style={{ width: "40%", height: "12px" }}>
+                <div className="cart-plus-skeleton cart-plus-skeleton-line" style={{ width: "40%", height: "12px" }}>
                     &nbsp;
                 </div>
                 <div
-                    className="hub-skeleton hub-skeleton-line"
+                    className="cart-plus-skeleton cart-plus-skeleton-line"
                     style={{ width: "70px", height: "28px", borderRadius: "4px", marginTop: "4px" }}
                 >
                     &nbsp;
@@ -232,35 +232,35 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
         }
 
         return (
-            <div className="upcart-internal-component-upsell-tile upcart-upsell-item-card" style={{ backgroundColor: designSettings.accentColor, }}>
-                <div className="upcart-internal-component-upsell-tile__info_count custom-cart-public-component-upsell-tile">
-                    <div className="upcart-internal-component-upsell-tile__image-container upcart-upsell-item-image-wrapper custom-cart-public-component-upsell-tile__image-container">
-                        <img className="upcart-upsell-item-image" src={selectedVariant.image || product.image} alt={product.title} />
+            <div className="cart-plus-internal-component-upsell-tile cart-plus-upsell-item-card" style={{ backgroundColor: designSettings.accentColor, }}>
+                <div className="cart-plus-internal-component-upsell-tile__info_count cart-plus-public-component-upsell-tile">
+                    <div className="cart-plus-internal-component-upsell-tile__image-container cart-plus-upsell-item-image-wrapper cart-plus-public-component-upsell-tile__image-container">
+                        <img className="cart-plus-item-image" src={selectedVariant.image || product.image} alt={product.title} />
                     </div>
 
-                    <div className="custom-cart-internal-component-upsell-tile__info">
-                        <a href="#no" className="custom-cart-internal-component-upsell-tile__title-link">
-                            <h3 className="upcart-internal-component-upsell-tile__title custom-cart-public-component-upsell-tile__title" style={{ color: designSettings.textColor || "#6b7280", }}>
+                    <div className="cart-plus-internal-component-upsell-tile__info">
+                        <a href="#no" className="cart-plus-internal-component-upsell-tile__title-link">
+                            <h3 className="cart-plus-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title" style={{ color: designSettings.textColor || "#6b7280", }}>
                                 {product.title}
                             </h3>
                         </a>
 
                         {showReviews && (
-                            <div className="rating custom-cart-public-component-upsell-tile__rating-row">
-                                <span className="stars custom-cart-public-component-upsell-tile__stars">
+                            <div className="rating cart-plus-public-component-upsell-tile__rating-row">
+                                <span className="stars cart-plus-public-component-upsell-tile__stars">
                                     {"★★★★★".slice(0, Math.round(product.rating))}
                                 </span>
-                                <span className="rating-text custom-cart-public-component-upsell-tile__reviews">
+                                <span className="rating-text cart-plus-public-component-upsell-tile__reviews">
                                     {product.rating} ({product.reviewCount})
                                 </span>
                             </div>
                         )}
                         <p
-                            className="price custom-cart-public-component-upsell-tile__price-row"
+                            className="price cart-plus-public-component-upsell-tile__price-row"
                             style={{ color: designSettings.textColor || "#6b7280" }}
                         >
                             <span
-                                className="sale-price custom-cart-public-component-upsell-tile__price"
+                                className="sale-price cart-plus-public-component-upsell-tile__price"
                                 style={{ color: designSettings.textColor || "#6b7280" }}
                             >
                                 {currency} {selectedVariant.price}
@@ -271,7 +271,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                                 parseFloat(selectedVariant.price) && (
                                     <>
                                         <span
-                                            className="compare-price custom-cart-public-component-upsell-tile__price-compare-at"
+                                            className="compare-price cart-plus-public-component-upsell-tile__price-compare-at"
                                             style={{ color: designSettings.textColor || "#6b7280" }}
                                         >
                                             {currency} {selectedVariant.compareAtPrice}
@@ -308,9 +308,9 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                     </div>
 
                 </div>
-                <div className="upcart-internal-component-upsell-tile__variant-row custom-cart-public-component-upsell-tile__variant-row" style={{ color: designSettings.textColor || "#6b7280", }}>
+                <div className="cart-plus-internal-component-upsell-tile__variant-row cart-plus-public-component-upsell-tile__variant-row" style={{ color: designSettings.textColor || "#6b7280", }}>
                     <select
-                        className="upcart-upsell-item-variant-selector"
+                        className="cart-plus-upsell-item-variant-selector"
                         value={selectedVariant.id}
                         onChange={(e) => handleVariantChange(product.id, e.target.value)}
                         style={{ color: designSettings.textColor || "#6b7280", }}
@@ -322,7 +322,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                         ))}
                     </select>
 
-                    <button type="button" className="upcart-internal-component__button custom-cart-public-component__button"
+                    <button type="button" className="cart-plus-internal-component__button cart-plus-public-component__button"
                         style={{
                             borderRadius: `${designSettings.buttonRadius}px`,
                             backgroundColor: designSettings.buttonColor,
@@ -377,7 +377,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
 
     if (loadingProducts) {
         return (
-            <div className="upcart-internal-upsell__vertical-layout-wrapper block">
+            <div className="cart-plus-internal-upsell__vertical-layout-wrapper block">
                 <SkeletonCard />
             </div>
         );
@@ -387,20 +387,20 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
 
     return (
         <div
-            className={`custom-cart-internal-upsell upcart-internal-upsell 
-  upcart-public-upsell 
-  upcart-upsells 
-  upcart-upsells-module 
+            className={`cart-plus-internal-upsell cart-plus-internal-upsell 
+  cart-plus-public-upsell 
+  cart-plus-upsells 
+  cart-plus-upsells-module 
   ${upsellsSettings?.position === "bottom" ? "hub-upsell-product" : "custom-upsell-top"}`}
         >
             {title && (
-                <div className="upcart-internal-style__title-large upcart-upsells-title custom-cart-internal-style__title-large" style={{ color: designSettings.textColor || "#6b7280", }}>
+                <div className="cart-plus-internal-style__title-large cart-plus-upsells-title cart-plus-internal-style__title-large" style={{ color: designSettings.textColor || "#6b7280", }}>
                     <p dangerouslySetInnerHTML={{ __html: title }} />
                 </div>
             )}
 
             {direction === "carousel" ? (
-                <div className="upcart-slider-wrapper">
+                <div className="cart-plus-slider-wrapper">
                     {carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev" style={{ backgroundColor: designSettings.buttonColor, }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} strokeWidth="2"><path d="M15 18l-6-6 6-6"></path></svg></div>)}
 
                     <Swiper
@@ -432,7 +432,7 @@ export default function Upsells({ upsellsSettings, designSettings, currency, car
                     </div>)}
                 </div>
             ) : (
-                <div className="upcart-internal-upsell__vertical-layout-wrapper block">
+                <div className="cart-plus-internal-upsell__vertical-layout-wrapper block">
                     {products.map((product) => (
                         <ProductCard key={product.id} product={product} />
                     ))}

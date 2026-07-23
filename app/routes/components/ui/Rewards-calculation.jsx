@@ -360,16 +360,28 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                                     : "Minimum amount"
                             }
                             type="number"
+                            min="0"
                             value={
                                 rewardsSettings.calculationType === "quantity"
-                                    ? String(current?.minQuantity || 0)
-                                    : String(current?.minAmount || 0)
+                                    ? String(current?.minQuantity ?? "")
+                                    : String(current?.minAmount ?? "")
                             }
                             onChange={(val) => {
+                                if (val === "") {
+                                    if (rewardsSettings.calculationType === "quantity") {
+                                        updateTier("minQuantity", 0);
+                                    } else {
+                                        updateTier("minAmount", 0);
+                                    }
+                                    return;
+                                }
+
+                                const num = Math.max(0, Number(val)); 
+
                                 if (rewardsSettings.calculationType === "quantity") {
-                                    updateTier("minQuantity", Number(val));
+                                    updateTier("minQuantity", num);
                                 } else {
-                                    updateTier("minAmount", Number(val));
+                                    updateTier("minAmount", num);
                                 }
                             }}
                         />
@@ -402,7 +414,7 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                         maxLength={15}
                         showCharacterCount
                     />
-                    
+
                     <BlockStack gap="100">
                         <InlineStack align="space-between" blockAlign="center">
                             <Text variant="bodyMd" fontWeight="medium">

@@ -11,7 +11,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
         return (
             <button
                 onClick={onClose}
-                className="cart-app__close custom-close-btn custom-cart-public-header__close-button custom-cart-header-close-button"
+                className="cart-app__close cart-plus-close-btn cart-plus-public-header__close-button cart-plus-header-close-button"
                 style={{
                     flexShrink: 0,
                     "--icon-color": headerSettings.iconColor,
@@ -25,7 +25,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                 }}
             >
                 <svg
-                    className="upcart-internal-header__close-button-icon custom-cart-public-header__close-button-icon custom-cart-header-close-button-icon"
+                    className="cart-plus-public-header__close-button-icon cart-plus-header-close-button-icon"
                     width={getIconSize(headerSettings.iconSize)}
                     height={getIconSize(headerSettings.iconSize)}
                     viewBox="0 0 20 20"
@@ -45,7 +45,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
 
     return (
         <div
-            className="cart-app__header-top custom-cart-public-header custom-cart-header"
+            className="cart-app__header-top cart-plus-public-header cart-plus-header"
             style={{
                 padding:
                     headerSettings.height === "slim"
@@ -55,7 +55,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
             }}
         >
             <div
-                className="cart-app__row-between custom-cart-header-text"
+                className="cart-app__row-between cart-plus-header-text"
                 style={{
                     display: "flex",
                     alignItems: "center",
@@ -76,11 +76,11 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                                     ? "right"
                                     : "left",
                     }}
-                    className ="custom-cart-header-logo"
+                    className ="cart-plus-header-logo"
                 >
                     {headerSettings.titleType === "logo" ? (
                         <img
-                            className="upcart-header-logo"
+                            className="cart-plus-header-logo"
                             src={
                                 headerSettings.logo && headerSettings.logo !== ""
                                     ? headerSettings.logo
@@ -104,7 +104,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                         />
                     ) : headerSettings.titleType === "custom" ? (
                         <span
-                            className="cart-app__title upcart-header-text"
+                            className="cart-app__title cart-plus-header-text"
                             style={{
                                 color: headerSettings.textColor,
                                 fontWeight: getFontWeight(headerSettings.fontWeight),
@@ -122,7 +122,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
 
                             return (
                                 <HeadingTag
-                                    className="cart-app__title upcart-header-text"
+                                    className="cart-app__title cart-plus-header-text"
                                     style={{
                                         margin: 0,
                                         color: designSettings.textColor,

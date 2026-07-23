@@ -8,14 +8,14 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
 
     return (
         <div
-            className={`cart-additional-notes custom-cart-public-notes ${isBelowItems ? "notes-below-items" : ""}`}
+            className={`cart-additional-notes cart-plus-public-notes ${isBelowItems ? "notes-below-items" : ""}`}
         >
             <button
                 type="button"
-                className="cart-additional-notes__toggle custom-cart-public-component-collapse__dropdown-container"
+                className="cart-additional-notes__toggle cart-plus-public-component-collapse__dropdown-container"
                 onClick={() => setOpen((prev) => !prev)}
             >
-                <span className="custom-cart-public-notes__text-container" style={{ display: 'flex', gap: '4px', lineHeight: '1' }}>
+                <span className="cart-plus-public-notes__text-container" style={{ display: 'flex', gap: '4px', lineHeight: '1' }}>
                     <div>
                         {/* Pencil / edit icon (was Group.svg) */}
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -25,7 +25,7 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
                     </div>
                     <span dangerouslySetInnerHTML={{ __html: additionalNotesSettings?.title || "Add special instructions" }} />
                     <span
-                        className="custom-cart-public-component-collapse__expand-icon"
+                        className="cart-plus-public-component-collapse__expand-icon"
                         style={{
                             display: 'inline-flex',
                             transition: 'transform 0.3s ease',
@@ -50,7 +50,7 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
                 <div style={{ overflow: 'hidden' }}>
                     <div className={`cart-additional-notes__body ${open ? "cart-additional-notes__body--open" : ""}`}>
                         <textarea
-                            className="cart-additional-notes__textarea custom-cart-public-notes__textarea"
+                            className="cart-additional-notes__textarea cart-plus-public-notes__textarea"
                             placeholder={additionalNotesSettings?.placeholder || "Special instructions for your order"}
                         />
                     </div>

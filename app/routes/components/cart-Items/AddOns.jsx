@@ -27,7 +27,7 @@ const ShippingIcon = () => (
 const Toggle = ({ on, onChange }) => (
     <button
         type="button"
-        className="custom-cart-public-addons__toggle"
+        className="cart-plus-public-addons__toggle"
         onClick={() => onChange(!on)}
         style={{
             width: 40,
@@ -45,7 +45,7 @@ const Toggle = ({ on, onChange }) => (
         }}
     >
         <div
-            className="custom-cart-public-addons__toggle-slider custom-cart-public-addons__toggle-switch"
+            className="cart-plus-public-addons__toggle-slider cart-plus-public-addons__toggle-switch"
             style={{
                 width: 16,
                 height: 16,
@@ -80,12 +80,12 @@ export default function AddOns({ addonsSettings, currency }) {
     };
 
     return (
-        <div className="cart-addon-tile upcart-addons custom-cart-public-addons custom-cart-addons">
+        <div className="cart-addon-tile cart-plus-addons cart-plus-public-addons cart-plus-addons">
             {isShipping ? (
                 <ShippingIcon />
             ) : (
                 <div
-                    className="upcart-addons-image-wrapper custom-cart-addons-image-wrapper custom-cart-public-addons__image-wrapper"
+                    className=" cart-plus-addons-image-wrapper cart-plus-public-addons__image-wrapper"
                     style={{
                         width: 60,
                         height: 60,
@@ -107,32 +107,32 @@ export default function AddOns({ addonsSettings, currency }) {
             )}
 
             {/* INFO */}
-            <div className="cart-addon-tile__info custom-cart-public-addons__content-wrapper">
-                <div className="cart-addon-tile__title-row custom-cart-public-addons__content-title-wrapper custom-cart-addons-title">
-                    <span className="cart-addon-tile__title upcart-addons-title custom-cart-public-addons__content-title">
+            <div className="cart-addon-tile__info cart-plus-public-addons__content-wrapper">
+                <div className="cart-addon-tile__title-row cart-plus-public-addons__content-title-wrapper cart-plus-addons-title">
+                    <span className="cart-addon-tile__title cart-plus-addons-title cart-plus-public-addons__content-title">
                         {truncateText(isShipping ? addonsSettings.title : product?.title || "Product add-on")}
                     </span>
-                    <span className="cart-addon-tile__price upcart-addons-price upcart-public-addons__price custom-cart-public-addons__content-price">
+                    <span className="cart-addon-tile__price cart-plus-addons-price cart-plus-public-addons__price cart-plus-public-addons__content-price">
                         {isShipping ? (
                             ``
                         ) : (
                             <>
                                 {product?.compareAtPrice && (
-                                    <span className="cart-addon-tile__compare custom-cart-addons-compare-price custom-cart-public-addons__compare-at-price">${product.compareAtPrice}</span>
+                                    <span className="cart-addon-tile__compare cart-plus-addons-compare-price cart-plus-public-addons__compare-at-price">${product.compareAtPrice}</span>
                                 )}
                                 <span>{currency} {product?.price || ""} </span>
                             </>
                         )}
                     </span>
                 </div>
-                <p className="cart-addon-tile__desc custom-cart-addons-product-description custom-cart-public-addons__content-description upcart-addons-product-description upcart-public-addons__content-description">
+                <p className="cart-addon-tile__desc cart-plus-addons-product-description cart-plus-public-addons__content-description">
                     {truncateText(isShipping ? addonsSettings.description : product?.description || "", 60)}
                 </p>
             </div>
-            {isShipping && (<span className="cart-addon-tile__price custom-cart-addons-price custom-cart-public-addons__price"> {currency} {addonsSettings.price}</span>)}
+            {isShipping && (<span className="cart-addon-tile__price cart-plus-addons-price cart-plus-public-addons__price"> {currency} {addonsSettings.price}</span>)}
 
             {/* TOGGLE */}
-            <div className="upcart-addons-toggle custom-cart-addons-toggle upcart-public-addons__toggle-wrapper custom-cart-public-addons__toggle-wrapper">
+            <div className=" cart-plus-addons-toggle cart-plus-public-addons__toggle-wrapper">
                 <Toggle on={toggled} onChange={handleToggle} />
             </div>
         </div>

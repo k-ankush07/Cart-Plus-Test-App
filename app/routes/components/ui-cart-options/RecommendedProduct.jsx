@@ -138,7 +138,7 @@ export default function Recommended({ recommendationsSettings, handleChange, cur
                     <BlockStack gap="100">
                         <InlineStack align="space-between" blockAlign="center">
                             <Text variant="bodyMd" fontWeight="medium">
-                               Recommended product header text
+                                Recommended product header text
                             </Text>
                             <Button
                                 variant="plain"
@@ -156,15 +156,23 @@ export default function Recommended({ recommendationsSettings, handleChange, cur
 
                     {/* Manual config button */}
                     <Button fullWidth variant="primary" onClick={() => setOpen(true)}>
-                       Set up product recommendations
+                        Set up product recommendations
                     </Button>
 
                     {/* Max recommendations */}
                     <TextField
                         label="Maximum recommendations to show"
                         type="number"
+                        min="1"
                         value={String(recommendationsSettings.maxRecommendations)}
-                        onChange={(val) => update("maxRecommendations", Number(val))}
+                        onChange={(val) => {
+                            if (val === "") {
+                                update("maxRecommendations", "");
+                                return;
+                            }
+                            const num = Math.max(1, Math.floor(Number(val)));
+                            update("maxRecommendations", num);
+                        }}
                     />
 
                     {/* Direction */}
@@ -213,7 +221,7 @@ export default function Recommended({ recommendationsSettings, handleChange, cur
                                 <Text variant="bodyMd">
                                     This works only with product review apps that allow to read product review data through the{" "}
                                     <Link url="https://shopify.dev/docs/storefronts/headless/building-with-the-storefront-api/products-collections/metafields" target="_blank">
-                                       Shopify Storefront API metafields.
+                                        Shopify Storefront API metafields.
                                     </Link>
                                 </Text>
                             </InlineStack>

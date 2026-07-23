@@ -54,12 +54,12 @@ const BackIcon = () => (
 
 function CouponCard({ code, badgeText, savings, description, onApply, loading, showOfferBgColor }) {
   return (
-    <div className="hub-offer-listing">
-      <div className="hub-offers-list">
-        <div className="hub-coupon-card">
-          <div className="hub-coupon-badge">
+    <div className="cart-plus-offer-listing">
+      <div className="cart-plus-offers-list">
+        <div className="cart-plus-coupon-card">
+          <div className="cart-plus-coupon-badge">
             <svg
-              className="hub-coupon-badge__bg"
+              className="cart-plus-coupon-badge__bg"
               width="250"
               height="460"
               viewBox="0 0 124 460"
@@ -71,23 +71,23 @@ function CouponCard({ code, badgeText, savings, description, onApply, loading, s
                 fill={showOfferBgColor}
               />
             </svg>
-            <span className="hub-coupon-badge__text">{badgeText}</span>
+            <span className="cart-plus-coupon-badge__text">{badgeText}</span>
           </div>
-          <div className="hub-coupon-body">
-            <div className="hub-coupon-top">
-              <span className="hub-coupon-code">{code}</span>
+          <div className="cart-plus-coupon-body">
+            <div className="cart-plus-coupon-top">
+              <span className="cart-plus-coupon-code">{code}</span>
               <button
-                className="hub-coupon-action-btn apply"
+                className="cart-plus-coupon-action-btn apply"
                 onClick={() => onApply?.(code)}
                 disabled={loading}
               >
                 {loading ? <span className="loader" /> : "APPLY"}
               </button>
             </div>
-            <div className="hub-coupon-savings">{savings}</div>
-            <div className="hub-coupon-desc">{description || `Use code ${code} & enjoy this offer`}</div>
+            <div className="cart-plus-coupon-savings">{savings}</div>
+            <div className="cart-plus-coupon-desc">{description || `Use code ${code} & enjoy this offer`}</div>
             <div
-              className="hub-coupon-error"
+              className="cart-plus-coupon-error"
               id={`coupon-error-${code}`}
               style={{ color: "black", fontSize: "12px", marginTop: "5px" }}
             />
@@ -197,20 +197,20 @@ export default function DiscountCode({
   return (
     <>
       {/* ── Inline discount row ── */}
-      <div className="cart-discount-row custom-cart-discount-code-row upcart-discount-code-row upcart-discount-code-module custom-cart-public-discount-code">
-        <div className="upcart-discount-code-input-wrapper custom-cart-discount-code-input-wrapper custom-cart-discount-code-module custom-cart-public-discount-code__input-wrapper">
+      <div className="cart-discount-row cart-plus-discount-code-row cart-plus-discount-code-row cart-plus-discount-code-module cart-plus-public-discount-code">
+        <div className="cart-plus-discount-code-input-wrapper cart-plus-discount-code-input-wrapper cart-plus-discount-code-module cart-plus-public-discount-code__input-wrapper">
           {discountCodesSettings.showTitle && (
             <div
-              className="hub-discount-heading"
+              className="cart-plus-discount-heading"
               style={{ color: discountCodesSettings?.couponHeadingColor || "#000000" }}
             >
               {discountCodesSettings?.title}
             </div>
           )}
 
-          <div className="hub-discount-input-row">
-            <div className="hub-discount-input-wrapped">
-              <div className="hub-discount-input-btn custom-cart-discount-code-icon">
+          <div className="cart-plus-discount-input-row">
+            <div className="cart-plus-discount-input-wrapped">
+              <div className="cart-plus-discount-input-btn cart-plus-discount-code-icon">
                 <svg viewBox="0 0 20 20" width="20" height="20" style={{ fill: iconColor }}>
                   <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z" />
                   <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
@@ -219,7 +219,7 @@ export default function DiscountCode({
                 </svg>
                 <input
                   type="text"
-                  className="cart-discount-row__input custom-cart-discount-code-text custom-cart-discount-code-input hub-discount-input upcart-discount-code-input custom-cart-public-discount-code__input"
+                  className="cart-discount-row__input cart-plus-discount-code-text cart-plus-discount-code-input cart-plus-discount-input upcart-discount-code-input cart-plus-public-discount-code__input"
                   placeholder={placeholder}
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
@@ -227,7 +227,7 @@ export default function DiscountCode({
                 />
                 <button
                   type="button"
-                  className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button custom-cart-discount-code-button"
+                  className="cart-discount-row__btn cart-plus-discount-code-button cart-plus-public-discount-code__button cart-plus-discount-code-button"
                   onClick={handleDiscount}
                   disabled={loading}
                 >
@@ -244,7 +244,7 @@ export default function DiscountCode({
               >
                 <button
                   style={{ color: discountCodesSettings?.viewAllOffersColor || "#ffffff" }}
-                  className="hub-view-offers-btn"
+                  className="cart-plus-view-offers-btn"
                 >
                   View all offers
                 </button>
@@ -256,38 +256,38 @@ export default function DiscountCode({
           </div>
         </div>
 
-        <div className="upcart-discount-code-badge" style={{ display: "none" }}>
-          <span className="upcart-discount-code-icon" />
-          <span className="upcart-discount-code-text" />
+        <div className="cart-plus-discount-code-badge" style={{ display: "none" }}>
+          <span className="cart-plus-discount-code-icon" />
+          <span className="cart-plus-discount-code-text" />
         </div>
       </div>
 
       {/* ── Offers panel / backdrop ── */}
       <div
-        className="hub-offers-backdrop"
+        className="cart-plus-offers-backdrop"
         style={{ visibility: offerOpen ? "visible" : "hidden", opacity: offerOpen ? 1 : 0, transition: "0.3s" }}
       >
-        <div className="hub-offers-panel">
-          <button className="hub-offers-close hub-offers-open" onClick={handleClose}>
+        <div className="cart-plus-offers-panel">
+          <button className="cart-plus-offers-close cart-plus-offers-open" onClick={handleClose}>
             <CloseIcon />
           </button>
 
-          <div className="hub-offers-header">
-            <div className="hub-offers-title-group">
-              <button className="hub-offers-back" onClick={handleClose}>
+          <div className="cart-plus-offers-header">
+            <div className="cart-plus-offers-title-group">
+              <button className="cart-plus-offers-back" onClick={handleClose}>
                 <BackIcon />
               </button>
-              <div className="hub-offers-title-subtitle">
-                <span className="hub-offers-title">Apply Coupon</span>
-                <span className="hub-offers-cart-total">Your Cart: {currency} 200</span>
+              <div className="cart-plus-offers-title-subtitle">
+                <span className="cart-plus-offers-title">Apply Coupon</span>
+                <span className="cart-plus-offers-cart-total">Your Cart: {currency} 200</span>
               </div>
             </div>
           </div>
 
-          <div className="hub-offers-code">
-            <div className="hub-offers-input-row">
-              <div className="hub-offers-input-wrap">
-                <div className="hub-offers-input">
+          <div className="cart-plus-offers-code">
+            <div className="cart-plus-offers-input-row">
+              <div className="cart-plus-offers-input-wrap">
+                <div className="cart-plus-offers-input">
                   <svg viewBox="0 0 20 20" width="20" height="20" style={{ fill: iconColor }}>
                     <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z" />
                     <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
@@ -296,7 +296,7 @@ export default function DiscountCode({
                   </svg>
                   <input
                     type="text"
-                    className="hub-offers-code-input custom-cart-discount-code-text custom-cart-discount-code-input"
+                    className="cart-plus-offers-code-input cart-plus-discount-code-text cart-plus-discount-code-input"
                     placeholder={placeholder}
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
@@ -306,7 +306,7 @@ export default function DiscountCode({
 
                 <button
                   type="button"
-                  className="cart-discount-row__btn upcart-discount-code-button custom-cart-public-discount-code__button custom-cart-discount-code-button"
+                  className="cart-discount-row__btn cart-plus-discount-code-button cart-plus-public-discount-code__button cart-plus-discount-code-button"
                   onClick={handleDiscount}
                   disabled={loading}
                 >
@@ -314,16 +314,16 @@ export default function DiscountCode({
                 </button>
               </div>
             </div>
-            <div className="hub-discount-message" />
+            <div className="cart-plus-discount-message" />
           </div>
 
           {!discountsLoading && discountsError && (
-            <div className="hub-offers-error">{discountsError}</div>
+            <div className="cart-plus-offers-error">{discountsError}</div>
           )}
           {!discountsLoading && !discountsError && discounts.length === 0 && (
-            <div className="hub-offers-empty">No offers available right now.</div>
+            <div className="cart-plus-offers-empty">No offers available right now.</div>
           )}
-          <div className="hub-cart-disounts">
+          <div className="cart-plus-cart-disounts">
             {discounts.map((d) => {
               const codeStr = toCodeString(d).toUpperCase();
               return (
