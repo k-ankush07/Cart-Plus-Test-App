@@ -48,7 +48,7 @@ const buildUninstallEmail = (shop, owner) => {
       <tr>
         <td align="center" style="padding:40px 16px;">
 
-          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px; overflow: hidden; border-radius: 10px; border:1px solid #E7C5FF">
 
             <!-- ===================== HEADER IMAGE ===================== -->
             <tr>
@@ -73,7 +73,7 @@ const buildUninstallEmail = (shop, owner) => {
                     <td align="center" valign="top" style="text-align:center; vertical-align:top;">
                       <div style="text-align:center;">
                    <img
-                      src="https://cartplus.io/cartplus-img/Layer_1.svg"
+                      src="https://cartplus.io/cartplus-img/Layer_1.png"
                       alt="Cart Plus Logo"
                       width="250"
                       style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
@@ -83,7 +83,7 @@ const buildUninstallEmail = (shop, owner) => {
                   </tr>
                   <tr>
                     <td align="center" valign="bottom" style="text-align:center; vertical-align:center;">
-                      <img src="https://cartplus.io/cartplus-img/Group%201707480001.png"
+                      <img src="https://cartplus.io/cartplus-img/uninstall-cart.png"
                            style="display:inline-block; vertical-align:middle; border:0;" />
 
                       <p style="margin:0; font-family:'Outfit',Arial,sans-serif; padding-top:20px; font-size:40px; font-weight:200; line-height:1.6;">
@@ -101,9 +101,9 @@ const buildUninstallEmail = (shop, owner) => {
             <!-- ===================== BODY TEXT ===================== -->
             <tr>
               <td bgcolor="#ffffff" style="background-color:#F8EEFF; padding:50px; text-align:center; font-family:'Outfit',Arial,sans-serif; font-size:18px; line-height:28px; font-weight:400; color:#1a1a1a;">
-                <p style="margin:0 0 12px;">Hi <strong>${safeOwner}</strong>,</p>
-                <p style="margin:0 0 12px;">We noticed that you uninstalled <strong>Cart Plus</strong> from <strong>${safeShop}</strong>.</p>
-                <p style="margin:0 0 30px;">Thank you for giving us the opportunity to support your business. If this wasn't intentional, you can reinstall the app within <strong>48 hours</strong> and restore your settings and preferences.</p>
+                <p style="margin:0 0 12px; font-size: 18px; font-weight: 400;">Hi <strong>${safeOwner}</strong>,</p>
+                <p style="margin:0 0 12px; font-size: 18px; font-weight: 400;">We noticed that you uninstalled <strong>Cart Plus</strong> from <strong>${safeShop}</strong>.</p>
+                <p style="margin:0 0 30px; font-size: 18px; font-weight: 400;">Thank you for giving us the opportunity to support your business. If this wasn't intentional, you can reinstall the app within <strong>48 hours</strong> and restore your settings and preferences.</p>
 
                 <!-- What Happens Next? -->
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -177,7 +177,7 @@ const buildUninstallEmail = (shop, owner) => {
                               <tr>
                                 <td style="width:42px; height:42px; text-align:center; vertical-align:middle;">
                                   <img
-                                    src="https://cartplus.io/cartplus-img/Group%201707479636%20(2).png"
+                                    src="https://cartplus.io/cartplus-img/download-cart.png"
                                     alt="" width="42" height="42"
                                     style="display:inline-block; vertical-align:middle; border:0;"
                                   />
@@ -200,17 +200,21 @@ const buildUninstallEmail = (shop, owner) => {
             </tr>
 
             <!-- ===================== FOOTER ===================== -->
+           <!-- ===================== FOOTER ===================== -->
             <tr>
               <td bgcolor="#f7f7f7" style="background-color:#F8EEFF; border-top:1px solid #eeeeee; padding:30px; text-align:center;">
+
                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; font-size:18px; font-weight:700; color:#1a1a1a;">
                   Follow us
                 </p>
-                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
+
+                <!-- Social icons -->
+               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 20px;">
                   <tr>
                     <td style="padding:0 6px;">
                      <div style="width:34px; height:34px;">
-                     <a href="https://www.facebook.com/profile.php?id=61591767910161" style="display:block;">
-                       <img src="https://cartplus.io/cartplus-img/Frame%206113%20(2).png"
+                     <a href="https://www.facebook.com/people/Cart-Plus/61591767910161" style="display:block;">
+                       <img src="https://cartplus.io/cartplus-img/facebook-cart.png"
                         alt="Facebook"
                         style="display:block; width:100%; height:100%; border:0;">
                     </a>
@@ -219,46 +223,47 @@ const buildUninstallEmail = (shop, owner) => {
                     <td style="padding:0 6px;">
                       <div style="width:34px; height:34px;">
                         <a href="https://www.instagram.com/cart__plus/" style="display:block;">
-                          <img src="https://cartplus.io/cartplus-img/Frame%206115%20(2).png" alt="Instagram"  style="display:block; width:100%; height:100%; border:0;" />
+                          <img src="https://cartplus.io/cartplus-img/instagram-cart.png" alt="Instagram"  style="display:block; width:100%; height:100%; border:0;" />
                         </a>
                       </div>
                     </td>
                     <td style="padding:0 6px;">
                       <div style="width:34px; height:34px;">
                         <a href="https://www.linkedin.com/in/cart-plus-2375a5422/" style="display:block;">
-                          <img src="https://cartplus.io/cartplus-img/Group%201707479925%20(1).png" alt="LinkedIn"  style="display:block; width:100%; height:100%; border:0;" />
+                          <img src="https://cartplus.io/cartplus-img/linkdin-cart.png" alt="LinkedIn"  style="display:block; width:100%; height:100%; border:0;" />
                         </a>
                       </div>
                     </td>
                   </tr>
                 </table>
-                 <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
-                  <a href="mailto:support@cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">Support@cartplus.io</a>
+               <p style="margin:0 0 20px; font-family:'Outfit',Arial,sans-serif; color:#888888;">
+                  <a href="mailto:support@cartplus.io" style="color:#000000; font-size:18px; font-weight:300; text-decoration:none;">support@cartplus.io</a>
                   &nbsp;|&nbsp;
-                  <a href="https://www.cartplus.io" style="color:#555555; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
+                  <a href="https://www.cartplus.io" style="color:#000000; font-size:18px; font-weight:300; text-decoration:none;">www.cartplus.io</a>
                 </p>
 
                 <hr style="border:none; border-top:1px solid #dddddd; margin:20px 0;" />
+
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                   style="border-bottom:1px solid #dddddd; padding-bottom:20px; margin-bottom:20px;">
                   <tr>
-                    <td align="left" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
+                    <td align="left" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#000000;">
                       &copy; 2026 Cart Plus. All rights reserved.
                     </td>
-                    <td align="right" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c;">
-                      <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Preference</a>
+                    <td align="right" style="font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#000000;">
+                      <a href="#" style="color:#000000; font-weight:700; font-size:14px; text-decoration:none;">Preference</a>
                       &nbsp;|&nbsp;
-                      <a href="#" style="color:#3c3c3c; font-weight:700; font-size:14px; text-decoration:none;">Unsubscription</a>
+                      <a href="#" style="color:#000000; font-weight:700; font-size:14px; text-decoration:none;">Unsubscription</a>
                     </td>
                   </tr>
                 </table>
-                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#3c3c3c; line-height:20px;">
-                  Thank you for choosing Cart Plus! &#128156;<br />
-                  The Cart Plus Team
+
+                <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:14px; color:#000000; line-height:20px;">
+                 Thank you for choosing Cart Plus
                 </p>
+
               </td>
             </tr>
-
           </table>
         </td>
       </tr>

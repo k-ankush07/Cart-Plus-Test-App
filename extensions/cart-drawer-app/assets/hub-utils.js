@@ -14,14 +14,22 @@ window.hubUtils = {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
+
+    let result;
     if (currency?.format?.includes("{{amount}}")) {
-      return currency.format.replace("{{amount}}", amount);
+      result = currency.format.replace("{{amount}}", amount);
+    } else if (currency?.symbol) {
+      result = `${currency.symbol}${amount}`;
+    } else {
+      result = new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: currency?.code || "USD",
+      }).format(cents / 100);
     }
-    if (currency?.symbol) return `${currency.symbol}${amount}`;
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency?.code || "USD",
-    }).format(cents / 100);
+
+    const div = document.createElement("div");
+    div.innerHTML = result;
+    return div.textContent || div.innerText || result;
   },
 
   executeBeforeLoadScripts(scriptContent, scope) {
@@ -377,7 +385,9 @@ window.hubUtils = {
     const blockId = window.HUB_CART_BLOCK_ID;
 
     const shippingRow = document.getElementById(`hub-shipping-row-${blockId}`);
-    const shippingCostEl = document.getElementById(`hub-shipping-cost-${blockId}`);
+    const shippingCostEl = document.getElementById(
+      `hub-shipping-cost-${blockId}`,
+    );
 
     if (!shippingRow || !shippingCostEl) return;
 
@@ -389,7 +399,9 @@ window.hubUtils = {
       const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
       if (grandEl) grandEl.textContent = fmt(grandTotal);
 
-      const checkoutBtn = document.getElementById(`hub-checkout-btn-${blockId}`);
+      const checkoutBtn = document.getElementById(
+        `hub-checkout-btn-${blockId}`,
+      );
       if (checkoutBtn) {
         checkoutBtn.textContent = hubUtils.getCheckoutButtonText(
           window.__HUB_ACTIVE_CART__?.cartSettings || {},
@@ -412,7 +424,8 @@ window.hubUtils = {
         return true;
       });
 
-      const isFreeShippingType = (d) => d.type === "DiscountAutomaticFreeShipping";
+      const isFreeShippingType = (d) =>
+        d.type === "DiscountAutomaticFreeShipping";
       const isActive = (d) => d.status === "ACTIVE";
       const cartTotalRupees = (cartTotalCents || 0) / 100;
 
@@ -486,7 +499,9 @@ window.hubUtils = {
       const rate = sameCurrency
         ? 1
         : parseFloat(
-            window.__SHOPIFY_CURRENCY_RATE__ || window.Shopify?.currency?.rate || 1,
+            window.__SHOPIFY_CURRENCY_RATE__ ||
+              window.Shopify?.currency?.rate ||
+              1,
           ) || 1;
 
       const cartTotalBase = (cartTotalCents || 0) / 100 / rate;
@@ -495,7 +510,9 @@ window.hubUtils = {
 
       data.shipping.forEach((profile) => {
         profile.zones.forEach((zone) => {
-          const hasCountry = zone.countries.some((country) => country.code === countryCode);
+          const hasCountry = zone.countries.some(
+            (country) => country.code === countryCode,
+          );
           if (!hasCountry) return;
 
           zone.shipping_rates.forEach((r) => {
@@ -503,10 +520,16 @@ window.hubUtils = {
             if (r.conditions?.length) {
               r.conditions.forEach((condition) => {
                 const amount = parseFloat(condition.amount || 0);
-                if (condition.field === "TOTAL_PRICE" && condition.operator === "GREATER_THAN_OR_EQUAL_TO") {
+                if (
+                  condition.field === "TOTAL_PRICE" &&
+                  condition.operator === "GREATER_THAN_OR_EQUAL_TO"
+                ) {
                   if (cartTotalBase < amount) isApplicable = false;
                 }
-                if (condition.field === "TOTAL_PRICE" && condition.operator === "LESS_THAN_OR_EQUAL_TO") {
+                if (
+                  condition.field === "TOTAL_PRICE" &&
+                  condition.operator === "LESS_THAN_OR_EQUAL_TO"
+                ) {
                   if (cartTotalBase > amount) isApplicable = false;
                 }
               });

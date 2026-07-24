@@ -85,21 +85,21 @@ window.injectCartHTML = function (blockId, root) {
 
   // CSS custom-property string for the close button
   const closeBtnVars = [
-    `--icon-color:${headerSettings.iconColor}`,
-    `--icon-bg:${headerSettings.iconBgColor}`,
-    `--icon-hover-bg:${headerSettings.iconbgHoverColor}`,
-    `--icon-hover-color:${headerSettings.iconHoverColor}`,
-    `--icon-border-hover:${headerSettings.borderHoverColor}`,
-    `--border-color:${headerSettings.iconBorderColor}`,
+    `--icon-color:${headerSettings.iconColor || "#000000"}`,
+    `--icon-bg:${headerSettings.iconBgColor || "transparent"}`,
+    `--icon-hover-bg:${headerSettings.iconbgHoverColor || "#f0f0f0"}`,
+    `--icon-hover-color:${headerSettings.iconHoverColor || "#000000"}`,
+    `--icon-border-hover:${headerSettings.borderHoverColor || "transparent"}`,
+    `--border-color:${headerSettings.iconBorderColor || "transparent"}`,
     `--border-width:${getBorderWidth(headerSettings.iconBorder)}`,
-    `--border-radius:${designSettings.buttonRadius}px`,
+    `--border-radius:${designSettings.buttonRadius || 0}px`,
   ].join(";");
 
   // Close button HTML (reusable)
   const closeButtonHTML = `
     <button
       id="hub-close-${blockId}"
-      class="hub-cart-close cart-app__close cart-plus-close-btn cart-plus-header-close-button  cart-plus-cart-public-header__close-button cart-plus-cart-header-close-button"
+      class="hub-cart-close cart-app__close cart-plus-close-btn cart-plus-header-close-button cart-plus-cart-public-header__close-button cart-plus-cart-header-close-button"
       aria-label="Close cart"
       style="flex-shrink:0;${closeBtnVars};"
     >
@@ -287,11 +287,11 @@ window.injectCartHTML = function (blockId, root) {
 
       <!-- HEADER -->
       <div
-        class="cart-app__header-top upcart-header hub-cart-header cart-plus-public-header cart-plus-header"
+        class="cart-app__header-top hub-cart-header cart-plus-public-header cart-plus-header"
         style="padding:${headerPadding}; background:${headerSettings.backgroundColor};"
       >
         <div
-          class="cart-app__row-between cart-plus-header-text"
+          class="cart-app__row-between"
           style="display:flex;align-items:center;justify-content:space-between;"
         >
           ${headerInner}

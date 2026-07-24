@@ -904,9 +904,6 @@ window.startAnnTimer = function (blockId, timeStr) {
       );
       const nextSticky = JSON.stringify(stickyResult.data ?? null);
 
-      // Entitlement can flip independently of cart content (e.g. a plan
-      // downgrade), so re-apply when it changes too — applyCartData() then
-      // tears the drawer down if the store is no longer entitled.
       const entitlementChanged =
         (cached?.cartResult?.entitled ?? true) !==
         (cartResult?.entitled ?? true);
