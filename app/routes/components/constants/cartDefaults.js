@@ -2,6 +2,7 @@ export const defaultSettings = {
   inheritFonts: true,
   showStrikethrough: true,
   enableSubtotal: true,
+  enableShipping:true,
   desktopWidth: "default",
   mobileWidth: "full",
   backgroundColor: "#FFFFFF",

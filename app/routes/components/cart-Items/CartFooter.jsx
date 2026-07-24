@@ -51,7 +51,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                     currency={currency}
                     shop={shop.myshopifyDomain}
                     apiUrl={apiUrl}
-                     />
+                />
 
                 {designSettings.enableSubtotal && (
                     <div className="cart-plus-savings-row cart-plus-savings-amount" onClick={() => setBreakdownOpen(prev => !prev)} style={{ cursor: "pointer" }}>
@@ -66,7 +66,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                             </div>
                             <div className="cart-plus-total-header-right">
                                 <span className="cart-plus-total-original"></span>
-                                <span className="cart-plus-total-final" style={{ color: designSettings.subtotalColor }}>$200.00</span>
+                                <span className="cart-plus-total-final" style={{ color: designSettings.subtotalColor }}>{currency} 200.00</span>
                             </div>
                         </div>
                     </div>
@@ -76,19 +76,21 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                     <div className="cart-plus-cart-breakdown-header cart-plus-public-cart-summary__slide-codes">
                         <div className="cart-plus-breakdown-row cart-plus-public-cart-summary__total-discount">
                             <span style={{ color: designSettings.textColor }}>Total MRP</span>
-                            <span style={{ color: designSettings.textColor }}>$200.00</span>
+                            <span style={{ color: designSettings.textColor }}>{currency} 200.00</span>
                         </div>
                         <div className="cart-plus-breakdown-row cart-plus-public-cart-summary__discount-label">
                             <span style={{ color: designSettings.textColor }}>{cartSettings.discountsSavingsText}</span>
                             <span className="cart-plus-public-cart-summary__discount-codes" style={{ color: '#10812F' }}>MEGA20</span>
                         </div>
-                        <div className="cart-plus-breakdown-row">
-                            <span style={{ color: designSettings.textColor }}>Shipping</span>
-                            <span style={{ color: '#10812F' }}>Free</span>
-                        </div>
+                        {designSettings.enableShipping && (
+                            <div className="cart-plus-breakdown-row">
+                                <span style={{ color: designSettings.textColor }}>Shipping</span>
+                                <span style={{ color: '#10812F' }}>Free</span>
+                            </div>
+                        )}
                         <div className="cart-plus-breakdown-row cart-plus-breakdown-grand">
                             <span style={{ color: designSettings.textColor }}>Grand Total</span>
-                            <span style={{ color: designSettings.textColor }}>$200.00</span>
+                            <span style={{ color: designSettings.textColor }}>{currency} 200.00</span>
                         </div>
                     </div>
                 </div>

@@ -63,6 +63,12 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                         onChange={(value) => handleChange("enableSubtotal", value)}
                     />
 
+                    <Checkbox
+                        label="Enable shipping line"
+                        checked={designSettings.enableShipping}
+                        onChange={(value) => handleChange("enableShipping", value)}
+                    />
+
                     <Text variant="headingSm" as="p">Cart width</Text>
 
                     <Select

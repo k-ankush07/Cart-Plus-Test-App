@@ -68,6 +68,7 @@ window.injectCartHTML = function (blockId, root) {
 
   const enableSubtotal = designSettings.enableSubtotal ?? false;
   const subtotalColor = designSettings.subtotalColor || "";
+  const enableShipping = designSettings.enableShipping ?? false;
 
   const cartCount =
     window.__HUB_ACTIVE_CART__?.cart?.item_count ??
@@ -375,9 +376,9 @@ window.injectCartHTML = function (blockId, root) {
         <div class="hub-discount-input-row-items cart-plus-discount-code-row cart-plus-public-discount-code cart-plus-discount-code-input-wrapper cart-plus-discount-code-module cart-plus-public-discount-code__input-wrapper" 
          id="hub-discount-row-${blockId}">
          ${
-        showTitle
-           ? `<div class="hub-discount-heading" style="color:${couponHeadingColor}">${couponHeadingText}</div>`
-              : ""
+           showTitle
+             ? `<div class="hub-discount-heading" style="color:${couponHeadingColor}">${couponHeadingText}</div>`
+             : ""
          }
         <div class="hub-discount-input-row">
         <div id="hub-discount-status-${blockId}" class="hub-discount-status-code"></div>
@@ -440,10 +441,14 @@ window.injectCartHTML = function (blockId, root) {
               <span style="color:${textColorAll}">Coupon Discount</span>
               <span id="hub-coupon-${blockId}"></span>
             </div>
-            <div class="hub-breakdown-row" id="hub-shipping-row-${blockId}" style="display:none;">
-              <span style="color:${textColorAll}">Shipping</span>
-              <span id="hub-shipping-cost-${blockId}" class="hub-shipping-cost-show"></span>
-            </div>
+            ${
+              enableShipping
+                ? `<div class="hub-breakdown-row" id="hub-shipping-row-${blockId}" style="display:none;">
+        <span style="color:${textColorAll}">Shipping</span>
+        <span id="hub-shipping-cost-${blockId}" class="hub-shipping-cost-show"></span>
+      </div>`
+                : ""
+            }
             <div class="hub-breakdown-row hub-breakdown-grand">
               <span style="color:${textColorAll}">Grand Total</span>
               <span id="hub-grand-total-${blockId}" style="color:${textColorAll}"></span>
