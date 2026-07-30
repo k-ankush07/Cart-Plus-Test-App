@@ -25,7 +25,7 @@ import {
 } from "@shopify/polaris-icons";
 
 import { getCarts, getCartStats } from "../services/apiRoutes";
-import { shopLoader } from "./components/shop.server";
+import { requireShopData  } from "./components/shop.server";
 import DateRangePicker from "./components/ui/DateRangePicker";
 import { Suspense, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
@@ -462,7 +462,7 @@ async function getMainThemeId(shopDomain, accessToken) {
 
 // export const loader = async ({ request }) => {
 //   const { shop, apiUrl, accessToken, currency } =
-//     await shopLoader(request);
+//     await requireShopData (request);
 
 //   const mainThemeId = await getMainThemeId(shop.myshopifyDomain, accessToken);
 
@@ -509,7 +509,7 @@ async function getMainThemeId(shopDomain, accessToken) {
 
 
 export const loader = async ({ request }) => {
-  const { shop, apiUrl, accessToken, currency, mainThemeId } = await shopLoader(request);
+  const { shop, apiUrl, accessToken, currency, mainThemeId } = await requireShopData (request);
 
   const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 

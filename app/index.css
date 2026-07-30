@@ -744,6 +744,15 @@ span.svg-wrapper {
     align-items: center;
 }
 
+.cart-plus-recommendations-shop-now-button {
+  color: var(--btn-text, #FFFFFF);
+  text-decoration: none;
+}
+
+.cart-plus-recommendations-shop-now-button:hover {
+  color: var(--btn-hover-text, inherit);
+}
+
 .custom-cart-internal-style__title-large_button a {
     color: white;
     text-decoration: none;

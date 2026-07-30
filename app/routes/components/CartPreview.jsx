@@ -215,7 +215,7 @@ const CartPreview = memo(function CartPreview({ currency, designSettings, header
                         breakdownOpen={breakdownOpen}
                         setOfferOpen={setOfferOpen}
                         offerOpen={offerOpen}
-                        shop={shop}
+                        shop={shop.myshopifyDomain}
                         apiUrl={apiUrl}
                     />
                 )}

@@ -49,7 +49,7 @@ import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
 import { Suspense, useState, useEffect } from "react";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import LiveDot from "./components/ui/LiveDot";
-import { shopLoader } from "./components/shop.server";
+import { requireShopData  } from "./components/shop.server";
 
 import {
     createCart,
@@ -156,7 +156,7 @@ async function getMainThemeId(shopDomain, accessToken) {
 
 export const loader = async ({ request }) => {
     const { shop, apiUrl, accessToken, currency } =
-        await shopLoader(request);
+        await requireShopData (request);
 
     const mainThemeId = await getMainThemeId(shop.myshopifyDomain, accessToken);
 

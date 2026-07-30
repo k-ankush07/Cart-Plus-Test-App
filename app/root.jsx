@@ -1,4 +1,4 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useLocation } from "react-router";
 import { AppProvider as PolarisAppProvider } from "@shopify/polaris";
 import enTranslations from "@shopify/polaris/locales/en.json";
 import '@shopify/polaris/build/esm/styles.css';
@@ -12,6 +12,12 @@ export async function loader() {
 
 export default function App() {
   const { apiKey } = useLoaderData();
+  const location = useLocation();
+
+  const noPaddingRoutes = ["/app/design-cart"];
+  const isNoPaddingRoute = noPaddingRoutes.some((path) =>
+    location.pathname.startsWith(path)
+  );
 
   return (
     <html lang="en">
@@ -38,7 +44,7 @@ export default function App() {
       </head>
       <body suppressHydrationWarning>
         <PolarisAppProvider i18n={enTranslations}>
-          <div style={{ paddingBottom: "40px" }}>
+          <div style={{ paddingBottom: isNoPaddingRoute ? 0 : "40px" }}>
             <Outlet />
           </div>
         </PolarisAppProvider>

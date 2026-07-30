@@ -22,7 +22,7 @@ import "../index.css";
 import "@shopify/polaris/build/esm/styles.css";
 import ColorInput from "./components/ui/ColorInput";
 import HtmlEditor from "./components/ui-cart-options/HtmlEditor";
-import { shopLoader } from "./components/shop.server";
+import { requireShopData  } from "./components/shop.server";
 import { useLoaderData } from "react-router";
 import { createStickyCart, getStickyCart } from "../services/apiRoutes";
 import { uploadImage } from "../services/apiRoutes";
@@ -81,7 +81,7 @@ function scopeCss(css, scope) {
 export const loader = async ({ request }) => {
   try {
     const { shop, apiUrl, accessToken, currency } =
-      await shopLoader(request);
+      await requireShopData (request);
 
     let stickyCart = null;
 

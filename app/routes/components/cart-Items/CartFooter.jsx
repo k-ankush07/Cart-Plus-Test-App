@@ -49,7 +49,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
                     offerOpen={offerOpen}
                     designSettings={designSettings}
                     currency={currency}
-                    shop={shop.myshopifyDomain}
+                    shop={shop}
                     apiUrl={apiUrl}
                 />
 

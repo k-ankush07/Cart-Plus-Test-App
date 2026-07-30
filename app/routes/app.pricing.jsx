@@ -20,7 +20,7 @@ import { CheckIcon} from "@shopify/polaris-icons";
 import { useLoaderData, useFetcher, Await } from "react-router-dom";
 import { authenticate } from "../shopify.server";
 import "../index.css";
-import { shopLoader } from "./components/shop.server";
+import { requireShopData  } from "./components/shop.server";
 
 // ─── Plan definitions ─────────────────────────────────────────────────────────
 
@@ -152,7 +152,7 @@ const savePlan = (apiUrl, shop, plan, price, subscriptionId, status, isDev) =>
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
-    const { shop, apiUrl, admin } = await shopLoader(request);
+    const { shop, apiUrl, admin } = await requireShopData (request);
     const shopDomain = shop?.myshopifyDomain;
     const isDev = shop?.plan?.partnerDevelopment || false;
 

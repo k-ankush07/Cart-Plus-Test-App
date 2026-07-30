@@ -10,7 +10,7 @@ import {
 } from "chart.js";
 import { useState, useEffect } from "react";
 import DateRangePicker from "./components/ui/DateRangePicker";
-import { shopLoader } from "./components/shop.server";
+import { requireShopData  } from "./components/shop.server";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, ChartTooltip);
 
@@ -207,7 +207,7 @@ const convOpts = {
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
-  const { shop, apiUrl } = await shopLoader(request);
+  const { shop, apiUrl } = await requireShopData (request);
   const shopDomain = shop?.myshopifyDomain;
   const currency = shop?.currencyCode || "USD";
 

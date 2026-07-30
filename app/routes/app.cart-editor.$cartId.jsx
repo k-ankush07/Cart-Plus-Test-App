@@ -5,7 +5,7 @@ import Sidebar from "./components/Sidebar";
 import CartPreview from "./components/CartPreview";
 import MainContent from "./components/MainContent";
 import CartLayout from "./components/CartLayout";
-import { shopLoader } from "./components/shop.server";
+import { requireShopData  } from "./components/shop.server";
 import { useLoaderData, useSearchParams } from "react-router-dom";
 import { getCart, updateCart } from "../services/apiRoutes";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -50,7 +50,7 @@ export const loader = async ({ request, params }) => {
   const apiUrl = process.env.PUBLIC_REACT_APP_API_URL;
 
   const [{ shop, accessToken, currency }, cartResult] = await Promise.all([
-    shopLoader(request),
+    requireShopData (request),
     getCart(apiUrl, cartId).catch((err) => {
       console.error("GET CART ERROR:", err);
       return { data: null };

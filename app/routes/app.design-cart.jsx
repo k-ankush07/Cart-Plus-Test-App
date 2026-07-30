@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import CartPreview from "./components/CartPreview";
 import { Button, InlineStack } from "@shopify/polaris";
 import { useLoaderData, useNavigate } from "react-router-dom";
-import { shopLoader } from "./components/shop.server";
+import { requireShopData  } from "./components/shop.server";
 import { createCart } from "../services/apiRoutes";
 import {
     defaultSettings,
@@ -22,7 +22,7 @@ import {
 } from "../routes/components/constants/cartDefaults";
 
 export const loader = async ({ request }) => {
-    const { shop, apiUrl } = await shopLoader(request);
+    const { shop, apiUrl } = await requireShopData(request);
     return { shop, apiUrl };
 };
 
@@ -530,6 +530,7 @@ export default function Designcart() {
                     trustBadgesSettings={defaultTrustBadgesSettings}
                     cartSettings={defaultCartSettings}
                     triggeredRewardsSettings={defaultTriggeredRewardsSettings}
+                    shop={shop}
                 />
             </div>
         </div>
