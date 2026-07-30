@@ -460,11 +460,56 @@ async function getMainThemeId(shopDomain, accessToken) {
   }
 }
 
-export const loader = async ({ request }) => {
-  const { shop, apiUrl, accessToken, currency } =
-    await shopLoader(request);
+// export const loader = async ({ request }) => {
+//   const { shop, apiUrl, accessToken, currency } =
+//     await shopLoader(request);
 
-  const mainThemeId = await getMainThemeId(shop.myshopifyDomain, accessToken);
+//   const mainThemeId = await getMainThemeId(shop.myshopifyDomain, accessToken);
+
+//   const appEmbedId = process.env.SHOPIFY_API_KEY || "";
+
+//   const today = new Date();
+//   const defaultStart = new Date();
+//   defaultStart.setDate(today.getDate() - 29);
+
+//   const fallbackRevenue = {
+//     addonRevenue: 0,
+//     upsellRevenue: 0,
+//     subscriptionRevenue: 0,
+//   };
+
+//   const dataPromise = getCarts(apiUrl, shop.myshopifyDomain).then((cartsRes) => {
+//     const allCarts = cartsRes?.data || [];
+//     const publishedCartIds = allCarts
+//       .filter((c) => c.status === "published")
+//       .map((c) => c.cartId);
+
+//     return Promise.allSettled([
+//       Promise.resolve(cartsRes),
+//       getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString(), publishedCartIds),
+//       checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
+//     ]).then(([cartsResult, statsResult, embedResult]) => ({
+//       carts:
+//         cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [],
+//       cartStats:
+//         statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {},
+//       shopRevenue:
+//         statsResult.status === "fulfilled"
+//           ? statsResult.value?.shopRevenue || fallbackRevenue
+//           : fallbackRevenue,
+//       appEmbedInstalled:
+//         embedResult.status === "fulfilled" ? embedResult.value.installed : false,
+//       appEmbedStarted:
+//         embedResult.status === "fulfilled" ? embedResult.value.started : false,
+//     }));
+//   });
+
+//   return { shop, apiUrl, currency, appEmbedId, mainThemeId, dataPromise };
+// };
+
+
+export const loader = async ({ request }) => {
+  const { shop, apiUrl, accessToken, currency, mainThemeId } = await shopLoader(request);
 
   const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 
@@ -489,18 +534,11 @@ export const loader = async ({ request }) => {
       getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString(), publishedCartIds),
       checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
     ]).then(([cartsResult, statsResult, embedResult]) => ({
-      carts:
-        cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [],
-      cartStats:
-        statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {},
-      shopRevenue:
-        statsResult.status === "fulfilled"
-          ? statsResult.value?.shopRevenue || fallbackRevenue
-          : fallbackRevenue,
-      appEmbedInstalled:
-        embedResult.status === "fulfilled" ? embedResult.value.installed : false,
-      appEmbedStarted:
-        embedResult.status === "fulfilled" ? embedResult.value.started : false,
+      carts: cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [],
+      cartStats: statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {},
+      shopRevenue: statsResult.status === "fulfilled" ? statsResult.value?.shopRevenue || fallbackRevenue : fallbackRevenue,
+      appEmbedInstalled: embedResult.status === "fulfilled" ? embedResult.value.installed : false,
+      appEmbedStarted: embedResult.status === "fulfilled" ? embedResult.value.started : false,
     }));
   });
 

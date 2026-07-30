@@ -910,7 +910,7 @@ export const buildContactFormEmailHtml = ({ firstName, lastName, email, phone, a
                       <p style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:60px; font-weight:300; line-height:1.3;">
                         New Contact
                       </p>
-                      <h1 style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:64px; font-weight:700; letter-spacing:-0.5px; color:#500088; line-height:1.3;">
+                      <h1 style="margin:0; font-family:'Outfit',Arial,sans-serif; font-size:60px; font-weight:700; letter-spacing:-0.5px; color:#500088; line-height:1.3;">
                         Form Submission
                       </h1>
                     </td>
