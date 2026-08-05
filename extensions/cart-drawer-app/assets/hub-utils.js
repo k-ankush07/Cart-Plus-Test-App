@@ -372,7 +372,7 @@ window.hubUtils = {
       `;
       });
     } catch (err) {
-      console.warn("[hub] Could not fetch ratings:", err);
+      console.warn("Could not fetch ratings:", err);
     }
   },
 
@@ -651,7 +651,7 @@ window.hubUtils = {
           success = true;
         } else {
           const body = await res.text();
-          console.warn("[hub-rewards] add failed", p.id, res.status, body);
+          console.warn(" add failed", p.id, res.status, body);
         }
       }
       for (const key of toRemove) {
@@ -914,7 +914,7 @@ window.hubUtils = {
         activeCount: data.activeCount || 0,
       };
     } catch (err) {
-      console.warn("[hub] Could not fetch discounts:", err);
+      console.warn("Could not fetch discounts:", err);
       return { allDiscountCodes: [], activeDiscountCodes: [] };
     }
   },

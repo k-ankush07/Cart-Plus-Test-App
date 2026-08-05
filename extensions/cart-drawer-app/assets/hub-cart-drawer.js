@@ -48,7 +48,6 @@ function trackCartImpressionUnique() {
   const key = `hub_cart_impression_tracked_${cartId}`;
 
   if (localStorage.getItem(key)) {
-    console.log("[HUB] Impression already tracked, skipping.");
     return;
   }
 
@@ -65,7 +64,6 @@ function trackCartImpressionUnique() {
     }),
   })
     .then((res) => res.json())
-    .then((data) => console.log("[HUB] Impression response:", data))
     .catch((err) => {
       localStorage.removeItem(key);
       console.error("[HUB] Impression error:", err);
@@ -290,7 +288,6 @@ function initCartDrawerAfterData() {
         };
         args = [input, init];
       } catch (e) {
-        console.warn("[hub] Could not inject properties:", e);
       }
     }
 
@@ -784,9 +781,6 @@ window.startAnnTimer = function (blockId, timeStr) {
       let hasPublishedCart = false;
 
       if (cartResult?.entitled === false) {
-        console.log(
-          "[hub] Store not entitled (free plan on a live store) — drawer disabled",
-        );
         const blockId = window.HUB_CART_BLOCK_ID;
         document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
         document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
@@ -800,7 +794,6 @@ window.startAnnTimer = function (blockId, timeStr) {
           (cart) => cart.status === "published",
         );
         if (publishedCart) {
-          console.log("Published cart found:", publishedCart);
           window.__HUB_ACTIVE_CART__ = publishedCart;
           hasPublishedCart = true;
           initCartDrawerAfterData();
@@ -822,7 +815,7 @@ window.startAnnTimer = function (blockId, timeStr) {
               window._upsellCache[productId] = products;
               return { productId, products };
             } catch (e) {
-              console.error("[hub] upsell prefetch failed:", e);
+              console.error(" upsell prefetch failed:", e);
               return null;
             }
           })();
@@ -848,7 +841,6 @@ window.startAnnTimer = function (blockId, timeStr) {
       }
 
       if (stickyResult?.success) {
-        console.log("Sticky Cart found:", stickyResult.data);
         window.__HUB_STICKY_CART__ = stickyResult.data;
         if (hasPublishedCart) {
           renderStickyCart();
@@ -874,11 +866,9 @@ window.startAnnTimer = function (blockId, timeStr) {
       console.warn("Shop not set");
       return;
     }
-    console.log("Shop:", shop);
 
     const cached = readCache(shop);
     if (cached) {
-      console.log("[hub] Rendering from cache");
       applyCartData(cached);
     }
 
@@ -913,15 +903,13 @@ window.startAnnTimer = function (blockId, timeStr) {
         prevSticky !== nextSticky ||
         entitlementChanged
       ) {
-        console.log("[hub] Fresh data differs from cache — re-applying");
         applyCartData(freshData);
       } else {
-        console.log("[hub] Fresh data matches cache — no re-render needed");
       }
     } catch (err) {
       console.error("Cart settings fetch error:", err);
       if (!cached)
-        console.warn("[hub] No cache and fetch failed — cart will not render");
+        console.warn(" No cache and fetch failed — cart will not render");
     }
   }
 
@@ -1233,7 +1221,7 @@ window.getUpsellProducts = async function (settings, productId) {
       products = products.slice(0, settings.maxUpsellsInCart);
     return products;
   } catch (err) {
-    console.error("[hub] getUpsellProducts error:", err);
+    console.error("getUpsellProducts error:", err);
     return [];
   }
 };
@@ -1327,11 +1315,6 @@ window.handleTriggeredRewards = async function handleTriggeredRewards(cart) {
         });
         if (!addRes.ok) {
           const errBody = await addRes.text();
-          console.error(
-            "[triggered-reward] /cart/add.js failed:",
-            addRes.status,
-            errBody,
-          );
         } else {
           changed = true;
         }
@@ -1413,10 +1396,6 @@ async function checkTrigger(
             window._hubCollHandleMap = {};
           }
         } catch (e) {
-          console.error(
-            "[triggered-reward] Failed to fetch collections list:",
-            e,
-          );
           window._hubCollHandleMap = {};
         }
       }
@@ -1425,10 +1404,6 @@ async function checkTrigger(
         const collId = collGid.replace("gid://shopify/Collection/", "");
         const handle = window._hubCollHandleMap[collId];
         if (!handle) {
-          console.warn(
-            "[triggered-reward] No handle for collection ID:",
-            collId,
-          );
           continue;
         }
         try {
@@ -1448,11 +1423,6 @@ async function checkTrigger(
             if (collProductIds.has(pid)) return true;
           }
         } catch (e) {
-          console.error(
-            "[triggered-reward] Collection check failed:",
-            handle,
-            e,
-          );
         }
       }
       return false;
@@ -1767,7 +1737,7 @@ window.hubRemoveOfferCode = async function (code, blockId, btn) {
     const drawer = document.querySelector(`.hub-cart-block-${blockId}`);
     if (drawer) await window.hubCartRender(drawer);
   } catch (e) {
-    console.warn("[hub] Failed to remove offer code:", e);
+    console.warn(" Failed to remove offer code:", e);
   } finally {
     if (btn) {
       btn.classList.remove("loading");
