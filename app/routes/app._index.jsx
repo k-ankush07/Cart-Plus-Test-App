@@ -25,7 +25,7 @@ import {
 } from "@shopify/polaris-icons";
 
 import { getCarts, getCartStats } from "../services/apiRoutes";
-import { requireShopData  } from "./components/shop.server";
+import { requireShopData } from "./components/shop.server";
 import DateRangePicker from "./components/ui/DateRangePicker";
 import { Suspense, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
@@ -509,7 +509,7 @@ async function getMainThemeId(shopDomain, accessToken) {
 
 
 export const loader = async ({ request }) => {
-  const { shop, apiUrl, accessToken, currency, mainThemeId } = await requireShopData (request);
+  const { shop, apiUrl, accessToken, currency, mainThemeId } = await requireShopData(request);
 
   const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 
@@ -896,16 +896,6 @@ function DashboardInner({
 
   const sparkType = useCallback((val) => (val ?? 0) > 0 ? "spike" : "flat", []);
 
-  const openTidioChat = useCallback(() => {
-    if (window.tidioChatApi) {
-      window.tidioChatApi.open();
-    } else {
-      document.addEventListener("tidioChat-ready", () => {
-        window.tidioChatApi?.open();
-      });
-    }
-  }, []);
-
   return (
     <Page
       title="Welcome to Cart Plus 🎉"
@@ -1144,7 +1134,7 @@ function DashboardInner({
                             size="slim"
                             onClick={(e) => {
                               e.stopPropagation();
-                             window.open(`https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`, "_blank");
+                              window.open(`https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`, "_blank");
                             }}
                           >
                             Preview
@@ -1320,7 +1310,9 @@ function DashboardInner({
                   <Text variant="bodySm" tone="subdued">Chat with our support team.</Text>
                 </BlockStack>
               </InlineStack>
-              <Button onClick={openTidioChat}>Chat with us</Button>
+              <Button onClick={() => navigate("/app/support")}>
+                Chat with us
+              </Button>
             </InlineStack>
           </Card>
 

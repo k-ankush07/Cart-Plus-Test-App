@@ -25,6 +25,7 @@ const NAV_LINKS = [
   { href: "/app/sticky-cart", label: "Sticky Cart" },
   { href: "/app/pricing", label: "Pricing" },
   { href: "/app/analytics", label: "Analytics" },
+  { href: "/app/support", label: "Support" },
 ];
 
 export const ssr = false;
@@ -100,8 +101,6 @@ export default function App() {
   if (!isNavigating) initialLoadDoneRef.current = true;
   const showInitialLoader = isNavigating && !initialLoadDoneRef.current;
 
-  // NOTE: Polaris AppProvider is already provided in root.jsx — do NOT wrap again
-  // here, or Polaris mounts twice and flickers on every navigation.
   return (
     <ShopifyAppProvider embedded apiKey={apiKey}>
       {showInitialLoader && <NavigationProgressBar />}
