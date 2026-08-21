@@ -28,11 +28,6 @@ const PLAN_ORDER_LIMITS = {
   advance: 1000,
 };
 
-// ─── Plan entitlement ────────────────────────────────────────────────────────
-// A shop is entitled to the cart drawer + all features when it is a Shopify
-// development / partner store (free forever) OR on an active paid plan.
-// Live stores on the free plan are NOT entitled — the storefront drawer is
-// suppressed for them.
 const isEntitled = (shopPlan) => {
   if (!shopPlan) return false;
   if (shopPlan.isDev) return true;

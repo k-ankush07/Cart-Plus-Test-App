@@ -827,28 +827,31 @@ window.hubCartRender = async function (drawer, opts = {}) {
     }
 
      // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest(".hub-upgrade-btn");
-      if (!btn) return;
-      const wrapper = btn.closest(".hub-selling-plan-wrapper");
-      if (!wrapper) return;
-      const text = btn.querySelector(".btn-text");
-      let loader = btn.querySelector(".loader");
-      if (!loader) {
-        loader = document.createElement("span");
-        loader.className = "loader";
-        loader.innerText = "";
-        btn.appendChild(loader);
-      }
-      wrapper.classList.remove("show-subscription");
-      if (text) text.style.display = "none";
-      loader.style.display = "inline-block";
-      setTimeout(() => {
-        loader.style.display = "none";
-        if (text) text.style.display = "inline-block";
-        wrapper.classList.add("show-subscription");
-      }, 3000);
-    });
+    if (!window._hubUpgradeBtnListenerAttached) {
+      window._hubUpgradeBtnListenerAttached = true;
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest(".hub-upgrade-btn");
+        if (!btn) return;
+        const wrapper = btn.closest(".hub-selling-plan-wrapper");
+        if (!wrapper) return;
+        const text = btn.querySelector(".btn-text");
+        let loader = btn.querySelector(".loader");
+        if (!loader) {
+          loader = document.createElement("span");
+          loader.className = "loader";
+          loader.innerText = "";
+          btn.appendChild(loader);
+        }
+        wrapper.classList.remove("show-subscription");
+        if (text) text.style.display = "none";
+        loader.style.display = "inline-block";
+        setTimeout(() => {
+          loader.style.display = "none";
+          if (text) text.style.display = "inline-block";
+          wrapper.classList.add("show-subscription");
+        }, 3000);
+      });
+    }
 
     if (!window._hubSellingPlanListenerAttached) {
       window._hubSellingPlanListenerAttached = true;
@@ -920,7 +923,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
             );
           }
 
-          document.dispatchEvent(new CustomEvent("cart:updated"));
           const drawer = select.closest(
             `.hub-cart-block-${window.HUB_CART_BLOCK_ID}`,
           );
@@ -965,7 +967,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           "{{selling_plan_group_name}} / {{selling_plan_name}}";
 
         // FIX: read from pre-built map — zero fetches here
-        const groups = _sellingPlansByHandle[item.handle] || [];
+        const groups = _sellingPlansByHandle[`${item.handle}::${item.variant_id}`] || [];
 
         if (groups.length > 0 && !subscriptionSettings?.enabled) {
           let options = "";
