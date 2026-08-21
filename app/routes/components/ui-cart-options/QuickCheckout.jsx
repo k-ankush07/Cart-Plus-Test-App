@@ -21,7 +21,7 @@ import {
 import { ClipboardIcon, CreditCardIcon } from "@shopify/polaris-icons";
 
 const SNIPPET = `{% if additional_checkout_buttons %}
-<div style="display: none !important">
+<div id="cart-plus-checkout-buttons-source" style="display:none;">
   {{ content_for_additional_checkout_buttons }}
 </div>
 {% endif %}`;

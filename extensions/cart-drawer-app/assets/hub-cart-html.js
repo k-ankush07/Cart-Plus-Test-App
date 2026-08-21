@@ -54,6 +54,7 @@ window.injectCartHTML = function (blockId, root) {
   const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
   const discountCodesSettings =
     window.__HUB_ACTIVE_CART__?.discountCodesSettings || {};
+
   const showOfferBox = discountCodesSettings.showOfferBox ?? false;
   const couponHeadingColor =
     discountCodesSettings.couponHeadingColor ?? "#000000";
@@ -74,6 +75,7 @@ window.injectCartHTML = function (blockId, root) {
     window.__HUB_ACTIVE_CART__?.cart?.item_count ??
     window.__HUB_CART_COUNT__ ??
     0;
+    
   // ── Derived header values ──────────────────────────────────────────────────
   const headerPadding =
     headerSettings.height === "slim" ? "15px 25px" : "30px 30px";
@@ -253,6 +255,50 @@ window.injectCartHTML = function (blockId, root) {
     }
   }
 `;
+
+  const expressPaymentsSettings =
+    window.__HUB_ACTIVE_CART__?.expressPaymentsSettings || {};
+
+    const expressAlignment = expressPaymentsSettings.alignment || "stretch";
+
+const expressAlignItems =
+  expressAlignment === "center" ? "center"
+  : expressAlignment === "left" ? "flex-start"
+  : expressAlignment === "right" ? "flex-end"
+  : "stretch";
+
+const expressMaxWidth =
+  expressAlignment === "stretch" ? "100%" : (expressPaymentsSettings.buttonWidth || "300px");
+
+bs.textContent += `
+  #hub-express-payments-${blockId} .dynamic-checkout__content,
+  #hub-express-payments-${blockId} shopify-accelerated-checkout-cart,
+  #hub-express-payments-${blockId} shopify-accelerated-checkout,
+  #hub-express-payments-${blockId} shopify-paypal-button,
+  #hub-express-payments-${blockId} shopify-apple-pay-button,
+  #hub-express-payments-${blockId} shopify-shop-pay-button,
+  #hub-express-payments-${blockId} [slot^="shadow-slot"],
+  #hub-express-payments-${blockId} .paypal-button-container,
+  #hub-express-payments-${blockId} .paypal-button-row {
+    display: block !important;
+    width: 100% !important;
+    max-width: ${expressMaxWidth}!important;
+  }
+
+  #hub-express-payments-${blockId} shopify-accelerated-checkout-cart,
+  #hub-express-payments-${blockId} shopify-accelerated-checkout {
+    --shopify-accelerated-checkout-button-block-size: ${expressPaymentsSettings.defaultButtonHeight ?? 42}px;
+    --shopify-accelerated-checkout-button-border-radius: ${designSettings.buttonRadius || 0}px;
+  }
+
+  @media (max-width: 480px) {
+    #hub-express-payments-${blockId} shopify-accelerated-checkout-cart,
+    #hub-express-payments-${blockId} shopify-accelerated-checkout {
+      --shopify-accelerated-checkout-button-block-size: ${expressPaymentsSettings.mobileButtonHeight ?? 42}px;
+    }
+  }
+`;
+
   // Inject a style tag once to hide the theme's native cart drawers
   if (!document.getElementById("hub-hide-theme-cart")) {
     const s = document.createElement("style");
@@ -272,6 +318,8 @@ window.injectCartHTML = function (blockId, root) {
     `;
     document.head.appendChild(s);
   }
+
+  window.hubMoveExpressPayments(blockId);
 
   root.insertAdjacentHTML(
     "beforeend",
@@ -458,8 +506,6 @@ window.injectCartHTML = function (blockId, root) {
            : ""
        }
 
-        <div id="hub-express-payments-${blockId}" class="hub-express-payments"></div>
-
         <!-- CHECKOUT -->
         <div>${renderCustomHTML(customHtmlBlocks.above_checkout)}</div>
         <a id="hub-checkout-btn-${blockId}" href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" onclick="hubCheckoutClick(event, '${blockId}', this)" class="hub-cart-checkout-btn" style="border-radius:${designSettings.buttonRadius}px;">
@@ -467,6 +513,19 @@ window.injectCartHTML = function (blockId, root) {
         </a>
 
         <div>${renderCustomHTML(customHtmlBlocks.below_checkout)}</div>
+
+      <div id="hub-express-payments-${blockId}" class="hub-express-payments"
+  style="
+    display:${expressPaymentsSettings.enabled === false ? "flex" : "none"};
+    flex-direction:column;
+    align-items:${expressAlignItems};
+    width:100%;
+    margin-bottom: 20px;
+    row-gap:${expressPaymentsSettings.rowGap ?? 8}px;
+    --hub-express-btn-height:${expressPaymentsSettings.defaultButtonHeight ?? 42}px;
+  "
+></div>
+
         ${
           designSettings.continueshopping
             ? `<a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping" style="color:${designSettings.textColor}"
@@ -550,3 +609,43 @@ window.injectCartHTML = function (blockId, root) {
     `,
   );
 };
+
+window.hubMoveExpressPayments = function (blockId) {
+  const source = document.getElementById("cart-plus-checkout-buttons-source");
+  const target = document.getElementById(`hub-express-payments-${blockId}`);
+  if (!source || !target) return;
+
+  const expressPaymentsSettings =
+    window.__HUB_ACTIVE_CART__?.expressPaymentsSettings || {};
+
+  if (expressPaymentsSettings.enabled !== false) {
+    target.style.display = "none";
+    target.innerHTML = "";
+    return;
+  }
+
+  if (!source.firstChild) return;
+
+  target.innerHTML = "";
+  while (source.firstChild) {
+    target.appendChild(source.firstChild);
+  }
+  target.style.display = "flex";
+};
+
+(function () {
+  const source = document.getElementById("cart-plus-checkout-buttons-source");
+  if (!source || window._hubExpressObserverAttached) return;
+  window._hubExpressObserverAttached = true;
+
+  let debounceTimer;
+  const observer = new MutationObserver(() => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const blockId = window.HUB_CART_BLOCK_ID;
+      if (blockId) window.hubMoveExpressPayments(blockId);
+    }, 100);
+  });
+
+  observer.observe(source, { childList: true, subtree: true });
+})();

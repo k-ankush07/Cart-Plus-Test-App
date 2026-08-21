@@ -826,7 +826,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       );
     }
 
-     // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
+    // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
     if (!window._hubUpgradeBtnListenerAttached) {
       window._hubUpgradeBtnListenerAttached = true;
       document.addEventListener("click", (e) => {
@@ -967,7 +967,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
           "{{selling_plan_group_name}} / {{selling_plan_name}}";
 
         // FIX: read from pre-built map — zero fetches here
-        const groups = _sellingPlansByHandle[`${item.handle}::${item.variant_id}`] || [];
+        const groups =
+          _sellingPlansByHandle[`${item.handle}::${item.variant_id}`] || [];
 
         if (groups.length > 0 && !subscriptionSettings?.enabled) {
           let options = "";
@@ -1567,4 +1568,5 @@ window.hubCartRender = async function (drawer, opts = {}) {
       window.hubCartRender(pending.drawer, pending.opts);
     }
   }
+
 };

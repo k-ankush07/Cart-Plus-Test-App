@@ -10,7 +10,7 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-const apiUrl = "http://localhost:6002";
+const apiUrl = "https://app.cartplus.io";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");
@@ -886,7 +886,6 @@ window.startAnnTimer = function (blockId, timeStr) {
 
       const freshData = { cartResult, stickyResult };
       writeCache(shop, freshData);
-
       const prevCart = JSON.stringify(window.__HUB_ACTIVE_CART__ ?? null);
       const prevSticky = JSON.stringify(window.__HUB_STICKY_CART__ ?? null);
       const nextCart = JSON.stringify(

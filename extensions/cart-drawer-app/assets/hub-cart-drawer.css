@@ -2531,6 +2531,13 @@ span.hub-item-discount-badge img.discount-code-img {
   display: block !important;
 }
 
+.hub-cart-drawer iframe,
+.hub-express-payments iframe {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+}
+
 .hub-cart-drawer.cart-app a:empty,
 .hub-cart-drawer.cart-app ul:empty,
 .hub-cart-drawer.cart-app dl:empty,
