@@ -114,7 +114,7 @@ const Sidebar = memo(function Sidebar({
                 item("Add ons", AppsIcon),
                 item("Discount code", DiscountIcon),
                 // item("Order Summary", ReceiptIcon, false),
-                item("Quick Checkout", CreditCardIcon),
+                // item("Quick Checkout", CreditCardIcon),
                 item("Security Badges", ShieldCheckMarkIcon),
               ],
             },
