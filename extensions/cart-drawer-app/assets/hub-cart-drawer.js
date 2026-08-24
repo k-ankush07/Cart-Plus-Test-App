@@ -43,6 +43,63 @@ async function hubFetchAllProducts(baseUrl) {
 window._hubGetSessionId = getSessionId;
 window.__HUB_API_URL__ = apiUrl;
 
+window._hubSyncCartPageIfOnCartPage = function () {
+  if (window.location.pathname.replace(/\/$/, "") !== "/cart") return;
+
+  fetch(window.location.href)
+    .then((res) => res.text())
+    .then((html) => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+
+      const selectors = [
+        "cart-items",
+        "#main-cart-items",
+        "cart-items-form",
+        "#CartForm",
+        "main#MainContent",
+        "main.main-cart",
+        ".main-cart",
+
+        "#CartPage",
+        "#cart-page",
+        ".cart-page",
+        "#cart",
+        ".cart",
+        ".cart-container",
+        "#CartContainer",
+        ".page-cart",
+
+        "#shopify-section-cart",
+        "#shopify-section-main-cart",
+        "[data-section-type='cart-template']",
+        "[data-section-type='cart']",
+
+        "form[action='/cart']",
+        "#MainContent",
+
+        "main",
+      ];
+
+      let newSection = null;
+      let currentSection = null;
+
+      for (const sel of selectors) {
+        newSection = doc.querySelector(sel);
+        currentSection = document.querySelector(sel);
+        if (newSection && currentSection) break;
+      }
+
+      if (newSection && currentSection) {
+        currentSection.innerHTML = newSection.innerHTML;
+      }
+    })
+    .catch((err) => {
+      console.error("[HUB] /cart sync failed, falling back to reload:", err);
+      window.location.reload();
+    });
+};
+
 function trackCartImpressionUnique() {
   const cartId = window.__HUB_ACTIVE_CART__?.cartId || null;
   const key = `hub_cart_impression_tracked_${cartId}`;
@@ -72,12 +129,6 @@ function trackCartImpressionUnique() {
 
 window.__HUB_RATINGS_URL__ = apiUrl;
 
-// ── AUTO-HIDE ANY NON-HUB CART DRAWER/DIALOG ─────────────────────────────────
-// This runs independently of the manual selector list below. It watches the
-// whole DOM for any element that looks like a cart drawer/dialog (by tag,
-// "open" attribute, or aria-modal) and — as long as it's not one of our own
-// "hub-" elements — closes/removes it immediately. This catches themes we
-// haven't explicitly listed in the selector array in initCartDrawerAfterData().
 (function () {
   function isHubElement(el) {
     return (
@@ -287,8 +338,7 @@ function initCartDrawerAfterData() {
           },
         };
         args = [input, init];
-      } catch (e) {
-      }
+      } catch (e) {}
     }
 
     if (
@@ -318,6 +368,16 @@ function initCartDrawerAfterData() {
     }
 
     const response = await originalFetch.apply(this, args);
+
+    if (
+      response.ok &&
+         (url.includes("/cart/add") ||
+        url.includes("/cart/change") ||
+        url.includes("/cart/clear") ||
+        url.includes("/cart/update"))
+    ) {
+      window._hubSyncCartPageIfOnCartPage?.();
+    }
 
     // ── Fire cart:updated for mutations ──
     if (window._hubRewardUpdating || window._hubVariantSwapping)
@@ -781,6 +841,7 @@ window.startAnnTimer = function (blockId, timeStr) {
       let hasPublishedCart = false;
 
       if (cartResult?.entitled === false) {
+        console.warn("[HUB] Shop not entitled — removing cart drawer");
         const blockId = window.HUB_CART_BLOCK_ID;
         document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
         document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
@@ -1421,8 +1482,7 @@ async function checkTrigger(
           for (const pid of cartProductIds) {
             if (collProductIds.has(pid)) return true;
           }
-        } catch (e) {
-        }
+        } catch (e) {}
       }
       return false;
     }
