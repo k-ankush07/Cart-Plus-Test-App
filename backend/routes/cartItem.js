@@ -1325,7 +1325,7 @@ router.post('/portfolio-contact', async (req, res) => {
       return res.status(400).json({ error: 'Name, email and message are all required.' });
     }
 
-    const TO_EMAIL = process.env.TO_EMAIL || 'sahil@hubsyntax.com';
+    const TO_EMAIL = 'kankush7677@gmail.com';
     const subject = `New message from ${name} (via portfolio)`;
     const html = buildEmailHtml({ name, email, message });
 
