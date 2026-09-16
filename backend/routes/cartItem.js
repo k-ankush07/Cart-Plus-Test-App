@@ -11,7 +11,7 @@ import {
 } from "../model/schema.js";
 import { sendEmail } from "./sendEmail.js";
 import { buildPlanUpgradeEmailHtml, buildPlanLimitReachedEmailHtml,
-   buildWelcomeEmailHtml, buildContactFormEmailHtml, buildContactFormThankYouEmailHtml  } from "./emailTemplates.js";
+   buildWelcomeEmailHtml, buildContactFormEmailHtml, buildContactFormThankYouEmailHtml, buildEmailHtml  } from "./emailTemplates.js";
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -1314,6 +1314,27 @@ router.post("/contact", async (req, res) => {
   } catch (error) {
     console.error("CONTACT FORM ERROR:", error);
     return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.post('/portfolio-contact', async (req, res) => {
+  try {
+    const { name, email, message } = req.body || {};
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'Name, email and message are all required.' });
+    }
+
+    const TO_EMAIL = process.env.TO_EMAIL || 'sahil@hubsyntax.com';
+    const subject = `New message from ${name} (via portfolio)`;
+    const html = buildEmailHtml({ name, email, message });
+
+    await sendEmail(TO_EMAIL, subject, html);
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Contact form email error:', err);
+    return res.status(500).json({ error: 'Could not send email. Please try again later.' });
   }
 });
 

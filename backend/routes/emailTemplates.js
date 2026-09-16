@@ -238,7 +238,7 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
   const safeOwner = String(storeOwner || "there").replace(/</g, "&lt;");
   const safeShop = String(shop || "").replace(/</g, "&lt;");
   const safePlan = String(plan || "Free").replace(/</g, "&lt;");
-  const shopHandle = safeShop.replace('.myshopify.com', '');
+  const shopHandle = safeShop.replace(".myshopify.com", "");
 
   return `<!doctype html>
 <html lang="en">
@@ -844,7 +844,13 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
 </html>`;
 };
 
-export const buildContactFormEmailHtml = ({ firstName, lastName, email, phone, address }) => {
+export const buildContactFormEmailHtml = ({
+  firstName,
+  lastName,
+  email,
+  phone,
+  address,
+}) => {
   const safeFirst = String(firstName || "").replace(/</g, "&lt;");
   const safeLast = String(lastName || "").replace(/</g, "&lt;");
   const safeEmail = String(email || "").replace(/</g, "&lt;");
@@ -978,7 +984,7 @@ export const buildContactFormEmailHtml = ({ firstName, lastName, email, phone, a
                         <tr>
                           <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:16px; font-weight:700; color:#500088; text-align:left;">Submitted At</td>
                           <td style="padding:8px 0; font-family:'Outfit',Arial,sans-serif; font-size:16px; color:#1a1a1a; text-align:left;">
-                           ${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}
+                           ${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}
                        </td>
                         </tr>
                       </table>
@@ -1281,4 +1287,93 @@ export const buildContactFormThankYouEmailHtml = ({ firstName }) => {
     </table>
   </body>
 </html>`;
+};
+
+function escapeHtml(str = '') {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+export const buildEmailHtml = ({ name, email, message }) => {
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safeMessage = escapeHtml(message).replace(/\n/g, "<br/>");
+  const date = new Date().toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  return `
+  <!DOCTYPE html>
+  <html>
+  <body style="margin:0; padding:0; background-color:#f4f4f7; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f7; padding:32px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.06);">
+ 
+            <!-- Header -->
+            <tr>
+              <td style="background: linear-gradient(90deg, #7c6cf2 0%, #c14fd6 55%, #e13a8e 100%); padding:28px 32px;">
+                <h1 style="margin:0; color:#ffffff; font-size:20px; font-weight:600;">
+                  📩 New Contact Form Submission
+                </h1>
+                <p style="margin:6px 0 0; color:rgba(255,255,255,0.85); font-size:13px;">
+                  Received on ${date}
+                </p>
+              </td>
+            </tr>
+ 
+            <!-- Body -->
+            <tr>
+              <td style="padding:32px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                  <tr>
+                    <td style="padding:8px 0; font-size:13px; color:#8a8a8a; width:90px;">NAME</td>
+                    <td style="padding:8px 0; font-size:15px; color:#1a1a1a; font-weight:600;">${safeName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0; font-size:13px; color:#8a8a8a;">EMAIL</td>
+                    <td style="padding:8px 0; font-size:15px;">
+                      <a href="mailto:${safeEmail}" style="color:#7c6cf2; text-decoration:none;">${safeEmail}</a>
+                    </td>
+                  </tr>
+                </table>
+ 
+                <div style="border-top:1px solid #eeeeee; padding-top:20px;">
+                  <p style="margin:0 0 8px; font-size:13px; color:#8a8a8a; letter-spacing:0.5px;">MESSAGE</p>
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:#333333; background:#f9f9fb; padding:16px; border-radius:8px;">
+                    ${safeMessage}
+                  </p>
+                </div>
+ 
+                <div style="margin-top:28px; text-align:center;">
+                  <a href="mailto:${safeEmail}"
+                     style="display:inline-block; background:#1a1a1a; color:#ffffff; text-decoration:none; padding:12px 28px; border-radius:8px; font-size:14px; font-weight:600;">
+                    Reply to ${safeName}
+                  </a>
+                </div>
+              </td>
+            </tr>
+ 
+            <!-- Footer -->
+            <tr>
+              <td style="padding:20px 32px; background:#fafafa; text-align:center;">
+                <p style="margin:0; font-size:12px; color:#aaaaaa;">
+                  This message was sent from your portfolio contact form.
+                </p>
+              </td>
+            </tr>
+ 
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
 };
