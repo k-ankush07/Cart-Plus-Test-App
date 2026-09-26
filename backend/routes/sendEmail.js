@@ -1,6 +1,13 @@
 import nodemailer from "nodemailer";
 
-export const sendEmail = async (to, subject, html, text = "", attachments = []) => {
+export const sendEmail = async (
+  to,
+  subject,
+  html,
+  text = "",
+  attachments = [],
+  fromName = "Cart Plus"
+) => {
   if (!to) throw new Error("No recipients defined");
   const recipients = Array.isArray(to) ? to.map(e => e.trim()).filter(Boolean) : to.trim();
   if (!recipients || (Array.isArray(recipients) && recipients.length === 0))
@@ -15,7 +22,7 @@ export const sendEmail = async (to, subject, html, text = "", attachments = []) 
   });
 
   await transporter.sendMail({
-    from: `"Cart Plus" <${process.env.EMAIL_USER}>`,
+    from: `"${fromName}" <${process.env.EMAIL_USER}>`,
     to: recipients,
     subject,
     html,

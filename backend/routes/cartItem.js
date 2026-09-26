@@ -1329,7 +1329,7 @@ router.post('/portfolio-contact', async (req, res) => {
     const subject = `New message from ${name} (via portfolio)`;
     const html = buildEmailHtml({ name, email, message });
 
-    await sendEmail(TO_EMAIL, subject, html);
+    await sendEmail(TO_EMAIL, subject, html, "", [], "Portfolio Contact");
 
     return res.status(200).json({ success: true });
   } catch (err) {
