@@ -1130,7 +1130,7 @@ button.show-icon-toggleCartVisibility {
     position: fixed;
     top: 50%;
     transform: translateY(-50%);
-    right: -66px;
+    right: -75px;
     width: 100px;
     height: 100px;
     background: #fff;
