@@ -71,7 +71,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
         <td align="center" valign="top" style="text-align:center; vertical-align:top;">
           <div style="text-align:center;">
                    <img
-                      src="https://cartplus.io/cartplus-img/Layer_1.png"
+                      src="https://cartplus.io/cartplus-img/Full%20Logo(Dark).png"
                       alt="Cart Plus Logo"
                       width="250"
                       style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
@@ -325,7 +325,7 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
                     <td align="center" valign="top" style="text-align:center; vertical-align:top;">
                       <div style="text-align:center;">
                    <img
-                       src="https://cartplus.io/cartplus-img/Layer_1.png"
+                       src="https://cartplus.io/cartplus-img/Full%20Logo(Dark).png"
                       alt="Cart Plus Logo"
                       width="250"
                       style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
@@ -543,7 +543,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
                     <td align="center" valign="top" style="text-align:center; vertical-align:top;">
                       <div style="text-align:center;">
                    <img
-                      src="https://cartplus.io/cartplus-img/Layer_1.png"
+                      src="https://cartplus.io/cartplus-img/Full%20Logo(Dark).png"
                       alt="Cart Plus Logo"
                       width="250"
                       style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
@@ -902,7 +902,7 @@ export const buildContactFormEmailHtml = ({
                   <tr>
                     <td align="center" valign="top" style="text-align:center; vertical-align:top; padding:50px 50px 0 50px;">
                       <img
-                        src="https://cartplus.io/cartplus-img/Layer_1.png"
+                        src="https://cartplus.io/cartplus-img/Full%20Logo(Dark).png"
                         alt="Cart Plus Logo"
                         width="220"
                         style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
@@ -1116,7 +1116,7 @@ export const buildContactFormThankYouEmailHtml = ({ firstName }) => {
       <tr>
         <td align="center" valign="top" style="text-align:center; vertical-align:top; padding:50px 50px 0 50px;">
           <img
-            src="https://cartplus.io/cartplus-img/Layer_1.png"
+            src="https://cartplus.io/cartplus-img/Full%20Logo(Dark).png"
             alt="Cart Plus Logo"
             width="220"
             style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none;"
