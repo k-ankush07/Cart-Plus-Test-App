@@ -113,7 +113,7 @@ export const buildPlanUpgradeEmailHtml = ({ storeOwner, shop, plan }) => {
             <!-- ===================== FEATURES STRIP ===================== -->
             <!-- background-image replaced with solid bgcolor fallback -->
             <tr>
-              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); padding:50px 30px;
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Frame%202121453358.png'); padding:50px 30px;
               background-repeat:no-repeat; background-position:center center;  background-size:cover;">
 
                 <!-- Need Help section -->
@@ -371,7 +371,7 @@ export const buildPlanLimitReachedEmailHtml = ({ storeOwner, shop, plan }) => {
 
             <!-- ===================== UPGRADE STRIP ===================== -->
             <tr>
-              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); padding:50px 30px;
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Frame%202121453358.png'); padding:50px 30px;
               background-repeat:no-repeat; background-position:center center;  background-size:cover;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:30px;">
                   <tr>
@@ -583,7 +583,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
 
             <!-- ===================== FEATURES STRIP ===================== -->
             <tr>
-              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); padding:50px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Frame%202121453358.png'); padding:50px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
 
                 <!-- What you can do heading -->
                 <p style="margin:0 0 30px; font-family:'Outfit',Arial,sans-serif; font-size:26px; font-weight:600; text-align:center; color:#ffffff;">
@@ -728,7 +728,7 @@ export const buildWelcomeEmailHtml = ({ storeOwner, shop }) => {
             </tr>
             <!-- ===================== NEED HELP STRIP ===================== -->
             <tr>
-              <td style="background-image:url('https://cartplus.io/cartplus-img/Frame%202121452816.svg'); padding:50px 30px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Frame%202121453358.png'); padding:50px 30px; background-repeat:no-repeat; background-position:center center; background-size:cover;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="text-align:center;">
@@ -1170,7 +1170,7 @@ export const buildContactFormThankYouEmailHtml = ({ firstName }) => {
              <!-- ===================== FEATURES STRIP ===================== -->
             <!-- background-image replaced with solid bgcolor fallback -->
             <tr>
-              <td style="background-image:url('https://cartplus.io/cartplus-img/Rectangle%202.svg'); padding:50px 30px;
+              <td style="background-image:url('https://cartplus.io/cartplus-img/Frame%202121453358.png'); padding:50px 30px;
               background-repeat:no-repeat; background-position:center center;  background-size:cover;">
 
                 <!-- Need Help section -->
