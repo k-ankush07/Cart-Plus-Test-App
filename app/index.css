@@ -1126,6 +1126,10 @@ a.upcart-product-title-link {
     transition: width 0.3s ease;
 }
 
+.cart-plus-offers-empty {
+    padding: 0 20px;
+}
+
 button.show-icon-toggleCartVisibility {
     position: fixed;
     top: 50%;
