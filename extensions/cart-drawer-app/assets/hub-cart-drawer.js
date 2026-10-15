@@ -114,7 +114,10 @@ function trackCartImpressionUnique() {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({
-      shop: window.__SHOPIFY_SHOP__?.domain,
+      shop:
+        window.__SHOPIFY_SHOP__?.myshopify_domain ||
+        window.__SHOPIFY_SHOP__?.permanent_domain ||
+        window.__SHOPIFY_SHOP__?.domain,
       cartId,
       sessionId: getSessionId(),
       userAgent: navigator.userAgent,

@@ -755,7 +755,10 @@ window.hubCheckoutClick = function (e, blockId, btn) {
           "8f4c2a91d7e3b6f5a8c1d9e2f7b4c6a9e1d3f8b5c2a7d4e9f6b1c8a3d7e5f2",
       },
       body: JSON.stringify({
-        shop: window.__SHOPIFY_SHOP__?.domain,
+        shop:
+          window.__SHOPIFY_SHOP__?.myshopify_domain ||
+          window.__SHOPIFY_SHOP__?.permanent_domain ||
+          window.__SHOPIFY_SHOP__?.domain,
         cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
         sessionId: window._hubGetSessionId?.() || "",
         eventType: "checkout_initiated",

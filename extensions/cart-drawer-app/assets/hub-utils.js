@@ -323,7 +323,10 @@ window.hubUtils = {
   // and fills every .hub-rating-slot[data-pid] inside `container`.
   async applyRatings(container) {
     const ratingsUrl = window.__HUB_RATINGS_URL__;
-    const shop = window.__SHOPIFY_SHOP__?.domain;
+    const shop =
+      window.__SHOPIFY_SHOP__?.myshopify_domain ||
+      window.__SHOPIFY_SHOP__?.permanent_domain ||
+      window.__SHOPIFY_SHOP__?.domain;
     if (!ratingsUrl || !shop) return;
 
     window._hubRatingsCache = window._hubRatingsCache || {};
@@ -378,7 +381,10 @@ window.hubUtils = {
 
   async shipping_Charges(container, cartTotalCents) {
     const ratingsUrl = window.__HUB_RATINGS_URL__;
-    const shop = window.__SHOPIFY_SHOP__?.domain;
+    const shop =
+      window.__SHOPIFY_SHOP__?.myshopify_domain ||
+      window.__SHOPIFY_SHOP__?.permanent_domain ||
+      window.__SHOPIFY_SHOP__?.domain;
 
     if (!ratingsUrl || !shop) return;
 
@@ -894,7 +900,10 @@ window.hubUtils = {
   // Fetches active discount codes from the hub backend (Admin API → discountNodes)
   async getDiscounts() {
     const ratingsUrl = window.__HUB_RATINGS_URL__;
-    const shop = window.__SHOPIFY_SHOP__?.domain;
+    const shop =
+      window.__SHOPIFY_SHOP__?.myshopify_domain ||
+      window.__SHOPIFY_SHOP__?.permanent_domain ||
+      window.__SHOPIFY_SHOP__?.domain;
     if (!ratingsUrl || !shop)
       return { allDiscountCodes: [], activeDiscountCodes: [] };
 

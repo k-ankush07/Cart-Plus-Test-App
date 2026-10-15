@@ -36,25 +36,25 @@
 <script src="{{ 'hub-cart-actions.js' | asset_url }}" defer></script>
 <script src="{{ 'hub-cart-drawer.js' | asset_url }}" defer></script>
 
-<!--Localization UI -->
-<localization-form>
+<!--Localization UI (hidden on storefront; kept so JS can read country_code) -->
+<localization-form style="display: none !important;">
   {% form 'localization' %}
     <div class="disclosure">
-      
-      <button 
-        type="button" 
+
+      <button
+        type="button"
         class="disclosure__button"
         aria-expanded="false"
         aria-controls="CountryList-{{ block.id }}"
       >
-        {{ localization.country.name }} 
+        {{ localization.country.name }}
         ({{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }})
       </button>
 
-      <ul 
-        id="CountryList-{{ block.id }}" 
-        role="list" 
-        class="disclosure__list" 
+      <ul
+        id="CountryList-{{ block.id }}"
+        role="list"
+        class="disclosure__list"
         hidden
       >
         {% for country in localization.available_countries %}
