@@ -553,7 +553,6 @@ window.hubCartRender = async function (drawer, opts = {}) {
           }
           document.dispatchEvent(new CustomEvent("cart:updated"));
         } catch (err) {
-          console.error(err);
           btn.innerHTML = btn.dataset.original || "Add";
           btn.disabled = false;
         }

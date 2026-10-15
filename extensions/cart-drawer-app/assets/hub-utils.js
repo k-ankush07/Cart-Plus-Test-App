@@ -564,7 +564,6 @@ window.hubUtils = {
 
       updateGrandTotalAndCheckout(shippingCents);
     } catch (err) {
-      console.error("Shipping Calculation Error:", err);
       // FIX: error case mein bhi row ko hide/reset karo, stale state mat chhodo
       window._hubShippingPriceCents = 0;
       if (shippingRow) shippingRow.style.display = "none";
@@ -651,7 +650,6 @@ window.hubUtils = {
           success = true;
         } else {
           const body = await res.text();
-          console.warn(" add failed", p.id, res.status, body);
         }
       }
       for (const key of toRemove) {
@@ -914,7 +912,6 @@ window.hubUtils = {
         activeCount: data.activeCount || 0,
       };
     } catch (err) {
-      console.warn("Could not fetch discounts:", err);
       return { allDiscountCodes: [], activeDiscountCodes: [] };
     }
   },

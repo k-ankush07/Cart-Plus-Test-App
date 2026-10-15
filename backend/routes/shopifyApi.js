@@ -58,7 +58,6 @@ router.get("/product-ratings", async (req, res, next) => {
       return null;
     };
 
-   
     const fetchAllMetafields = async (gid) => {
       let all = [];
       let cursor = null;
@@ -90,13 +89,15 @@ router.get("/product-ratings", async (req, res, next) => {
         hasNextPage = product.metafields?.pageInfo?.hasNextPage ?? false;
         cursor = edges.length ? edges[edges.length - 1].cursor : null;
 
-        if (!cursor) break; 
+        if (!cursor) break;
       }
 
       return { legacyResourceId: gid, metafields: all };
     };
 
-    const results = await Promise.all(gids.map((gid) => fetchAllMetafields(gid)));
+    const results = await Promise.all(
+      gids.map((gid) => fetchAllMetafields(gid)),
+    );
 
     const ratings = {};
 
@@ -120,6 +121,16 @@ router.get("/product-ratings", async (req, res, next) => {
 });
 
 // ─── Discounts ───────────────────────────────────────────────────────────────
+
+const ALLOWED_TYPES = new Set([
+  "DiscountCodeBasic",
+  "DiscountCodeFreeShipping",
+  "DiscountAutomaticBasic",
+  "DiscountAutomaticFreeShipping",
+]);
+
+const cleanCode = (c) =>
+  (c ?? "").replace(/[\u200B-\u200F\u2060\uFEFF]/g, "").trim();
 
 const buildDiscountQuery = (cursor) => ({
   query: `
@@ -174,6 +185,7 @@ const buildDiscountQuery = (cursor) => ({
                 startsAt
                 endsAt
                 status
+                customerSelection { __typename }
                 codes(first: 10) { edges { node { code } } }
                 minimumRequirement {
                   ... on DiscountMinimumSubtotal {
@@ -214,13 +226,6 @@ const buildDiscountQuery = (cursor) => ({
                     }
                   }
                 }
-              }
-
-              ... on DiscountAutomaticApp {
-                title
-                startsAt
-                endsAt
-                status
               }
 
               ... on DiscountAutomaticFreeShipping {
@@ -270,7 +275,6 @@ router.post("/discounts", async (req, res, next) => {
       cursor = page?.pageInfo?.endCursor ?? null;
     }
 
-    // Normalize edges into flat discount records
     const allDiscountCodes = [];
     const activeDiscountCodes = [];
 
@@ -278,17 +282,25 @@ router.post("/discounts", async (req, res, next) => {
       const discount = item.node?.discount;
       if (!discount) continue;
 
+      // App / BXGY / unknown types skip
+      if (!ALLOWED_TYPES.has(discount.__typename)) continue;
+      const selectionType = discount.customerSelection?.__typename;
+      if (selectionType && selectionType !== "DiscountCustomerAll") continue;
+
       const valueNode = discount.customerGets?.value;
       const discountValue =
         valueNode?.percentage != null
           ? { type: "percentage", value: valueNode.percentage * 100 }
           : valueNode?.amount
-          ? {
-              type: "fixed_amount",
-              value: parseFloat(valueNode.amount.amount),
-              currencyCode: valueNode.amount.currencyCode,
-            }
-          : null;
+            ? {
+                type: "fixed_amount",
+                value: parseFloat(valueNode.amount.amount),
+                currencyCode: valueNode.amount.currencyCode,
+              }
+            : null;
+
+      // FastBundle jaise zero-value discounts skip
+      if (discountValue?.value === 0) continue;
 
       const itemsNode = discount.customerGets?.items;
       const appliesToProducts =
@@ -304,8 +316,8 @@ router.post("/discounts", async (req, res, next) => {
             currencyCode: minReq.greaterThanOrEqualToSubtotal.currencyCode,
           }
         : minReq?.greaterThanOrEqualToQuantity
-        ? { type: "quantity", value: minReq.greaterThanOrEqualToQuantity }
-        : null;
+          ? { type: "quantity", value: minReq.greaterThanOrEqualToQuantity }
+          : null;
 
       const baseData = {
         id: item.node.id,
@@ -324,19 +336,24 @@ router.post("/discounts", async (req, res, next) => {
         customerSelection: discount.customerSelection?.__typename ?? null,
       };
 
-      const codes = discount.codes?.edges?.map((e) => e.node.code) ?? [];
+      const isAutomatic = discount.__typename.startsWith("DiscountAutomatic");
 
-      if (codes.length > 0) {
-        for (const code of codes) {
-          const record = { ...baseData, code };
-          allDiscountCodes.push(record);
-          if (discount.status === "ACTIVE") activeDiscountCodes.push(record);
-        }
-      } else {
-        // Automatic discounts have no codes
-        const record = { ...baseData, code: null };
+      const codes = (
+        discount.codes?.edges?.map((e) => e.node.code) ?? []
+      ).filter((c) => cleanCode(c) !== "");
+
+      const pushRecord = (record) => {
         allDiscountCodes.push(record);
         if (discount.status === "ACTIVE") activeDiscountCodes.push(record);
+      };
+
+      if (isAutomatic) {
+        pushRecord({ ...baseData, code: null });
+      } else {
+        // code wale discounts: valid code na ho to skip
+        for (const code of codes) {
+          pushRecord({ ...baseData, code });
+        }
       }
     }
 
@@ -444,89 +461,82 @@ router.get("/shipping-zones", async (req, res, next) => {
 
     const graphqlData = await makeShopifyGraphQL(shop, query);
 
-    const profiles =
-      graphqlData?.data?.deliveryProfiles?.edges ?? [];
+    const profiles = graphqlData?.data?.deliveryProfiles?.edges ?? [];
 
     const shipping = profiles.map((profileEdge) => {
       const profile = profileEdge.node;
 
       const locations =
-        profile.profileLocationGroups?.flatMap((group) =>
-          group.locationGroup?.locations?.edges?.map((loc) => ({
-            id: loc.node.id,
-            name: loc.node.name,
-          })) || []
+        profile.profileLocationGroups?.flatMap(
+          (group) =>
+            group.locationGroup?.locations?.edges?.map((loc) => ({
+              id: loc.node.id,
+              name: loc.node.name,
+            })) || [],
         ) || [];
 
       const zones =
-        profile.profileLocationGroups?.flatMap((group) =>
-          group.locationGroupZones?.edges?.map((zoneEdge) => {
-            const zoneNode = zoneEdge.node;
+        profile.profileLocationGroups?.flatMap(
+          (group) =>
+            group.locationGroupZones?.edges?.map((zoneEdge) => {
+              const zoneNode = zoneEdge.node;
 
-            const countries =
-              zoneNode.zone.countries?.map((country) => ({
-                name: country.name,
-                code: country.code.countryCode,
-              })) || [];
+              const countries =
+                zoneNode.zone.countries?.map((country) => ({
+                  name: country.name,
+                  code: country.code.countryCode,
+                })) || [];
 
-            const shipping_rates =
-              zoneNode.methodDefinitions?.edges?.map((method) => {
-                const node = method.node;
+              const shipping_rates =
+                zoneNode.methodDefinitions?.edges?.map((method) => {
+                  const node = method.node;
 
-                return {
-                  id: node.id,
-                  name: node.name,
-                  active: node.active,
+                  return {
+                    id: node.id,
+                    name: node.name,
+                    active: node.active,
 
-                  price:
-                    node.rateProvider?.price?.amount || "0",
+                    price: node.rateProvider?.price?.amount || "0",
 
-                  currency:
-                    node.rateProvider?.price?.currencyCode ||
-                    "INR",
+                    currency: node.rateProvider?.price?.currencyCode || "INR",
 
-                  conditions:
-                    node.methodConditions?.map((condition) => ({
-                      field: condition.field,
-                      operator: condition.operator,
+                    conditions:
+                      node.methodConditions?.map((condition) => ({
+                        field: condition.field,
+                        operator: condition.operator,
 
-                      amount:
-                        condition.conditionCriteria?.amount ||
-                        null,
+                        amount: condition.conditionCriteria?.amount || null,
 
-                      currency:
-                        condition.conditionCriteria
-                          ?.currencyCode || null,
-                    })) || [],
-                };
-              }) || [];
+                        currency:
+                          condition.conditionCriteria?.currencyCode || null,
+                      })) || [],
+                  };
+                }) || [];
 
-            // ─── Check India or International ─────────────────────────────
+              // ─── Check India or International ─────────────────────────────
 
-            const isIndia = countries.some(
-              (country) => country.code === "IN"
-            );
+              const isIndia = countries.some(
+                (country) => country.code === "IN",
+              );
 
-            // ─── Console Logs ────────────────────────────────────────────
+              // ─── Console Logs ────────────────────────────────────────────
 
-            shipping_rates.forEach((rate) => {
+              shipping_rates.forEach((rate) => {
+                // ─── Conditions ─────────────────────────────────────────
 
-              // ─── Conditions ─────────────────────────────────────────
+                if (rate.conditions.length > 0) {
+                  rate.conditions.forEach((condition) => {});
+                } else {
+                }
+              });
 
-              if (rate.conditions.length > 0) {
-                rate.conditions.forEach((condition) => {
-                });
-              } else {
-              }
-            });
-
-            return {
-              zone_id: zoneNode.zone.id,
-              zone_name: zoneNode.zone.name,
-              countries,
-              shipping_rates,
-            };
-          }) || []
+              return {
+                zone_id: zoneNode.zone.id,
+                zone_name: zoneNode.zone.name,
+                countries,
+                shipping_rates,
+              };
+            }) || [],
         ) || [];
 
       return {
