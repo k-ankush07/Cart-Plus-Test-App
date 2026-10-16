@@ -26,7 +26,14 @@ const PLAN_ORDER_LIMITS = {
   starter: 200,
   growth: 500,
   advance: 1000,
+  unlimited: Infinity,
 };
+
+const FREE_SHOPS = (process.env.FREE_SHOPS || "")
+  .split(",")
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+const isFreeShop = (shop) => FREE_SHOPS.includes(String(shop || "").toLowerCase());
 
 const isEntitled = (shopPlan) => {
   if (!shopPlan) return false;
@@ -78,7 +85,7 @@ router.get("/get-carts", async (req, res) => {
       success: true,
       message: "Carts retrieved successfully",
       data: carts,
-      entitled: isEntitled(shopPlan),
+      entitled: isFreeShop(shop) || isEntitled(shopPlan),
     });
   } catch (error) {
     console.error("GET CARTS ERROR:", error);
@@ -501,6 +508,21 @@ router.get("/shop-plan", async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing shop" });
 
     const plan = await shopPlanModel.findOne({ shop });
+
+    if (isFreeShop(shop)) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          ...(plan?.toObject?.() || {}),
+          shop,
+          plan: "unlimited",
+          price: 0,
+          status: "active",
+          isDev: true,
+        },
+      });
+    }
+
     return res.status(200).json({ success: true, data: plan || null });
   } catch (error) {
     console.error("GET SHOP PLAN ERROR:", error);
@@ -701,7 +723,7 @@ router.post("/order-revenue", async (req, res) => {
     const shopPlan = await shopPlanModel.findOne({ shop });
     const planName = shopPlan?.plan || "free";
     // Dev / partner stores are entitled to everything for free → no cap.
-    const enforceLimit = !shopPlan?.isDev;
+    const enforceLimit = !shopPlan?.isDev && !isFreeShop(shop);
     const monthlyLimit = PLAN_ORDER_LIMITS[planName] ?? PLAN_ORDER_LIMITS.free;
     const monthlyOrderCount = await getMonthlyOrderCount(shop);
 

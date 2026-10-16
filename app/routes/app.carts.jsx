@@ -88,6 +88,7 @@ const PLAN_ORDER_LIMITS = {
     starter: 200,
     growth: 500,
     advance: 1000,
+    unlimited: Infinity,
 };
 
 async function checkAppEmbed(shopDomain, accessToken, themeId) {

@@ -16,11 +16,11 @@ import {
 } from "@shopify/polaris";
 
 import { useState, useEffect, Suspense } from "react";
-import { CheckIcon} from "@shopify/polaris-icons";
+import { CheckIcon } from "@shopify/polaris-icons";
 import { useLoaderData, useFetcher, Await } from "react-router-dom";
 import { authenticate } from "../shopify.server";
 import "../index.css";
-import { requireShopData  } from "./components/shop.server";
+import { requireShopData } from "./components/shop.server";
 
 // ─── Plan definitions ─────────────────────────────────────────────────────────
 
@@ -152,11 +152,28 @@ const savePlan = (apiUrl, shop, plan, price, subscriptionId, status, isDev) =>
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
-    const { shop, apiUrl, admin } = await requireShopData (request);
+    const { shop, apiUrl, admin } = await requireShopData(request);
     const shopDomain = shop?.myshopifyDomain;
     const isDev = shop?.plan?.partnerDevelopment || false;
 
     const dataPromise = (async () => {
+        // ── Free store check: Shopify billing aur savePlan dono skip ──
+        const planRes = await fetch(
+            `${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`,
+            { headers: apiAuthHeaders() },
+        );
+        const planData = await planRes.json();
+        if (planData?.data?.plan === "unlimited") {
+            return {
+                activePlan: "unlimited",
+                apiUrl,
+                dbRecord: planData.data,
+                isDev: true,
+                isFreeStore: true,
+            };
+        }
+
+        // ── Normal stores: pehle jaisa flow ──
         const res = await admin.graphql(`
             query {
                 currentAppInstallation {
@@ -191,8 +208,7 @@ export const loader = async ({ request }) => {
             const amount = parseFloat(
                 active.lineItems?.[0]?.plan?.pricingDetails?.price?.amount || 0
             );
-            // Match the charged amount to the closest paid plan so all
-            // tiers (starter / growth / advance …) resolve correctly.
+
             const matched = PLANS
                 .filter((p) => p.price > 0)
                 .sort((a, b) => Math.abs(a.price - amount) - Math.abs(b.price - amount))[0];
@@ -350,7 +366,13 @@ export default function Pricing() {
     return (
         <Suspense fallback={<PricingSkeleton />}>
             <Await resolve={dataPromise} errorElement={<PricingSkeleton />}>
-                {(data) => <PricingInner activePlan={data.activePlan} isDev={data.isDev} />}
+                {(data) => (
+                    <PricingInner
+                        activePlan={data.activePlan}
+                        isDev={data.isDev}
+                        isFreeStore={!!data.isFreeStore}
+                    />
+                )}
             </Await>
         </Suspense>
     );
@@ -358,7 +380,7 @@ export default function Pricing() {
 
 // ─── Inner component ──────────────────────────────────────────────────────────
 
-function PricingInner({ activePlan, isDev }) {
+function PricingInner({ activePlan, isDev, isFreeStore }) {
     const [plansVisible, setPlansVisible] = useState(true);
     const fetcher = useFetcher();
     const [redirecting, setRedirecting] = useState(false);
@@ -456,6 +478,23 @@ function PricingInner({ activePlan, isDev }) {
             </Button>
         );
     };
+
+    if (isFreeStore) {
+        return (
+            <Page title="Pricing" subtitle="Your plan">
+                <Layout>
+                    <Layout.Section>
+                        <Banner tone="success" title="Free unlimited access">
+                            <Text as="p" variant="bodyMd">
+                                This store has <strong>free, unlimited access</strong> to all
+                                Cart Plus features. No subscription or order limit applies.
+                            </Text>
+                        </Banner>
+                    </Layout.Section>
+                </Layout>
+            </Page>
+        );
+    }
 
     return (
         <Page

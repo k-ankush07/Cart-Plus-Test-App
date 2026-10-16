@@ -44,6 +44,7 @@ window._hubGetSessionId = getSessionId;
 window.__HUB_API_URL__ = apiUrl;
 
 window._hubSyncCartPageIfOnCartPage = function () {
+  if (window.__HUB_CART_INACTIVE__) return;
   if (window.location.pathname.replace(/\/$/, "") !== "/cart") return;
 
   fetch(window.location.href)
@@ -199,18 +200,35 @@ window.__HUB_RATINGS_URL__ = apiUrl;
     }
   });
 
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["open"],
-  });
+  // Suppression starts only once Cart Plus is active (entitled + published
+  // cart), so stores without a paid plan keep their theme's own cart drawer.
+  let suppressing = false;
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", sweepExisting);
-  } else {
-    sweepExisting();
-  }
+  window.__hubStartThemeDrawerSuppression = function () {
+    if (suppressing) return;
+    suppressing = true;
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["open"],
+    });
+    if (document.readyState === "loading") {
+      document.addEventListener(
+        "DOMContentLoaded",
+        () => suppressing && sweepExisting(),
+        { once: true },
+      );
+    } else {
+      sweepExisting();
+    }
+  };
+
+  window.__hubStopThemeDrawerSuppression = function () {
+    if (!suppressing) return;
+    suppressing = false;
+    observer.disconnect();
+  };
 
   window.__hubSuppressThemeDrawer = observer;
 })();
@@ -292,7 +310,7 @@ function initCartDrawerAfterData() {
     const url = typeof input === "string" ? input : input?.url || "";
 
     // ── Inject hub tracking properties on cart/add ──
-    if (url.includes("/cart/add")) {
+    if (url.includes("/cart/add") && !window.__HUB_CART_INACTIVE__) {
       try {
         if (!init?.body || typeof init.body !== "string")
           throw new Error("skip");
@@ -427,6 +445,11 @@ function initCartDrawerAfterData() {
 
     function ensureDrawerReady(callback) {
       const interval = setInterval(() => {
+        if (window.__HUB_CART_INACTIVE__) {
+          clearInterval(interval);
+          _drawerOpening = false;
+          return;
+        }
         drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
         bg = document.getElementById(`hub-cart-bg-${blockId}`);
         if (drawer && bg) {
@@ -692,6 +715,7 @@ function initCartDrawerAfterData() {
 
       let _cartUpdateTimer = null;
       document.addEventListener("cart:updated", function (e) {
+        if (window.__HUB_CART_INACTIVE__) return;
         if (window._hubRewardUpdating) return;
 
         window.updateCartCount();
@@ -836,6 +860,14 @@ window.startAnnTimer = function (blockId, timeStr) {
     } catch (_) {}
   }
 
+  // Cart Plus is active only when the shop is entitled and has a published
+  // cart; otherwise the theme's own cart drawer and cart page stay untouched.
+  function setHubCartActive(isActive) {
+    window.__HUB_CART_INACTIVE__ = !isActive;
+    if (isActive) window.__hubStartThemeDrawerSuppression?.();
+    else window.__hubStopThemeDrawerSuppression?.();
+  }
+
   function applyCartData({ cartResult, stickyResult }) {
     if (_hubApplyingCartData) return;
     _hubApplyingCartData = true;
@@ -844,12 +876,15 @@ window.startAnnTimer = function (blockId, timeStr) {
       let hasPublishedCart = false;
 
       if (cartResult?.entitled === false) {
-        console.warn("[HUB] Shop not entitled — removing cart drawer");
+        console.warn(
+          "[HUB] Shop not entitled — removing cart drawer, theme cart stays active",
+        );
         const blockId = window.HUB_CART_BLOCK_ID;
         document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
         document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
         document.getElementById("hub-sticky-cart-btn")?.remove();
         window.__HUB_ACTIVE_CART__ = null;
+        setHubCartActive(false);
         return;
       }
 
@@ -860,6 +895,7 @@ window.startAnnTimer = function (blockId, timeStr) {
         if (publishedCart) {
           window.__HUB_ACTIVE_CART__ = publishedCart;
           hasPublishedCart = true;
+          setHubCartActive(true);
           initCartDrawerAfterData();
           window._hubRecPrefetch = window._hubFetchRecProducts?.(
             publishedCart.recommendationsSettings,
@@ -903,6 +939,8 @@ window.startAnnTimer = function (blockId, timeStr) {
       } else {
         console.log("No carts found for this shop");
       }
+
+      if (!hasPublishedCart) setHubCartActive(false);
 
       if (stickyResult?.success) {
         window.__HUB_STICKY_CART__ = stickyResult.data;
