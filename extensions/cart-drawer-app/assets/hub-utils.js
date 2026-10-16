@@ -828,7 +828,27 @@ window.hubUtils = {
       const dots = el.querySelectorAll(".hub-rewards-dot");
       const icons = el.querySelectorAll(".hub-rewards-dot svg");
 
-      sorted.forEach((tier, i) => {
+      (el._hubTimers || []).forEach(clearTimeout);
+      el._hubTimers = [];
+
+      const SEG_MS = 450;
+      const prev = [...existingFills].map(
+        (f) => parseFloat(f.style.width) || 0,
+      );
+      const sum = (arr) => arr.reduce((a, b) => a + b, 0);
+      const increasing = sum(segFills) >= sum(prev);
+
+      const order = sorted.map((_, i) => i);
+      if (!increasing) order.reverse();
+
+      let elapsed = 0;
+      order.forEach((i) => {
+        const tier = sorted[i];
+        const delta = Math.abs(segFills[i] - prev[i]);
+        const dur = Math.round((delta / 100) * SEG_MS);
+
+        existingFills[i].style.transition =
+          `width ${dur}ms linear ${elapsed}ms`;
         existingFills[i].style.width = `${segFills[i].toFixed(2)}%`;
 
         const done = cartTotal >= getTierValue(tier);
@@ -837,8 +857,15 @@ window.hubUtils = {
           ? rewards.completeIconColor || "#ffffff"
           : rewards.incompleteIconColor || "#000000";
 
-        if (dots[i]) dots[i].style.background = dotBg;
-        if (icons[i]) icons[i].setAttribute("fill", iconColor);
+        const applyDot = () => {
+          if (dots[i]) dots[i].style.background = dotBg;
+          if (icons[i]) icons[i].setAttribute("fill", iconColor);
+        };
+
+        const dotDelay = increasing ? elapsed + dur : elapsed;
+        el._hubTimers.push(setTimeout(applyDot, dotDelay));
+
+        elapsed += dur;
       });
 
       const titleEl = el.querySelector(".hub-rewards-title");
