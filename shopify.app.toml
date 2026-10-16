@@ -12,8 +12,8 @@ automatically_update_urls_on_dev = true
 api_version = "2026-01"
 
   [[webhooks.subscriptions]]
-  uri = "/webhooks/orders/paid"
-  topics = [ "orders/paid" ]
+  uri = "/webhooks/orders/create"
+  topics = [ "orders/create" ]
 
   [[webhooks.subscriptions]]
   uri = "/webhooks/app/uninstalled"
