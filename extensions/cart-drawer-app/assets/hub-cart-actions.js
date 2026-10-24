@@ -64,6 +64,9 @@ function _hubHideAllCartSections(blockId) {
   if (annBefore) annBefore.style.display = "none";
   if (annAfter) annAfter.style.display = "none";
 
+  const discountRow = document.getElementById(`hub-discount-row-${blockId}`);
+  if (discountRow) discountRow.style.display = "none";
+
   const notesBelow = document.getElementById(`hub-notes-below-${blockId}`);
   const notesFooter = document.getElementById(`hub-notes-footer-${blockId}`);
   if (notesBelow) notesBelow.innerHTML = "";
@@ -1057,4 +1060,5 @@ window.hubChangeVariantOption = async function (selectEl) {
       );
     }
   }
+  
 };

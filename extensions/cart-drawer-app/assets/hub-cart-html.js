@@ -398,27 +398,6 @@ bs.textContent += `
         <!-- ANNOUNCEMENT (position: after) -->
         <div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>
 
-        <div>${renderCustomHTML(customHtmlBlocks.above_footer)}</div>
-      </div>
-
-      <!-- FOOTER (fixed bottom) -->
-      <div id="hub-footer-rec-${blockId}"></div>
-
-      <div class="hub-cart-footer cart-app__footer cart-plus-footer" style="background-color:${designSettings.accentColor || ""};">
-
-        <!-- skeleton shown while cart data loads -->
-        <div id="hub-footer-skeleton-${blockId}" class="hub-footer-skeleton" style="display:none;">
-          <div class="hub-skeleton hub-skeleton-line" style="width:40%;">&nbsp;</div>
-          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:40px;border-radius:6px;margin-top:6px;">&nbsp;</div>
-          <div class="hub-skeleton hub-skeleton-line" style="width:60%;height:18px;border-radius:4px;margin-top:6px;">&nbsp;</div>
-          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:44px;border-radius:6px;margin-top:6px;">&nbsp;</div>
-        </div>
-
-         <!-- NOTES (position: top of footer) -->
-        <div id="hub-notes-footer-${blockId}"></div>
-
-        <!-- ADD-ONS -->
-        <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
         <!-- DISCOUNT -->
         
         <div class="hub-discount-input-row-items cart-plus-discount-code-row cart-plus-public-discount-code cart-plus-discount-code-input-wrapper cart-plus-discount-code-module cart-plus-public-discount-code__input-wrapper" 
@@ -455,6 +434,28 @@ bs.textContent += `
         </div>
         </div>
 
+        <div>${renderCustomHTML(customHtmlBlocks.above_footer)}</div>
+      </div>
+
+      <!-- FOOTER (fixed bottom) -->
+      <div id="hub-footer-rec-${blockId}"></div>
+
+      <div class="hub-cart-footer cart-app__footer cart-plus-footer" style="background-color:${designSettings.accentColor || ""};">
+
+        <!-- skeleton shown while cart data loads -->
+        <div id="hub-footer-skeleton-${blockId}" class="hub-footer-skeleton" style="display:none;">
+          <div class="hub-skeleton hub-skeleton-line" style="width:40%;">&nbsp;</div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:40px;border-radius:6px;margin-top:6px;">&nbsp;</div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:60%;height:18px;border-radius:4px;margin-top:6px;">&nbsp;</div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:44px;border-radius:6px;margin-top:6px;">&nbsp;</div>
+        </div>
+
+         <!-- NOTES (position: top of footer) -->
+        <div id="hub-notes-footer-${blockId}"></div>
+
+        <!-- ADD-ONS -->
+        <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
+        
         <!-- TOTAL SUMMARY -->
        ${
          enableSubtotal
@@ -477,10 +478,15 @@ bs.textContent += `
           <p class="hub-total-saved" id="hub-total-saved-${blockId}"></p>
 
           <div class="hub-total-breakdown" id="hub-total-breakdown-${blockId}">
+           <div class="hub-total-lines">
             <div class="hub-breakdown-row">
               <span style="color:${textColorAll}">Total MRP</span>
               <span id="hub-mrp-${blockId}" style="color:${textColorAll}"></span>
             </div>
+            <div class="hub-breakdown-row hub-discount-on-mrp hub-breakdown-discount" id="hub-discount-on-mrp-${blockId}" style="display:none;">
+             <span id="hub-discount-on-mrp-label-${blockId}" style="color:${textColorAll}">Discount on MRP</span>
+              <span id="hub-discount-on-mrp-value-${blockId}"></span>
+             </div>
             <div class="hub-breakdown-row hub-breakdown-discount" id="hub-discount-mrp-row-${blockId}" style="display:none;">
             <span id="hub-discount-mrp-label-${blockId}" style="color:${textColorAll}">${cartSettings.discountsSavingsText}</span>
              <span id="hub-discount-mrp-${blockId}"></span>
@@ -500,6 +506,7 @@ bs.textContent += `
             <div class="hub-breakdown-row hub-breakdown-grand">
               <span style="color:${textColorAll}">Grand Total</span>
               <span id="hub-grand-total-${blockId}" style="color:${textColorAll}"></span>
+            </div>
             </div>
           </div>
         </div> `

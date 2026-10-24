@@ -1,5 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // HUB CART RENDER
+window.hubRefreshEstimatedTotal = function (blockId) {
+  const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
+  if (!totalEl) return;
+  const total =
+    (window._hubCartFinalTotal || 0) + (window._hubShippingPriceCents || 0);
+  totalEl.textContent = hubUtils.formatMoney(total);
+};
+
 window.hubCartRender = async function (drawer, opts = {}) {
   if (window._hubRenderInProgress) {
     window._hubPendingRender = { drawer, opts };
@@ -24,7 +32,10 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
   if (discountRow) {
     discountRow.style.display =
-      discountCodesSettings?.enabled === false ? "flex" : "none";
+      discountCodesSettings?.enabled === false &&
+      window._hubLastCartHadItems !== false
+        ? "flex"
+        : "none";
   }
 
   const _itemsContainer = drawer?.querySelector(`#hub-cart-items-${blockId}`);
@@ -90,6 +101,35 @@ window.hubCartRender = async function (drawer, opts = {}) {
       const refreshed = await fetch("/cart.js");
       cart = await refreshed.json();
     }
+
+    // ── PRE-FILL COMPARE-AT CACHE (needed for MRP) ───────────────────────
+    window._hubCompareCache = window._hubCompareCache || {};
+    const _mrpHandles = [
+      ...new Set(
+        cart.items
+          .filter((i) => !i.properties?._hub_addon)
+          .map((i) => i.handle)
+          .filter(Boolean),
+      ),
+    ];
+    const _mrpUncached = _mrpHandles.filter(
+      (h) =>
+        !Object.keys(window._hubCompareCache).some((k) =>
+          k.startsWith(h + "_"),
+        ),
+    );
+    await Promise.all(
+      _mrpUncached.map(async (handle) => {
+        try {
+          const r = await fetch(`/products/${handle}.js`);
+          const data = await r.json();
+          (data.variants || []).forEach((v) => {
+            window._hubCompareCache[`${handle}_${v.id}`] =
+              v.compare_at_price || 0;
+          });
+        } catch (e) {}
+      }),
+    );
 
     hubUtils.updateDiscountUI(blockId, cart);
 
@@ -233,23 +273,35 @@ window.hubCartRender = async function (drawer, opts = {}) {
     (function () {
       const fmt = hubUtils.formatMoney;
       const originalTotal = cart.original_total_price || 0;
+      const mrpTotal = cart.items.reduce((sum, i) => {
+        const isAddon = !!(
+          i.properties?._hub_addon || i.properties?.__upcartAddon
+        );
+        const compareAt = isAddon
+          ? 0
+          : window._hubCompareCache[`${i.handle}_${i.variant_id}`] || 0;
+        const unitMrp =
+          compareAt > i.original_price ? compareAt : i.original_price;
+        return sum + unitMrp * i.quantity;
+      }, 0);
+
       const subtotal = cart.items_subtotal_price || 0;
       const finalTotal = cart.total_price || 0;
       const shippingPrice = window._hubShippingPriceCents || 0;
-      const grandTotal = finalTotal + shippingPrice;
+      const grandTotal = finalTotal + shippingPrice;  
       const lineSaving = originalTotal - subtotal;
       const couponSaving = subtotal - finalTotal;
-      const totalSaved = originalTotal - finalTotal;
+      const totalSaved = mrpTotal - finalTotal;
 
       window._hubCartFinalTotal = finalTotal;
 
       const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
-      if (totalEl) totalEl.textContent = fmt(finalTotal);
+      if (totalEl) totalEl.textContent = fmt(grandTotal);
 
       const origEl = document.getElementById(`hub-total-original-${blockId}`);
       if (origEl) {
         if (totalSaved > 0) {
-          origEl.textContent = fmt(originalTotal);
+          origEl.textContent = fmt(mrpTotal);
           origEl.style.display = "";
         } else origEl.style.display = "none";
       }
@@ -257,13 +309,29 @@ window.hubCartRender = async function (drawer, opts = {}) {
       const savedEl = document.getElementById(`hub-total-saved-${blockId}`);
       if (savedEl) {
         if (totalSaved > 0) {
-          savedEl.textContent = `You Saved ${fmt(totalSaved)}!`;
+          savedEl.textContent = `You Saved ${fmt(totalSaved)} !`;
           savedEl.style.display = "";
         } else savedEl.style.display = "none";
       }
 
       const mrpEl = document.getElementById(`hub-mrp-${blockId}`);
-      if (mrpEl) mrpEl.textContent = fmt(originalTotal);
+      if (mrpEl) mrpEl.textContent = fmt(mrpTotal);
+
+      const mrpSaving = mrpTotal - originalTotal;
+      const onMrpRow = document.getElementById(
+        `hub-discount-on-mrp-${blockId}`,
+      );
+      const onMrpVal = document.getElementById(
+        `hub-discount-on-mrp-value-${blockId}`,
+      );
+      if (onMrpRow && onMrpVal) {
+        if (mrpSaving > 0) {
+          onMrpVal.textContent = `-${fmt(mrpSaving)}`;
+          onMrpRow.style.display = "";
+        } else {
+          onMrpRow.style.display = "none";
+        }
+      }
 
       const discMrpRow = document.getElementById(
         `hub-discount-mrp-row-${blockId}`,
@@ -275,14 +343,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
       if (discMrpRow && discMrpEl) {
         if (lineSaving > 0) {
-          const linePctApp = cart.items
-            .flatMap((item) => item.line_level_discount_allocations || [])
-            .map((d) => d.discount_application)
-            .find((app) => app?.value_type === "percentage");
-
-          discMrpEl.textContent = linePctApp
-            ? `-${parseFloat(linePctApp.value)}%`
-            : `-${fmt(lineSaving)}`;
+          discMrpEl.textContent = `-${fmt(lineSaving)}`;
 
           discMrpRow.style.display = "";
 
@@ -301,7 +362,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
               window.__HUB_ACTIVE_CART__?.cartSettings?.discountsSavingsText ||
               "Discount";
             discMrpLabelEl.textContent = lineDiscountTitles.length
-              ? `${baseLabel} (${lineDiscountTitles.join(", ")})`
+              ? `${baseLabel}`
               : baseLabel;
           }
         } else {
@@ -396,7 +457,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
     );
     if (discountRowEl) {
       discountRowEl.style.display =
-        discountCodesSettings?.enabled === false ? "flex" : "none";
+        discountCodesSettings?.enabled === false && cart.items.length > 0
+          ? "flex"
+          : "none";
       const discountInput = discountRowEl.querySelector(
         `#discount-code-input-${blockId}`,
       );
@@ -1568,4 +1631,41 @@ window.hubCartRender = async function (drawer, opts = {}) {
     }
   }
 
+  window.hubCloseTotalBreakdown = function (blockId) {
+    const drawer = document.getElementById("hub-cart-drawer-" + blockId);
+    const breakdown = document.getElementById("hub-total-breakdown-" + blockId);
+    if (!drawer || !breakdown) return;
+
+    // Only act if it is actually open
+    if (!breakdown.classList.contains("hub-breakdown-open")) return;
+
+    breakdown.classList.remove("hub-breakdown-open");
+    drawer.classList.remove("hub-cart-total-open");
+
+    const summary = drawer.querySelector(".hub-total-summary");
+    if (summary) {
+      summary.classList.remove("hub-total-summary--open");
+      const arrow = summary.querySelector(".hub-total-arrow");
+      if (arrow) arrow.style.transform = "rotate(0deg)";
+    }
+  };
+
+  document.addEventListener("click", function (e) {
+    const body = e.target.closest("#hub-upcart-cart-body");
+
+    if (!body || e.target !== body) return;
+
+    const drawer = body.closest(".hub-cart-drawer");
+    if (!drawer) return;
+
+    const blockId = drawer.id.replace("hub-cart-drawer-", "");
+
+    if (drawer.classList.contains("hub-cart-total-open")) {
+      window.hubCloseTotalBreakdown(blockId);
+    }
+
+    if (document.body.classList.contains("hub-offers-open-body")) {
+      window.hubCloseOffersPanel(blockId);
+    }
+  });
 };

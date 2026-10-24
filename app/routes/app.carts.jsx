@@ -84,10 +84,10 @@ function SkeletonCell({ width = 64 }) {
 }
 
 const PLAN_ORDER_LIMITS = {
-    free: 50,
+    free: 100,
     starter: 200,
     growth: 500,
-    advance: 1000,
+    advance: Infinity,
     unlimited: Infinity,
 };
 
@@ -102,7 +102,7 @@ async function checkAppEmbed(shopDomain, accessToken, themeId) {
         const blocks = settings?.current?.blocks || {};
         for (const key in blocks) {
             const block = blocks[key];
-            if (block?.type?.includes("shopify://apps/cart-plus/")) {
+            if (block?.type?.includes("shopify://apps/cart-plus-testing/")) {
                 return !block?.disabled;
             }
         }

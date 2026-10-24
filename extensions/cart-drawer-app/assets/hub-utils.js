@@ -565,6 +565,10 @@ window.hubUtils = {
 
       window._hubShippingPriceCents = shippingCents;
 
+      if (window.hubRefreshEstimatedTotal) {
+        window.hubRefreshEstimatedTotal(window.HUB_CART_BLOCK_ID);
+      }
+
       shippingRow.style.display = "";
       shippingCostEl.textContent = price === 0 ? "Free" : fmt(shippingCents);
 

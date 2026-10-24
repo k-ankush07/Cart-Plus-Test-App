@@ -84,7 +84,7 @@ const PLANS = [
         price: 14.99,
         period: "month",
         badge: "Premium",
-        description: "Up to 1000 orders/mo",
+        description: "Unlimited",
         cta: "Upgrade to Advance",
         tone: null,
         features: [
@@ -106,7 +106,7 @@ const PLANS = [
 const COMPARE_ROWS = [
     {
         label: "Monthly orders",
-        values: { free: "Dev & Partner Only", starter: "200", growth: "500", advance: "1000" },
+        values: { free: "0", starter: "200", growth: "500", advance: "Unlimited" },
     },
     { label: "14-day free trial", values: { free: false, starter: true, growth: true, advance: true } },
     { label: "Design settings", values: { free: false, starter: true, growth: true, advance: true } },
@@ -634,7 +634,7 @@ function PricingInner({ activePlan, isDev, isFreeStore }) {
                                                     </Box>
                                                     <Box minWidth="240px">
                                                         <Text as="span" variant="bodySm" tone="subdued">
-                                                            Perfect for getting started
+                                                            Up to 100 orders/mo
                                                         </Text>
                                                     </Box>
                                                     <Box minWidth="140px">

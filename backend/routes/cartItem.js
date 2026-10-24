@@ -41,6 +41,7 @@ const isEntitled = (shopPlan) => {
   return shopPlan.plan !== "free" && shopPlan.status === "active";
 };
 
+
 const getMonthlyOrderCount = async (shop) => {
   const now = new Date();
   const monthStart = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
