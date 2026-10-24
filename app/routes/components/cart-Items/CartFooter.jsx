@@ -33,7 +33,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
             className="cart-app__footer cart-plus-footer"
             style={{
                 backgroundColor: designSettings.accentColor,
-                zIndex: 5,
+                zIndex: 10,
                 ...(disableFixedFooter ? { flexShrink: 1 } : {}),
             }}
         >

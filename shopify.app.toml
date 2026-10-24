@@ -1,8 +1,8 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "777e08bc2cc25f680c35f7e5dbf9779c"
-name = "Cart Plus"
-application_url = "https://app.cartplus.io"
+client_id = "0741db22a559208f286f8afcfb6dcc65"
+name = "Cart Plus Testing"
+application_url = "https://founder-screw-march-psi.trycloudflare.com"
 embedded = true
 
 [build]
@@ -37,10 +37,10 @@ scopes = "read_discounts,read_locations,read_orders,read_pixels,read_products,re
 
 [auth]
 redirect_urls = [
-  "https://app.cartplus.io/api/auth"
+  "https://founder-screw-march-psi.trycloudflare.com/api/auth"
 ]
 
 [app_proxy]
-url = "https://app.cartplus.io/api/proxy-order-track"
+url = "https://founder-screw-march-psi.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"

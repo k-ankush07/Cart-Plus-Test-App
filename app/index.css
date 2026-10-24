@@ -96,6 +96,34 @@ body,
     font-family: "Poppins", sans-serif !important;
 }
 
+
+.cart-app__container {
+  position: relative;
+  overflow: hidden;
+}
+
+.cart-plus-offers-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.25); /* the dim lives here */
+}
+
+.cart-plus-offers-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 70%;
+  z-index: 21; /* above the backdrop */
+}
+
+/* footer must sit above the breakdown overlay */
+.cart-app__footer {
+  position: relative;
+  z-index: 9;
+}
+
 .cart-app__container {
     display: flex;
     flex-direction: column;

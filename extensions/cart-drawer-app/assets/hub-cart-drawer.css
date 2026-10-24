@@ -1297,7 +1297,7 @@ span.hub-total-arrow svg {
 .upcart-internal-component-upsell-tile__image-container img {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
+  aspect-ratio:1/1;
 }
 
 .upcart-internal-component-upsell-tile__info {
