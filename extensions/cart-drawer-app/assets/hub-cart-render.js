@@ -306,13 +306,17 @@ window.hubCartRender = async function (drawer, opts = {}) {
         } else origEl.style.display = "none";
       }
 
-      const savedEl = document.getElementById(`hub-total-saved-${blockId}`);
-      if (savedEl) {
-        if (totalSaved > 0) {
-          savedEl.textContent = `You Saved ${fmt(totalSaved)} !`;
-          savedEl.style.display = "";
-        } else savedEl.style.display = "none";
-      }
+     const savedEl = document.getElementById(`hub-total-saved-${blockId}`);
+
+if (savedEl) {
+  if (Number(totalSaved) > 0) {
+    savedEl.textContent = `You Saved ${fmt(totalSaved)} !`;
+    savedEl.style.setProperty("display", "block", "important");
+  } else {
+    savedEl.textContent = "";
+    savedEl.style.setProperty("display", "none", "important");
+  }
+}
 
       const mrpEl = document.getElementById(`hub-mrp-${blockId}`);
       if (mrpEl) mrpEl.textContent = fmt(mrpTotal);

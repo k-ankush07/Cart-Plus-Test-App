@@ -1,7 +1,6 @@
 import { useState } from "react";
 import AdditionalNotes from "./AdditionalNotes";
 import AddOns from "./AddOns";
-import DiscountCode from "./DiscountCodes";
 import TrustBadges from "./TrustBadges";
 import CustomHtml from "./CustomHtml";
 
@@ -34,7 +33,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
             className="cart-app__footer cart-plus-footer"
             style={{
                 backgroundColor: designSettings.accentColor,
-                zIndex: 20,
+                zIndex: 5,
                 ...(disableFixedFooter ? { flexShrink: 1 } : {}),
             }}
         >
@@ -44,14 +43,7 @@ export default function CartFooter({ designSettings, additionalNotesSettings,
 
             <div>
                 <AddOns addonsSettings={addonsSettings} currency={currency} />
-                <DiscountCode discountCodesSettings={discountCodesSettings}
-                    setOfferOpen={setOfferOpen}
-                    offerOpen={offerOpen}
-                    designSettings={designSettings}
-                    currency={currency}
-                    shop={shop}
-                    apiUrl={apiUrl}
-                />
+               
 
                 {designSettings.enableSubtotal && (
                     <div className="cart-plus-savings-row cart-plus-savings-amount" onClick={() => setBreakdownOpen(prev => !prev)} style={{ cursor: "pointer" }}>
