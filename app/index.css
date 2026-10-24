@@ -1700,11 +1700,15 @@ span.cart-plus-offers-title {
     width: 100%;
 }
 
+.cart-plus-offers-error {
+    padding: 0px 15px;
+}
+
 .cart-plus-offers-backdrop {
     width: 100%;
-    position: absolute;
+    position: fixed;
     inset: 0;
-    z-index: 9;
+    z-index: 999999;
     transition: opacity 0.28s ease;
 }
 
