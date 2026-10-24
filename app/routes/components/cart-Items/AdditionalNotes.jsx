@@ -16,7 +16,7 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
                 onClick={() => setOpen((prev) => !prev)}
             >
                 <span className="cart-plus-public-notes__text-container" style={{ display: 'flex', gap: '4px', lineHeight: '1' }}>
-                    <div>
+                    <div className="hub-notes-icon">
                         {/* Pencil / edit icon (was Group.svg) */}
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 20h9" />

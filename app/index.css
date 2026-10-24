@@ -172,7 +172,7 @@ body,
 }
 
 .cart-app__items {
-    padding: 20px;
+    padding: 15px;
     border-bottom: 1px solid #E8E8E8;
 }
 
@@ -224,8 +224,8 @@ body,
     cursor: pointer;
     transition: 0.3s ease;
     line-height: 1;
-    width: calc(100% - 40px);
-    margin: 0 20px !important;
+    width: calc(100% - 30px);
+    margin: 0 15px !important;
     border: 0;
     display: flex;
     align-items: center;
@@ -587,7 +587,7 @@ button.cart-app-item__qty-btn.cart-plus-product-quantity-minus.cart-plus-public-
     padding: 10px 20px;
     background-color: #000000;
     /* color: #ffffff; */
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     text-align: center;
     border: none;
@@ -599,7 +599,7 @@ button.cart-app-item__qty-btn.cart-plus-product-quantity-minus.cart-plus-public-
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 40px;
+    height: 30px;
 }
 
 .upcart-internal-upsell__shop-now-button a {
@@ -688,7 +688,7 @@ span.svg-wrapper {
 }
 
 .cart-plus-internal-component-upsell-tile__title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #000;
     margin: 0;
@@ -722,7 +722,7 @@ span.svg-wrapper {
     flex: 1;
     min-width: 100px;
     max-width: 140px;
-    height: 34px;
+    height: 31px;
     padding: 6px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -733,7 +733,7 @@ span.svg-wrapper {
 .cart-plus-internal-component-upsell-tile__variant-row button {
     flex: 0 0 auto;
     padding: 0 14px;
-    height: 34px;
+    height: 30px;
     border: none;
     background: #000;
     border-radius: 4px;
@@ -743,15 +743,15 @@ span.svg-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .cart-plus-internal-style__title-large {
     color: #000;
-    font-size: 16px;
+       font-size: 13px;
     font-weight: 600;
-    line-height: 16px;
-    margin-bottom: 10px;
+    line-height: 13px;
+    margin-bottom: 5px;
 }
 
 .cart-plus-internal-style__title-large_button {
@@ -885,7 +885,7 @@ span.svg-wrapper {
     align-items: stretch;
     gap: 12px;
     flex-wrap: wrap;
-    padding: 15px 20px 0;
+    padding: 15px 15px 0;
     padding-bottom: 10px;
 }
 
@@ -917,7 +917,7 @@ span.svg-wrapper {
     cursor: pointer;
     transition: background 0.15s;
     color: #10812F;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     border: 0;
     background: transparent;
@@ -928,7 +928,7 @@ span.svg-wrapper {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 20px 5px;
+    padding: 10px 15px 5px;
 }
 
 .cart-addon-tile__info {
@@ -937,7 +937,7 @@ span.svg-wrapper {
 }
 
 .cart-addon-tile__title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     line-height: 18px;
     color: black;
@@ -992,7 +992,7 @@ span.svg-wrapper {
 }
 
 .cart-plus-public-component-collapse__expand-icon {
-    width: 22px;
+    width: 16px;
 }
 
 .cart-plus-public-component-collapse__expand-icon img {
@@ -1000,9 +1000,13 @@ span.svg-wrapper {
 }
 
 .cart-plus-public-notes__text-container {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
     align-items: center;
+}
+
+.hub-notes-icon {
+    height: 15px;
 }
 
 .cart-additional-notes__body--open {
@@ -1014,7 +1018,7 @@ span.svg-wrapper {
 .cart-additional-notes__textarea {
     width: 100%;
     min-height: 80px;
-    padding: 20px;
+    padding: 15px;
     border: 1px solid #d4d4d4;
     border-radius: 5px;
     font-size: 13px;
@@ -1051,7 +1055,7 @@ span.svg-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px 20px 0;
+    padding: 10px 15px 0;
 }
 
 .cart-trust-badges__img {
@@ -1356,7 +1360,7 @@ span.cart-plus-rewards-tier-icon {
 .cart-plus-internal-upsell {
     border-radius: 5px;
     position: relative;
-    padding: 20px;
+    padding: 15px 15px 0 15px;
 }
 
 .cart-app-item__image {
@@ -1381,8 +1385,8 @@ span.cart-plus-rewards-tier-icon {
     display: flex;
     background: white;
     align-items: center;
-    margin-bottom: 15px;
-    padding: 15px 20px 0;
+    margin-bottom: 10px;
+    padding: 15px 15px 0;
     border-radius: 5px;
 }
 
@@ -1465,7 +1469,7 @@ span.cart-plus-coupon-code {
     border: 0;
     padding: 0;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 12px;
     background-color: transparent;
 }
 
@@ -1475,7 +1479,7 @@ span.cart-plus-coupon-code {
     align-items: center;
     cursor: pointer;
     user-select: none;
-    padding: 15px 20px 5px;
+    padding: 15px 15px 5px;
     border-radius: 8px;
     transition: background 0.25s ease;
 }
@@ -1491,7 +1495,7 @@ span.cart-plus-coupon-code {
 }
 
 .cart-plus-checkout-button-container {
-    padding: 20px 0;
+    padding: 15px 0;
 }
 
 .cart-plus-total-header-right {
@@ -1526,7 +1530,7 @@ span.cart-plus-coupon-code {
     border-top: 0px solid #f0f0f0;
     padding-top: 0;
     transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease, padding-top 0.3s ease, border-top-width 0.3s ease;
-    padding: 0 20px;
+    padding: 0 15px;
 }
 
 .cart-plus-breakdown-row {
@@ -1571,7 +1575,7 @@ span.cart-plus-total-arrow svg {
 }
 
 .cart-plus-cart-breakdown-header {
-    padding-top: 15px;
+    padding-top: 10px;
 }
 
 .cart-app-item__title:hover {

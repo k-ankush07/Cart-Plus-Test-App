@@ -73,57 +73,54 @@ export default function Recommendation({ recommendationsSettings, currency, cart
         }
     }, [products]);
 
-    useEffect(() => {
-        const noProductsSelected =
-            sourceType === "products" &&
-            !selectedItems?.variants?.length &&
-            !selectedItems?.products?.length;
+   useEffect(() => {
+  const controller = new AbortController();
+  setLoadingProducts(true);
 
-        const noCollectionsSelected =
-            sourceType === "collections" && !selectedItems?.length;
+  const hasSelection =
+    sourceType === "collections"
+      ? selectedItems?.length > 0
+      : selectedItems?.variants?.length > 0 ||
+        selectedItems?.products?.length > 0;
 
-        if (noProductsSelected || noCollectionsSelected) {
-            setProducts([DEFAULT_PRODUCT]);
-            setSelectedVariants({
-                [DEFAULT_PRODUCT.id]: DEFAULT_PRODUCT.variants[0]
-            });
-            setLoadingProducts(false);
-            return;
+  fetch("/shopify/get-products", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    signal: controller.signal,
+    body: JSON.stringify({
+      collectionIds:
+        sourceType === "collections" && hasSelection ? selectedItems : [],
+      variantIds:
+        sourceType === "products" && hasSelection
+          ? selectedItems?.variants || []
+          : [],
+      // when nothing is selected, ask the backend for store products automatically
+      auto: !hasSelection,
+      limit: maxRecommendations,
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      const productsData = (data.products || []).slice(0, maxRecommendations);
+      setProducts(productsData);
+
+      const initial = {};
+      productsData.forEach((product) => {
+        if (product.variants?.length) {
+          initial[product.id] = product.variants[0];
         }
+      });
+      setSelectedVariants(initial);
+      setLoadingProducts(false);
+    })
+    .catch((err) => {
+      if (err.name === "AbortError") return;
+      setProducts([]);
+      setLoadingProducts(false);
+    });
 
-        setLoadingProducts(true);
-
-        fetch("/shopify/get-products", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                collectionIds: sourceType === "collections" ? selectedItems : [],
-                variantIds: sourceType === "products" ? selectedItems?.variants || [] : []
-            }),
-        })
-            .then(res => res.json())
-            .then(data => {
-                const productsData = data.products.slice(0, maxRecommendations);
-                setProducts(productsData);
-
-                const initial = {};
-                productsData.forEach(product => {
-                    if (product.variants.length) {
-                        initial[product.id] = product.variants[0];
-                    }
-                });
-                setSelectedVariants(initial);
-                setLoadingProducts(false);
-            })
-            .catch(() => {
-                setLoadingProducts(false);
-            });
-
-    }, [
-        sourceType,
-        maxRecommendations,
-        JSON.stringify(selectedItems),
-    ]);
+  return () => controller.abort();
+}, [sourceType, maxRecommendations, JSON.stringify(selectedItems)]);
 
     const handleVariantChange = (productId, variantId) => {
         const product = products.find(p => p.id === productId);

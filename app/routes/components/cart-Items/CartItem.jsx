@@ -290,7 +290,7 @@ function ClassicLayout({
               className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title"
               style={{
                 color: textColor,
-                fontSize: "14px",
+                fontSize: "13px",
                 fontWeight: 500,
                 wordBreak: "break-word",
                 overflowWrap: "break-word",
@@ -462,7 +462,7 @@ function SubscriptionLayout({
             <div>
               <div
                 className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title"
-                style={{ color: textColor, fontSize: "14px", fontWeight: 500 }}
+                style={{ color: textColor, fontSize: "13px", fontWeight: 500 }}
               >
                 <a
                   href="#"
@@ -677,7 +677,7 @@ function ModernLayout({
                 className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title"
                 style={{
                   color: textColor,
-                  fontSize: "14px",
+                  fontSize: "13px",
                   fontWeight: 500,
                   lineHeight: 1,
                 }}

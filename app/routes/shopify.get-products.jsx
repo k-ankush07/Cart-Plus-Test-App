@@ -1,33 +1,60 @@
 import { authenticate } from "../shopify.server";
 import { json } from "@remix-run/node";
 
-const transformProduct = (node) => {
-  const allVariants = node.variants.edges.map((v) => v.node);
-  if (!allVariants.length) return null;
+// Shared product fields so every query returns the same shape
+const PRODUCT_FIELDS = `
+  id
+  title
+  status
+  featuredImage { url }
+  variants(first: 100) {
+    edges {
+      node {
+        id
+        title
+        price
+        compareAtPrice
+        availableForSale
+        image { url }
+      }
+    }
+  }
+`;
 
-  const minPrice = Math.min(...allVariants.map((v) => parseFloat(v.price)));
+const buildProduct = (node, variants) => {
+  if (!variants.length) return null;
+
+  const minPrice = Math.min(...variants.map((v) => parseFloat(v.price)));
   const maxCompareAt = Math.max(
-    ...allVariants.map((v) => parseFloat(v.compareAtPrice || 0)),
+    ...variants.map((v) => parseFloat(v.compareAtPrice || 0)),
   );
+  const fallbackImage = node.featuredImage?.url || null;
 
   return {
     id: node.id,
     title: node.title,
-    image: node.images.edges[0]?.node?.url,
+    image: fallbackImage,
     price: minPrice.toFixed(2),
     compareAtPrice: maxCompareAt > 0 ? maxCompareAt.toFixed(2) : null,
-    rating: (Math.random() * (5 - 4) + 4).toFixed(1),
-    reviewCount: Math.floor(Math.random() * 200) + 20,
-    variants: allVariants.map((v) => ({
+    // No fake reviews. Plug in a review app here if you have one.
+    rating: null,
+    reviewCount: 0,
+    variants: variants.map((v) => ({
       id: v.id,
       title: v.title,
       price: v.price,
       compareAtPrice: v.compareAtPrice,
       available: v.availableForSale,
-      image: v.image?.url,
+      image: v.image?.url || fallbackImage,
     })),
   };
 };
+
+const transformProduct = (node) =>
+  buildProduct(
+    node,
+    (node.variants?.edges || []).map((v) => v.node),
+  );
 
 export const action = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
@@ -35,39 +62,14 @@ export const action = async ({ request }) => {
 
   const variantIds = body.variantIds || [];
   const collectionIds = body.collectionIds || [];
-  const anyProducts = body.anyProducts === true;
   const limit = Math.min(Math.max(parseInt(body.limit, 10) || 10, 1), 50);
 
-  // ── 1) Kuch select nahi / AI recommended -> store ke koi bhi real products ──
-  if (anyProducts || (!variantIds.length && !collectionIds.length)) {
-    if (!anyProducts) {
-      return json({ products: [] });
-    }
-
+  // ── 1) Nothing selected -> latest active products from the store ──────────
+  if (!variantIds.length && !collectionIds.length) {
     const query = `
       query ($first: Int!) {
         products(first: $first, sortKey: CREATED_AT, reverse: true, query: "status:active") {
-          edges {
-            node {
-              id
-              title
-              images(first: 1) {
-                edges { node { url } }
-              }
-              variants(first: 100) {
-                edges {
-                  node {
-                    id
-                    title
-                    price
-                    compareAtPrice
-                    availableForSale
-                    image { url }
-                  }
-                }
-              }
-            }
-          }
+          edges { node { ${PRODUCT_FIELDS} } }
         }
       }
     `;
@@ -75,137 +77,103 @@ export const action = async ({ request }) => {
     const res = await admin.graphql(query, { variables: { first: limit } });
     const data = await res.json();
 
-    const edges = data?.data?.products?.edges || [];
-    const finalProducts = edges
+    const finalProducts = (data?.data?.products?.edges || [])
       .map(({ node }) => transformProduct(node))
       .filter(Boolean);
 
     return json({ products: finalProducts });
   }
 
-  // ── 2) Collection se products ──────────────────────────────────────────────
+  // ── 2) Products from the selected collection(s) ───────────────────────────
   if (collectionIds.length) {
-    let allProducts = [];
-    let hasNextPage = true;
-    let cursor = null;
-
-    while (hasNextPage) {
-      const query = `
-  query ($first: Int!) {
-    products(first: $first, sortKey: CREATED_AT, reverse: true, query: "status:active") {
-      edges {
-        node {
-          id
-          title
-          images(first: 1) {
-            edges { node { url } }
-          }
-          variants(first: 100) {
+    const query = `
+      query ($id: ID!, $first: Int!, $cursor: String) {
+        collection(id: $id) {
+          products(first: $first, after: $cursor) {
+            pageInfo { hasNextPage }
             edges {
-              node {
-                id
-                title
-                price
-                compareAtPrice
-                availableForSale
-                image { url }
-              }
+              cursor
+              node { ${PRODUCT_FIELDS} }
             }
           }
         }
       }
-    }
-  }
-`;
+    `;
 
-      const res = await admin.graphql(query, {
-        variables: {
-          id: collectionIds[0],
-          cursor,
-        },
-      });
+    const allProducts = [];
 
-      const data = await res.json();
-      const products = data?.data?.collection?.products;
+    for (const collectionId of collectionIds) {
+      let cursor = null;
+      let hasNextPage = true;
 
-      if (!products) break;
+      while (hasNextPage && allProducts.length < limit) {
+        const res = await admin.graphql(query, {
+          variables: { id: collectionId, first: Math.min(limit, 50), cursor },
+        });
+        const data = await res.json();
+        const products = data?.data?.collection?.products;
+        if (!products) break;
 
-      allProducts.push(...products.edges);
+        allProducts.push(
+          ...products.edges.filter(({ node }) => node.status === "ACTIVE"),
+        );
 
-      hasNextPage = products.pageInfo.hasNextPage;
-
-      if (hasNextPage) {
-        cursor = products.edges[products.edges.length - 1].cursor;
+        hasNextPage = products.pageInfo.hasNextPage;
+        if (hasNextPage) {
+          cursor = products.edges[products.edges.length - 1].cursor;
+        }
       }
     }
 
+    // Remove duplicates when collections overlap
+    const seen = new Set();
     const finalProducts = allProducts
       .map(({ node }) => transformProduct(node))
-      .filter(Boolean);
+      .filter((p) => p && !seen.has(p.id) && seen.add(p.id))
+      .slice(0, limit);
 
     return json({ products: finalProducts });
   }
 
-  // ── 3) Selected variants se products ───────────────────────────────────────
+  // ── 3) Products from the selected variants ────────────────────────────────
   const query = `
-  {
-    nodes(ids: ${JSON.stringify(variantIds)}) {
-      ... on ProductVariant {
-        id
-        title
-        price
-        compareAtPrice
-        availableForSale
-        image { url }
-        product {
+    query ($ids: [ID!]!) {
+      nodes(ids: $ids) {
+        ... on ProductVariant {
           id
           title
-          images(first: 1) {
-            edges { node { url } }
-          }
-          variants(first: 100) {
-            edges {
-              node {
-                id
-                title
-                price
-                compareAtPrice
-                availableForSale
-                image { url }
-              }
-            }
-          }
+          price
+          compareAtPrice
+          availableForSale
+          image { url }
+          product { ${PRODUCT_FIELDS} }
         }
       }
     }
-  }
   `;
 
-  const res = await admin.graphql(query);
+  const res = await admin.graphql(query, { variables: { ids: variantIds } });
   const data = await res.json();
 
-  const productMap = {};
+  // Group the selected variants by their parent product
+  const grouped = new Map();
 
   (data?.data?.nodes || []).forEach((variantNode) => {
     if (!variantNode?.product) return;
+    if (variantNode.product.status !== "ACTIVE") return;
 
-    const product = variantNode.product;
+    const { product, ...variant } = variantNode;
 
-    if (!productMap[product.id]) {
-      const base = transformProduct(product);
-      if (!base) return;
-      productMap[product.id] = { ...base, variants: [] };
+    if (!grouped.has(product.id)) {
+      grouped.set(product.id, { product, variants: [] });
     }
-
-    productMap[product.id].variants.push({
-      id: variantNode.id,
-      title: variantNode.title,
-      price: variantNode.price,
-      compareAtPrice: variantNode.compareAtPrice,
-      available: variantNode.availableForSale,
-      image: variantNode.image?.url,
-    });
+    grouped.get(product.id).variants.push(variant);
   });
 
-  return json({ products: Object.values(productMap) });
+  const finalProducts = [...grouped.values()]
+    .map(({ product, variants }) => buildProduct(product, variants))
+    .filter(Boolean)
+    .slice(0, limit);
+
+  return json({ products: finalProducts });
 };

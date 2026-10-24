@@ -93,7 +93,7 @@ export const defaultRecommendationsSettings = {
   buttonText: "Shop Now",
   buttonUrl: "/collections",
   sourceType: "products",
-  maxRecommendations: 10,
+  maxRecommendations: 3,
   layout: "block",
   showReviews: false,
   carouselIndicator: "progressBar",
