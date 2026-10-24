@@ -626,7 +626,7 @@ span.hub-offers-title {
 .hub-offers-apply-btn {
   color: #10812F;
   border: none;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
@@ -1027,7 +1027,7 @@ span.hub-total-arrow svg {
 
 .hub-cart-checkout-btn {
     display: block;
-    padding: 18px;
+    padding: 15px 15px;
     background: #1a1a1a;
     color: #fff;
     text-align: center;
@@ -1312,7 +1312,7 @@ span.hub-total-arrow svg {
 }
 
 .upcart-internal-component-upsell-tile__title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #000;
   margin: 0;
@@ -1420,7 +1420,7 @@ span.hub-total-arrow svg {
     align-items: center;
     justify-content: center;
     height: 34px;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .hub-add-btn {
@@ -1622,12 +1622,12 @@ span.hub-total-arrow svg {
 
 /* Shipping protection layout */
 .hub-addon-shipping-protection {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 20px 20px 5px;
-  border-top: 1px solid #e5e5e5;
+display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 15px 0px;
+    border-top: 1px solid #e5e5e5;
 }
 
 .hub-addon-sp-info {
@@ -1635,7 +1635,7 @@ span.hub-total-arrow svg {
 }
 
 .hub-addon-sp-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   text-decoration: none;
   margin-bottom: 4px;
@@ -2271,7 +2271,7 @@ span.notes-title {
   padding: 10px;
   outline: none;
   color: black;
-  font-size: 14px;
+  font-size: 11px;
   height: 90px;
   margin-top: 10px;
 }
@@ -2281,7 +2281,7 @@ span.notes-title {
 }
 
 .hub-additional-notes span.drop-icon {
-  padding-left: 5px;
+  padding-left: 0px;
   cursor: pointer;
   display: flex;
 }
