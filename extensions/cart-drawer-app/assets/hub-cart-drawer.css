@@ -2144,18 +2144,18 @@ span.upsell-text.suggestion-product {
 }
 
 .hub-one-time-view .hub-upgrade-btn {
-  width: 100%;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 12px;
-  border-radius: 5px;
-  border: 0;
-  padding: 10px 15px;
-  cursor: pointer;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    width: 100%;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 12px;
+    border-radius: 5px;
+    border: 0;
+    padding: 10px 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
 }
 
 .hub-subscription-view .hub-selling-plan-select {
@@ -2224,10 +2224,21 @@ span.upsell-text.suggestion-product {
 /* Jab upsell-bottom present hai — notes aur announcement ka margin 0 kar do */
 .hub-cart-items-CartPreview:has(.hub-upsell.upsell-container.upsell-bottom) [id^="hub-notes-below-"] {
   margin-top: 0 !important;
+  padding: 15px 15px 0px;
 }
 
 .hub-cart-items-CartPreview:has(.hub-upsell.upsell-container.upsell-bottom) [id^="hub-announcement-after-"] {
   margin-top: 0 !important;
+  padding: 15px 15px 0px;
+}
+
+span.notes-title {
+    font-size: 13px;
+    line-height: 13px;
+}
+
+.hub-notes-icon {
+    height: 15px;
 }
 
 .hub-notes-title {
@@ -2246,10 +2257,6 @@ span.upsell-text.suggestion-product {
   color: #2D2D2D;
   font-weight: 600;
   margin: 0;
-}
-
-.hub-additional-notes {
-  padding: 10px 20px 10px;
 }
 
 .cart-plus-announcement {
