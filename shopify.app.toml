@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "777e08bc2cc25f680c35f7e5dbf9779c"
-name = "Cart Plus"
+client_id = "0741db22a559208f286f8afcfb6dcc65"
+name = "Cart Plus Testing"
 application_url = "https://app.cartplus.io"
 embedded = true
 

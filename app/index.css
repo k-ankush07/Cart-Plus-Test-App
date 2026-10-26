@@ -2000,6 +2000,34 @@ input.cart-plus-offers-code-input:focus {
     outline: none;
 }
 
+.sb-row { cursor: pointer; outline: none; }
+.sb-row:hover > .Polaris-Box { background: var(--p-color-bg-surface-hover); }
+.sb-row:focus-visible > .Polaris-Box { outline: 2px solid var(--p-color-border-focus); }
+
+.sb-slot { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sb-slot .Polaris-Icon { width: 18px; height: 18px; margin: 0; }
+.sb-grow { flex: 1; min-width: 0; }
+.sb-line { flex: 1; }
+.sb-line hr { border-top-style: dashed; }
+
+/* lamba product name cut ho jaye */
+.Polaris-Select__Content { overflow: hidden; }
+.Polaris-Select__SelectedOption { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.sb-switch {
+  position: relative; width: 32px; height: 20px; padding: 0; flex-shrink: 0;
+  border: 1px solid var(--p-color-border); border-radius: 999px;
+  background: var(--p-color-bg-fill-secondary); cursor: pointer; appearance: none;
+  transition: background .15s ease;
+}
+.sb-switch-knob {
+  position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform .15s ease; pointer-events: none;
+}
+
+.sb-switch.is-on { background: #303030; border-color: #303030; }
+.sb-switch.is-on .sb-switch-knob { transform: translateX(12px); }
+
 /* Responsive Styles */
 
 @media screen and (max-width:1024px) {

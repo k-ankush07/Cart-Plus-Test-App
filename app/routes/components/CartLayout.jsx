@@ -1,13 +1,35 @@
-import { Page, Button, Modal, TextField, InlineStack, Badge, Popover, ActionList, Icon } from "@shopify/polaris";
-import { EditIcon, ArrowLeftIcon, InfoIcon, CheckIcon, CaretDownIcon } from "@shopify/polaris-icons";
+import {
+  Page,
+  Button,
+  Modal,
+  TextField,
+  InlineStack,
+  Badge,
+  Popover,
+  ActionList,
+  Icon,
+  Text,
+  Select,
+  ButtonGroup,
+} from "@shopify/polaris";
+import {
+  EditIcon,
+  ArrowLeftIcon,
+  InfoIcon,
+  CheckIcon,
+  CaretDownIcon,
+} from "@shopify/polaris-icons";
 import { useState, useEffect, useMemo, memo } from "react";
 import { useNavigate, useLocation, useNavigation } from "react-router-dom";
 import "../../index.css";
-import { renameCart, togglePublishCart, getCarts } from "../../services/apiRoutes";
-import { getCurrencySymbol } from "./utils/currency"
+import {
+  renameCart,
+  togglePublishCart,
+  getCarts,
+} from "../../services/apiRoutes";
+import { getCurrencySymbol } from "./utils/currency";
 
 const CartLayout = memo(function CartLayout({
-
   activeTab,
   setActiveTab,
   designSettings,
@@ -39,8 +61,7 @@ const CartLayout = memo(function CartLayout({
   onSave,
   onDiscard,
   onResetToDefault,
-  isResetting
-
+  isResetting,
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,6 +75,10 @@ const CartLayout = memo(function CartLayout({
   const [leaveModal, setLeaveModal] = useState(false);
   const [leaveSaving, setLeaveSaving] = useState(false);
   const [resetModal, setResetModal] = useState(false);
+
+  const [customItems, setCustomItems] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedMarket, setSelectedMarket] = useState("IN");
 
   // Sync state when cart prop changes (after switching carts via dropdown)
   useEffect(() => {
@@ -113,7 +138,9 @@ const CartLayout = memo(function CartLayout({
         const next = cartStatus === "published" ? "unpublished" : "published";
         setCartStatus(next);
         setUnpublishModal(false);
-        shopify.toast.show(next === "published" ? "Cart published" : "Cart unpublished");
+        shopify.toast.show(
+          next === "published" ? "Cart published" : "Cart unpublished",
+        );
       }
     } catch (e) {
       shopify.toast.show("Failed to update status", { isError: true });
@@ -125,73 +152,119 @@ const CartLayout = memo(function CartLayout({
   const isPublished = cartStatus === "published";
 
   // Build ActionList items: other carts + rename option
-  const otherCarts = useMemo(() => allCarts.filter((c) => c.cartId !== cart?.cartId), [allCarts, cart?.cartId]);
+  const otherCarts = useMemo(
+    () => allCarts.filter((c) => c.cartId !== cart?.cartId),
+    [allCarts, cart?.cartId],
+  );
 
-  const switcherItems = useMemo(() => [
-
-    {
-      items: [
-        {
-          content: (
-            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {isPublished ? (
-                  <circle cx="4" cy="4" r="4" fill="#22863a" />
-                ) : (
-                  <circle cx="4" cy="4" r="3.5" stroke="#8c8c8c" strokeWidth="1" fill="none" />
-                )}
-              </svg>
-              {cartName.length > 20 ? cartName.slice(0, 20) + "..." : cartName}
-            </span>
-          ),
-          suffix: <Icon source={CheckIcon} />,
-          active: true,
-          onAction: () => setSwitcherOpen(false),
-        },
-      ],
-    },
-
-    ...(otherCarts.length > 0
-      ? [{
-        items: otherCarts.map((c) => ({
-          content: (
-            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {c.status === "published" ? (
-                  <circle cx="4" cy="4" r="4" fill="#22863a" />
-                ) : (
-                  <circle cx="4" cy="4" r="3.5" stroke="#8c8c8c" strokeWidth="1" fill="none" />
-                )}
-              </svg>
-              {(c.cartName || "Untitled cart").length > 20
-                ? (c.cartName || "Untitled cart").slice(0, 20) + "..."
-                : (c.cartName || "Untitled cart")}
-            </span>
-          ),
-          onAction: () => {
-            setSwitcherOpen(false);
-            navigate(`/app/cart-editor/${c.cartId}`);
+  const switcherItems = useMemo(
+    () => [
+      {
+        items: [
+          {
+            content: (
+              <span
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <svg
+                  width="8"
+                  height="8"
+                  viewBox="0 0 8 8"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {isPublished ? (
+                    <circle cx="4" cy="4" r="4" fill="#22863a" />
+                  ) : (
+                    <circle
+                      cx="4"
+                      cy="4"
+                      r="3.5"
+                      stroke="#8c8c8c"
+                      strokeWidth="1"
+                      fill="none"
+                    />
+                  )}
+                </svg>
+                {cartName.length > 20
+                  ? cartName.slice(0, 20) + "..."
+                  : cartName}
+              </span>
+            ),
+            suffix: <Icon source={CheckIcon} />,
+            active: true,
+            onAction: () => setSwitcherOpen(false),
           },
-        })),
-      }]
-      : []),
+        ],
+      },
 
-    {
-      items: [
-        {
-          content: "Rename cart",
-          icon: EditIcon,
-          onAction: () => {
-            setSwitcherOpen(false);
-            setNewCartName(cartName);
-            setRenameModal(true);
+      ...(otherCarts.length > 0
+        ? [
+            {
+              items: otherCarts.map((c) => ({
+                content: (
+                  <span
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <svg
+                      width="8"
+                      height="8"
+                      viewBox="0 0 8 8"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      {c.status === "published" ? (
+                        <circle cx="4" cy="4" r="4" fill="#22863a" />
+                      ) : (
+                        <circle
+                          cx="4"
+                          cy="4"
+                          r="3.5"
+                          stroke="#8c8c8c"
+                          strokeWidth="1"
+                          fill="none"
+                        />
+                      )}
+                    </svg>
+                    {(c.cartName || "Untitled cart").length > 20
+                      ? (c.cartName || "Untitled cart").slice(0, 20) + "..."
+                      : c.cartName || "Untitled cart"}
+                  </span>
+                ),
+                onAction: () => {
+                  setSwitcherOpen(false);
+                  navigate(`/app/cart-editor/${c.cartId}`);
+                },
+              })),
+            },
+          ]
+        : []),
+
+      {
+        items: [
+          {
+            content: "Rename cart",
+            icon: EditIcon,
+            onAction: () => {
+              setSwitcherOpen(false);
+              setNewCartName(cartName);
+              setRenameModal(true);
+            },
           },
-        },
-      ],
-    },
-  ], [otherCarts, isPublished, cartName, navigate]);
+        ],
+      },
+    ],
+    [otherCarts, isPublished, cartName, navigate],
+  );
 
-  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const searchParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
   const fromPage = searchParams.get("from");
   const backPath = fromPage === "home" ? "/app" : "/app/carts";
 
@@ -263,8 +336,9 @@ const CartLayout = memo(function CartLayout({
     <>
       <Page fullWidth>
         {/* ── Top bar ── */}
-        <div className={`cart-plus-header-wrapper ${isPreviewVisible ? 'preview-visible' : ''} ${designSettings?.desktopWidth === "wide" ? 'wide' : 'normal'}`}>
-
+        <div
+          className={`cart-plus-header-wrapper ${isPreviewVisible ? "preview-visible" : ""} ${designSettings?.desktopWidth === "wide" ? "wide" : "normal"}`}
+        >
           {/* Left: cart switcher + badge */}
           <InlineStack gap="200" blockAlign="center">
             <Button
@@ -280,56 +354,27 @@ const CartLayout = memo(function CartLayout({
               }}
               accessibilityLabel="Go back"
             />
-            <Popover
-              active={switcherOpen}
-              activator={
-                <>
-                  <Button
-                    disclosure="down"
-                    disabled={isDirty}
-                    onClick={() => setSwitcherOpen((o) => !o)}
-                  >
-                    <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <svg width="7" height="7" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {isPublished ? (
-                          <circle cx="4" cy="4" r="4" fill="#22863a" />
-                        ) : (
-                          <circle cx="4" cy="4" r="3.5" stroke="#8c8c8c" strokeWidth="1" fill="none" />
-                        )}
-                      </svg>
-                      {cartName.length > 20 ? cartName.slice(0, 20) + "..." : cartName}
-                      <span
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSwitcherOpen(false);
-                          setNewCartName(cartName);
-                          setRenameModal(true);
-                        }}
-                        style={{ display: "flex", alignItems: "center", opacity: 0.6 }}
-                        title="Rename cart"
-                      >
-                      </span>
-                    </span>
-                  </Button>
-                </>
-              }
-              onClose={() => setSwitcherOpen(false)}
-            >
-              <ActionList sections={switcherItems} />
-            </Popover>
+            <InlineStack gap="200" blockAlign="center">
+              <Text as="h2" variant="headingMd">
+                {cartName.length > 20
+                  ? cartName.slice(0, 20) + "..."
+                  : cartName}
+              </Text>
 
-            {/* Edit icon — opens rename modal directly */}
-            <Button
-              icon={EditIcon}
-              tone="base"
-              variant="plain"
-              onClick={() => { setNewCartName(cartName); setRenameModal(true); }}
-              accessibilityLabel="Rename cart"
-            />
+              <Button
+                variant="plain"
+                icon={EditIcon}
+                accessibilityLabel="Rename cart"
+                onClick={() => {
+                  setNewCartName(cartName);
+                  setRenameModal(true);
+                }}
+              />
 
-            <Badge tone={isPublished ? "success" : "info"}>
-              {isPublished ? "Live" : "Draft"}
-            </Badge>
+              <Badge tone={isPublished ? "success" : "info"}>
+                {isPublished ? "Live" : "Draft"}
+              </Badge>
+            </InlineStack>
           </InlineStack>
 
           {/* Right: actions */}
@@ -342,7 +387,9 @@ const CartLayout = memo(function CartLayout({
                   icon={CaretDownIcon}
                   onClick={() => setPreviewPopoverOpen((prev) => !prev)}
                 >
-                  {previewMode === "items" ? "Show items in cart" : "Show empty cart"}
+                  {previewMode === "items"
+                    ? "Show items in cart"
+                    : "Show empty cart"}
                 </Button>
               }
               onClose={() => setPreviewPopoverOpen(false)}
@@ -375,7 +422,11 @@ const CartLayout = memo(function CartLayout({
               Reset to default
             </Button>
 
-            <Button onClick={() => window.open(`https://${shop?.myshopifyDomain}`, "_blank")}>
+            <Button
+              onClick={() =>
+                window.open(`https://${shop?.myshopifyDomain}`, "_blank")
+              }
+            >
               Preview in store
             </Button>
 
@@ -383,7 +434,6 @@ const CartLayout = memo(function CartLayout({
               variant="secondary"
               loading={publishLoading}
               onClick={handleTogglePublish}
-
               icon={
                 <img
                   src={
@@ -397,21 +447,27 @@ const CartLayout = memo(function CartLayout({
                     filter: "brightness(0)",
                     display: "block",
                     marginRight: "4px",
-                    opacity: '0.7'
+                    opacity: "0.7",
                   }}
                 />
               }
             >
               {isPublished ? "Unpublish" : "Publish"}
             </Button>
-
           </InlineStack>
         </div>
 
         {/* ── Main layout ── */}
         <div
           className="appLayout"
-          style={{ paddingRight: isPreviewVisible ? (designSettings?.desktopWidth === "wide" ? "500px" : "440px") : "0px", transition: "padding-right 0.35s cubic-bezier(0.4, 0, 0.2, 1)" }}
+          style={{
+            paddingRight: isPreviewVisible
+              ? designSettings?.desktopWidth === "wide"
+                ? "500px"
+                : "440px"
+              : "0px",
+            transition: "padding-right 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
         >
           <Sidebar
             activeTab={activeTab}
@@ -428,6 +484,26 @@ const CartLayout = memo(function CartLayout({
             trustBadgesSettings={trustBadgesSettings}
             cartSettings={cartSettings}
             handleChange={handleChange}
+            previewMode={previewMode === "items" ? "cart" : "empty"}
+            setPreviewMode={(m) =>
+              setPreviewMode(m === "cart" ? "items" : "empty")
+            }
+            previewProducts={[]} 
+            previewProduct={selectedProduct}
+            onPreviewProductChange={setSelectedProduct}
+            markets={[
+              { label: "Default (India)", value: "IN" },
+              { label: "United States", value: "US" },
+            ]}
+            market={selectedMarket}
+            onMarketChange={setSelectedMarket}
+            customItems={customItems}
+            onAddCustomItem={(id) =>
+              setCustomItems((p) => [
+                ...p,
+                { key: id, label: "Custom HTML / CSS" },
+              ])
+            }
           />
 
           <MainContent
@@ -474,7 +550,8 @@ const CartLayout = memo(function CartLayout({
           ]}
         >
           <Modal.Section>
-            Unpublishing will set this cart to draft. No cart will be live until you publish another.
+            Unpublishing will set this cart to draft. No cart will be live until
+            you publish another.
           </Modal.Section>
         </Modal>
 
@@ -497,7 +574,11 @@ const CartLayout = memo(function CartLayout({
             <TextField
               label={
                 <span>
-                  Cart name <span class="required-asterisk" aria-hidden="true"> *</span>
+                  Cart name{" "}
+                  <span class="required-asterisk" aria-hidden="true">
+                    {" "}
+                    *
+                  </span>
                 </span>
               }
               value={newCartName}
@@ -528,23 +609,48 @@ const CartLayout = memo(function CartLayout({
           ]}
         >
           <Modal.Section>
-            <p>Publishing will make this cart live. The current live cart will be moved to draft.</p>
+            <p>
+              Publishing will make this cart live. The current live cart will be
+              moved to draft.
+            </p>
 
-            <div style={{
-              display: "flex",
-              gap: "10px",
-              backgroundColor: "#EBF5FB",
-              padding: "12px",
-              borderRadius: "8px",
-              marginTop: "12px",
-            }}>
-              <span aria-hidden="true" className="icon color-base tone-auto size-base"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a.75.75 0 0 1-.75-.75v-3.5a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.75.75"></path><path d="M7 5a1 1 0 1 1 2 0 1 1 0 0 1-2 0"></path><path fillRule="evenodd" d="M15 8a7 7 0 1 1-14 0 7 7 0 0 1 14 0m-1.5 0a5.5 5.5 0 1 1-11 0 5.5 5.5 0 1 1 11 0"></path></svg></span>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                backgroundColor: "#EBF5FB",
+                padding: "12px",
+                borderRadius: "8px",
+                marginTop: "12px",
+              }}
+            >
+              <span
+                aria-hidden="true"
+                className="icon color-base tone-auto size-base"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                  <path d="M8 12a.75.75 0 0 1-.75-.75v-3.5a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.75.75"></path>
+                  <path d="M7 5a1 1 0 1 1 2 0 1 1 0 0 1-2 0"></path>
+                  <path
+                    fillRule="evenodd"
+                    d="M15 8a7 7 0 1 1-14 0 7 7 0 0 1 14 0m-1.5 0a5.5 5.5 0 1 1-11 0 5.5 5.5 0 1 1 11 0"
+                  ></path>
+                </svg>
+              </span>
               <div>
-                <p style={{ fontWeight: 600, color: "#003a5a", marginBottom: "4px" }}>
+                <p
+                  style={{
+                    fontWeight: 600,
+                    color: "#003a5a",
+                    marginBottom: "4px",
+                  }}
+                >
                   Your cart has triggered rewards
                 </p>
                 <p style={{ color: "#003a5a" }}>
-                  Once this cart is live, triggered rewards discounts will be active via Shopify's discount system — even if the app embed is off.
+                  Once this cart is live, triggered rewards discounts will be
+                  active via Shopify's discount system — even if the app embed
+                  is off.
                 </p>
               </div>
             </div>
@@ -581,12 +687,9 @@ const CartLayout = memo(function CartLayout({
                 navigate(backPath);
               },
             },
-
           ]}
         >
-          <Modal.Section>
-            Save or discard changes to exit.
-          </Modal.Section>
+          <Modal.Section>Save or discard changes to exit.</Modal.Section>
         </Modal>
 
         {/* ── Reset to default confirmation modal ── */}
@@ -615,7 +718,6 @@ const CartLayout = memo(function CartLayout({
             can't be undone.
           </Modal.Section>
         </Modal>
-
       </Page>
 
       {/* Toggle arrow — fixed outside wrapper so overflow:hidden never clips it */}
@@ -626,7 +728,6 @@ const CartLayout = memo(function CartLayout({
       >
         <Icon source={ArrowLeftIcon} />
       </button>
-
 
       <div
         className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
