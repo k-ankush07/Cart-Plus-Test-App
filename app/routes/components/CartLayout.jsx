@@ -40,8 +40,10 @@ import {
   TemplateBackgroundContext,
   templateBackground,
 } from "./utils/background";
+import ABTesting from "./ABTesting";
 
 const CartLayout = memo(function CartLayout({
+  abTesting,
   activeTab,
   setActiveTab,
   designSettings,
@@ -464,6 +466,8 @@ const CartLayout = memo(function CartLayout({
               />
             </Popover>
 
+             <ABTesting key={abTesting?.resetKey} {...abTesting} />
+             
             <Button
               variant="tertiary"
               loading={isResetting}

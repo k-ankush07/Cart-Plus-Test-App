@@ -215,7 +215,8 @@ const CartPreview = memo(function CartPreview({
               right: "16px",
               height: "calc(100vh - 32px)",
               borderRadius: `${designSettings.drawerRadius}px`,
-              overflow: "hidden",
+              overflowX: "hidden",
+              overflowY: "hidden",
             }
           : {}),
       }}
