@@ -8,7 +8,6 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
     const expandable = s.expandable ?? true;
     const collapsedByDefault = s.collapsedByDefault ?? true;
 
-    // expandable: the row opens in place; otherwise a "Note" button opens the note box
     const [open, setOpen] = useState(expandable ? !collapsedByDefault : false);
     const [text, setText] = useState("");
     const [saved, setSaved] = useState("");

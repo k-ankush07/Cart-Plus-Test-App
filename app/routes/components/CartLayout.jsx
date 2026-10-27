@@ -31,7 +31,10 @@ import { getCurrencySymbol } from "./utils/currency";
 import { toggleBanner } from "./utils/banner";
 import { toggleTimer } from "./utils/timer";
 import { toggleOneTick } from "./utils/oneTick";
-import { TemplateBackgroundContext, templateBackground } from "./utils/background";
+import {
+  TemplateBackgroundContext,
+  templateBackground,
+} from "./utils/background";
 
 const CartLayout = memo(function CartLayout({
   activeTab,
@@ -78,7 +81,9 @@ const CartLayout = memo(function CartLayout({
   const [publishModal, setPublishModal] = useState(false);
   const [previewMode, setPreviewMode] = useState("items");
   // last non-empty selection, restored when returning to "Item in cart"
-  const lastPreviewRef = useRef(initialPreviewProduct ? [initialPreviewProduct] : []);
+  const lastPreviewRef = useRef(
+    initialPreviewProduct ? [initialPreviewProduct] : [],
+  );
   const [leaveModal, setLeaveModal] = useState(false);
   const [leaveSaving, setLeaveSaving] = useState(false);
   const [resetModal, setResetModal] = useState(false);
@@ -543,7 +548,7 @@ const CartLayout = memo(function CartLayout({
               "Subscription Upgrade": !subscriptionUpgradesSettings?.enabled,
               // Cross-sell is the Upsells settings, same inverted flag
               "Cross-sell": !upsellsSettings?.enabled,
-              
+
               "Order notes": !additionalNotesSettings?.enabled,
             }}
             onToggleItem={(key) => {
@@ -822,19 +827,18 @@ const CartLayout = memo(function CartLayout({
         <Icon source={ArrowLeftIcon} />
       </button>
 
-     <div
-  className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
-  style={{
-    width: isPreviewVisible ? undefined : "0px",
-    // side panel wrapper ke bahar (left me) banta hai, isliye clip nahi hona chahiye
-    ...(isPreviewVisible && upsellsSettings?.layout === "side"
-      ? { overflow: "visible" }
-      : {}),
-    ...(designSettings?.colorMode && designSettings?.layout === "floating"
-      ? { background: "#eceef0" }
-      : {}),
-  }}
->
+      <div
+        className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
+        style={{
+          width: isPreviewVisible ? undefined : "0px",
+          ...(isPreviewVisible && upsellsSettings?.layout === "side"
+            ? { overflow: "visible" }
+            : {}),
+          ...(designSettings?.colorMode && designSettings?.layout === "floating"
+            ? { background: "#eceef0" }
+            : {}),
+        }}
+      >
         <CartPreview
           designSettings={designSettings}
           headerSettings={headerSettings}
@@ -860,8 +864,10 @@ const CartLayout = memo(function CartLayout({
           onAddPreviewProduct={(product, variant) =>
             setPreviewProducts((prev) => {
               const existing = prev.find((p) => p.id === product.id);
-              if (!existing) return [...prev, { ...product, variants: [variant] }];
-              if (existing.variants.some((v) => v.id === variant.id)) return prev;
+              if (!existing)
+                return [...prev, { ...product, variants: [variant] }];
+              if (existing.variants.some((v) => v.id === variant.id))
+                return prev;
               return prev.map((p) =>
                 p.id === product.id
                   ? { ...p, variants: [...p.variants, variant] }
