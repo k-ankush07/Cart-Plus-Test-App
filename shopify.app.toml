@@ -2,7 +2,7 @@
 
 client_id = "0741db22a559208f286f8afcfb6dcc65"
 name = "Cart Plus Testing"
-application_url = "https://app.cartplus.io"
+application_url = "https://hostels-deleted-attempt-final.trycloudflare.com"
 embedded = true
 
 [build]
@@ -33,14 +33,14 @@ api_version = "2026-01"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_discounts,read_locations,read_orders,read_pixels,read_products,read_publications,read_shipping,read_themes,write_app_proxy,write_discounts,write_files,write_orders,write_products,write_publications,write_themes"
+scopes = "read_discounts,read_locations,read_markets,read_orders,read_pixels,read_products,read_publications,read_shipping,read_themes,write_app_proxy,write_discounts,write_files,write_orders,write_products,write_publications,write_themes"
 
 [auth]
 redirect_urls = [
-  "https://app.cartplus.io/api/auth"
+  "https://hostels-deleted-attempt-final.trycloudflare.com/api/auth"
 ]
 
 [app_proxy]
-url = "https://app.cartplus.io/api/proxy-order-track"
+url = "https://hostels-deleted-attempt-final.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"

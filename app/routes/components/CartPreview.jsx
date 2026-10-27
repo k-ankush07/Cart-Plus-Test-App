@@ -12,7 +12,6 @@ import Upsells from "./cart-Items/Upsells";
 import AdditionalNotes from "./cart-Items/AdditionalNotes";
 import TrustBadges from "./cart-Items/TrustBadges";
 import CustomHtml from "./cart-Items/CustomHtml";
-import DiscountCode from "./cart-Items/DiscountCodes";
 import BannerImage from "./cart-Items/BannerImage";
 import Timer from "./cart-Items/Timer";
 import OneTickUpsell from "./cart-Items/OneTickUpsell";
@@ -82,6 +81,7 @@ const CartPreview = memo(function CartPreview({
   );
   const [qty, setQty] = useState(1);
   const [subtotal, setSubtotal] = useState(null);
+  const [compareTotal, setCompareTotal] = useState(null);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const [offerOpen, setOfferOpen] = useState(false);
 
@@ -140,6 +140,7 @@ const CartPreview = memo(function CartPreview({
           currency={currency}
           previewProducts={previewProducts}
           onSubtotalChange={setSubtotal}
+          onCompareTotalChange={setCompareTotal}
           loading={previewLoading}
           onRemovePreviewProduct={onRemovePreviewProduct}
         />
@@ -352,18 +353,6 @@ const CartPreview = memo(function CartPreview({
                           cartSettings={cartSettings}
                         />
                       )}
-
-                    <SectionBg id="Discount code" cartSettings={cartSettings}>
-                      <DiscountCode
-                        discountCodesSettings={discountCodesSettings}
-                        setOfferOpen={setOfferOpen}
-                        offerOpen={offerOpen}
-                        designSettings={designSettings}
-                        currency={currency}
-                        shop={shop}
-                        apiUrl={apiUrl}
-                      />
-                    </SectionBg>
                   </div>
                 </>
               )}
@@ -399,6 +388,7 @@ const CartPreview = memo(function CartPreview({
             disableFixedFooter={cartSettings?.disableFixedFooter}
             cartSettings={cartSettings}
             subtotal={subtotal}
+            compareTotal={compareTotal}
             setBreakdownOpen={setBreakdownOpen}
             breakdownOpen={breakdownOpen}
             setOfferOpen={setOfferOpen}

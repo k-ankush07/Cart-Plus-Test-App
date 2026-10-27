@@ -31,6 +31,10 @@ import { getCurrencySymbol } from "./utils/currency";
 import { toggleBanner } from "./utils/banner";
 import { toggleTimer } from "./utils/timer";
 import { toggleOneTick } from "./utils/oneTick";
+import { toggleSummary } from "./utils/summary";
+import { toggleAgeVerification } from "./utils/ageVerification";
+import { toggleLogin } from "./utils/loginMessage";
+import { togglePaymentBadges } from "./utils/paymentBadges";
 import {
   TemplateBackgroundContext,
   templateBackground,
@@ -551,7 +555,14 @@ const CartLayout = memo(function CartLayout({
 
               "Order notes": !additionalNotesSettings?.enabled,
 
+              Summary: !!cartSettings?.summary?.enabled,
+              "Age Verification": !!cartSettings?.ageVerification?.enabled,
+              Login: !!cartSettings?.login?.enabled,
+              "Payment Badges": !!cartSettings?.paymentBadges?.enabled,
+
               "Shipping Protection & Add-ons": !addonsSettings?.enabled,
+
+              "Discount code": !discountCodesSettings?.enabled,
             }}
             onToggleItem={(key) => {
               if (key === "Banner Image") handleChange("header", toggleBanner);
@@ -561,6 +572,13 @@ const CartLayout = memo(function CartLayout({
                   ...prev,
                   enabled: !prev.enabled,
                 }));
+              if (key === "Summary")
+                handleChange("cartSettings", toggleSummary);
+              if (key === "Login") handleChange("cartSettings", toggleLogin);
+              if (key === "Payment Badges")
+                handleChange("cartSettings", togglePaymentBadges);
+              if (key === "Age Verification")
+                handleChange("cartSettings", toggleAgeVerification);
               if (key === "Cross-sell")
                 handleChange("upsellsSettings", (prev) => ({
                   ...prev,
@@ -585,6 +603,12 @@ const CartLayout = memo(function CartLayout({
                 }));
               if (key === "Shipping Protection & Add-ons")
                 handleChange("addonsSettings", (prev) => ({
+                  ...prev,
+                  enabled: !prev.enabled,
+                }));
+
+              if (key === "Discount code")
+                handleChange("discountCodesSettings", (prev) => ({
                   ...prev,
                   enabled: !prev.enabled,
                 }));

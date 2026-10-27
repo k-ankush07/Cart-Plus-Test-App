@@ -110,6 +110,7 @@ export default function DiscountCode({
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [applyingCode, setApplyingCode] = useState("");
+  const [invalid, setInvalid] = useState(false);
 
   const [discounts, setDiscounts] = useState([]);
   const [discountsLoading, setDiscountsLoading] = useState(false);
@@ -172,17 +173,35 @@ export default function DiscountCode({
   const placeholder = discountCodesSettings?.placeholder || "Discount code";
   const buttonText = discountCodesSettings?.buttonText || "Apply";
   const showOfferBgColor = discountCodesSettings?.showOfferBgColor || "#6C4DFF";
+  const invalidMessage =
+    discountCodesSettings?.invalidCodeMessage ??
+    "This discount code isn't valid. Please check the code and try again.";
+
+  const invalidBox = invalid && invalidMessage.replace(/<[^>]*>|&nbsp;/g, "").trim() && (
+    <div
+      role="alert"
+      className="cart-plus-discount-invalid"
+      style={{ color: "#D72C0D", fontSize: 13, marginTop: 6 }}
+      dangerouslySetInnerHTML={{ __html: invalidMessage }}
+    />
+  );
 
   const applyDiscountCode = (value) => {
     const trimmed = (value || "").trim();
     if (!trimmed) return;
     setApplyingCode(trimmed);
+    setInvalid(false);
     setLoading(true);
-    // TODO: replace with real cart-apply API call
+    // TODO: replace with real cart-apply API call.
+    // Until then the preview treats any code that is not in the loaded offers as invalid.
     setTimeout(() => {
+      const known = discounts.some(
+        (d) => toCodeString(d).toUpperCase() === trimmed.toUpperCase(),
+      );
       setLoading(false);
       setApplyingCode("");
-      setCode("");
+      if (known) setCode("");
+      else setInvalid(true);
     }, 2000);
   };
 
@@ -203,8 +222,8 @@ export default function DiscountCode({
             <div
               className="cart-plus-discount-heading"
               style={{ color: discountCodesSettings?.couponHeadingColor || "#000000" }}
+              dangerouslySetInnerHTML={{ __html: discountCodesSettings?.title || "" }}
             >
-              {discountCodesSettings?.title}
             </div>
           )}
 
@@ -222,7 +241,10 @@ export default function DiscountCode({
                   className="cart-discount-row__input cart-plus-discount-code-text cart-plus-discount-code-input cart-plus-discount-input upcart-discount-code-input cart-plus-public-discount-code__input"
                   placeholder={placeholder}
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(e) => {
+                    setCode(e.target.value);
+                    setInvalid(false);
+                  }}
                   disabled={loading}
                 />
                 <button
@@ -231,7 +253,11 @@ export default function DiscountCode({
                   onClick={handleDiscount}
                   disabled={loading}
                 >
-                  {isThisButtonLoading ? <span className="loader" /> : buttonText}
+                  {isThisButtonLoading ? (
+                    <span className="loader" />
+                  ) : (
+                    <span dangerouslySetInnerHTML={{ __html: buttonText }} />
+                  )}
                 </button>
               </div>
             </div>
@@ -254,6 +280,7 @@ export default function DiscountCode({
               </div>
             )}
           </div>
+          {invalidBox}
         </div>
 
         <div className="cart-plus-discount-code-badge" style={{ display: "none" }}>
@@ -299,7 +326,10 @@ export default function DiscountCode({
                     className="cart-plus-offers-code-input cart-plus-discount-code-text cart-plus-discount-code-input"
                     placeholder={placeholder}
                     value={code}
-                    onChange={(e) => setCode(e.target.value)}
+                    onChange={(e) => {
+                    setCode(e.target.value);
+                    setInvalid(false);
+                  }}
                     disabled={loading}
                   />
                 </div>
@@ -310,11 +340,15 @@ export default function DiscountCode({
                   onClick={handleDiscount}
                   disabled={loading}
                 >
-                  {isThisButtonLoading ? <span className="loader" /> : buttonText}
+                  {isThisButtonLoading ? (
+                    <span className="loader" />
+                  ) : (
+                    <span dangerouslySetInnerHTML={{ __html: buttonText }} />
+                  )}
                 </button>
               </div>
             </div>
-            <div className="cart-plus-discount-message" />
+            <div className="cart-plus-discount-message">{invalidBox}</div>
           </div>
 
           {!discountsLoading && discountsError && (

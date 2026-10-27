@@ -59,7 +59,7 @@ export default function Appearance({ designSettings, setDesignSettings, themed =
                         checked={designSettings.showStrikethrough}
                         onChange={(value) => handleChange("showStrikethrough", value)}
                     />
-                    <Checkbox
+                    {/* <Checkbox
                         label="Enable Estimated line"
                         checked={designSettings.enableSubtotal}
                         onChange={(value) => handleChange("enableSubtotal", value)}
@@ -69,7 +69,7 @@ export default function Appearance({ designSettings, setDesignSettings, themed =
                         label="Enable shipping line"
                         checked={designSettings.enableShipping}
                         onChange={(value) => handleChange("enableShipping", value)}
-                    />
+                    /> */}
 
                     <Text variant="headingSm" as="p">Cart width</Text>
 

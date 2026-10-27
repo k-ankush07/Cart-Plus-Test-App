@@ -20,9 +20,14 @@ import AddOns from "./ui-cart-options/AddOns";
 import DiscountCode from "./ui-cart-options/DiscountCode";
 import QuickCheckout from "./ui-cart-options/QuickCheckout";
 import SecurityBadges from "./ui-cart-options/SecurityBadges";
-import Preferences from "./ui-cart-options/Preferences";
+import Setting from "./ui-cart-options/Setting";
 import CartItem from "./ui-cart-options/CartItems";
 import CartSummary from "./ui-cart-options/CartSummary";
+import AgeVerification from "./ui-cart-options/AgeVerification";
+import LoginMessage from "./ui-cart-options/LoginMessage";
+import CheckoutButton from "./ui-cart-options/CheckoutButton";
+import PaymentBadges from "./ui-cart-options/PaymentBadges";
+import CartVisibility from "./ui-cart-options/CartVisibility";
 import "../../index.css";
 
 const MainContent = memo(function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
@@ -139,12 +144,6 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
                 handleChange={handleChange}
             />
         ),
-        "Quick Checkout": (
-            <QuickCheckout
-                expressPaymentsSettings={expressPaymentsSettings}
-                handleChange={handleChange}
-            />
-        ),
         "Security Badges": (
             <SecurityBadges
                 trustBadgesSettings={trustBadgesSettings}
@@ -154,8 +153,8 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
                 apiUrl={apiUrl}
             />
         ),
-        "Preferences": (
-            <Preferences
+        "Settings": (
+            <Setting
                 cartSettings={cartSettings}
                 handleChange={handleChange}
             />
@@ -167,8 +166,23 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
                 currency={currency}
             />
         ),
-        "Order Summary": (
-            <CartSummary />
+        "Cart Visibility": (
+            <CartVisibility cartSettings={cartSettings} handleChange={handleChange} />
+        ),
+        "Payment Badges": (
+            <PaymentBadges cartSettings={cartSettings} handleChange={handleChange} shop={shop} accessToken={accessToken} apiUrl={apiUrl} />
+        ),
+        "Checkout Button": (
+            <CheckoutButton cartSettings={cartSettings} designSettings={designSettings} handleChange={handleChange} />
+        ),
+        Login: (
+            <LoginMessage cartSettings={cartSettings} handleChange={handleChange} />
+        ),
+        "Age Verification": (
+            <AgeVerification cartSettings={cartSettings} handleChange={handleChange} currency={currency} />
+        ),
+        Summary: (
+            <CartSummary cartSettings={cartSettings} handleChange={handleChange} />
         )
     }), [designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
         announcementSettings, rewardsSettings, currency, recommendationsSettings,

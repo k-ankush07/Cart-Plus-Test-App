@@ -981,6 +981,7 @@ export default function CartItem({
   loading = false,
   onRemovePreviewProduct,
   onSubtotalChange,
+  onCompareTotalChange,
   qty,
   setQty,
   ...rest
@@ -1012,6 +1013,17 @@ export default function CartItem({
   useEffect(() => {
     onSubtotalChange?.(subtotal);
   }, [subtotal]);
+
+  // same sum at the compare-at price (falls back to the price when there is none)
+  const compareTotal = rows.reduce((sum, r) => {
+    const v = r.product.variants[0];
+    const price = parseFloat(v?.price) || 0;
+    const compareAt = parseFloat(v?.compareAtPrice) || 0;
+    return sum + (compareAt > price ? compareAt : price) * (qtys[r.key] ?? 1);
+  }, 0);
+  useEffect(() => {
+    onCompareTotalChange?.(compareTotal);
+  }, [compareTotal]);
 
   const makeSetQty = (id) => (value) =>
     setQtys((prev) => {

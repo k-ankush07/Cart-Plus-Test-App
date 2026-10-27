@@ -197,6 +197,8 @@ export const defaultDiscountCodesSettings = {
   title:"Coupon Code",
   showTitle:true,
   showOfferBgColor:"#6C4DFF",
+  invalidCodeMessage:
+    "This discount code isn't valid. Please check the code and try again.",
 };
 
 export const defaultExpressPaymentsSettings = {

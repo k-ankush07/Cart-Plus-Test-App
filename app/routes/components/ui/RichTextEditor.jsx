@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { BlockStack } from "@shopify/polaris";
+import { BlockStack, InlineGrid, Select } from "@shopify/polaris";
 import ColorInput from "./ColorInput";
 
 const TOOLS = [
@@ -8,11 +8,17 @@ const TOOLS = [
     { cmd: "underline", icon: "https://www.hubsyntax.com/cart-images/underline-1.png", alt: "Underline" },
 ];
 
+const FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32, 40].map((n) => ({
+    label: `${n}px`,
+    value: String(n),
+}));
+
 function RichTextEditor({ value, onChange }) {
     const ref = useRef(null);
     const savedRange = useRef(null);
 
     const [color, setColor] = useState("#000000");
+    const [fontSize, setFontSize] = useState("14");
 
     useEffect(() => {
         if (ref.current && value !== ref.current.innerHTML) {
@@ -61,6 +67,37 @@ function RichTextEditor({ value, onChange }) {
 
         document.execCommand("styleWithCSS", false, true);
         document.execCommand("foreColor", false, hex);
+        emit();
+    };
+
+    // font size in px for the selected text, or the whole text when nothing is selected.
+    // execCommand only knows sizes 1-7, so mark the text with 7 and swap in a real px size.
+    const applyFontSize = (px) => {
+        setFontSize(px);
+
+        const editor = ref.current;
+        editor.focus();
+
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+
+        const range = savedRange.current;
+        if (range && !range.collapsed) {
+            sel.addRange(range);
+        } else {
+            const all = document.createRange();
+            all.selectNodeContents(editor);
+            sel.addRange(all);
+        }
+
+        document.execCommand("styleWithCSS", false, false);
+        document.execCommand("fontSize", false, "7");
+        editor.querySelectorAll(`font[size="7"]`).forEach((node) => {
+            const span = document.createElement("span");
+            span.style.fontSize = `${px}px`;
+            span.innerHTML = node.innerHTML;
+            node.replaceWith(span);
+        });
         emit();
     };
 
@@ -121,11 +158,19 @@ function RichTextEditor({ value, onChange }) {
                 />
             </div>
 
-            <ColorInput
-                label="Text color"
-                value={color}
-                onChange={applyColor}
-            />
+            <InlineGrid columns={2} gap="300" alignItems="end">
+                <ColorInput
+                    label="Text color"
+                    value={color}
+                    onChange={applyColor}
+                />
+                <Select
+                    label="Font size"
+                    options={FONT_SIZES}
+                    value={fontSize}
+                    onChange={applyFontSize}
+                />
+            </InlineGrid>
         </BlockStack>
     );
 }

@@ -4,6 +4,14 @@ import AddOns from "./AddOns";
 import TrustBadges from "./TrustBadges";
 import CustomHtml from "./CustomHtml";
 import SectionBg from "./SectionBg";
+import Summary from "./Summary";
+import AgeVerification from "./AgeVerification";
+import LoginMessage from "./LoginMessage";
+import PaymentBadges from "./PaymentBadges";
+import { fillPrice, getCheckoutButton } from "../utils/checkoutButton";
+import { getAgeVerification } from "../utils/ageVerification";
+import DiscountCode from "./DiscountCodes";
+
 import { backgroundToCss } from "../utils/background";
 
 export default function CartFooter({
@@ -16,6 +24,7 @@ export default function CartFooter({
   disableFixedFooter,
   cartSettings,
   subtotal,
+  compareTotal,
   breakdownOpen,
   setBreakdownOpen,
   offerOpen,
@@ -24,6 +33,8 @@ export default function CartFooter({
   apiUrl,
 }) {
   const [loading, setLoading] = useState(false);
+  const [ageChecked, setAgeChecked] = useState(false);
+  const [ageError, setAgeError] = useState(false);
 
   const totalPrice = Number(subtotal ?? 200);
   const totalLabel = totalPrice.toFixed(2);
@@ -34,15 +45,25 @@ export default function CartFooter({
   );
 
   const handleCheckout = () => {
+    // age verification must be confirmed first
+    if (getAgeVerification(cartSettings).enabled && !ageChecked) {
+      setAgeError(true);
+      return;
+    }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
     }, 2000);
   };
 
-  const buttonText = cartSettings.goToCartPageOnCheckout
-    ? cartSettings.viewCartName || "View Cart"
-    : checkoutText;
+  const btn = getCheckoutButton(cartSettings);
+  // a label set on the Checkout Button page wins; otherwise the Preferences text is used
+  const buttonText =
+    btn.label != null
+      ? fillPrice(btn.label, `${currency} ${totalLabel}`)
+      : cartSettings.goToCartPageOnCheckout
+        ? cartSettings.viewCartName || "View Cart"
+        : checkoutText;
 
   return (
     <div
@@ -67,121 +88,73 @@ export default function CartFooter({
 
       <div>
         <SectionBg id="Add ons" cartSettings={cartSettings}>
-          <div style={{ background: backgroundToCss(addonsSettings?.background) }}>
+          <div
+            style={{ background: backgroundToCss(addonsSettings?.background) }}
+          >
             <AddOns addonsSettings={addonsSettings} currency={currency} />
           </div>
         </SectionBg>
 
-        {designSettings.enableSubtotal && (
-          <div
-            className="cart-plus-savings-row cart-plus-savings-amount"
-            onClick={() => setBreakdownOpen((prev) => !prev)}
-            style={{ cursor: "pointer" }}
-          >
-            <div className="cart-plus-total-header">
-              <div className="cart-plus-total-header-left">
-                <span
-                  className="cart-plus-total-label"
-                  style={{ color: designSettings.subtotalColor }}
-                >
-                  Estimated Total
-                </span>
-                <span
-                  className="cart-plus-total-arrow"
-                  style={{
-                    transform: breakdownOpen
-                      ? "rotate(180deg)"
-                      : "rotate(0deg)",
-                    transition: "transform 0.3s ease",
-                  }}
-                >
-                  <svg
-                    width="12"
-                    height="8"
-                    viewBox="0 0 12 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M1 1L6 6L11 1"
-                      stroke={designSettings.iconColor}
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    ></path>
-                  </svg>
-                </span>
-              </div>
-              <div className="cart-plus-total-header-right">
-                <span className="cart-plus-total-original"></span>
-                <span
-                  className="cart-plus-total-final"
-                  style={{ color: designSettings.subtotalColor }}
-                >
-                  {currency} {totalLabel}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+        <Summary
+          cartSettings={cartSettings}
+          currency={currency}
+          subtotal={subtotal}
+          compareTotal={compareTotal}
+          discountCodes={["MEGA20"]}
+          designSettings={designSettings}
+        />
 
-        <div
-          className={`cart-plus-total-breakdown ${breakdownOpen ? "cart-plus-breakdown-open" : ""}`}
-        >
-          <div className="cart-plus-cart-breakdown-header cart-plus-public-cart-summary__slide-codes">
-            <div className="cart-plus-breakdown-row cart-plus-public-cart-summary__total-discount">
-              <span style={{ color: designSettings.textColor }}>Total MRP</span>
-              <span style={{ color: designSettings.textColor }}>
-                {currency} {totalLabel}
-              </span>
-            </div>
-            <div className="cart-plus-breakdown-row cart-plus-public-cart-summary__discount-label">
-              <span style={{ color: designSettings.textColor }}>
-                {cartSettings.discountsSavingsText}
-              </span>
-              <span
-                className="cart-plus-public-cart-summary__discount-codes"
-                style={{ color: "#10812F" }}
-              >
-                MEGA20
-              </span>
-            </div>
-            {designSettings.enableShipping && (
-              <div className="cart-plus-breakdown-row">
-                <span style={{ color: designSettings.textColor }}>
-                  Shipping
-                </span>
-                <span style={{ color: "#10812F" }}>Free</span>
-              </div>
-            )}
-            <div className="cart-plus-breakdown-row cart-plus-breakdown-grand">
-              <span style={{ color: designSettings.textColor }}>
-                Grand Total
-              </span>
-              <span style={{ color: designSettings.textColor }}>
-                {currency} {totalLabel}
-              </span>
-            </div>
-          </div>
-        </div>
+        <SectionBg id="Discount code" cartSettings={cartSettings}>
+          <DiscountCode
+            discountCodesSettings={discountCodesSettings}
+            setOfferOpen={setOfferOpen}
+            offerOpen={offerOpen}
+            designSettings={designSettings}
+            currency={currency}
+            shop={shop}
+            apiUrl={apiUrl}
+          />
+        </SectionBg>
+
+        <AgeVerification
+          cartSettings={cartSettings}
+          checked={ageChecked}
+          error={ageError && !ageChecked}
+          onChange={(v) => {
+            setAgeChecked(v);
+            if (v) setAgeError(false);
+          }}
+        />
+
+        <LoginMessage cartSettings={cartSettings} />
 
         {/* above_checkout */}
         <CustomHtml cartSettings={cartSettings} position="above_checkout" />
 
-        <div className="cart-plus-checkout-button-container cart-plus-checkout-button">
+        <div
+          className="cart-plus-checkout-button-container cart-plus-checkout-button"
+          style={{ background: backgroundToCss(btn.sectionBackground) }}
+        >
           <button
             className="cart-app__checkout cart-plus-checkout-button cart-plus-checkout-button-container"
             style={{
-              borderRadius: `${designSettings.buttonRadius}px`,
-              background: designSettings.buttonColor,
+              borderRadius: `${btn.radius ?? designSettings.buttonRadius}px`,
+              background: backgroundToCss(btn.background) || designSettings.buttonColor,
+              ...(btn.borderColor ? { border: `1px solid ${btn.borderColor}` } : {}),
               "--btn-hover-text": designSettings.buttonHoverColor,
               "--btn-text": designSettings.buttonTextColor,
             }}
             onClick={handleCheckout}
           >
-            {loading ? <span className="loader"></span> : buttonText}
+            {loading ? (
+              <span className="loader"></span>
+            ) : (
+              <span dangerouslySetInnerHTML={{ __html: buttonText }} />
+            )}
           </button>
         </div>
+
+        <PaymentBadges cartSettings={cartSettings} />
 
         {/* below_checkout */}
         <CustomHtml cartSettings={cartSettings} position="below_checkout" />
