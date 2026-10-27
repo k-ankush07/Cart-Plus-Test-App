@@ -550,6 +550,8 @@ const CartLayout = memo(function CartLayout({
               "Cross-sell": !upsellsSettings?.enabled,
 
               "Order notes": !additionalNotesSettings?.enabled,
+
+              "Shipping Protection & Add-ons": !addonsSettings?.enabled,
             }}
             onToggleItem={(key) => {
               if (key === "Banner Image") handleChange("header", toggleBanner);
@@ -578,6 +580,11 @@ const CartLayout = memo(function CartLayout({
                 }));
               if (key === "Announcement")
                 handleChange("announcement", (prev) => ({
+                  ...prev,
+                  enabled: !prev.enabled,
+                }));
+              if (key === "Shipping Protection & Add-ons")
+                handleChange("addonsSettings", (prev) => ({
                   ...prev,
                   enabled: !prev.enabled,
                 }));

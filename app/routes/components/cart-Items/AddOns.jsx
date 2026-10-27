@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { backgroundToCss } from "../utils/background";
 
 const ShippingIcon = () => (
     <div
@@ -24,7 +25,7 @@ const ShippingIcon = () => (
     </div>
 );
 
-const Toggle = ({ on, onChange }) => (
+const Toggle = ({ on, onChange, color = "#000" }) => (
     <button
         type="button"
         className="cart-plus-public-addons__toggle"
@@ -33,7 +34,7 @@ const Toggle = ({ on, onChange }) => (
             width: 40,
             height: 22,
             borderRadius: 11,
-            background: on ? "#000" : "#c4c4c4",
+            background: on ? color : "#c4c4c4",
             border: "none",
             padding: 2,
             cursor: "pointer",
@@ -80,7 +81,10 @@ export default function AddOns({ addonsSettings, currency }) {
     };
 
     return (
-        <div className="cart-addon-tile cart-plus-addons cart-plus-public-addons cart-plus-addons">
+        <div
+            className="cart-addon-tile cart-plus-addons cart-plus-public-addons cart-plus-addons"
+            style={{ background: backgroundToCss(addonsSettings.cardBackground) }}
+        >
             {isShipping ? (
                 <ShippingIcon />
             ) : (
@@ -110,7 +114,11 @@ export default function AddOns({ addonsSettings, currency }) {
             <div className="cart-addon-tile__info cart-plus-public-addons__content-wrapper">
                 <div className="cart-addon-tile__title-row cart-plus-public-addons__content-title-wrapper cart-plus-addons-title">
                     <span className="cart-addon-tile__title cart-plus-addons-title cart-plus-public-addons__content-title">
-                        {truncateText(isShipping ? addonsSettings.title : product?.title || "Product add-on")}
+                        {isShipping ? (
+                            <span dangerouslySetInnerHTML={{ __html: addonsSettings.title || "" }} />
+                        ) : (
+                            truncateText(product?.title || "Product add-on")
+                        )}
                     </span>
                     <span className="cart-addon-tile__price cart-plus-addons-price cart-plus-public-addons__price cart-plus-public-addons__content-price">
                         {isShipping ? (
@@ -125,15 +133,28 @@ export default function AddOns({ addonsSettings, currency }) {
                         )}
                     </span>
                 </div>
-                <p className="cart-addon-tile__desc cart-plus-addons-product-description cart-plus-public-addons__content-description">
-                    {truncateText(isShipping ? addonsSettings.description : product?.description || "", 60)}
-                </p>
+                {(addonsSettings.showDescription ?? true) && (
+                    <p className="cart-addon-tile__desc cart-plus-addons-product-description cart-plus-public-addons__content-description">
+                        {isShipping ? (
+                            <span dangerouslySetInnerHTML={{ __html: addonsSettings.description || "" }} />
+                        ) : (
+                            truncateText(product?.description || "", 60)
+                        )}
+                    </p>
+                )}
             </div>
-            {isShipping && (<span className="cart-addon-tile__price cart-plus-addons-price cart-plus-public-addons__price"> {currency} {addonsSettings.price}</span>)}
+            {isShipping && (
+                <span className="cart-addon-tile__price cart-plus-addons-price cart-plus-public-addons__price">
+                    {addonsSettings.compareAtPrice && (
+                        <span className="cart-plus-addons-compare-price" style={{ textDecoration: "line-through", opacity: 0.6, marginRight: 4 }}>{currency} {addonsSettings.compareAtPrice}</span>
+                    )}
+                    {currency} {addonsSettings.price}
+                </span>
+            )}
 
             {/* TOGGLE */}
             <div className=" cart-plus-addons-toggle cart-plus-public-addons__toggle-wrapper">
-                <Toggle on={toggled} onChange={handleToggle} />
+                <Toggle on={toggled} onChange={handleToggle} color={addonsSettings.toggleColor || "#000"} />
             </div>
         </div>
     );

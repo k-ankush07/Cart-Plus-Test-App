@@ -230,6 +230,8 @@ const Sidebar = memo(function Sidebar({
   }, [JSON.stringify(enabledMap)]);
 
   const toggle = (key) => {
+    // enabling an item also opens its settings page
+    if (!enabled[key]) setActiveTab?.(key);
     setEnabled((p) => ({ ...p, [key]: !p[key] }));
     onToggleItem?.(key);
   };

@@ -123,7 +123,7 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
                 handleChange={handleChange}
             />
         ),
-        "Add ons": (
+        "Shipping Protection & Add-ons": (
             <AddOns
                 addonsSettings={addonsSettings}
                 handleChange={handleChange}

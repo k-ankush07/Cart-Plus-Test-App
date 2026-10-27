@@ -171,6 +171,11 @@ export const defaultAddonsSettings = {
   description:
     "Protect your order from damage, loss, or theft during shipping.",
   price: "2.50",
+  compareAtPrice: "",
+  showDescription: true,
+  cardBackground: null, // BackgroundInput values, null = the cart's own look
+  background: null,
+  toggleColor: "#000000",
   sourceType: "products",
   dynamicPricing: false,
   includeInItemCount: true,

@@ -4,6 +4,7 @@ import AddOns from "./AddOns";
 import TrustBadges from "./TrustBadges";
 import CustomHtml from "./CustomHtml";
 import SectionBg from "./SectionBg";
+import { backgroundToCss } from "../utils/background";
 
 export default function CartFooter({
   designSettings,
@@ -66,7 +67,9 @@ export default function CartFooter({
 
       <div>
         <SectionBg id="Add ons" cartSettings={cartSettings}>
-          <AddOns addonsSettings={addonsSettings} currency={currency} />
+          <div style={{ background: backgroundToCss(addonsSettings?.background) }}>
+            <AddOns addonsSettings={addonsSettings} currency={currency} />
+          </div>
         </SectionBg>
 
         {designSettings.enableSubtotal && (
