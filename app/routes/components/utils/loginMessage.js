@@ -1,4 +1,5 @@
 // Login message lives in cartSettings.login (saved with the cart settings).
+// The Empty cart has its own copy under cartSettings.emptyLogin, so the two never share data.
 export const LOGIN_DEFAULTS = {
   enabled: false,
   beforeLink: "Have an account?",
@@ -15,19 +16,25 @@ export const ALIGNMENT_OPTIONS = [
   { label: "Right", value: "right" },
 ];
 
-export const getLogin = (cartSettings) => ({
+export const EMPTY_LOGIN_KEY = "emptyLogin";
+
+export const getLogin = (cartSettings, key = "login") => ({
   ...LOGIN_DEFAULTS,
-  ...(cartSettings?.login || {}),
+  ...(cartSettings?.[key] || {}),
 });
 
 // functional updater for handleChange("cartSettings", ...)
-// Back at all defaults -> the `login` key is dropped, so the save bar goes away.
-export const patchLogin = (patch) => (prev) => {
-  const { login: _old, ...rest } = prev || {};
-  const next = { ...LOGIN_DEFAULTS, ...(_old || {}), ...patch };
-  const isDefault = JSON.stringify(next) === JSON.stringify(LOGIN_DEFAULTS);
-  return isDefault ? rest : { ...rest, login: next };
-};
+// Back at all defaults -> the key is dropped, so the save bar goes away.
+export const patchLogin =
+  (patch, key = "login") =>
+  (prev) => {
+    const { [key]: _old, ...rest } = prev || {};
+    const next = { ...LOGIN_DEFAULTS, ...(_old || {}), ...patch };
+    const isDefault = JSON.stringify(next) === JSON.stringify(LOGIN_DEFAULTS);
+    return isDefault ? rest : { ...rest, [key]: next };
+  };
 
-export const toggleLogin = (prev) =>
-  patchLogin({ enabled: !getLogin(prev).enabled })(prev);
+export const toggleLogin = (prev, key = "login") =>
+  patchLogin({ enabled: !getLogin(prev, key).enabled }, key)(prev);
+
+export const toggleEmptyLogin = (prev) => toggleLogin(prev, EMPTY_LOGIN_KEY);

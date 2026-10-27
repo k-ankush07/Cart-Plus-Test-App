@@ -1,8 +1,8 @@
 import { getLogin } from "../utils/loginMessage";
 
 // Preview of the "Have an account? Log in ..." line above the checkout button
-export default function LoginMessage({ cartSettings }) {
-  const s = getLogin(cartSettings);
+export default function LoginMessage({ cartSettings, settingsKey = "login" }) {
+  const s = getLogin(cartSettings, settingsKey);
   if (!s.enabled) return null;
 
   const part = (html) => <span dangerouslySetInnerHTML={{ __html: html }} />;

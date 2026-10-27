@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import AdditionalNotes from "./AdditionalNotes";
 import AddOns from "./AddOns";
 import TrustBadges from "./TrustBadges";
@@ -10,6 +10,7 @@ import LoginMessage from "./LoginMessage";
 import PaymentBadges from "./PaymentBadges";
 import { fillPrice, getCheckoutButton } from "../utils/checkoutButton";
 import { getAgeVerification } from "../utils/ageVerification";
+import { DEFAULT_FOOTER_ORDER, resolveOrder } from "../utils/sectionOrder";
 import DiscountCode from "./DiscountCodes";
 
 import { backgroundToCss } from "../utils/background";
@@ -23,6 +24,7 @@ export default function CartFooter({
   trustBadgesSettings,
   disableFixedFooter,
   cartSettings,
+  sectionOrder,
   subtotal,
   compareTotal,
   breakdownOpen,
@@ -65,69 +67,68 @@ export default function CartFooter({
         ? cartSettings.viewCartName || "View Cart"
         : checkoutText;
 
-  return (
-    <div
-      className="cart-app__footer cart-plus-footer"
-      style={{
-        backgroundColor: designSettings.accentColor,
-        ...(designSettings.footerBackground
-          ? { background: designSettings.footerBackground }
-          : {}),
-        zIndex: 10,
-        ...(disableFixedFooter ? { flexShrink: 1 } : {}),
-      }}
-    >
-      {!additionalNotesSettings?.enabled && (
-        <SectionBg id="Add Notes" cartSettings={cartSettings}>
-          <AdditionalNotes
-            additionalNotesSettings={additionalNotesSettings}
-            designSettings={designSettings}
-          />
-        </SectionBg>
-      )}
-
-      <div>
-        <SectionBg id="Add ons" cartSettings={cartSettings}>
-          <div
-            style={{ background: backgroundToCss(addonsSettings?.background) }}
-          >
-            <AddOns addonsSettings={addonsSettings} currency={currency} />
-          </div>
-        </SectionBg>
-
-        <Summary
-          cartSettings={cartSettings}
-          currency={currency}
-          subtotal={subtotal}
-          compareTotal={compareTotal}
-          discountCodes={["MEGA20"]}
+  // Footer rows, in the order set by dragging them in the sidebar
+  const footerBlocks = {
+    "Order notes": !additionalNotesSettings?.enabled && (
+      <SectionBg id="Add Notes" cartSettings={cartSettings}>
+        <AdditionalNotes
+          additionalNotesSettings={additionalNotesSettings}
           designSettings={designSettings}
         />
+      </SectionBg>
+    ),
 
-        <SectionBg id="Discount code" cartSettings={cartSettings}>
-          <DiscountCode
-            discountCodesSettings={discountCodesSettings}
-            setOfferOpen={setOfferOpen}
-            offerOpen={offerOpen}
-            designSettings={designSettings}
-            currency={currency}
-            shop={shop}
-            apiUrl={apiUrl}
-          />
-        </SectionBg>
+    "Shipping Protection & Add-ons": (
+      <SectionBg id="Add ons" cartSettings={cartSettings}>
+        <div
+          style={{ background: backgroundToCss(addonsSettings?.background) }}
+        >
+          <AddOns addonsSettings={addonsSettings} currency={currency} />
+        </div>
+      </SectionBg>
+    ),
 
-        <AgeVerification
-          cartSettings={cartSettings}
-          checked={ageChecked}
-          error={ageError && !ageChecked}
-          onChange={(v) => {
-            setAgeChecked(v);
-            if (v) setAgeError(false);
-          }}
+    Summary: (
+      <Summary
+        cartSettings={cartSettings}
+        currency={currency}
+        subtotal={subtotal}
+        compareTotal={compareTotal}
+        discountCodes={["MEGA20"]}
+        designSettings={designSettings}
+      />
+    ),
+
+    "Discount code": (
+      <SectionBg id="Discount code" cartSettings={cartSettings}>
+        <DiscountCode
+          discountCodesSettings={discountCodesSettings}
+          setOfferOpen={setOfferOpen}
+          offerOpen={offerOpen}
+          designSettings={designSettings}
+          currency={currency}
+          shop={shop}
+          apiUrl={apiUrl}
         />
+      </SectionBg>
+    ),
 
-        <LoginMessage cartSettings={cartSettings} />
+    "Age Verification": (
+      <AgeVerification
+        cartSettings={cartSettings}
+        checked={ageChecked}
+        error={ageError && !ageChecked}
+        onChange={(v) => {
+          setAgeChecked(v);
+          if (v) setAgeError(false);
+        }}
+      />
+    ),
 
+    Login: <LoginMessage cartSettings={cartSettings} />,
+
+    "Checkout Button": (
+      <>
         {/* above_checkout */}
         <CustomHtml cartSettings={cartSettings} position="above_checkout" />
 
@@ -139,8 +140,11 @@ export default function CartFooter({
             className="cart-app__checkout cart-plus-checkout-button cart-plus-checkout-button-container"
             style={{
               borderRadius: `${btn.radius ?? designSettings.buttonRadius}px`,
-              background: backgroundToCss(btn.background) || designSettings.buttonColor,
-              ...(btn.borderColor ? { border: `1px solid ${btn.borderColor}` } : {}),
+              background:
+                backgroundToCss(btn.background) || designSettings.buttonColor,
+              ...(btn.borderColor
+                ? { border: `1px solid ${btn.borderColor}` }
+                : {}),
               "--btn-hover-text": designSettings.buttonHoverColor,
               "--btn-text": designSettings.buttonTextColor,
             }}
@@ -153,8 +157,29 @@ export default function CartFooter({
             )}
           </button>
         </div>
+      </>
+    ),
 
-        <PaymentBadges cartSettings={cartSettings} />
+    "Payment Badges": <PaymentBadges cartSettings={cartSettings} />,
+  };
+  const footerOrder = resolveOrder(sectionOrder?.Footer, DEFAULT_FOOTER_ORDER);
+
+  return (
+    <div
+      className="cart-app__footer cart-plus-footer"
+      style={{
+        backgroundColor: designSettings.accentColor,
+        ...(designSettings.footerBackground
+          ? { background: designSettings.footerBackground }
+          : {}),
+        zIndex: 10,
+        ...(disableFixedFooter ? { flexShrink: 1 } : {}),
+      }}
+    >
+      <div>
+        {footerOrder.map((key) => (
+          <Fragment key={key}>{footerBlocks[key]}</Fragment>
+        ))}
 
         {/* below_checkout */}
         <CustomHtml cartSettings={cartSettings} position="below_checkout" />

@@ -1387,6 +1387,13 @@ span.cart-plus-rewards-tier-icon {
     padding-bottom: 10px;
 }
 
+.cart-plus-lib-icon .Polaris-Icon, .cart-plus-lib-icon svg {
+    color: inherit;
+    fill: currentColor;
+    height: 100%;
+    width: 100%;
+}
+
 .cart-plus-discount-input-btn {
     width: 100%;
     display: flex;

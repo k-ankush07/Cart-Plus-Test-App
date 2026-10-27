@@ -18,7 +18,6 @@ import UpsellsSettings from "./ui-cart-options/UpsellsSettings";
 import AddNotes from "./ui-cart-options/AddNotes";
 import AddOns from "./ui-cart-options/AddOns";
 import DiscountCode from "./ui-cart-options/DiscountCode";
-import QuickCheckout from "./ui-cart-options/QuickCheckout";
 import SecurityBadges from "./ui-cart-options/SecurityBadges";
 import Setting from "./ui-cart-options/Setting";
 import CartItem from "./ui-cart-options/CartItems";
@@ -28,6 +27,8 @@ import LoginMessage from "./ui-cart-options/LoginMessage";
 import CheckoutButton from "./ui-cart-options/CheckoutButton";
 import PaymentBadges from "./ui-cart-options/PaymentBadges";
 import CartVisibility from "./ui-cart-options/CartVisibility";
+import EmptyCart from "./ui-cart-options/EmptyCart";
+import { getEmptyUpsells, emptyUpsellsHandleChange } from "./utils/emptyUpsells";
 import "../../index.css";
 
 const MainContent = memo(function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
@@ -165,6 +166,22 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
                 cartSettings={cartSettings}
                 currency={currency}
             />
+        ),
+        "Empty Cross-sell": (
+            <UpsellsSettings
+                upsellsSettings={getEmptyUpsells(cartSettings)}
+                handleChange={emptyUpsellsHandleChange(handleChange)}
+                currency={currency}
+                shop={shop}
+                accessToken={accessToken}
+                apiUrl={apiUrl}
+            />
+        ),
+        "Empty Login": (
+            <LoginMessage cartSettings={cartSettings} handleChange={handleChange} settingsKey="emptyLogin" />
+        ),
+        "Empty Settings": (
+            <EmptyCart cartSettings={cartSettings} designSettings={designSettings} handleChange={handleChange} shop={shop} accessToken={accessToken} apiUrl={apiUrl} />
         ),
         "Cart Visibility": (
             <CartVisibility cartSettings={cartSettings} handleChange={handleChange} />

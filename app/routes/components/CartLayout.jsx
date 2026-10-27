@@ -33,7 +33,8 @@ import { toggleTimer } from "./utils/timer";
 import { toggleOneTick } from "./utils/oneTick";
 import { toggleSummary } from "./utils/summary";
 import { toggleAgeVerification } from "./utils/ageVerification";
-import { toggleLogin } from "./utils/loginMessage";
+import { toggleLogin, toggleEmptyLogin } from "./utils/loginMessage";
+import { getEmptyUpsells, toggleEmptyUpsells } from "./utils/emptyUpsells";
 import { togglePaymentBadges } from "./utils/paymentBadges";
 import {
   TemplateBackgroundContext,
@@ -558,6 +559,8 @@ const CartLayout = memo(function CartLayout({
               Summary: !!cartSettings?.summary?.enabled,
               "Age Verification": !!cartSettings?.ageVerification?.enabled,
               Login: !!cartSettings?.login?.enabled,
+              "Empty Cross-sell": !getEmptyUpsells(cartSettings).enabled,
+              "Empty Login": !!cartSettings?.emptyLogin?.enabled,
               "Payment Badges": !!cartSettings?.paymentBadges?.enabled,
 
               "Shipping Protection & Add-ons": !addonsSettings?.enabled,
@@ -575,6 +578,8 @@ const CartLayout = memo(function CartLayout({
               if (key === "Summary")
                 handleChange("cartSettings", toggleSummary);
               if (key === "Login") handleChange("cartSettings", toggleLogin);
+              if (key === "Empty Login") handleChange("cartSettings", toggleEmptyLogin);
+              if (key === "Empty Cross-sell") handleChange("cartSettings", toggleEmptyUpsells);
               if (key === "Payment Badges")
                 handleChange("cartSettings", togglePaymentBadges);
               if (key === "Age Verification")
@@ -862,7 +867,7 @@ const CartLayout = memo(function CartLayout({
         className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
         style={{
           width: isPreviewVisible ? undefined : "0px",
-          ...(isPreviewVisible && upsellsSettings?.layout === "side"
+          ...(isPreviewVisible && (previewMode === "items" ? upsellsSettings : getEmptyUpsells(cartSettings))?.layout === "side"
             ? { overflow: "visible" }
             : {}),
           ...(designSettings?.colorMode && designSettings?.layout === "floating"

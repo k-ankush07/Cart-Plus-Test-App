@@ -24,9 +24,9 @@ const Field = ({ label, value, onChange }) => (
 
 const px = (val) => Math.max(0, Math.min(100, Number(val) || 0));
 
-export default function LoginMessage({ cartSettings, handleChange }) {
-  const s = getLogin(cartSettings);
-  const update = (patch) => handleChange("cartSettings", patchLogin(patch));
+export default function LoginMessage({ cartSettings, handleChange, settingsKey = "login" }) {
+  const s = getLogin(cartSettings, settingsKey);
+  const update = (patch) => handleChange("cartSettings", patchLogin(patch, settingsKey));
 
   return (
     <div className="mainContent">

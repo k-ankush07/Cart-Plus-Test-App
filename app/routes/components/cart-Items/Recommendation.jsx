@@ -359,7 +359,6 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                 <div className="styles_CartPreview__empty__">
                     <div className="empty-cart-custom-text"> <CustomHtml cartSettings={cartSettings} position="empty_cart" /></div>
 
-                    <h3 className="cart-plus-recommendations-title">{cartSettings.emptyCartMessage}</h3>
                     {/* HEADER */}
                     {!recommendationsSettings.enabled && (
                         <div

@@ -164,7 +164,12 @@ export default function Upsells({
         collectionIds:
           !useAny && sourceType === "collections" ? selectedItems || [] : [],
         anyProducts: useAny,
-        limit: 3,
+        // hand-picked products: show all of them ("Set Upsell Limit in Cart" caps it below);
+        // otherwise just a few store products
+        limit:
+          !useAny && sourceType === "products"
+            ? Math.max(selectedItems?.products?.length || 0, 3)
+            : 3,
       }),
     })
       .then((res) => res.json())

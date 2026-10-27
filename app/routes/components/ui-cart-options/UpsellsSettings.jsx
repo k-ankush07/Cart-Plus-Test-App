@@ -36,12 +36,6 @@ const UPSELL_LAYOUTS = [
   { value: "side", label: "Side panel" },
 ];
 
-const UPSELL_TRIGGERS = [
-  { value: "button", label: "Button" },
-  { value: "checkbox", label: "Checkbox" },
-  { value: "toggle", label: "Toggle" },
-];
-
 // selectable cards, same look as the other style pickers
 const OptionCards = ({ label, options, value, onChange, columns = 3 }) => (
   <BlockStack gap="100">

@@ -152,13 +152,22 @@ export const action = async ({ request }) => {
     }
   `;
 
-  const res = await admin.graphql(query, { variables: { ids: variantIds } });
-  const data = await res.json();
+  // Shopify's nodes() takes at most 250 ids, and a few products can have hundreds of
+  // variants, so ask in chunks
+  const NODES_LIMIT = 250;
+  const variantNodes = [];
+  for (let i = 0; i < variantIds.length; i += NODES_LIMIT) {
+    const res = await admin.graphql(query, {
+      variables: { ids: variantIds.slice(i, i + NODES_LIMIT) },
+    });
+    const data = await res.json();
+    variantNodes.push(...(data?.data?.nodes || []));
+  }
 
   // Group the selected variants by their parent product
   const grouped = new Map();
 
-  (data?.data?.nodes || []).forEach((variantNode) => {
+  variantNodes.forEach((variantNode) => {
     if (!variantNode?.product) return;
     if (variantNode.product.status !== "ACTIVE") return;
 

@@ -338,7 +338,7 @@ export default function Setting({ handleChange, cartSettings }) {
                             <BlockStack gap="400">
                                 <Text variant="headingMd">Body</Text>
                                 <TextField label="Automatic discount savings text per cart item" value={cartSettings.savingsText} onChange={(v) => update("savingsText", v)} />
-                                <TextField label="Empty cart message" value={cartSettings.emptyCartMessage} onChange={(v) => update("emptyCartMessage", v)} />
+                                {/* <TextField label="Empty cart message" value={cartSettings.emptyCartMessage} onChange={(v) => update("emptyCartMessage", v)} /> */}
                                 <TextField label="Continue shopping button text" value={cartSettings.continueShoppingText} onChange={(v) => update("continueShoppingText", v)} />
                             </BlockStack>
                         </Card>

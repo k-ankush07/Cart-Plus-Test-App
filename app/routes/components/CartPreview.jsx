@@ -7,6 +7,9 @@ import TieredReward from "./cart-Items/TieredRewards";
 import CartHeading from "./cart-Items/CartHeading";
 import CartFooter from "./cart-Items/CartFooter";
 import Recommendation from "./cart-Items/Recommendation";
+import EmptyCart from "./cart-Items/EmptyCart";
+import LoginMessage from "./cart-Items/LoginMessage";
+import { getEmptyUpsells } from "./utils/emptyUpsells";
 import Subscription from "./cart-Items/Subscription";
 import Upsells from "./cart-Items/Upsells";
 import AdditionalNotes from "./cart-Items/AdditionalNotes";
@@ -84,6 +87,9 @@ const CartPreview = memo(function CartPreview({
   const [compareTotal, setCompareTotal] = useState(null);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const [offerOpen, setOfferOpen] = useState(false);
+
+  // the Empty cart has its own Cross-sell settings
+  const sideUpsells = emptyCart ? getEmptyUpsells(cartSettings) : upsellsSettings;
 
   const bodyBg = backgroundToCss(getCartItemOptions(cartSettings).sectionBackground);
   const showTopRows =!emptyCart && activeTab !== "Recommended Products";
@@ -215,12 +221,11 @@ const CartPreview = memo(function CartPreview({
       }}
     >
       {/* Cross-sell "Side panel" layout: a strip of products beside the cart */}
-      {!emptyCart &&
-        !upsellsSettings.enabled &&
-        upsellsSettings.layout === "side" && (
+      {!sideUpsells.enabled &&
+        sideUpsells.layout === "side" && (
           <Upsells
             sidePanel
-            upsellsSettings={upsellsSettings}
+            upsellsSettings={sideUpsells}
             designSettings={designSettings}
             currency={currency}
             cartSettings={cartSettings}
@@ -300,15 +305,24 @@ const CartPreview = memo(function CartPreview({
         >
           {emptyCart ? (
             <>
-              <SectionBg id="Recommended Products" cartSettings={cartSettings}>
-                <Recommendation
-                  recommendationsSettings={recommendationsSettings}
-                  currency={currency}
-                  cartSettings={cartSettings}
-                  upsellsSettings={upsellsSettings}
-                  designSettings={designSettings}
-                />
-              </SectionBg>
+              <EmptyCart
+                cartSettings={cartSettings}
+                designSettings={designSettings}
+                footer={
+                  !getEmptyUpsells(cartSettings).enabled && (
+                    <SectionBg id="Upsells" cartSettings={cartSettings}>
+                      <Upsells
+                        upsellsSettings={getEmptyUpsells(cartSettings)}
+                        designSettings={designSettings}
+                        currency={currency}
+                        cartSettings={cartSettings}
+                      />
+                    </SectionBg>
+                  )
+                }
+              >
+                <LoginMessage cartSettings={cartSettings} settingsKey="emptyLogin" />
+              </EmptyCart>
             </>
           ) : (
             <>
@@ -357,17 +371,6 @@ const CartPreview = memo(function CartPreview({
                 </>
               )}
 
-              {activeTab === "Recommended Products" && (
-                <SectionBg id="Recommended Products" cartSettings={cartSettings}>
-                  <Recommendation
-                    recommendationsSettings={recommendationsSettings}
-                    currency={currency}
-                    cartSettings={cartSettings}
-                    upsellsSettings={upsellsSettings}
-                    designSettings={designSettings}
-                  />
-                </SectionBg>
-              )}
             </>
           )}
         </div>
@@ -387,6 +390,7 @@ const CartPreview = memo(function CartPreview({
             trustBadgesSettings={trustBadgesSettings}
             disableFixedFooter={cartSettings?.disableFixedFooter}
             cartSettings={cartSettings}
+            sectionOrder={sectionOrder}
             subtotal={subtotal}
             compareTotal={compareTotal}
             setBreakdownOpen={setBreakdownOpen}

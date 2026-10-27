@@ -8,6 +8,18 @@ export const DEFAULT_HEADER_ORDER = [
   "Progress Bar",
 ];
 
+// footer rows, in the order they were first shown
+export const DEFAULT_FOOTER_ORDER = [
+  "Order notes",
+  "Shipping Protection & Add-ons",
+  "Summary",
+  "Discount code",
+  "Age Verification",
+  "Login",
+  "Checkout Button",
+  "Payment Badges",
+];
+
 export const resolveOrder = (saved, fallback) => {
   const known = (saved || []).filter((k) => fallback.includes(k));
   return [...known, ...fallback.filter((k) => !known.includes(k))];
