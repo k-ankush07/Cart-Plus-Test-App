@@ -41,12 +41,14 @@ import {
     DeleteIcon,
     PlusIcon,
     ExternalIcon,
-    MagicIcon
+    MagicIcon,
+    ChevronDownIcon,
+    ChevronRightIcon,
 } from "@shopify/polaris-icons";
 
 import DateRangePicker from "./components/ui/DateRangePicker";
 import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, Fragment } from "react";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import LiveDot from "./components/ui/LiveDot";
 import { requireShopData  } from "./components/shop.server";
@@ -133,6 +135,15 @@ async function fetchCurrentMonthOrders(apiUrl, shopDomain) {
         return 0;
     }
 }
+
+// ─── A/B test helper ───────────────────────────────────────────────────────────
+
+// Returns the abTest object only when a real test is running on this cart.
+// Shape: { enabled, variants: ['A','B',...], weights: {A:20,...}, allocation, controlId, data }
+const getAbTest = (cart) => {
+    const ab = cart?.cartSettings?.abTest;
+    return ab?.enabled && Array.isArray(ab.variants) && ab.variants.length > 1 ? ab : null;
+};
 
 // ─── Loader ────────────────────────────────────────────────────────────────────
 
@@ -259,6 +270,11 @@ function AppCartsInner({
     const [duplicatingCartId, setDuplicatingCartId] = useState(null);
     const [popoverActive, setPopoverActive] = useState(false);
 
+    // Which A/B test carts have their variant rows expanded: { [cartId]: true }
+    const [expandedCarts, setExpandedCarts] = useState({});
+    const toggleExpand = (id) =>
+        setExpandedCarts((prev) => ({ ...prev, [id]: !prev[id] }));
+
     const authHeaders = () => ({
         "x-api-key": import.meta.env.VITE_API_SECRET_KEY || "",
     });
@@ -276,6 +292,25 @@ function AppCartsInner({
     const [statsLoading, setStatsLoading] = useState(true);
 
     useEffect(() => { setCarts(initialCarts); }, [initialCarts]);
+
+    // ─── Debug logging (open DevTools → Console). Safe to delete. ───────────────
+    useEffect(() => {
+        console.log("CARTS (raw):", carts);
+        console.table(
+            carts.map((c) => ({
+                cartId: c.cartId,
+                name: c.cartName,
+                status: c.status,
+                abTest: !!getAbTest(c),
+                variants: getAbTest(c)?.variants?.join(", ") || "—",
+                createdAt: c.createdAt,
+            }))
+        );
+    }, [carts]);
+
+    useEffect(() => {
+        if (!statsLoading) console.log("CART STATS:", cartStats);
+    }, [cartStats, statsLoading]);
 
     // ← no isFirstRender guard — runs on mount AND on range change
     useEffect(() => {
@@ -512,152 +547,252 @@ function AppCartsInner({
                             const cartEditorPath = `/app/cart-editor/${cart.cartId}?from=carts`;
                             const limit = PLAN_ORDER_LIMITS[shopPlan] ?? PLAN_ORDER_LIMITS.free;
                             const limitReached = monthOrders >= limit;
+                            const abTest = getAbTest(cart);
+                            const isExpanded = !!expandedCarts[cart.cartId];
 
                             return (
-                                <IndexTable.Row
-                                    key={cart.cartId || `${cart._id || "cart"}-${i}`}
-                                    id={cart.cartId || `${i}`}
-                                    position={i}
-                                    onClick={() => navigate(cartEditorPath)}
-                                >
-                                    <IndexTable.Cell>
-                                        <Link
-                                            to={cartEditorPath}
-                                            prefetch="intent"
-                                            style={{ position: "absolute", inset: 0, zIndex: 0 }}
-                                            aria-label={`Edit cart ${cart.cartName || "Untitled cart"}`}
-                                        />
-                                        <CartHoverCard cart={cart}>
-                                            <div style={{ position: "relative", zIndex: 1, cursor: "pointer" }}>
-                                                <Text as="span">
-                                                    {(cart.cartName || "Untitled cart").length > 8
-                                                        ? (cart.cartName || "Untitled cart").slice(0, 8) + "..."
-                                                        : (cart.cartName || "Untitled cart")}
-                                                </Text>
-                                            </div>
-                                        </CartHoverCard>
-                                    </IndexTable.Cell>
-
-                                    {!isDraft && (
+                                <Fragment key={cart.cartId || `${cart._id || "cart"}-${i}`}>
+                                    <IndexTable.Row
+                                        id={cart.cartId || `${i}`}
+                                        position={i}
+                                        onClick={() => navigate(cartEditorPath)}
+                                    >
                                         <IndexTable.Cell>
-                                            <InlineStack gap="200" blockAlign="center">
-                                                <span style={{ position: "relative", zIndex: 1 }}>
-                                                    {appEmbedInstalled ? (
-                                                        <Badge tone="success">Live</Badge>
-                                                    ) : (
-                                                        <AppEmbedLink />
-                                                    )}
-                                                </span>
-                                            </InlineStack>
-                                        </IndexTable.Cell>
-                                    )}
-
-                                    {/* Impressions */}
-                                    <IndexTable.Cell>
-                                        {statsLoading ? (
-                                            <SkeletonCell width={48} />
-                                        ) : stats?.[cart.cartId]?.impressions != null ? (
-                                            stats[cart.cartId].impressions.toLocaleString()
-                                        ) : "—"}
-                                    </IndexTable.Cell>
-
-                                    {/* Conversion rate */}
-                                    <IndexTable.Cell>
-                                        {statsLoading ? (
-                                            <SkeletonCell width={56} />
-                                        ) : stats?.[cart.cartId]?.conversionRate != null ? (
-                                            stats[cart.cartId].conversionRate.toFixed(2) + "%"
-                                        ) : "—"}
-                                    </IndexTable.Cell>
-
-                                    {/* Revenue */}
-                                    <IndexTable.Cell>
-                                        {statsLoading ? (
-                                            <SkeletonCell width={72} />
-                                        ) : stats?.[cart.cartId]?.revenue != null ? (
-                                            fmt(stats[cart.cartId].revenue)
-                                        ) : "—"}
-                                    </IndexTable.Cell>
-
-                                    {/* Action buttons */}
-                                    <IndexTable.Cell>
-                                        <InlineStack gap="200" align="end" style={{ position: "relative", zIndex: 1 }}>
-                                            <Tooltip content="Edit">
-                                                <Link to={cartEditorPath} prefetch="intent" style={{ textDecoration: "none" }}>
-                                                    <Button icon={EditIcon} />
-                                                </Link>
-                                            </Tooltip>
-
-                                            <Tooltip content={cart.status === "published" ? "Preview" : "Only available for live carts"}>
-                                                <Button
-                                                    icon={ViewIcon}
-                                                    disabled={cart.status !== "published"}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        if (cart.status === "published") {
-                                                           window.open(`https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`, "_blank");
-                                                        }
+                                            <Link
+                                                to={cartEditorPath}
+                                                prefetch="intent"
+                                                style={{ position: "absolute", inset: 0, zIndex: 0 }}
+                                                aria-label={`Edit cart ${cart.cartName || "Untitled cart"}`}
+                                            />
+                                            <CartHoverCard cart={cart}>
+                                                <div
+                                                    style={{
+                                                        position: "relative",
+                                                        zIndex: 1,
+                                                        cursor: "pointer",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: 8,
                                                     }}
-                                                />
-                                            </Tooltip>
-
-                                            <Tooltip content="Duplicate">
-                                                <Button
-                                                    icon={DuplicateIcon}
-                                                    loading={duplicatingCartId === cart.cartId}
-                                                    disabled={duplicatingCartId !== null}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDuplicateCart(cart);
-                                                    }}
-                                                />
-                                            </Tooltip>
-
-                                            {cart.status === "published" && limitReached ? (
-                                                <Tooltip content={`Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to republish.`}>
-                                                    <span>
-                                                        <Badge tone="critical">Limit reached</Badge>
-                                                    </span>
-                                                </Tooltip>
-                                            ) : (
-                                                <Tooltip content={
-                                                    cart.status !== "published" && limitReached
-                                                        ? `Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to publish.`
-                                                        : cart.status === "published" ? "Unpublish" : "Publish"
-                                                }>
-                                                    <span>
-                                                        <Button
-                                                            size="slim"
-                                                            disabled={cart.status !== "published" && limitReached}
+                                                >
+                                                    {abTest && (
+                                                        <span
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            aria-expanded={isExpanded}
+                                                            aria-label={isExpanded ? "Hide variants" : "Show variants"}
+                                                            style={{ display: "inline-flex", cursor: "pointer" }}
                                                             onClick={(e) => {
+                                                                e.preventDefault();
                                                                 e.stopPropagation();
-                                                                cart.status === "published"
-                                                                    ? handleUnpublishClick(cart.cartId)
-                                                                    : handlePublishClick(cart);
+                                                                toggleExpand(cart.cartId);
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === "Enter" || e.key === " ") {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    toggleExpand(cart.cartId);
+                                                                }
                                                             }}
                                                         >
-                                                            {cart.status === "published" ? "Unpublish" : "Publish"}
-                                                        </Button>
-                                                    </span>
-                                                </Tooltip>
-                                            )}
+                                                            <Icon
+                                                                source={isExpanded ? ChevronDownIcon : ChevronRightIcon}
+                                                                tone="subdued"
+                                                            />
+                                                        </span>
+                                                    )}
+                                                    <Text as="span">
+                                                        {(cart.cartName || "Untitled cart").length > 8
+                                                            ? (cart.cartName || "Untitled cart").slice(0, 8) + "..."
+                                                            : (cart.cartName || "Untitled cart")}
+                                                    </Text>
+                                                    {abTest && <Badge tone="success">A/B test</Badge>}
+                                                </div>
+                                            </CartHoverCard>
+                                        </IndexTable.Cell>
 
-                                            {isDraft && (
-                                                <Tooltip content="Delete">
+                                        {!isDraft && (
+                                            <IndexTable.Cell>
+                                                <InlineStack gap="200" blockAlign="center">
+                                                    <span style={{ position: "relative", zIndex: 1 }}>
+                                                        {appEmbedInstalled ? (
+                                                            <Badge tone="success">Live</Badge>
+                                                        ) : (
+                                                            <AppEmbedLink />
+                                                        )}
+                                                    </span>
+                                                </InlineStack>
+                                            </IndexTable.Cell>
+                                        )}
+
+                                        {/* Impressions */}
+                                        <IndexTable.Cell>
+                                            {statsLoading ? (
+                                                <SkeletonCell width={48} />
+                                            ) : stats?.[cart.cartId]?.impressions != null ? (
+                                                stats[cart.cartId].impressions.toLocaleString()
+                                            ) : "—"}
+                                        </IndexTable.Cell>
+
+                                        {/* Conversion rate */}
+                                        <IndexTable.Cell>
+                                            {statsLoading ? (
+                                                <SkeletonCell width={56} />
+                                            ) : stats?.[cart.cartId]?.conversionRate != null ? (
+                                                stats[cart.cartId].conversionRate.toFixed(2) + "%"
+                                            ) : "—"}
+                                        </IndexTable.Cell>
+
+                                        {/* Revenue */}
+                                        <IndexTable.Cell>
+                                            {statsLoading ? (
+                                                <SkeletonCell width={72} />
+                                            ) : stats?.[cart.cartId]?.revenue != null ? (
+                                                fmt(stats[cart.cartId].revenue)
+                                            ) : "—"}
+                                        </IndexTable.Cell>
+
+                                        {/* Action buttons */}
+                                        <IndexTable.Cell>
+                                            <InlineStack gap="200" align="end" style={{ position: "relative", zIndex: 1 }}>
+                                                <Tooltip content="Edit">
+                                                    <Link to={cartEditorPath} prefetch="intent" style={{ textDecoration: "none" }}>
+                                                        <Button icon={EditIcon} />
+                                                    </Link>
+                                                </Tooltip>
+
+                                                <Tooltip content={cart.status === "published" ? "Preview" : "Only available for live carts"}>
                                                     <Button
-                                                        icon={DeleteIcon}
-                                                        tone="critical"
+                                                        icon={ViewIcon}
+                                                        disabled={cart.status !== "published"}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            setSelectedCart(cart);
-                                                            setDeleteModal(true);
+                                                            if (cart.status === "published") {
+                                                                window.open(`https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`, "_blank");
+                                                            }
                                                         }}
                                                     />
                                                 </Tooltip>
-                                            )}
-                                        </InlineStack>
-                                    </IndexTable.Cell>
-                                </IndexTable.Row>
+
+                                                <Tooltip content="Duplicate">
+                                                    <Button
+                                                        icon={DuplicateIcon}
+                                                        loading={duplicatingCartId === cart.cartId}
+                                                        disabled={duplicatingCartId !== null}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDuplicateCart(cart);
+                                                        }}
+                                                    />
+                                                </Tooltip>
+
+                                                {cart.status === "published" && limitReached ? (
+                                                    <Tooltip content={`Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to republish.`}>
+                                                        <span>
+                                                            <Badge tone="critical">Limit reached</Badge>
+                                                        </span>
+                                                    </Tooltip>
+                                                ) : (
+                                                    <Tooltip content={
+                                                        cart.status !== "published" && limitReached
+                                                            ? `Monthly order limit reached (${monthOrders}/${limit}). Upgrade your plan to publish.`
+                                                            : cart.status === "published" ? "Unpublish" : "Publish"
+                                                    }>
+                                                        <span>
+                                                            <Button
+                                                                size="slim"
+                                                                disabled={cart.status !== "published" && limitReached}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    cart.status === "published"
+                                                                        ? handleUnpublishClick(cart.cartId)
+                                                                        : handlePublishClick(cart);
+                                                                }}
+                                                            >
+                                                                {cart.status === "published" ? "Unpublish" : "Publish"}
+                                                            </Button>
+                                                        </span>
+                                                    </Tooltip>
+                                                )}
+
+                                                {isDraft && (
+                                                    <Tooltip content="Delete">
+                                                        <Button
+                                                            icon={DeleteIcon}
+                                                            tone="critical"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedCart(cart);
+                                                                setDeleteModal(true);
+                                                            }}
+                                                        />
+                                                    </Tooltip>
+                                                )}
+                                            </InlineStack>
+                                        </IndexTable.Cell>
+                                    </IndexTable.Row>
+
+                                    {/* ── A/B test variant rows (shown when the chevron is expanded) ── */}
+                                    {abTest && isExpanded &&
+                                        abTest.variants.map((vid, vi) => {
+                                            const pct =
+                                                abTest.weights?.[vid] ??
+                                                Math.round(100 / abTest.variants.length);
+                                            // Per-variant stats: stats[cartId].variants[variantId]
+                                            const vs = stats?.[cart.cartId]?.variants?.[vid];
+                                            const cell = (val, width) =>
+                                                statsLoading ? <SkeletonCell width={width} /> : val;
+
+                                            return (
+                                                <IndexTable.Row
+                                                    key={`${cart.cartId}-${vid}`}
+                                                    id={`${cart.cartId}-${vid}`}
+                                                    position={1000 + i * 10 + vi}
+                                                    onClick={() => navigate(`${cartEditorPath}&variant=${vid}`)}
+                                                >
+                                                    <IndexTable.Cell>
+                                                        <div
+                                                            style={{
+                                                                paddingLeft: 28,
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                gap: 8,
+                                                            }}
+                                                        >
+                                                            <Text as="span">Variant {vid}</Text>
+                                                            <Text as="span" variant="bodySm" tone="subdued">
+                                                                {pct}% of traffic
+                                                            </Text>
+                                                            {vid === abTest.controlId && <Badge>Control</Badge>}
+                                                        </div>
+                                                    </IndexTable.Cell>
+
+                                                    {!isDraft && <IndexTable.Cell />}
+
+                                                    <IndexTable.Cell>
+                                                        {cell(
+                                                            vs?.impressions != null
+                                                                ? vs.impressions.toLocaleString()
+                                                                : "—",
+                                                            48
+                                                        )}
+                                                    </IndexTable.Cell>
+                                                    <IndexTable.Cell>
+                                                        {cell(
+                                                            vs?.conversionRate != null
+                                                                ? vs.conversionRate.toFixed(2) + "%"
+                                                                : "—",
+                                                            56
+                                                        )}
+                                                    </IndexTable.Cell>
+                                                    <IndexTable.Cell>
+                                                        {cell(vs?.revenue != null ? fmt(vs.revenue) : "—", 72)}
+                                                    </IndexTable.Cell>
+                                                    <IndexTable.Cell />
+                                                </IndexTable.Row>
+                                            );
+                                        })}
+                                </Fragment>
                             );
                         })}
                     </IndexTable>

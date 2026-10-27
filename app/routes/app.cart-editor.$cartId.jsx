@@ -376,6 +376,11 @@ export default function CartEditor() {
         weights: state.weights,
       };
       const current = liveRef.current.cartSettings?.abTest;
+      if (!current) {
+        // the test is being created: A, B (and any others) all start now
+        const now = new Date().toISOString();
+        config.variantMeta = Object.fromEntries(config.variants.map((id) => [id, now]));
+      }
       const same =
         current &&
         Object.keys(config).every((k) => isSettingsEqual(current[k], config[k]));
@@ -387,6 +392,16 @@ export default function CartEditor() {
     },
     onActiveVariantChange: switchVariant,
     onVariantAdd: (newId, copiedFrom) => {
+      handleChange("cartSettings", (prev) => ({
+        ...prev,
+        abTest: {
+          ...(prev?.abTest || {}),
+          variantMeta: {
+            ...(prev?.abTest?.variantMeta || {}),
+            [newId]: new Date().toISOString(),
+          },
+        },
+      }));
       const store = abStoreRef.current;
       store[newId] =
         copiedFrom === abActiveRef.current || !store[copiedFrom]
@@ -553,6 +568,7 @@ export default function CartEditor() {
       // other variants travel inside cartSettings.abTest.data
       const ab = liveRef.current.cartSettings?.abTest;
       let allSnaps = null;
+      let variantMeta = null;
       let savePayload = {
         designSettings: designToSave,
         headerSettings,
@@ -576,6 +592,12 @@ export default function CartEditor() {
         if (abActiveRef.current) allSnaps[abActiveRef.current] = liveSnap;
         const control = ab.variants[0];
         const controlSnap = allSnaps[control] || liveSnap;
+        // created date per variant (older tests get one now, and keep it from then on)
+        const now = new Date().toISOString();
+        variantMeta = {};
+        ab.variants.forEach((id) => {
+          variantMeta[id] = ab.variantMeta?.[id] || now;
+        });
         const data = {};
         ab.variants.forEach((id) => {
           if (id !== control) data[id] = allSnaps[id] || controlSnap;
@@ -595,7 +617,7 @@ export default function CartEditor() {
           trustBadgesSettings: controlSnap.trustBadgesSettings,
           cartSettings: {
             ...controlSnap.cartSettings,
-            abTest: { ...ab, controlId: control, data },
+            abTest: { ...ab, variantMeta, controlId: control, data },
           },
           triggeredRewardsSettings: updatedTriggeredRewardsSettings,
         };
@@ -628,10 +650,18 @@ export default function CartEditor() {
       };
 
       // what is saved now is what Discard goes back to
+      if (ab?.enabled) {
+        const savedAb = { ...ab, variantMeta };
+        setCartSettings((prev) => (prev?.abTest ? { ...prev, abTest: savedAb } : prev));
+        initialSettingsRef.current.cartSettings = {
+          ...initialSettingsRef.current.cartSettings,
+          abTest: savedAb,
+        };
+      }
       abBaselineRef.current = ab?.enabled
         ? {
             active: abActiveRef.current || ab.variants[0],
-            config: ab,
+            config: { ...ab, variantMeta },
             snaps: cloneJson(allSnaps),
           }
         : {
