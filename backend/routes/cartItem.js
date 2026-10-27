@@ -350,62 +350,62 @@ router.post("/duplicate-cart", async (req, res) => {
   }
 });
 
+const STICKY_CART_FIELDS = [
+  "enabled",
+  "template",
+  "position",
+  "mobilePosition",
+  "displayOnMobile",
+  "device",
+  "selectedIcon",
+  "customIconUrl",
+  "iconColor",
+  "iconSize",
+  "bgColor",
+  "buttonSize",
+  "enableCount",
+  "qBgColor",
+  "qTextColor",
+  "hideOnEmptyCart",
+  "customCss",
+];
+
 router.post("/save-sticky-cart", async (req, res) => {
   try {
-    let {
-      shop,
-      cartId,
-      position,
-      enabled,
-      selectedIcon,
-      customIconUrl,
-      bgColor,
-      iconColor,
-      iconSize,
-      buttonSize,
-      qBgColor,
-      qTextColor,
-      device,
-      hideOnEmptyCart,
-      customCss,
-    } = req.body;
-
-    if (!cartId) {
-      cartId = generateNewCartId();
+    const { shop, cartId } = req.body;
+ 
+    if (!shop) {
+      return res.json({ success: false, message: "shop is required" });
     }
-
+ 
+    const fields = Object.fromEntries(
+      STICKY_CART_FIELDS.filter((key) => req.body[key] !== undefined).map((key) => [
+        key,
+        req.body[key],
+      ]),
+    );
+ 
     const updatedStickyCart = await stickyCartModel.findOneAndUpdate(
       { shop },
       {
-        shop,
-        cartId,
-        position,
-        enabled,
-        selectedIcon,
-        customIconUrl,
-        bgColor,
-        iconColor,
-        iconSize,
-        buttonSize,
-        qBgColor,
-        qTextColor,
-        device,
-        hideOnEmptyCart,
-        customCss,
+        $set: { shop, ...fields },
+        $setOnInsert: { cartId: cartId || generateNewCartId() },
       },
       {
         new: true,
         upsert: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
       },
     );
-
+ 
     res.json({
       success: true,
       data: updatedStickyCart,
     });
   } catch (error) {
     console.error(error);
-    res.json({ success: false });
+    res.json({ success: false, message: error.message });
   }
 });
 
