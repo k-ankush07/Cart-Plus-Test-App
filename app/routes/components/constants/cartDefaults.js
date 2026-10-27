@@ -1,4 +1,7 @@
+import { TEMPLATE_DEFAULTS } from "../utils/templateTheme";
+
 export const defaultSettings = {
+  ...TEMPLATE_DEFAULTS,
   inheritFonts: true,
   showStrikethrough: true,
   enableSubtotal: true,
@@ -51,7 +54,7 @@ export const defaultAnnouncementSettings = {
   height: "normal",
   position: "before",
   timer: "00:00",
-  text: "Your products are reserved for {TIMER}!",
+  text: "Free shipping on $50 | Free gift on $60",
   fontSize: 15,
   backgroundColor: "#f6f6f7",
   borderColor: "#e8e8e8",
@@ -69,6 +72,12 @@ export const defaultRewardsSettings = {
   barGap: 0,
   calculationType: "total",
   usePreDiscount: true,
+  barStyle: "icon", // "icon" | "reward" | "nextReward" | "milestone" | "threshold"
+  rewardTicketLabel: "REWARD TICKET",
+  nextRewardLabel: "NEXT REWARD",
+  milestoneDoneLabel: "DONE",
+  barBackground: null, // BackgroundInput value, null = backgroundColor
+  barProgress: null, // BackgroundInput value, null = textColor
 
   tiers: [
     {
@@ -117,7 +126,25 @@ export const defaultUpsellsSettings = {
   buttonText: "Add",
   position: "bottom",
   direction: "carousel",
+  layout: "carousel", // "row" | "list" | "carousel" (row/list are the block direction)
+  trigger: "button", // "button" | "checkbox" | "toggle"
   carouselIndicator: "none",
+  // Cross-sell offer + styles (null = the cart's own look)
+  icon: { type: "icon", name: "star" }, // title icon from the icon library (null = none)
+  iconColor: null,
+  discountType: "none", // "none" | "percentage" | "amount"
+  discountValue: 10,
+  showLabel: true,
+  labelText: "Save {{saved_percentage}}",
+  imageSize: null,
+  radius: null,
+  primaryTextColor: null,
+  secondaryTextColor: null,
+  buttonRadius: null,
+  buttonFontSize: null,
+  buttonBackground: null,
+  buttonTextColor: null,
+  cardBackground: null,
 };
 
 export const defaultAdditionalNotesSettings = {
@@ -126,6 +153,15 @@ export const defaultAdditionalNotesSettings = {
   placeholder: "Special instructions for your order",
   placement: "below_items",
   customTemplate: "",
+  expandable: true,
+  collapsedByDefault: true,
+  buttonLabel: "Note",
+  heading: "Order note",
+  saveLabel: "Save note",
+  limitChars: true,
+  noteButtonBackground: null, // BackgroundInput values, null = the cart's own look
+  orderNoteBackground: null,
+  saveNoteBackground: null,
 };
 
 export const defaultAddonsSettings = {

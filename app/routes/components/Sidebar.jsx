@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from "react";
+import { memo, useState, useEffect, Fragment } from "react";
 import {
   Box,
   BlockStack,
@@ -31,8 +31,13 @@ import {
   ShieldCheckMarkIcon,
   CodeIcon,
 } from "@shopify/polaris-icons";
-// import "./Sidebar.css"; // agar CSS alag file mein hai to uncomment karo
+import PreviewProductPicker from "./ui/PreviewProductPicker";
 
+/*
+  root: true      -> fixed item, drag nahi hota (section ke top par rehta hai)
+  drag: true      -> section ke andar reorder ho sakta hai
+  attachTo: "key" -> us item ke saath attached, parent ke saath hi move hota hai
+*/
 const SECTIONS = [
   {
     title: "Header",
@@ -49,7 +54,12 @@ const SECTIONS = [
     items: [
       { key: "One Tick Upsell", icon: CartIcon, toggle: true, drag: true },
       { key: "Products in cart", icon: ProductIcon, drag: true },
-      { key: "Subscription Upgrade", icon: RefreshIcon, toggle: true },
+      {
+        key: "Subscription Upgrade",
+        icon: RefreshIcon,
+        toggle: true,
+        attachTo: "Products in cart",
+      },
       { key: "Cross-sell", icon: PlusCircleIcon, toggle: true, drag: true },
     ],
   },
@@ -76,6 +86,31 @@ const SECTIONS = [
 const ADVANCED = [
   { key: "Settings", icon: SettingsIcon, root: true },
   { key: "Cart Visibility", icon: GlobeIcon, root: true },
+];
+
+/* ---------- derived lookups (module level, ek baar) ---------- */
+const ITEM_MAP = {};
+const CHILDREN = {}; // parentKey -> [attached items]
+SECTIONS.forEach((s) =>
+  s.items.forEach((i) => {
+    ITEM_MAP[i.key] = i;
+    if (i.attachTo) (CHILDREN[i.attachTo] ||= []).push(i);
+  }),
+);
+
+// Reorder hone wale heads (root aur attached items nahi)
+const DEFAULT_ORDER = Object.fromEntries(
+  SECTIONS.map((s) => [
+    s.title,
+    s.items.filter((i) => !i.root && !i.attachTo).map((i) => i.key),
+  ]),
+);
+
+// sidebar rows shown while the "Empty" cart tab is selected
+const EMPTY_ITEMS = [
+  { key: "Empty Settings", label: "Settings", icon: SettingsIcon, root: true },
+  { key: "Empty Cross-sell", label: "Cross-sell", icon: PlusCircleIcon, toggle: true, drag: true },
+  { key: "Empty Login", label: "Login", icon: PersonIcon, toggle: true, drag: true },
 ];
 
 const DEFAULT_ENABLED = { Announcement: true, Timer: true, "Cross-sell": true };
@@ -113,6 +148,20 @@ const SectionTitle = ({ children }) => (
   </InlineStack>
 );
 
+/* Reusable card wrapper */
+const Card = ({ children }) => (
+  <Box
+    background="bg-surface"
+    borderRadius="300"
+    borderWidth="025"
+    borderColor="border"
+    padding="300"
+    overflowX="hidden"
+  >
+    {children}
+  </Box>
+);
+
 const Sidebar = memo(function Sidebar({
   activeTab,
   setActiveTab,
@@ -125,38 +174,27 @@ const Sidebar = memo(function Sidebar({
   enabledMap,
   onToggleItem,
 
+  // section ke andar reorder
+  initialOrder, // optional: { Header: [...], Body: [...], Footer: [...] }
+  onReorder, // (sectionTitle, newKeys, fullOrder) => void
+
   // custom html / css rows
   customItems: customItemsProp, // optional: [{ key, label }]
   onAddCustomItem,
 
-  // previewing items & market
-  previewProducts = [], // [{ label, value }]
-  previewProduct,
-  onPreviewProductChange,
+  // previewing items (products picked from the store) & market
+  selectedPreviewProducts = [],
+  onPreviewProductsChange,
+  onPreviewLoading,
   markets = DEFAULT_MARKETS, // [{ label, value }]
   market,
   onMarketChange,
 }) {
-  /* ---------- previewing product & market ---------- */
-  const [localProduct, setLocalProduct] = useState(
-    previewProducts[0]?.value ?? "",
-  );
+  /* ---------- previewing market ---------- */
   const [localMarket, setLocalMarket] = useState(markets[0]?.value ?? "");
 
-  // products baad mein load hon (loader/API) to first product auto select ho
-  useEffect(() => {
-    if (!localProduct && previewProducts[0]?.value) {
-      setLocalProduct(previewProducts[0].value);
-    }
-  }, [previewProducts, localProduct]);
-
-  const productValue = previewProduct ?? localProduct;
   const marketValue = market ?? localMarket;
 
-  const changeProduct = (v) => {
-    setLocalProduct(v);
-    onPreviewProductChange?.(v);
-  };
   const changeMarket = (v) => {
     setLocalMarket(v);
     onMarketChange?.(v);
@@ -175,6 +213,13 @@ const Sidebar = memo(function Sidebar({
     setPreviewModeProp?.(mode);
   };
 
+  // keep the selected row valid when switching between the two cart views
+  useEffect(() => {
+    const onEmptyRow = String(activeTab).startsWith("Empty ");
+    if (previewMode === "empty" && !onEmptyRow) setActiveTab?.("Empty Settings");
+    if (previewMode !== "empty" && onEmptyRow) setActiveTab?.("Template");
+  }, [previewMode]);
+
   /* ---------- toggles ---------- */
   const [enabled, setEnabled] = useState({
     ...DEFAULT_ENABLED,
@@ -187,6 +232,38 @@ const Sidebar = memo(function Sidebar({
   const toggle = (key) => {
     setEnabled((p) => ({ ...p, [key]: !p[key] }));
     onToggleItem?.(key);
+  };
+
+  /* ---------- drag & drop (sirf apne section ke andar) ---------- */
+  const [order, setOrder] = useState({ ...DEFAULT_ORDER, ...(initialOrder || {}) });
+  const [drag, setDrag] = useState(null); // { section, key }
+  const [overKey, setOverKey] = useState(null);
+
+  // follows the saved order, so Discard / loading another cart resets it too
+  useEffect(() => {
+    setOrder({ ...DEFAULT_ORDER, ...(initialOrder || {}) });
+  }, [JSON.stringify(initialOrder)]);
+
+  const resetDrag = () => {
+    setDrag(null);
+    setOverKey(null);
+  };
+
+  const moveItem = (section, fromKey, toKey) => {
+    if (fromKey === toKey) return;
+    const list = order[section];
+    const from = list.indexOf(fromKey);
+    const to = list.indexOf(toKey);
+    if (from === -1 || to === -1) return;
+
+    const next = list.filter((k) => k !== fromKey);
+    let at = next.indexOf(toKey);
+    if (from < to) at += 1; // neeche drag -> target ke baad, upar drag -> target ke pehle
+    next.splice(at, 0, fromKey);
+
+    const fullOrder = { ...order, [section]: next };
+    setOrder(fullOrder);
+    onReorder?.(section, next, fullOrder);
   };
 
   /* ---------- custom html / css items ---------- */
@@ -207,17 +284,55 @@ const Sidebar = memo(function Sidebar({
   };
 
   /* ---------- row renderer ---------- */
-  const renderRow = (item) => {
+  // section: kis section ka row hai (null = drag zone ke bahar)
+  const renderRow = (item, section = null) => {
     const active = activeTab === item.key;
     const text = item.label ?? item.key;
+    const headKey = item.attachTo ?? item.key; // attached row ka drop target = uska parent
+    const canDrag = !!item.drag && !!section;
+
+    const isDragging = drag && drag.section === section && drag.key === headKey;
+    const isOver =
+      drag &&
+      drag.section === section &&
+      overKey === headKey &&
+      drag.key !== headKey;
+
     return (
       <div
         key={item.key}
         className="sb-row"
         role="button"
         tabIndex={0}
+        draggable={canDrag}
+        style={{
+          opacity: isDragging ? 0.4 : 1,
+          outline: isOver ? "2px dashed var(--p-color-border-focus)" : "none",
+          outlineOffset: -2,
+          borderRadius: 8,
+        }}
         onClick={() => setActiveTab?.(item.key)}
         onKeyDown={(e) => e.key === "Enter" && setActiveTab?.(item.key)}
+        onDragStart={(e) => {
+          if (!canDrag) return;
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", item.key);
+          setDrag({ section, key: item.key });
+        }}
+        onDragOver={(e) => {
+          // doosre section par drop allow nahi
+          if (!drag || drag.section !== section) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          if (overKey !== headKey) setOverKey(headKey);
+        }}
+        onDrop={(e) => {
+          if (!drag || drag.section !== section) return;
+          e.preventDefault();
+          moveItem(section, drag.key, headKey);
+          resetDrag();
+        }}
+        onDragEnd={resetDrag}
       >
         <Box
           background={active ? "bg-surface-selected" : undefined}
@@ -228,7 +343,11 @@ const Sidebar = memo(function Sidebar({
           <InlineStack gap="200" blockAlign="center" wrap={false}>
             {!item.root && (
               <span className="sb-slot">
-                {item.drag && <Icon source={DragHandleIcon} tone="subdued" />}
+                {item.drag && (
+                  <span style={{ cursor: "grab", display: "inline-flex" }}>
+                    <Icon source={DragHandleIcon} tone="subdued" />
+                  </span>
+                )}
               </span>
             )}
             <span className="sb-slot">
@@ -252,27 +371,41 @@ const Sidebar = memo(function Sidebar({
     );
   };
 
+  /* ---------- section renderer ---------- */
+  const renderSection = (section) => {
+    const roots = section.items.filter((i) => i.root);
+    const heads = (order[section.title] || [])
+      .map((k) => ITEM_MAP[k])
+      .filter(Boolean);
+
+    return (
+      <BlockStack key={section.title} gap="100">
+        <SectionTitle>{section.title}</SectionTitle>
+        <BlockStack gap="050">
+          {roots.map((i) => renderRow(i, section.title))}
+          {heads.map((h) => (
+            <Fragment key={h.key}>
+              {renderRow(h, section.title)}
+              {/* attached items parent ke saath hi move honge */}
+              {(CHILDREN[h.key] || []).map((c) => renderRow(c, section.title))}
+            </Fragment>
+          ))}
+        </BlockStack>
+      </BlockStack>
+    );
+  };
+
   return (
-    <Box
-      background="bg-surface"
-      borderRadius="300"
-      borderWidth="025"
-      borderColor="border"
-      padding="300"
-      overflowX="hidden"
-    >
-      <BlockStack gap="300">
-        {/* Previewing items & market */}
+    // fixed width so the sidebar keeps its size in both "Item in cart" and "Empty" views
+    <div style={{ width: 300, minWidth: 300, flexShrink: 0 }}>
+    <BlockStack gap="300">
+      {/* ── Card 1: Previewing items & market ── */}
+      <Card>
         <BlockStack gap="300">
-          <Select
-            label="Previewing items"
-            options={
-              previewProducts.length
-                ? previewProducts
-                : [{ label: "No products", value: "" }]
-            }
-            value={productValue}
-            onChange={changeProduct}
+          <PreviewProductPicker
+            selected={selectedPreviewProducts}
+            onChange={(list) => onPreviewProductsChange?.(list)}
+            onInitialLoading={onPreviewLoading}
           />
           <Select
             label="Previewing market"
@@ -281,88 +414,96 @@ const Sidebar = memo(function Sidebar({
             onChange={changeMarket}
           />
         </BlockStack>
+      </Card>
 
-        <Divider />
+      {/* ── Card 2: Item in cart / Empty + sections ── */}
+      <Card>
+        <BlockStack gap="300">
+          {/* Item in cart / Empty */}
+          <ButtonGroup variant="segmented" fullWidth>
+            <Button
+              size="slim"
+              pressed={previewMode === "cart"}
+              onClick={() => changePreview("cart")}
+            >
+              Item in cart
+            </Button>
+            <Button
+              size="slim"
+              pressed={previewMode === "empty"}
+              onClick={() => changePreview("empty")}
+            >
+              Empty
+            </Button>
+          </ButtonGroup>
 
-        {/* Item in cart / Empty */}
-        <ButtonGroup variant="segmented" fullWidth>
-          <Button
-            size="slim"
-            pressed={previewMode === "cart"}
-            onClick={() => changePreview("cart")}
-          >
-            Item in cart
-          </Button>
-          <Button
-            size="slim"
-            pressed={previewMode === "empty"}
-            onClick={() => changePreview("empty")}
-          >
-            Empty
-          </Button>
-        </ButtonGroup>
-
-        {/* Template */}
-        <BlockStack gap="050">
-          {renderRow({ key: "Template", icon: AppsIcon, root: true })}
-        </BlockStack>
-
-        {/* Header / Body / Footer */}
-        {SECTIONS.map((section) => (
-          <BlockStack key={section.title} gap="100">
-            <SectionTitle>{section.title}</SectionTitle>
-            <BlockStack gap="050">{section.items.map(renderRow)}</BlockStack>
-          </BlockStack>
-        ))}
-
-        {/* Custom HTML / CSS rows */}
-        {customItems.length > 0 && (
+          {previewMode === "empty" ? (
+            <BlockStack gap="050">{EMPTY_ITEMS.map((i) => renderRow(i))}</BlockStack>
+          ) : (
+            <>
+          {/* Template */}
           <BlockStack gap="050">
-            {customItems.map((c) =>
-              renderRow({
-                key: c.key,
-                label: c.label,
-                icon: CodeIcon,
-                toggle: true,
-                drag: true,
-              }),
-            )}
+            {renderRow({ key: "Template", icon: AppsIcon, root: true })}
           </BlockStack>
-        )}
 
-        <Divider />
+          {/* Header / Body / Footer (har section apna drag zone) */}
+          {SECTIONS.map(renderSection)}
 
-        {/* Add Custom html / css */}
-        <div
-          className="sb-row"
-          role="button"
-          tabIndex={0}
-          onClick={addCustomItem}
-          onKeyDown={(e) => e.key === "Enter" && addCustomItem()}
-        >
-          <Box borderRadius="200" paddingBlock="150" paddingInline="200">
-            <InlineStack gap="200" blockAlign="center" wrap={false}>
-              <span className="sb-slot">
-                <Icon source={PlusCircleIcon} />
-              </span>
-              <Text as="span" variant="bodySm" fontWeight="medium">
-                Add Custom html / css
-              </Text>
-            </InlineStack>
-          </Box>
-        </div>
+          {/* Custom HTML / CSS rows */}
+          {customItems.length > 0 && (
+            <BlockStack gap="050">
+              {customItems.map((c) =>
+                renderRow({
+                  key: c.key,
+                  label: c.label,
+                  icon: CodeIcon,
+                  toggle: true,
+                  drag: true,
+                }),
+              )}
+            </BlockStack>
+          )}
 
-        {/* Advanced */}
-        <BlockStack gap="100">
-          <SectionTitle>Advanced</SectionTitle>
-          <BlockStack gap="050">{ADVANCED.map(renderRow)}</BlockStack>
+          <Divider />
+
+          {/* Add Custom html / css */}
+          <div
+            className="sb-row"
+            role="button"
+            tabIndex={0}
+            onClick={addCustomItem}
+            onKeyDown={(e) => e.key === "Enter" && addCustomItem()}
+          >
+            <Box borderRadius="200" paddingBlock="150" paddingInline="200">
+              <InlineStack gap="200" blockAlign="center" wrap={false}>
+                <span className="sb-slot">
+                  <Icon source={PlusCircleIcon} />
+                </span>
+                <Text as="span" variant="bodySm" fontWeight="medium">
+                  Add Custom html / css
+                </Text>
+              </InlineStack>
+            </Box>
+          </div>
+
+          {/* Advanced */}
+          <BlockStack gap="100">
+            <SectionTitle>Advanced</SectionTitle>
+            <BlockStack gap="050">
+              {ADVANCED.map((i) => renderRow(i))}
+            </BlockStack>
+          </BlockStack>
+            </>
+          )}
         </BlockStack>
-      </BlockStack>
-    </Box>
+      </Card>
+    </BlockStack>
+    </div>
   );
 });
 
 export default Sidebar;
+
 
 // import { LegacyCard, ActionList, Icon } from "@shopify/polaris";
 

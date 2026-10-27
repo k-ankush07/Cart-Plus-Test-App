@@ -21,7 +21,7 @@ import {
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 
-const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null, multiSelectCollections = false, onPaginationChange }, ref) => {
+const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null, singleProduct = false, multiSelectCollections = false, onPaginationChange }, ref) => {
 
     const authenticatedFetch = useAuthenticatedFetch();
     const [cursorStack, setCursorStack] = useState([]);
@@ -79,6 +79,15 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                 updated = prev.filter((i) => i !== variant.id);
             } else if (maxSelect === 1) {
                 updated = [variant.id];
+            } else if (singleProduct) {
+                // one product only: keep the ticked variants of this product, drop other products
+                const owner = localProducts.find((p) =>
+                    p.variants.some((v) => v.id === variant.id)
+                );
+                const sameProduct = prev.filter((id) =>
+                    owner?.variants.some((v) => v.id === id)
+                );
+                updated = [...sameProduct, variant.id];
             } else {
                 updated = [...prev, variant.id];
             }
@@ -127,6 +136,8 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                 updated = prev.filter((id) => !variantIds.includes(id));
             } else if (maxSelect === 1) {
                 updated = [variantIds[0]];
+            } else if (singleProduct) {
+                updated = variantIds; // replaces any other product
             } else {
                 updated = [...new Set([...prev, ...variantIds])];
             }

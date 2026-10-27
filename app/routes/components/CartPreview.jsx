@@ -1,4 +1,5 @@
-import { memo, useMemo, useState } from "react";
+import { Fragment, memo, useMemo, useState } from "react";
+import { DEFAULT_HEADER_ORDER, resolveOrder } from "./utils/sectionOrder";
 import CartItem from "./cart-Items/CartItem";
 import "../../index.css";
 import Announcements from "./cart-Items/Announcements";
@@ -12,6 +13,13 @@ import AdditionalNotes from "./cart-Items/AdditionalNotes";
 import TrustBadges from "./cart-Items/TrustBadges";
 import CustomHtml from "./cart-Items/CustomHtml";
 import DiscountCode from "./cart-Items/DiscountCodes";
+import BannerImage from "./cart-Items/BannerImage";
+import Timer from "./cart-Items/Timer";
+import OneTickUpsell from "./cart-Items/OneTickUpsell";
+import SectionBg from "./cart-Items/SectionBg";
+import { backgroundToCss } from "./utils/background";
+import { getCartItemOptions } from "./utils/cartItemOptions";
+import { applyTemplateTheme } from "./utils/templateTheme";
 
 function scopeCss(css, scope) {
   if (!css) return "";
@@ -37,7 +45,7 @@ function scopeCss(css, scope) {
 
 const CartPreview = memo(function CartPreview({
   currency,
-  designSettings,
+  designSettings: rawDesignSettings,
   headerSettings,
   announcementSettings,
   rewardsSettings,
@@ -50,32 +58,174 @@ const CartPreview = memo(function CartPreview({
   discountCodesSettings,
   trustBadgesSettings,
   cartSettings,
+  sectionOrder,
   previewMode,
   onClosePreview,
   shop,
   apiUrl,
+  previewProducts,
+  previewLoading,
+  onRemovePreviewProduct,
+  onAddPreviewProduct,
 }) {
+  const designSettings = useMemo(
+    () => applyTemplateTheme(rawDesignSettings),
+    [rawDesignSettings],
+  );
   const emptyCart = previewMode === "empty";
+  const floating = !!designSettings.floating;
+  const maxWidth = designSettings.desktopWidth === "wide" ? 500 : 440;
 
   const scopedCustomCss = useMemo(
     () => scopeCss(cartSettings?.customCss, ".cart-app"),
     [cartSettings?.customCss],
   );
   const [qty, setQty] = useState(1);
+  const [subtotal, setSubtotal] = useState(null);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const [offerOpen, setOfferOpen] = useState(false);
 
+  const bodyBg = backgroundToCss(getCartItemOptions(cartSettings).sectionBackground);
+  const showTopRows =!emptyCart && activeTab !== "Recommended Products";
+  const headerBlocks = {
+    "Banner Image": (
+      <SectionBg id="Banner Image" cartSettings={cartSettings}>
+        <BannerImage headerSettings={headerSettings} />
+      </SectionBg>
+    ),
+    Announcement: showTopRows &&
+      !announcementSettings.enabled &&
+      announcementSettings.position === "before" && (
+        <Announcements
+          announcementSettings={announcementSettings}
+          cartSettings={cartSettings}
+        />
+      ),
+    Timer: !emptyCart && (
+      <Timer headerSettings={headerSettings} designSettings={designSettings} />
+    ),
+    "Progress Bar": !rewardsSettings.enabled &&
+      (emptyCart ? rewardsSettings.showOnEmptyCart : showTopRows) && (
+        <SectionBg id="Progress Bar" cartSettings={cartSettings}>
+          <TieredReward rewardsSettings={rewardsSettings} currency={currency} />
+        </SectionBg>
+      ),
+  };
+  // Body-section rows. With no saved order, Cross-sell keeps following its Top / Bottom setting.
+  const bodyBlocks = {
+    "One Tick Upsell": (
+      <SectionBg id="One Tick Upsell" cartSettings={cartSettings}>
+        <OneTickUpsell
+          cartSettings={cartSettings}
+          designSettings={designSettings}
+          currency={currency}
+          previewProducts={previewProducts}
+          onAddPreviewProduct={onAddPreviewProduct}
+          onRemovePreviewProduct={onRemovePreviewProduct}
+        />
+      </SectionBg>
+    ),
+    "Products in cart": (
+      <>
+        <CartItem
+          showStrikethrough={designSettings.showStrikethrough}
+          textColor={designSettings.textColor}
+          savingColor={designSettings.savingsColor}
+          Subscription={Subscription}
+          subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+          cartSettings={cartSettings}
+          setQty={setQty}
+          qty={qty}
+          designSettings={designSettings}
+          currency={currency}
+          previewProducts={previewProducts}
+          onSubtotalChange={setSubtotal}
+          loading={previewLoading}
+          onRemovePreviewProduct={onRemovePreviewProduct}
+        />
+
+        {!upsellsSettings.enabled &&
+          upsellsSettings.showSuggestedProduct &&
+          upsellsSettings?.suggestedProduct?.items?.titles?.length > 0 && (
+            <div className="upsell-suggestion">
+              <label className="upsell-checkbox-wrapper">
+                <input type="checkbox" />
+                <span className="custom-checkbox"></span>
+                <span className="upsell-text">
+                  {upsellsSettings?.suggestedProduct?.items?.titles?.[0]}
+                </span>
+              </label>
+            </div>
+          )}
+
+        <CustomHtml cartSettings={cartSettings} position="between_line_items" />
+      </>
+    ),
+    "Cross-sell":
+      !upsellsSettings.enabled && (
+        <SectionBg id="Upsells" cartSettings={cartSettings}>
+          <Upsells
+            upsellsSettings={upsellsSettings}
+            designSettings={designSettings}
+            currency={currency}
+            cartSettings={cartSettings}
+          />
+        </SectionBg>
+      ),
+  };
+  const defaultBodyOrder =
+    upsellsSettings?.position === "top"
+      ? ["Cross-sell", "One Tick Upsell", "Products in cart"]
+      : ["One Tick Upsell", "Products in cart", "Cross-sell"];
+  const bodyOrder = sectionOrder?.Body
+    ? resolveOrder(sectionOrder.Body, defaultBodyOrder)
+    : defaultBodyOrder;
+  const headerOrder = resolveOrder(sectionOrder?.Header, DEFAULT_HEADER_ORDER);
+
   return (
     <div
-      className={`cart-app cart-plus ${designSettings.inheritFonts ? "" : "cart-app--customFont"}`}
+      className={`cart-app cart-plus ${designSettings.inheritFonts ? "" : "cart-app--customFont"} ${designSettings.themed ? "cart-app--themed" : ""}`}
       style={{
         backgroundColor: designSettings.backgroundColor,
-        maxWidth: designSettings.desktopWidth === "wide" ? "500px" : "440px",
+        ...(designSettings.bodyBackground
+          ? { background: designSettings.bodyBackground }
+          : {}),
+        maxWidth: floating ? `${maxWidth - 32}px` : `${maxWidth}px`,
         width: "100%",
         position: "relative",
         overflowY: cartSettings?.disableFixedFooter ? "auto" : "unset",
+        ...(designSettings.themed
+          ? {
+              "--cp-card-radius": `${designSettings.cardRadius}px`,
+              "--cp-field-radius": `${designSettings.fieldRadius}px`,
+              "--cp-image-radius": `${designSettings.imageRadius}px`,
+              color: designSettings.textColor,
+            }
+          : {}),
+        ...(floating
+          ? {
+              top: "16px",
+              right: "16px",
+              height: "calc(100vh - 32px)",
+              borderRadius: `${designSettings.drawerRadius}px`,
+              overflow: "hidden",
+            }
+          : {}),
       }}
     >
+      {/* Cross-sell "Side panel" layout: a strip of products beside the cart */}
+      {!emptyCart &&
+        !upsellsSettings.enabled &&
+        upsellsSettings.layout === "side" && (
+          <Upsells
+            sidePanel
+            upsellsSettings={upsellsSettings}
+            designSettings={designSettings}
+            currency={currency}
+            cartSettings={cartSettings}
+          />
+        )}
+
       {offerOpen && (
         <div
           onClick={() => setOfferOpen(false)}
@@ -113,7 +263,14 @@ const CartPreview = memo(function CartPreview({
           />
         )}
 
-        <div className="cart-app__heading">
+        <div
+          className="cart-app__heading"
+          style={
+            designSettings.headerBackground
+              ? { background: designSettings.headerBackground }
+              : undefined
+          }
+        >
           <CartHeading
             headerSettings={headerSettings}
             designSettings={designSettings}
@@ -125,6 +282,11 @@ const CartPreview = memo(function CartPreview({
           )}
         </div>
 
+        {/* Header-section rows, in the order set by dragging them in the sidebar */}
+        {headerOrder.map((key) => (
+          <Fragment key={key}>{headerBlocks[key]}</Fragment>
+        ))}
+
         {/* below_header */}
         <CustomHtml cartSettings={cartSettings} position="below_header" />
 
@@ -132,23 +294,20 @@ const CartPreview = memo(function CartPreview({
           className="cart-app__body cart-plus-body"
           style={{
             overflowY: cartSettings?.disableFixedFooter ? "unset" : "auto",
+            ...(bodyBg ? { background: bodyBg } : {}),
           }}
         >
           {emptyCart ? (
             <>
-              {!rewardsSettings.enabled && rewardsSettings.showOnEmptyCart && (
-                <TieredReward
-                  rewardsSettings={rewardsSettings}
+              <SectionBg id="Recommended Products" cartSettings={cartSettings}>
+                <Recommendation
+                  recommendationsSettings={recommendationsSettings}
                   currency={currency}
+                  cartSettings={cartSettings}
+                  upsellsSettings={upsellsSettings}
+                  designSettings={designSettings}
                 />
-              )}
-              <Recommendation
-                recommendationsSettings={recommendationsSettings}
-                currency={currency}
-                cartSettings={cartSettings}
-                upsellsSettings={upsellsSettings}
-                designSettings={designSettings}
-              />
+              </SectionBg>
             </>
           ) : (
             <>
@@ -159,94 +318,32 @@ const CartPreview = memo(function CartPreview({
                     position="above_announcements"
                   />
 
-                  {!announcementSettings.enabled &&
-                    announcementSettings.position === "before" && (
-                      <Announcements
-                        announcementSettings={announcementSettings}
-                        cartSettings={cartSettings}
-                      />
-                    )}
-
                   {trustBadgesSettings?.position === "top" && (
-                    <TrustBadges trustBadgesSettings={trustBadgesSettings} />
+                    <SectionBg id="Security Badges" cartSettings={cartSettings}>
+                      <TrustBadges trustBadgesSettings={trustBadgesSettings} />
+                    </SectionBg>
                   )}
 
-                  {!rewardsSettings.enabled && (
-                    <TieredReward
-                      rewardsSettings={rewardsSettings}
-                      currency={currency}
-                    />
-                  )}
-
-                  {!upsellsSettings.enabled &&
-                    upsellsSettings?.position === "top" && (
-                      <Upsells
-                        upsellsSettings={upsellsSettings}
-                        designSettings={designSettings}
-                        currency={currency}
-                        cartSettings={cartSettings}
-                      />
-                    )}
-
-                  <CartItem
-                    showStrikethrough={designSettings.showStrikethrough}
-                    textColor={designSettings.textColor}
-                    savingColor={designSettings.savingsColor}
-                    Subscription={Subscription}
-                    subscriptionUpgradesSettings={subscriptionUpgradesSettings}
-                    cartSettings={cartSettings}
-                    setQty={setQty}
-                    qty={qty}
-                    designSettings={designSettings}
-                    currency={currency}
-                  />
-
-                  {!upsellsSettings.enabled &&
-                    upsellsSettings.showSuggestedProduct &&
-                    upsellsSettings?.suggestedProduct?.items?.titles?.length >
-                      0 && (
-                      <div className="upsell-suggestion">
-                        <label className="upsell-checkbox-wrapper">
-                          <input type="checkbox" />
-                          <span className="custom-checkbox"></span>
-                          <span className="upsell-text">
-                            {
-                              upsellsSettings?.suggestedProduct?.items
-                                ?.titles?.[0]
-                            }
-                          </span>
-                        </label>
-                      </div>
-                    )}
-
-                  <CustomHtml
-                    cartSettings={cartSettings}
-                    position="between_line_items"
-                  />
+                  {/* Body rows, in the order set by dragging them in the sidebar */}
+                  {bodyOrder.map((key) => (
+                    <Fragment key={key}>{bodyBlocks[key]}</Fragment>
+                  ))}
 
                   <div className="cart-app__bottom-group">
-                    {!upsellsSettings.enabled &&
-                      upsellsSettings?.position === "bottom" && (
-                        <Upsells
-                          upsellsSettings={upsellsSettings}
-                          designSettings={designSettings}
-                          currency={currency}
-                          cartSettings={cartSettings}
-                        />
-                      )}
-
                     <CustomHtml
                       cartSettings={cartSettings}
                       position="below_cart_items"
                     />
 
-                    {!additionalNotesSettings.enabled &&
+                    {/* {!additionalNotesSettings.enabled &&
                       additionalNotesSettings.placement === "below_items" && (
-                        <AdditionalNotes
-                          additionalNotesSettings={additionalNotesSettings}
-                          designSettings={designSettings}
-                        />
-                      )}
+                        <SectionBg id="Add Notes" cartSettings={cartSettings}>
+                          <AdditionalNotes
+                            additionalNotesSettings={additionalNotesSettings}
+                            designSettings={designSettings}
+                          />
+                        </SectionBg>
+                      )} */}
 
                     {!announcementSettings.enabled &&
                       announcementSettings.position === "after" && (
@@ -256,27 +353,31 @@ const CartPreview = memo(function CartPreview({
                         />
                       )}
 
-                    <DiscountCode
-                      discountCodesSettings={discountCodesSettings}
-                      setOfferOpen={setOfferOpen}
-                      offerOpen={offerOpen}
-                      designSettings={designSettings}
-                      currency={currency}
-                      shop={shop}
-                      apiUrl={apiUrl}
-                    />
+                    <SectionBg id="Discount code" cartSettings={cartSettings}>
+                      <DiscountCode
+                        discountCodesSettings={discountCodesSettings}
+                        setOfferOpen={setOfferOpen}
+                        offerOpen={offerOpen}
+                        designSettings={designSettings}
+                        currency={currency}
+                        shop={shop}
+                        apiUrl={apiUrl}
+                      />
+                    </SectionBg>
                   </div>
                 </>
               )}
 
               {activeTab === "Recommended Products" && (
-                <Recommendation
-                  recommendationsSettings={recommendationsSettings}
-                  currency={currency}
-                  cartSettings={cartSettings}
-                  upsellsSettings={upsellsSettings}
-                  designSettings={designSettings}
-                />
+                <SectionBg id="Recommended Products" cartSettings={cartSettings}>
+                  <Recommendation
+                    recommendationsSettings={recommendationsSettings}
+                    currency={currency}
+                    cartSettings={cartSettings}
+                    upsellsSettings={upsellsSettings}
+                    designSettings={designSettings}
+                  />
+                </SectionBg>
               )}
             </>
           )}
@@ -297,6 +398,7 @@ const CartPreview = memo(function CartPreview({
             trustBadgesSettings={trustBadgesSettings}
             disableFixedFooter={cartSettings?.disableFixedFooter}
             cartSettings={cartSettings}
+            subtotal={subtotal}
             setBreakdownOpen={setBreakdownOpen}
             breakdownOpen={breakdownOpen}
             setOfferOpen={setOfferOpen}

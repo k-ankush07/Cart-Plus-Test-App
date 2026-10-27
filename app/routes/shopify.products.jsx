@@ -29,6 +29,7 @@ export const loader = async ({ request }) => {
               id
               title
               price
+              compareAtPrice
               sku
               availableForSale
               image {

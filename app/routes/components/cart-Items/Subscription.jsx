@@ -25,7 +25,7 @@ export default function Subscription({
         className="subscription-upgrade-btn cart-plus-subscription-upgrade-button cart-plus-public-component-product-tile__subscription-upgrade"
         style={{
           borderRadius: `${designSettings?.buttonRadius || 8}px`,
-          backgroundColor: designSettings?.buttonColor || "#000",
+          background: designSettings?.buttonColor || "#000",
           "--btn-hover-text": designSettings?.buttonHoverColor || "#333",
           "--btn-text": designSettings?.buttonTextColor || "#fff",
         }}

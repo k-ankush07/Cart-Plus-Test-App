@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { backgroundToCss, useTemplateBackground } from "../utils/background";
+import { LibraryIcon } from "../ui/IconLibrary";
 
 const paddingMap = {
     slim: "4px 33px",
@@ -7,37 +8,9 @@ const paddingMap = {
 };
 
 export default function Announcements({ announcementSettings }) {
-    const [timeLeft, setTimeLeft] = useState(0);
-
-    useEffect(() => {
-        if (!announcementSettings.timer) return;
-
-        const [min, sec] = announcementSettings.timer.split(":").map(Number);
-        const totalSeconds = (min || 0) * 60 + (sec || 0);
-
-        setTimeLeft(totalSeconds);
-    }, [announcementSettings.timer]);
-
-    useEffect(() => {
-        if (timeLeft <= 0) return;
-
-        const interval = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [timeLeft]);
-
-    const formatTime = (seconds) => {
-        const m = String(Math.floor(seconds / 60)).padStart(2, "0");
-        const s = String(seconds % 60).padStart(2, "0");
-        return `${m}:${s}`;
-    };
-
-    const finalHTML = announcementSettings.text?.replace(
-        "{TIMER}",
-        `<strong>${formatTime(timeLeft)}</strong>`
-    );
+    const templateBg = useTemplateBackground();
+    // older announcements may still contain the retired {TIMER} placeholder
+    const html = (announcementSettings.text || "").replace(/\s*\{timer\}/gi, "");
 
     return (
         <div
@@ -46,19 +19,33 @@ export default function Announcements({ announcementSettings }) {
             style={{
                 padding: paddingMap[announcementSettings.height],
                 textAlign: "center",
+                // on the Template gradient the text goes white
+                ...(!announcementSettings.background && templateBg
+                    ? { color: "#fff" }
+                    : {}),
                 fontSize: `${announcementSettings.fontSize}px`,
                 lineHeight: "30px",
-                backgroundColor: announcementSettings.backgroundColor,
-                borderTop: `1px solid ${announcementSettings.borderColor}`,
-                borderBottom: `1px solid ${announcementSettings.borderColor}`,
+                background: backgroundToCss(
+                    announcementSettings.background ||
+                        templateBg || {
+                            type: "plain",
+                            color: announcementSettings.backgroundColor,
+                        },
+                ),
+                // borderTop: `1px solid ${announcementSettings.borderColor}`,
+                // borderBottom: `1px solid ${announcementSettings.borderColor}`,
             }}
         >
-
-            <span
-                dangerouslySetInnerHTML={{
-                    __html: finalHTML,
-                }}
-            />
+            {announcementSettings.icon && (
+                <span style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 8 }}>
+                    <LibraryIcon
+                        value={announcementSettings.icon}
+                        size={20}
+                        color={announcementSettings.iconColor}
+                    />
+                </span>
+            )}
+            <span dangerouslySetInnerHTML={{ __html: html }} />
         </div>
     );
 }

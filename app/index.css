@@ -60,6 +60,12 @@ body,
     min-width: 0;
 }
 
+.cart-plus-timer .Polaris-Icon {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
 .cart-app__checkout,
 .cart-app__close,
 .cart-app-item__qty-btn {
@@ -1027,7 +1033,6 @@ span.svg-wrapper {
     box-sizing: border-box;
     color: #333;
     outline: none;
-    margin-top: 10px;
 }
 
 .cart-additional-notes__textarea:focus {
@@ -1360,7 +1365,7 @@ span.cart-plus-rewards-tier-icon {
 .cart-plus-internal-upsell {
     border-radius: 5px;
     position: relative;
-    padding: 15px 15px 0 15px;
+    padding: 15px 15px 15px 15px;
 }
 
 .cart-app-item__image {
@@ -1368,8 +1373,10 @@ span.cart-plus-rewards-tier-icon {
     height: 80px;
     flex-shrink: 0;
     border-radius: 5px;
-    overflow: hidden;
     border: 1px solid #E8E8E8;
+    overflow: hidden;
+    display: flex;
+    aspect-ratio: 1 / 1;
 }
 
 .cart-plus-discount-heading {
@@ -2010,23 +2017,37 @@ input.cart-plus-offers-code-input:focus {
 .sb-line { flex: 1; }
 .sb-line hr { border-top-style: dashed; }
 
-/* lamba product name cut ho jaye */
 .Polaris-Select__Content { overflow: hidden; }
 .Polaris-Select__SelectedOption { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .sb-switch {
-  position: relative; width: 32px; height: 20px; padding: 0; flex-shrink: 0;
-  border: 1px solid var(--p-color-border); border-radius: 999px;
+  position: relative; width: 32px; height: 18px; padding: 0; flex-shrink: 0;
+  border: 1px solid var(--p-color-border); border-radius: 4px;
   background: var(--p-color-bg-fill-secondary); cursor: pointer; appearance: none;
   transition: background .15s ease;
 }
 .sb-switch-knob {
-  position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
-  background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform .15s ease; pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 1px 2px #00000047;
+  transform: translateY(-50%);
+  transition: transform 0.3s;
+  pointer-events: none;
 }
 
+.sb-switch.is-on .sb-switch-knob {
+  transform: translate(15px, -50%);
+}
 .sb-switch.is-on { background: #303030; border-color: #303030; }
-.sb-switch.is-on .sb-switch-knob { transform: translateX(12px); }
+
+.cart-plus-products-section.cart-app__items.cart-plus-public-cart-item.cart-plus-product-item {
+    background: white;
+}
 
 /* Responsive Styles */
 
@@ -2111,4 +2132,33 @@ input.cart-plus-offers-code-input:focus {
     .design-cart_styleGrid__bAZ9i {
         grid-template-columns: repeat(1, 1fr);
     }
+}
+
+/* Template (themed cart preview): corner radii */
+.cart-app--themed .cart-plus-product-item,
+.cart-app--themed .cart-plus-public-component-product-tile,
+.cart-app--themed .cart-plus-internal-component-upsell-tile {
+    border-radius: var(--cp-card-radius, 12px);
+}
+
+.cart-app--themed .cart-app-item__image,
+.cart-app--themed .cart-app-item__image img,
+.cart-app--themed .cart-plus-public-component-product-tile__image {
+    border-radius: var(--cp-image-radius, 5px);
+    overflow: hidden;
+}
+
+.cart-app--themed input[type="text"],
+.cart-app--themed input[type="email"],
+.cart-app--themed textarea,
+.cart-app--themed select {
+    border-radius: var(--cp-field-radius, 10px);
+}
+
+
+/* Icon Library icons follow the colour set on their wrapper */
+.cart-plus-lib-icon .Polaris-Icon,
+.cart-plus-lib-icon svg {
+    color: inherit;
+    fill: currentColor;
 }

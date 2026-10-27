@@ -15,7 +15,7 @@ import { PaintBrushFlatIcon } from "@shopify/polaris-icons";
 import ColorInput from "../ui/ColorInput";
 import "../../../index.css";
 
-export default function Appearance({ designSettings, setDesignSettings }) {
+export default function Appearance({ designSettings, setDesignSettings, themed = false }) {
 
     const handleChange = (key, value) => {
         setDesignSettings((prev) => ({
@@ -28,6 +28,7 @@ export default function Appearance({ designSettings, setDesignSettings }) {
         <div className="mainContent">
 
             {/* Page heading — matches reference HTML exactly */}
+            {!themed && (
             <Box paddingBlockEnd="400">
                 <BlockStack gap="400">
                     <InlineStack align="space-between" blockAlign="center">
@@ -43,6 +44,7 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                     </InlineStack>
                 </BlockStack>
             </Box>
+            )}
 
             {/* CARD 1 — General + Cart width */}
             <LegacyCard sectioned title="General">
@@ -93,7 +95,8 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                 </LegacyStack>
             </LegacyCard>
 
-            {/* CARD 2 — Colors */}
+            {/* CARD 2 — Colors (replaced by Template colors when themed) */}
+            {!themed && (
             <LegacyCard sectioned title="Colors">
                 <LegacyStack vertical spacing="tight">
                     <ColorInput
@@ -135,12 +138,14 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                     />
                 </LegacyStack>
             </LegacyCard>
+            )}
 
             {/* CARD 3 — Button settings */}
             <LegacyCard sectioned title="Button settings">
                 <BlockStack gap="200">
 
-                    {/* Corner radius */}
+                    {/* Corner radius (Template "Buttons" corners when themed) */}
+                    {!themed && (
                     <BlockStack gap="0">
                         <div className="Polaris-Label">
                             <label className="Polaris-Label__Text">Corner radius</label>
@@ -193,7 +198,9 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                             </div>
                         </InlineStack>
                     </BlockStack>
+                    )}
 
+                    {!themed && (<>
                     <ColorInput
                         label="Button color"
                         value={designSettings.buttonColor}
@@ -209,6 +216,7 @@ export default function Appearance({ designSettings, setDesignSettings }) {
                         value={designSettings.buttonHoverColor}
                         onChange={(val) => handleChange("buttonHoverColor", val)}
                     />
+                    </>)}
 
                     <Checkbox
                         label="Show continue shopping button"

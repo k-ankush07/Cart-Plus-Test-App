@@ -19,7 +19,7 @@ import {
   CheckIcon,
   CaretDownIcon,
 } from "@shopify/polaris-icons";
-import { useState, useEffect, useMemo, memo } from "react";
+import { useState, useEffect, useMemo, useRef, memo } from "react";
 import { useNavigate, useLocation, useNavigation } from "react-router-dom";
 import "../../index.css";
 import {
@@ -28,6 +28,10 @@ import {
   getCarts,
 } from "../../services/apiRoutes";
 import { getCurrencySymbol } from "./utils/currency";
+import { toggleBanner } from "./utils/banner";
+import { toggleTimer } from "./utils/timer";
+import { toggleOneTick } from "./utils/oneTick";
+import { TemplateBackgroundContext, templateBackground } from "./utils/background";
 
 const CartLayout = memo(function CartLayout({
   activeTab,
@@ -62,6 +66,7 @@ const CartLayout = memo(function CartLayout({
   onDiscard,
   onResetToDefault,
   isResetting,
+  initialPreviewProduct,
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -72,12 +77,37 @@ const CartLayout = memo(function CartLayout({
   const [previewPopoverOpen, setPreviewPopoverOpen] = useState(false);
   const [publishModal, setPublishModal] = useState(false);
   const [previewMode, setPreviewMode] = useState("items");
+  // last non-empty selection, restored when returning to "Item in cart"
+  const lastPreviewRef = useRef(initialPreviewProduct ? [initialPreviewProduct] : []);
   const [leaveModal, setLeaveModal] = useState(false);
   const [leaveSaving, setLeaveSaving] = useState(false);
   const [resetModal, setResetModal] = useState(false);
 
   const [customItems, setCustomItems] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState("");
+  const [previewProducts, setPreviewProducts] = useState(
+    initialPreviewProduct ? [initialPreviewProduct] : [],
+  );
+  const [previewLoading, setPreviewLoading] = useState(!initialPreviewProduct);
+
+  const hadPreviewProductsRef = useRef(false);
+  useEffect(() => {
+    if (previewProducts.length) {
+      lastPreviewRef.current = previewProducts;
+      hadPreviewProductsRef.current = true;
+    } else if (hadPreviewProductsRef.current) {
+      // last product removed → show the empty cart
+      setPreviewMode("empty");
+    }
+  }, [previewProducts]);
+
+  // coming back to "Item in cart" with nothing left brings the last product back
+  const changePreviewMode = (mode) => {
+    setPreviewMode(mode);
+    if (mode === "items" && !previewProducts.length) {
+      setPreviewProducts(lastPreviewRef.current);
+    }
+  };
   const [selectedMarket, setSelectedMarket] = useState("IN");
 
   // Sync state when cart prop changes (after switching carts via dropdown)
@@ -331,9 +361,19 @@ const CartLayout = memo(function CartLayout({
   }, []);
 
   const symbol = getCurrencySymbol(currency);
+  const templateBg = useMemo(
+    () => templateBackground(designSettings),
+    [
+      designSettings?.colorMode,
+      designSettings?.themeColor,
+      designSettings?.gradientStart,
+      designSettings?.gradientEnd,
+      designSettings?.gradientAngle,
+    ],
+  );
 
   return (
-    <>
+    <TemplateBackgroundContext.Provider value={templateBg}>
       <Page fullWidth>
         {/* ── Top bar ── */}
         <div
@@ -399,14 +439,14 @@ const CartLayout = memo(function CartLayout({
                   {
                     content: "Show items in cart",
                     onAction: () => {
-                      setPreviewMode("items");
+                      changePreviewMode("items");
                       setPreviewPopoverOpen(false);
                     },
                   },
                   {
                     content: "Show empty cart",
                     onAction: () => {
-                      setPreviewMode("empty");
+                      changePreviewMode("empty");
                       setPreviewPopoverOpen(false);
                     },
                   },
@@ -484,13 +524,66 @@ const CartLayout = memo(function CartLayout({
             trustBadgesSettings={trustBadgesSettings}
             cartSettings={cartSettings}
             handleChange={handleChange}
+            initialOrder={cartSettings?.sectionOrder}
+            onReorder={(_section, _keys, fullOrder) =>
+              handleChange("cartSettings", (prev) => ({
+                ...prev,
+                sectionOrder: fullOrder,
+              }))
+            }
+            enabledMap={{
+              "Banner Image": !!headerSettings?.banner?.enabled,
+              Timer: !!headerSettings?.timer?.enabled,
+              // announcementSettings.enabled === true means the section is switched off
+              Announcement: !announcementSettings?.enabled,
+              // same inverted flag for the progress bar
+              "Progress Bar": !rewardsSettings?.enabled,
+              "One Tick Upsell": !!cartSettings?.oneTick?.enabled,
+              // same inverted flag for the subscription upgrade
+              "Subscription Upgrade": !subscriptionUpgradesSettings?.enabled,
+              // Cross-sell is the Upsells settings, same inverted flag
+              "Cross-sell": !upsellsSettings?.enabled,
+              
+              "Order notes": !additionalNotesSettings?.enabled,
+            }}
+            onToggleItem={(key) => {
+              if (key === "Banner Image") handleChange("header", toggleBanner);
+              if (key === "Timer") handleChange("header", toggleTimer);
+              if (key === "Order notes")
+                handleChange("additionalNotesSettings", (prev) => ({
+                  ...prev,
+                  enabled: !prev.enabled,
+                }));
+              if (key === "Cross-sell")
+                handleChange("upsellsSettings", (prev) => ({
+                  ...prev,
+                  enabled: !prev.enabled,
+                }));
+              if (key === "Subscription Upgrade")
+                handleChange("subscriptionUpgradesSettings", (prev) => ({
+                  ...prev,
+                  enabled: !prev.enabled,
+                }));
+              if (key === "One Tick Upsell")
+                handleChange("cartSettings", toggleOneTick);
+              if (key === "Progress Bar")
+                handleChange("rewardsSettings", (prev) => ({
+                  ...prev,
+                  enabled: !prev.enabled,
+                }));
+              if (key === "Announcement")
+                handleChange("announcement", (prev) => ({
+                  ...prev,
+                  enabled: !prev.enabled,
+                }));
+            }}
             previewMode={previewMode === "items" ? "cart" : "empty"}
             setPreviewMode={(m) =>
-              setPreviewMode(m === "cart" ? "items" : "empty")
+              changePreviewMode(m === "cart" ? "items" : "empty")
             }
-            previewProducts={[]} 
-            previewProduct={selectedProduct}
-            onPreviewProductChange={setSelectedProduct}
+            selectedPreviewProducts={previewProducts}
+            onPreviewProductsChange={setPreviewProducts}
+            onPreviewLoading={setPreviewLoading}
             markets={[
               { label: "Default (India)", value: "IN" },
               { label: "United States", value: "US" },
@@ -729,12 +822,19 @@ const CartLayout = memo(function CartLayout({
         <Icon source={ArrowLeftIcon} />
       </button>
 
-      <div
-        className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
-        style={{
-          width: isPreviewVisible ? undefined : "0px",
-        }}
-      >
+     <div
+  className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
+  style={{
+    width: isPreviewVisible ? undefined : "0px",
+    // side panel wrapper ke bahar (left me) banta hai, isliye clip nahi hona chahiye
+    ...(isPreviewVisible && upsellsSettings?.layout === "side"
+      ? { overflow: "visible" }
+      : {}),
+    ...(designSettings?.colorMode && designSettings?.layout === "floating"
+      ? { background: "#eceef0" }
+      : {}),
+  }}
+>
         <CartPreview
           designSettings={designSettings}
           headerSettings={headerSettings}
@@ -749,15 +849,46 @@ const CartLayout = memo(function CartLayout({
           expressPaymentsSettings={expressPaymentsSettings}
           trustBadgesSettings={trustBadgesSettings}
           cartSettings={cartSettings}
+          sectionOrder={cartSettings?.sectionOrder}
           currency={symbol}
           activeTab={activeTab}
           previewMode={previewMode}
           shop={shop}
           apiUrl={apiUrl}
+          previewProducts={previewProducts}
+          previewLoading={previewLoading}
+          onAddPreviewProduct={(product, variant) =>
+            setPreviewProducts((prev) => {
+              const existing = prev.find((p) => p.id === product.id);
+              if (!existing) return [...prev, { ...product, variants: [variant] }];
+              if (existing.variants.some((v) => v.id === variant.id)) return prev;
+              return prev.map((p) =>
+                p.id === product.id
+                  ? { ...p, variants: [...p.variants, variant] }
+                  : p,
+              );
+            })
+          }
+          onRemovePreviewProduct={(id, variantId) =>
+            setPreviewProducts((prev) =>
+              prev
+                .map((p) =>
+                  p.id === id
+                    ? {
+                        ...p,
+                        variants: variantId
+                          ? p.variants.filter((v) => v.id !== variantId)
+                          : [],
+                      }
+                    : p,
+                )
+                .filter((p) => p.variants.length),
+            )
+          }
           onClosePreview={() => setIsPreviewVisible(false)}
         />
       </div>
-    </>
+    </TemplateBackgroundContext.Provider>
   );
 });
 

@@ -283,7 +283,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                         onClick={hanldeAddProduct}
                         style={{
                             borderRadius: `${designSettings.buttonRadius}px`,
-                            backgroundColor: designSettings.buttonColor,
+                            background: designSettings.buttonColor,
                             "--btn-hover-text": designSettings.buttonHoverColor,
                             "--btn-text": designSettings.buttonTextColor,
                         }}
@@ -374,7 +374,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     {!recommendationsSettings.enabled && recommendationsSettings.showShopNowButton && (
                         <div className="cart-plus-internal-style__title-large_button cart-plus-recommendations-shop-now-button" style={{
                             borderRadius: `${designSettings.buttonRadius}px`,
-                            backgroundColor: designSettings.buttonColor,
+                            background: designSettings.buttonColor,
                             "--btn-hover-text": designSettings.buttonHoverColor,
                             "--btn-text": designSettings.buttonTextColor,
                         }}>
@@ -400,7 +400,7 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     </div>
                 ) : recommendationsSettings.layout === "carousel" ? (
                     <div className="cart-plus-slider-wrapper">
-                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev" style={{ backgroundColor: designSettings.buttonColor, }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} stroke-width="2">
+                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={prevRef} className="custom-prev" style={{ background: designSettings.buttonColor, }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} stroke-width="2">
                             <path d="M15 18l-6-6 6-6"></path>
                         </svg></div>)}
                         <Swiper
@@ -433,12 +433,12 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                             {renderProducts()}
                         </Swiper>
 
-                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next" style={{ backgroundColor: designSettings.buttonColor, }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} stroke-width="2">
+                        {recommendationsSettings.carouselIndicator === "buttons" && (<div ref={nextRef} className="custom-next" style={{ background: designSettings.buttonColor, }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={designSettings.iconColor || "#ABABAB"} stroke-width="2">
                             <path d="M9 6l6 6-6 6"></path>
                         </svg></div>)}
                         {indicator === "progressBar" && (
                             <div className="cart-plus-progress-bar">
-                                <div ref={fillRef} className="cart-plus-progress-fill" style={{ backgroundColor: designSettings.buttonColor, }}></div>
+                                <div ref={fillRef} className="cart-plus-progress-fill" style={{ background: designSettings.buttonColor, }}></div>
                             </div>
                         )}
                     </div>

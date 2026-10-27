@@ -25,6 +25,7 @@ import {
 } from "@shopify/polaris-icons";
 
 import ColorInput from "../ui/ColorInput";
+import BackgroundInput from "../ui/BackgroundInput";
 import { uploadImage } from "../../../services/apiRoutes";
 import { useState } from "react";
 import "../../../index.css";
@@ -130,14 +131,19 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
                 </Button>
               ))}
             </ButtonGroup>
-            <ColorInput
-              label="Background color"
-              value={headerSettings.backgroundColor || ""}
-              onChange={(val) => updateHeader("backgroundColor", val)}
-            />
           </BlockStack>
         </LegacyStack>
       </LegacyCard>
+
+      <BackgroundInput
+        value={
+          headerSettings.background || {
+            type: "plain",
+            color: headerSettings.backgroundColor || "#ffffff",
+          }
+        }
+        onChange={(background) => updateHeader("background", background)}
+      />
 
       <LegacyCard sectioned title="Title">
         <LegacyStack vertical spacing="tight">

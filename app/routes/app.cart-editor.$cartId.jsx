@@ -8,6 +8,12 @@ import CartLayout from "./components/CartLayout";
 import { requireShopData  } from "./components/shop.server";
 import { useLoaderData, useSearchParams } from "react-router-dom";
 import { getCart, updateCart } from "../services/apiRoutes";
+import { TEMPLATE_DEFAULTS } from "./components/utils/templateTheme";
+import {
+  DEFAULT_PREVIEW_PRODUCT_QUERY,
+  normalizePreviewProduct,
+  pickDefaultPreviewProduct,
+} from "./components/utils/previewProduct";
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   defaultSettings,
@@ -49,13 +55,33 @@ export const loader = async ({ request, params }) => {
   const cartId = params.cartId;
   const apiUrl = process.env.PUBLIC_REACT_APP_API_URL;
 
-  const [{ shop, accessToken, currency }, cartResult] = await Promise.all([
-    requireShopData (request),
-    getCart(apiUrl, cartId).catch((err) => {
-      console.error("GET CART ERROR:", err);
-      return { data: null };
-    }),
-  ]);
+  const shopPromise = requireShopData(request);
+
+  // first store product for the preview, fetched alongside the cart so it is
+  // already there on first paint (no loading flash)
+  const previewProductPromise = shopPromise
+    .then(async ({ admin }) => {
+      const res = await admin.graphql(DEFAULT_PREVIEW_PRODUCT_QUERY);
+      const data = await res.json();
+      const products = (data?.data?.products?.edges || []).map((e) =>
+        normalizePreviewProduct(e.node),
+      );
+      return pickDefaultPreviewProduct(products);
+    })
+    .catch((err) => {
+      console.error("PREVIEW PRODUCT ERROR:", err);
+      return null;
+    });
+
+  const [{ shop, accessToken, currency }, cartResult, initialPreviewProduct] =
+    await Promise.all([
+      shopPromise,
+      getCart(apiUrl, cartId).catch((err) => {
+        console.error("GET CART ERROR:", err);
+        return { data: null };
+      }),
+      previewProductPromise,
+    ]);
 
   return Response.json({
     shop,
@@ -63,11 +89,13 @@ export const loader = async ({ request, params }) => {
     cart: cartResult?.data || null,
     accessToken,
     currency,
+    initialPreviewProduct,
   });
 };
 
 export default function CartEditor() {
-  const { shop, apiUrl, cart, accessToken, currency } = useLoaderData();
+  const { shop, apiUrl, cart, accessToken, currency, initialPreviewProduct } =
+    useLoaderData();
 
   const [searchParams] = useSearchParams();
 
@@ -84,12 +112,12 @@ export default function CartEditor() {
     "express-payments": "Quick Checkout",
     "trust-badges": "Security Badges",
     header: "Top Section",
-    design: "Appearance",
+    design: "Template",
     settings: "Preferences",
   };
 
   const [activeTab, setActiveTab] = useState(
-    () => MODULE_TAB_MAP[searchParams.get("module")] || "Appearance"
+    () => MODULE_TAB_MAP[searchParams.get("module")] || "Template"
   );
 
   const [designSettings, setDesignSettings] = useState(
@@ -293,9 +321,11 @@ export default function CartEditor() {
         shopifyDiscountId,
       };
 
+      const designToSave = { ...TEMPLATE_DEFAULTS, ...designSettings };
+
       await Promise.all([
         updateCart(apiUrl, cartId, {
-          designSettings,
+          designSettings: designToSave,
           headerSettings,
           announcementSettings,
           rewardsSettings,
@@ -315,9 +345,10 @@ export default function CartEditor() {
       ]);
 
       setTriggeredRewardsSettings(updatedTriggeredRewardsSettings);
+      setDesignSettings(designToSave);
 
       initialSettingsRef.current = {
-        design: designSettings,
+        design: designToSave,
         header: headerSettings,
         announcement: announcementSettings,
         rewardsSettings,
@@ -485,6 +516,7 @@ export default function CartEditor() {
         isResetting={isResetting}
         cartStatus={cart?.status}
         cartId={cart?.cartId}
+        initialPreviewProduct={initialPreviewProduct}
       />
     </AppProvider>
   );

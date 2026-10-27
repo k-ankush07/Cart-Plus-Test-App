@@ -1,4 +1,5 @@
 import "../../../index.css";
+import { backgroundToCss, useTemplateBackground } from "../utils/background";
 
 const getIcon = (type) => {
   switch (type) {
@@ -34,6 +35,7 @@ const getIcon = (type) => {
 };
 
 export default function TieredRewards({ rewardsSettings, currency }) {
+  const templateBg = useTemplateBackground();
   const tiers = rewardsSettings?.tiers || [];
 
   const totalCart = 1400;
@@ -112,23 +114,149 @@ export default function TieredRewards({ rewardsSettings, currency }) {
     return tierValue - totalValue;
   };
 
+  const messageHtml =
+    totalValue >= maxAmount
+      ? rewardsSettings.successText
+      : currentTier?.title.replace(
+        "{AMOUNT}",
+        isQuantity
+          ? `${getRemainingAmount(currentTier)} items`
+          : `${currency}${getRemainingAmount(currentTier)}`
+      );
+
+  // gradient-aware colours; fall back to the plain bar colours
+  const trackBg = backgroundToCss(rewardsSettings.barBackground) || rewardsSettings.backgroundColor;
+  const fillBg = backgroundToCss(rewardsSettings.barProgress || templateBg) || rewardsSettings.textColor;
+  const barHeight = rewardsSettings.barLength || 5;
+  const message = (
+    <p
+      className="tier-title cart-plus-rewards-message cart-plus-public-rewards__message"
+      dangerouslySetInnerHTML={{ __html: messageHtml }}
+    />
+  );
+  const bar = (percent) => (
+    <div style={{ height: barHeight, borderRadius: barHeight, background: trackBg, overflow: "hidden" }}>
+      <div style={{ width: `${percent}%`, height: "100%", background: fillBg }} />
+    </div>
+  );
+  const fmt = (n) => (isQuantity ? `${n}` : `${currency}${n}`);
+  const barStyle = rewardsSettings.barStyle || "icon";
+  const ticketLabel = rewardsSettings.rewardTicketLabel ?? "REWARD TICKET";
+  const nextLabel = rewardsSettings.nextRewardLabel ?? "NEXT REWARD";
+  const doneLabel = rewardsSettings.milestoneDoneLabel ?? "DONE";
+
+  // Reward: ticket card with the current reward on the left, next reward on the right
+  if (barStyle === "reward") {
+    return (
+      <div className="cart-plus-rewards" style={{ padding: "12px 16px" }}>
+        <div style={{ display: "flex", border: "1px dashed", borderColor: fillBg, borderRadius: 6, overflow: "hidden" }}>
+          <div style={{ flex: 1, padding: 12, textAlign: "center" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textAlign: "left" }}>
+              {ticketLabel}
+            </div>
+            {message}
+            {bar(fillPercent)}
+          </div>
+          <div style={{ width: 110, padding: 12, textAlign: "center", borderLeft: "1px dashed", borderColor: fillBg }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>
+              {nextLabel}
+            </div>
+            <div style={{ marginTop: 6, display: "inline-flex", width: 32, height: 32 }}>{getIcon("product")}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Next Reward: message plus one continuous bar
+  if (barStyle === "nextReward") {
+    return (
+      <div className="cart-plus-rewards" style={{ padding: "12px 16px", textAlign: "center" }}>
+        {message}
+        {bar(fillPercent)}
+      </div>
+    );
+  }
+
+  // Milestone: one circle per tier, "DONE" once reached
+  if (barStyle === "milestone") {
+    return (
+      <div className="cart-plus-rewards" style={{ padding: "12px 16px", textAlign: "center" }}>
+        {message}
+        <div style={{ display: "flex", justifyContent: "space-around", marginTop: 8 }}>
+          {sortedTiers.map((tier, index) => {
+            const reached = totalValue >= getTierValue(tier);
+            return (
+              <div key={tier.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                <div
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: "50%",
+                    background: reached ? fillBg : trackBg,
+                    color: reached
+                      ? rewardsSettings.completeIconColor
+                      : rewardsSettings.incompleteIconColor,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  {reached ? (
+                    <>
+                      <span>✓</span>
+                      {doneLabel}
+                    </>
+                  ) : (
+                    index + 1
+                  )}
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>{tier.description}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Threshold Tracker: one bar per tier with the current and target values underneath
+  if (barStyle === "threshold") {
+    return (
+      <div className="cart-plus-rewards" style={{ padding: "12px 16px", textAlign: "center" }}>
+        {message}
+        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+          {sortedTiers.map((tier, index) => {
+            const segStart = index === 0 ? 0 : getStepPosition(index - 1);
+            const segEnd = getStepPosition(index);
+            const segFill =
+              fillPercent >= segEnd
+                ? 100
+                : fillPercent > segStart
+                  ? ((fillPercent - segStart) / (segEnd - segStart)) * 100
+                  : 0;
+            return (
+              <div key={tier.id} style={{ flex: 1 }}>
+                {bar(segFill)}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginTop: 4 }}>
+          <span>{fmt(totalValue)}</span>
+          <span>{fmt(maxAmount)}</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="cart-plus-internal-rewards cart-plus-public-rewards tier-card cart-plus-rewards">
       <div className="tier-content">
-        <p
-          className="tier-title cart-plus-rewards-message cart-plus-public-rewards__message"
-          dangerouslySetInnerHTML={{
-            __html:
-              totalValue >= maxAmount
-                ? rewardsSettings.successText
-                : currentTier?.title.replace(
-                  "{AMOUNT}",
-                  isQuantity
-                    ? `${getRemainingAmount(currentTier)} items`
-                    : `${currency}${getRemainingAmount(currentTier)}`
-                ),
-          }}
-        />
+        {message}
 
         <div className="progress-wrapper">
           <div className="progress-track">
@@ -148,7 +276,7 @@ export default function TieredRewards({ rewardsSettings, currency }) {
                     <div
                       className="cell-bar cart-plus-rewards-bar-background cart-plus-public-rewards__bar"
                       style={{
-                        backgroundColor: rewardsSettings.backgroundColor,
+                        background: trackBg,
                         height: `${rewardsSettings.barLength}px`,
                       }}
                     >
@@ -156,7 +284,7 @@ export default function TieredRewards({ rewardsSettings, currency }) {
                         className="cell-fill cart-plus-rewards-bar-foreground cart-plus-public-component-segmented-progress-bar"
                         style={{
                           width: `${segFill}%`,
-                          backgroundColor: rewardsSettings.textColor,
+                          background: fillBg,
                         }}
                       />
                     </div>
@@ -166,9 +294,7 @@ export default function TieredRewards({ rewardsSettings, currency }) {
                           <div
                             className={`cart-plus-public-component-segmented-progress-bar__milestone--middle icon-circle upcart-rewards-tier-circle ${reached ? "active" : ""}`}
                             style={{
-                              backgroundColor: reached
-                                ? rewardsSettings.textColor
-                                : rewardsSettings.backgroundColor,
+                              background: reached ? fillBg : trackBg,
                               color: reached
                                 ? rewardsSettings.completeIconColor
                                 : rewardsSettings.incompleteIconColor,
