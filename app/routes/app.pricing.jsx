@@ -106,7 +106,7 @@ const PLANS = [
 const COMPARE_ROWS = [
     {
         label: "Monthly orders",
-        values: { free: "0", starter: "200", growth: "500", advance: "Unlimited" },
+        values: { free: "100", starter: "200", growth: "500", advance: "Unlimited" },
     },
     { label: "14-day free trial", values: { free: false, starter: true, growth: true, advance: true } },
     { label: "Design settings", values: { free: false, starter: true, growth: true, advance: true } },
