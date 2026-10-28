@@ -357,6 +357,8 @@ async function _commitRemoval(key) {
         cartBody.style.pointerEvents = "";
       }
 
+      window.cartPlusHideOneTick?.(blockId);
+
       // Hide the footer entirely via the empty-footer class (display:none !important)
       const footerEl = drawer.querySelector(".hub-cart-footer");
       if (footerEl) {
@@ -740,6 +742,9 @@ window.hubCheckoutClick = function (e, blockId, btn) {
 
   if (btn.classList.contains("loading")) return;
 
+  // Age verification (editor: Footer > Age Verification) must be ticked first
+  if (window.cartPlusAgeAllowsCheckout && !window.cartPlusAgeAllowsCheckout(blockId)) return;
+
   btn.classList.add("loading");
   btn.dataset.original = btn.innerHTML;
   btn.innerHTML = `<span class="loader"></span>`;
@@ -949,6 +954,7 @@ window.hubChangeVariantOption = async function (selectEl) {
       const totalSaved = originalTotal - finalTotal;
 
       window._hubCartFinalTotal = finalTotal;
+      window.cartPlusSummaryFromCart?.(blockId, cart);
 
       const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
       if (totalEl) totalEl.textContent = fmt(finalTotal);

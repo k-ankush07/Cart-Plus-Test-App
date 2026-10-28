@@ -96,6 +96,7 @@ window.hubUtils = {
   },
 
   getAdditionalNotesHTML(blockId, settings, note = "") {
+    if (window.cartPlusNotesHTML) return window.cartPlusNotesHTML(blockId, settings, note);
     if (settings?.enabled !== false) return "";
     const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
     const iconColor = designSettings.iconColor || "";
@@ -234,7 +235,7 @@ window.hubUtils = {
       .map(
         (v) => `
       <option value="${v.id}"
-        data-price="${Math.round(Number(v.price) * 100)}"
+        data-price="${window.cartPlusApplyOfferDiscount?.({ discountType: window.__HUB_ACTIVE_CART__?.upsellsSettings?.discountType || "none", discountValue: window.__HUB_ACTIVE_CART__?.upsellsSettings?.discountValue }, Math.round(Number(v.price) * 100)).final ?? Math.round(Number(v.price) * 100)}"
         data-image="${v.featured_image?.src || mainImage}">
         ${v.title}
       </option>
@@ -253,16 +254,24 @@ window.hubUtils = {
 
     const savingsText = cartSettings.savingsText || "Save";
 
-    const salePrice = Number(firstVariant?.price || 0);
-    const comparePrice = Number(firstVariant?.compare_at_price || 0);
+    // Discount settings of the Cross-sell: the offer price replaces the sale price, the original is struck through
+    const offer = window.cartPlusApplyOfferDiscount?.(
+      { discountType: upsellSettings?.discountType || "none", discountValue: upsellSettings?.discountValue },
+      Math.round(Number(firstVariant?.price || 0) * 100),
+    ) || { saved: 0, final: 0, percent: 0 };
+    const hasOffer = offer.saved > 0;
+    const salePrice = hasOffer ? offer.final / 100 : Number(firstVariant?.price || 0);
+    const comparePrice = hasOffer
+      ? Number(firstVariant?.price || 0)
+      : Number(firstVariant?.compare_at_price || 0);
     const hasDiscount = comparePrice > salePrice;
     const savePct = hasDiscount
       ? Math.round((1 - salePrice / comparePrice) * 100)
       : 0;
 
     const comparePriceHTML = hasDiscount
-      ? `<span class="hub-compare-price cart-plus-public-component-upsell-tile__price-compare-at">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
-     <span class="hub-item-save" style="background: ${hexToRGBA(designSettings?.savingsColor, 0.1)}; color: ${designSettings.savingsColor};">
+      ? `<span class="hub-compare-price cart-plus-public-component-upsell-tile__price-compare-at" style="color:${upsellSettings?.secondaryTextColor || upsellSettings?.primaryTextColor || designSettings.textColor || "inherit"};">${hubUtils.formatMoney(Math.round(comparePrice * 100))}</span>
+     <span class="hub-item-save" style="background: ${hexToRGBA(designSettings?.savingsColor || "#16a34a", 0.1)}; color: ${designSettings?.savingsColor || "#16a34a"};">
      ${savingsText}  ${hubUtils.formatMoney(Math.round((comparePrice - salePrice) * 100))} 
      </span>`
       : "";
@@ -273,47 +282,78 @@ window.hubUtils = {
     const btnHoverColor = designSettings.buttonHoverColor || "#333333";
     const textColor = designSettings.buttonTextColor || "#ffffff";
 
+    // Cross-sell options from the editor (colours, sizes, button, card colour, offer, trigger)
+    const u = upsellSettings || {};
+    const primary = u.primaryTextColor || designSettings.textColor || "#6b7280";
+    const secondary = u.secondaryTextColor || primary;
+    const cardBg =
+      window.cartPlusBgCss?.(u.cardBackground) || designSettings.accentColor || "";
+    const imageBox = [
+      u.imageSize ? `width:${u.imageSize}px;height:${u.imageSize}px;` : "",
+      u.radius !== null && u.radius !== undefined
+        ? `border-radius:${u.radius}px;overflow:hidden;`
+        : "",
+    ].join("");
+    const offerLabel =
+      u.showLabel !== false && hasOffer
+        ? `<div style="font-size:11px;color:${secondary};">${String(u.labelText ?? "Save {{saved_percentage}}")
+            .replace(/\{\{saved_percentage\}\}/gi, `${offer.percent}%`)
+            .replace(/\{\{saved_amount\}\}/gi, hubUtils.formatMoney(offer.saved))}</div>`
+        : "";
+    const btnBg =
+      window.cartPlusBgCss?.(u.buttonBackground) || designSettings.buttonColor || "#000000";
+    const btnText = u.buttonTextColor || designSettings.buttonTextColor || "#ffffff";
+    const btnRadius = u.buttonRadius ?? designSettings.buttonRadius ?? 0;
+    const btnLabel = u.buttonText || "Add";
+    const variantAttr = `data-variant="${firstVariant?.id}"`;
+
+    // Button, Checkbox or Toggle; all three go through the same ".hub-add-btn" add-to-cart handler
+    let trigger;
+    if (u.trigger === "checkbox") {
+      trigger = `<button type="button" class="hub-add-btn hub-upsell-check" ${variantAttr} aria-label="${btnLabel}" style="--cp-accent:${btnBg};--cp-border:${secondary};"></button>`;
+    } else if (u.trigger === "toggle") {
+      trigger = `<button type="button" role="switch" aria-checked="false" aria-label="${btnLabel}" class="hub-add-btn hub-upsell-switch" ${variantAttr} style="--cp-accent:${btnBg};"><span></span></button>`;
+    } else {
+      trigger = `<button class="hub-add-btn cart-plus-public-component__button" ${variantAttr}
+          style="--btn-bg:${btnBg};--btn-hover:${btnHoverColor};--btn-text:${btnText};border-radius:${btnRadius}px;${u.buttonFontSize ? `font-size:${u.buttonFontSize}px;` : ""}${u.buttonTextColor ? `color:${u.buttonTextColor};` : ""}">
+            ${btnLabel}
+          </button>`;
+    }
+
     return `
-    <div class="hub-rec-product upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" style="background-color: ${designSettings.accentColor};">
+    <div class="hub-rec-product upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" style="background:${cardBg};${u.radius !== null && u.radius !== undefined ? `border-radius:${u.radius}px;` : ""}">
       <div class="upcart-internal-component-upsell-tile__info_count cart-plus-public-component-upsell-tile">
-        <div class="upcart-internal-component-upsell-tile__image-container cart-plus-public-component-upsell-tile__image-container">
+        <div class="upcart-internal-component-upsell-tile__image-container cart-plus-public-component-upsell-tile__image-container" style="${imageBox}">
           <img class="hub-product-img cart-plus-public-component-upsell-tile__image"
                src="${mainImage}"
                alt="${product.title}" />
         </div>
         <div class="upcart-internal-component-upsell-tile__info cart-plus-internal-component-upsell-tile__info">
           <a href="/products/${product.handle}"
-            class="upcart-internal-component-upsell-tile__title-link cart-plus-internal-component-upsell-tile__title-link" style="color:${designSettings.textColor};">
-            <h4 class="upcart-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title" style="color:${designSettings.textColor};">
+            class="upcart-internal-component-upsell-tile__title-link cart-plus-internal-component-upsell-tile__title-link" style="color:${primary};">
+            <h4 class="upcart-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title" style="color:${primary};">
               ${product.title}
             </h4>
           </a>
           ${ratingHTML}
-          <div class="price cart-plus-public-component-upsell-tile__price-row" style="color:${designSettings.textColor};">
-            <span class="sale-price cart-plus-public-component-upsell-tile__price" style="color:${designSettings.textColor};">
+          <div class="price cart-plus-public-component-upsell-tile__price-row" style="color:${primary};">
+            <span class="sale-price cart-plus-public-component-upsell-tile__price" style="color:${primary};">
               ${hubUtils.formatMoney(Math.round(salePrice * 100))}
             </span>
             ${comparePriceHTML}
           </div>
+          ${offerLabel}
         </div>
       </div>
       <div class="upcart-internal-component-upsell-tile__variant-row">
            ${
              hasMultipleVariants
-               ? `<select class="hub-variant-select cart-plus-public-component-upsell-tile__variant-row" style="color:${designSettings.textColor};">
+               ? `<select class="hub-variant-select cart-plus-public-component-upsell-tile__variant-row" style="color:${primary};">
                      ${variantOptions}
                    </select>`
                : ""
            }
-          <button class="hub-add-btn cart-plus-public-component__button" data-variant="${firstVariant?.id}" 
-          style="
-          --btn-bg:${btnColor};
-          --btn-hover:${btnHoverColor};
-          --btn-text:${textColor};
-          border-radius:${designSettings.buttonRadius}px;
-      ">
-            ${upsellSettings.buttonText || "Add"}
-          </button>
+          ${trigger}
         </div>
     </div>
   `;
@@ -404,6 +444,7 @@ window.hubUtils = {
       const grandTotal = finalTotal + shippingCents;
       const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
       if (grandEl) grandEl.textContent = fmt(grandTotal);
+      window.cartPlusRefreshSummary?.(blockId);
 
       const checkoutBtn = document.getElementById(
         `hub-checkout-btn-${blockId}`,
@@ -768,8 +809,14 @@ window.hubUtils = {
     const len = sorted.length;
     const maxAmount = getTierValue(sorted[len - 1]) || 1;
 
-    const trackColor = rewards.backgroundColor || "#c1c1c1";
-    const fillColor = rewards.textColor || "#000000";
+    // gradient-aware colours, like the editor: own bar colours, else the Template colour
+    const templateBg = window.cartPlusTemplateBackground?.(
+      window.__HUB_ACTIVE_CART__?.designSettings,
+    );
+    const trackColor =
+      window.cartPlusBgCss?.(rewards.barBackground) || rewards.backgroundColor || "#c1c1c1";
+    const fillColor =
+      window.cartPlusBgCss?.(rewards.barProgress || templateBg) || rewards.textColor || "#000000";
     const barLength = rewards.barLength || 4;
     const barGap = rewards.barGap || 0;
     const dotSize = 28 + barLength;
@@ -823,6 +870,70 @@ window.hubUtils = {
         segFill = ((fillPctNum - segStart) / (segEnd - segStart)) * 100;
       return segFill;
     });
+
+    // Style variants picked in the editor (Tiered Offers > Style). "icon" keeps the animated segments below.
+    const barStyle = rewards.barStyle || "icon";
+    if (barStyle !== "icon") {
+      (el._hubTimers || []).forEach(clearTimeout);
+      const hubFmt = (n) => (isQuantity ? `${n}` : hubUtils.formatMoney(n * 100));
+      const messageEl = titleHtml
+        ? titleHtml.replace('class="hub-rewards-title', 'style="margin:0 0 8px;" class="hub-rewards-title')
+        : "";
+      const bar = (percent) =>
+        `<div style="height:${barLength}px;border-radius:${barLength}px;background:${trackColor};overflow:hidden;"><div class="hub-cell-fill" style="width:${percent.toFixed(2)}%;height:100%;background:${fillColor};"></div></div>`;
+      const ticketLabel = rewards.rewardTicketLabel ?? "REWARD TICKET";
+      const nextLabel = rewards.nextRewardLabel ?? "NEXT REWARD";
+      const doneLabel = rewards.milestoneDoneLabel ?? "DONE";
+      const wrap = (inner, extra = "") =>
+        `<div class="cart-plus-rewards hub-rewards-wrap" style="padding:12px 16px;${extra}">${inner}</div>`;
+      const borderColor = String(fillColor).includes("gradient") ? "currentColor" : fillColor;
+      const dashed = `1px dashed ${borderColor}`;
+
+      let html = "";
+      if (barStyle === "reward") {
+        html = wrap(`<div style="display:flex;border:${dashed};border-radius:6px;overflow:hidden;">
+          <div style="flex:1;padding:12px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-align:left;">${ticketLabel}</div>
+            ${messageEl}${bar(fillPctNum)}
+          </div>
+          <div style="width:110px;padding:12px;text-align:center;border-left:${dashed};">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.5px;">${nextLabel}</div>
+            <div style="margin-top:6px;display:inline-flex;width:32px;height:32px;">${hubUtils.getTierIcon("product", "currentColor")}</div>
+          </div>
+        </div>`);
+      } else if (barStyle === "nextReward") {
+        html = wrap(`${messageEl}${bar(fillPctNum)}`, "text-align:center;");
+      } else if (barStyle === "milestone") {
+        html = wrap(
+          `${messageEl}<div style="display:flex;justify-content:space-around;margin-top:8px;">${sorted
+            .map((tier, index) => {
+              const reached = cartTotal >= getTierValue(tier);
+              const color = reached
+                ? rewards.completeIconColor || "#ffffff"
+                : rewards.incompleteIconColor || "#000000";
+              return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                <div style="width:64px;height:64px;border-radius:50%;background:${reached ? fillColor : trackColor};color:${color};display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${reached ? `<span>✓</span>${doneLabel}` : index + 1}</div>
+                <span style="font-size:12px;font-weight:600;">${tier.description || ""}</span>
+              </div>`;
+            })
+            .join("")}</div>`,
+          "text-align:center;",
+        );
+      } else if (barStyle === "threshold") {
+        html = wrap(
+          `${messageEl}<div style="display:flex;gap:6px;margin-top:8px;">${segFills
+            .map((f) => `<div style="flex:1;">${bar(f)}</div>`)
+            .join("")}</div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px;"><span>${hubFmt(cartTotal)}</span><span>${hubFmt(maxAmount)}</span></div>`,
+          "text-align:center;",
+        );
+      }
+      if (html) {
+        el.style.display = "block";
+        el.innerHTML = html;
+        return;
+      }
+    }
 
     el.style.display = "block";
 

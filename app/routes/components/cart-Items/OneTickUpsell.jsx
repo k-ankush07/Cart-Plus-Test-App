@@ -9,14 +9,14 @@ const CAROUSEL_GAP = 10;
 
 /* Stack CSS: pos 0 = top card, 1 & 2 = peeking layers, 3+ = hidden */
 const STACK_CSS = `
-.rapi-cart-drawer__ups-stack{position:relative;padding-bottom:24px}
-.rapi-cart-drawer__ups-stack-item{transition:transform .25s ease,opacity .25s ease;transform-origin:top center}
-.rapi-cart-drawer__ups-stack-item[data-rapi-ups-stack-pos="0"]{position:relative;z-index:3}
-.rapi-cart-drawer__ups-stack-item:not([data-rapi-ups-stack-pos="0"]){position:absolute;top:0;left:0;right:0;pointer-events:none}
-.rapi-cart-drawer__ups-stack-item[data-rapi-ups-stack-pos="1"]{z-index:2;transform:translateY(8px) scale(.96)}
-.rapi-cart-drawer__ups-stack-item[data-rapi-ups-stack-pos="2"]{z-index:1;transform:translateY(16px) scale(.92)}
-.rapi-cart-drawer__ups-stack-item:not([data-rapi-ups-stack-pos="0"]):not([data-rapi-ups-stack-pos="1"]):not([data-rapi-ups-stack-pos="2"]){z-index:0;opacity:0;visibility:hidden;transform:translateY(16px) scale(.92)}
-.rapi-cart-drawer__ups-stack-item>div{min-height:96px;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.cart-plus-drawer__ups-stack{position:relative;padding-bottom:24px}
+.cart-plus-drawer__ups-stack-item{transition:transform .25s ease,opacity .25s ease;transform-origin:top center}
+.cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="0"]{position:relative;z-index:3}
+.cart-plus-drawer__ups-stack-item:not([data-rapi-ups-stack-pos="0"]){position:absolute;top:0;left:0;right:0;pointer-events:none}
+.cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="1"]{z-index:2;transform:translateY(8px) scale(.96)}
+.cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="2"]{z-index:1;transform:translateY(16px) scale(.92)}
+.cart-plus-drawer__ups-stack-item:not([data-rapi-ups-stack-pos="0"]):not([data-rapi-ups-stack-pos="1"]):not([data-rapi-ups-stack-pos="2"]){z-index:0;opacity:0;visibility:hidden;transform:translateY(16px) scale(.92)}
+.cart-plus-drawer__ups-stack-item>div{min-height:96px;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 `;
 
 const CACHE_KEY = "cp-one-tick-products";
@@ -177,8 +177,8 @@ export default function OneTickUpsell({
   const isCarousel = oneTick.layout === "carousel";
   // stack sirf "row" layout me, aur jab 1 se zyada card ho
   const isStack = oneTick.layout === "row" && n > 1;
-  const cardBg =
-    backgroundToCss(oneTick.cardBackground) || designSettings?.accentColor || "#fff";
+  // white unless a Card background is set
+  const cardBg = backgroundToCss(oneTick.cardBackground) || "#ffffff";
 
   /* ---------- stack helpers ---------- */
   // top card = 0, agla = 1, ... (circular)
@@ -577,11 +577,11 @@ export default function OneTickUpsell({
       {isStack ? (
         <>
           {/* ---------- card stack (row layout) ---------- */}
-          <div className="rapi-cart-drawer__ups-stack">
+          <div className="cart-plus-drawer__ups-stack">
             {cards.map((c, i) => (
               <div
                 key={c.offer.id}
-                className="rapi-cart-drawer__ups-stack-item"
+                className="cart-plus-drawer__ups-stack-item"
                 data-rapi-ups-stack-pos={posOf(i)}
                 aria-hidden={posOf(i) !== 0}
               >

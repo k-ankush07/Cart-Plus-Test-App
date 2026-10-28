@@ -113,8 +113,6 @@ export const loader = async ({ request, params }) => {
 
   const shopPromise = requireShopData(request);
 
-  // first store product for the preview, fetched alongside the cart so it is
-  // already there on first paint (no loading flash)
   const previewProductPromise = shopPromise
     .then(async ({ admin }) => {
       const res = await admin.graphql(DEFAULT_PREVIEW_PRODUCT_QUERY);

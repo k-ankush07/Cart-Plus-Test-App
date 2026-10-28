@@ -892,7 +892,23 @@ window.startAnnTimer = function (blockId, timeStr) {
         const publishedCart = cartResult.data.find(
           (cart) => cart.status === "published",
         );
-        if (publishedCart) {
+        if (
+          publishedCart &&
+          window.cartPlusIsVisible &&
+          !window.cartPlusIsVisible(publishedCart.cartSettings)
+        ) {
+          // Cart Visibility: outside the scheduled window the theme's own cart stays in charge
+          console.log("[HUB] Cart is outside its scheduled visibility window");
+          document.getElementById(`hub-cart-drawer-${window.HUB_CART_BLOCK_ID}`)?.remove();
+          document.getElementById(`hub-cart-bg-${window.HUB_CART_BLOCK_ID}`)?.remove();
+          window.__HUB_ACTIVE_CART__ = null;
+        } else if (publishedCart) {
+          // Template tab (colours, tints, radii) -> the values the drawer renders with
+          if (window.cartPlusApplyTemplateTheme) {
+            publishedCart.designSettings = window.cartPlusApplyTemplateTheme(
+              publishedCart.designSettings,
+            );
+          }
           window.__HUB_ACTIVE_CART__ = publishedCart;
           hasPublishedCart = true;
           setHubCartActive(true);

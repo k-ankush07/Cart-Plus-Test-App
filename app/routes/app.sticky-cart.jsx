@@ -565,7 +565,7 @@ function StickyWidget({ s, count, position }) {
   });
   const badge = (absolute) =>
     showBadge && (
-      <span className="rapi-sticky-cart__badge" style={badgeStyle(absolute)}>
+      <span className="cart-plus__badge" style={badgeStyle(absolute)}>
         {count}
       </span>
     );
@@ -589,7 +589,7 @@ function StickyWidget({ s, count, position }) {
   if (s.template === "pill") {
     return (
       <div
-        id="rapi-sticky-cart"
+        id="cart-plus"
         style={{
           position: "absolute",
           ...pos,
@@ -610,7 +610,7 @@ function StickyWidget({ s, count, position }) {
           transition: "all .2s",
         }}
       >
-        <span className="rapi-sticky-cart__glyph" style={glyphWrap}>{glyph}</span>
+        <span className="cart-plus__glyph" style={glyphWrap}>{glyph}</span>
         <span>{`Cart${showBadge ? ` • ${count}` : ""}`}</span>
       </div>
     );
@@ -621,9 +621,9 @@ function StickyWidget({ s, count, position }) {
     const r = (size - 4) / 2;
     const circ = 2 * Math.PI * r;
     return (
-      <div id="rapi-sticky-cart" style={round}>
+      <div id="cart-plus" style={round}>
         <svg
-          className="rapi-sticky-cart__ring"
+          className="cart-plus__ring"
           width={size}
           height={size}
           viewBox={`0 0 ${size} ${size}`}
@@ -642,7 +642,7 @@ function StickyWidget({ s, count, position }) {
             strokeDasharray={`${circ * 0.65} ${circ}`}
           />
         </svg>
-        <span className="rapi-sticky-cart__glyph" style={glyphWrap}>{glyph}</span>
+        <span className="cart-plus__glyph" style={glyphWrap}>{glyph}</span>
         {badge(true)}
       </div>
     );
@@ -652,7 +652,7 @@ function StickyWidget({ s, count, position }) {
     const isLeft = position === "left";
     return (
       <div
-        id="rapi-sticky-cart"
+        id="cart-plus"
         style={{
           position: "absolute",
           ...pos,
@@ -672,7 +672,7 @@ function StickyWidget({ s, count, position }) {
           cursor: "pointer",
         }}
       >
-        <span className="rapi-sticky-cart__glyph" style={glyphWrap}>{glyph}</span>
+        <span className="cart-plus__glyph" style={glyphWrap}>{glyph}</span>
         {badge(false)}
       </div>
     );
@@ -685,7 +685,7 @@ function StickyWidget({ s, count, position }) {
     const chevron = Math.min(s.iconSize, arrow - 8);
     return (
       <div
-        id="rapi-sticky-cart"
+        id="cart-plus"
         style={{
           position: "absolute",
           ...pos,
@@ -702,7 +702,7 @@ function StickyWidget({ s, count, position }) {
           cursor: "pointer",
         }}
       >
-        <span className="rapi-sticky-cart__glyph" style={{ display: "flex" }}>
+        <span className="cart-plus__glyph" style={{ display: "flex" }}>
           {["#d9d2c5", "#cbc3b3", "#bdb4a1"].map((c, i) => (
             <span
               key={c}
@@ -747,8 +747,8 @@ function StickyWidget({ s, count, position }) {
 
   // bubble (default)
   return (
-    <div id="rapi-sticky-cart" style={round}>
-      <span className="rapi-sticky-cart__glyph" style={glyphWrap}>{glyph}</span>
+    <div id="cart-plus" style={round}>
+      <span className="cart-plus__glyph" style={glyphWrap}>{glyph}</span>
       {badge(true)}
     </div>
   );
@@ -1319,8 +1319,8 @@ export default function StickyCart() {
                     multiline={5}
                     monospaced
                     autoComplete="off"
-                    placeholder="#rapi-sticky-cart { box-shadow: 0 6px 20px rgba(0,0,0,.25); }"
-                    helpText="Targets #rapi-sticky-cart and its .rapi-sticky-cart__glyph / .rapi-sticky-cart__badge children."
+                    placeholder="#cart-plus { box-shadow: 0 6px 20px rgba(0,0,0,.25); }"
+                    helpText="Targets #cart-plus and its .cart-plus__glyph / .cart-plus__badge children."
                   />
                 </BlockStack>
               </Card>

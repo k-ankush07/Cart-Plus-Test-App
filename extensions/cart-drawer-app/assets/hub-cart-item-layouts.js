@@ -7,15 +7,48 @@ function hexToRGBA(hex, opacity) {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+// "Products in cart" options from the editor (cartSettings.cartItem)
+window.cartPlusGetItemOptions = function (cartSettings) {
+  const cs = cartSettings || window.__HUB_ACTIVE_CART__?.cartSettings || {};
+  return {
+    showVariants: true,
+    showQuantity: true,
+    showCompareAt: true,
+    showDiscountTag: true,
+    showSavings: null, // null = follow the Preferences setting
+    singleItemPrice: false,
+    imageSize: null,
+    radius: null,
+    primaryTextColor: null,
+    secondaryTextColor: null,
+    labelTextColor: null,
+    labelBackground: null,
+    deleteIcon: "trash",
+    deleteColor: null,
+    cardBackground: null,
+    ...(cs.cartItem || {}),
+  };
+};
+
+// same glyphs as the editor's DeleteGlyph
+const _DELETE_GLYPHS = {
+  trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+  bin: '<path d="M5 7h14l-1.2 13a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 7Z"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M3 7h18"/>',
+  lid: '<path d="M4 7h16"/><path d="M9 7l.5-2h5L15 7"/><path d="M6 7l1 13h10l1-13"/>',
+  x: '<path d="M5 5l14 14"/><path d="M19 5L5 19"/>',
+  "x-circle": '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6"/><path d="M15 9l-6 6"/>',
+};
+
 const _trashIcon = (color = "currentColor", hoverColor = "red") => `
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
     class="hub-trash-icon"
-    style="stroke:${color}; --trash-hover-color:${hoverColor};"
-    stroke-width="1.8">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+    style="stroke:${window.cartPlusGetItemOptions().deleteColor || color}; --trash-hover-color:${hoverColor};"
+    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    ${_DELETE_GLYPHS[window.cartPlusGetItemOptions().deleteIcon] || _DELETE_GLYPHS.trash}
   </svg>`;
 
 function _qtyControl(key, quantity, iconColor = "currentColor") {
+  if (!window.cartPlusGetItemOptions().showQuantity) return "";
   return `
     <div class="hub-qty-control cart-plus-public-component-product-tile__quantity-selector">
       <button class="hub-qty-btn minus cart-plus-public-component-product-tile__quantity-minus" data-type="minus" onclick="updateQty('${key}', ${quantity - 1}, this); _hubDisableQtySiblings(this)"${quantity <= 1 ? " disabled" : ""}>
@@ -57,12 +90,14 @@ function _unitPriceBlock(ctx) {
 }
 
 function _discountBadgesHtml(item, discountColor = "#1e7e34") {
-  if (!item.discounts?.length) return "";
+  const opts = window.cartPlusGetItemOptions();
+  if (!opts.showDiscountTag || !item.discounts?.length) return "";
+  discountColor = opts.labelTextColor || discountColor;
 
   return item.discounts
     .map(
       (d) => `
-    <span class="hub-item-discount-badge cart-plus-public-component-product-tile__discount-codes" style="background:${hexToRGBA(discountColor, 0.1)}; color:${discountColor};">
+    <span class="hub-item-discount-badge cart-plus-public-component-product-tile__discount-codes" style="background:${window.cartPlusGetItemOptions().labelBackground || hexToRGBA(discountColor, 0.1)}; color:${discountColor};">
       <svg viewBox="0 0 20 20" class="Icon_Icon__uZZKy" style="width: 15px; fill:${discountColor}">
         <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z"></path>
         <path fill-rule="evenodd" d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"></path>
@@ -112,8 +147,8 @@ function classicItemHTML(ctx) {
 
   // LINE TOTAL = item.final_line_price (unit price × quantity, after discounts)
   // COMPARE TOTAL = effectiveCompare × quantity (original price × quantity)
-  const lineTotal = item.final_line_price;
-  const compareTotal = effectiveCompare * item.quantity;
+  const lineTotal = ctx.singleItemPrice ? effectiveUnitPrice : item.final_line_price;
+  const compareTotal = effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
 
   const rightCol = isReward
     ? `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
@@ -201,9 +236,9 @@ function subscriptionItemHTML(ctx) {
 
   // LINE TOTAL = item.final_line_price (unit price × quantity, after discounts)
   // COMPARE TOTAL = effectiveCompare × quantity (original price × quantity)
-  const lineTotal = item.final_line_price;
-  const compareTotal = effectiveCompare * item.quantity;
-  const totalSave = unitSave * item.quantity;
+  const lineTotal = ctx.singleItemPrice ? effectiveUnitPrice : item.final_line_price;
+  const compareTotal = effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
+  const totalSave = unitSave * (ctx.singleItemPrice ? 1 : item.quantity);
 
   const priceRow = isReward
     ? `<p class="hub-price hub-price-free">Free</p>
@@ -283,8 +318,8 @@ function modernItemHTML(ctx) {
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
 
-  const lineTotal = item.final_line_price;
-  const compareTotal = effectiveCompare * item.quantity;
+  const lineTotal = ctx.singleItemPrice ? effectiveUnitPrice : item.final_line_price;
+  const compareTotal = effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
 
   const saveBadge = hasCompare ? `${saveHtml}` : "";
 

@@ -2650,3 +2650,302 @@ select.hub-variant-option-select {
   }
 
 }
+/* Custom HTML / CSS blocks added in the editor sidebar */
+.cart-custom-html {
+  padding: 12px 16px;
+}
+
+/* ── Cart summary (editor: Footer > Summary) ── */
+.cart-plus-summary {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+.cart-plus-summary__title,
+.cart-plus-summary__toggle {
+  margin-bottom: 6px;
+}
+.cart-plus-summary__toggle {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 6px;
+}
+.cart-plus-summary__title-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cart-plus-summary__chevron {
+  align-self: center;
+  transition: transform 0.3s ease;
+}
+.cart-plus-summary__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cart-plus-summary__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.cart-plus-summary__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cart-plus-summary__compare {
+  margin-left: 6px;
+  opacity: 0.6;
+}
+.cart-plus-summary__free {
+  color: #10812f;
+}
+.cart-plus-summary__total {
+  font-weight: 600;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 6px;
+}
+
+/* Card */
+.cart-plus-summary--card .cart-plus-summary__rows {
+  gap: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+}
+.cart-plus-summary--card .cart-plus-summary__total {
+  font-weight: 700;
+  font-size: 16px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.2);
+  padding-top: 10px;
+  margin-top: 2px;
+}
+
+/* Striped */
+.cart-plus-summary--striped .cart-plus-summary__rows {
+  gap: 0;
+}
+.cart-plus-summary--striped .cart-plus-summary__row {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.cart-plus-summary--striped .cart-plus-summary__total {
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  border-top: 0;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+
+/* ── Template (themed cart): card / image / field corner radii and the white item card ── */
+.cart-app--themed .hub-cart-item,
+.cart-app--themed .cart-plus-public-component-product-tile,
+.cart-app--themed .cart-plus-internal-component-upsell-tile,
+.cart-app--themed .hub-rec-product {
+  border-radius: var(--cp-card-radius, 12px);
+}
+.cart-app--themed .hub-cart-item {
+  background: var(--cp-surface, #fff);
+}
+.cart-app--themed .hub-item-img-wrap,
+.cart-app--themed .hub-item-img,
+.cart-app--themed .cart-plus-public-component-product-tile__image {
+  border-radius: var(--cp-image-radius, 5px);
+  overflow: hidden;
+}
+.cart-app--themed input[type="text"],
+.cart-app--themed input[type="email"],
+.cart-app--themed textarea,
+.cart-app--themed select {
+  border-radius: var(--cp-field-radius, 10px);
+}
+
+/* ── Template: Floating layout (drawer floats 16px in from the screen edge, rounded) ── */
+.hub-cart-drawer.hub-cart-floating {
+  top: 16px;
+  height: calc(100% - 32px);
+  max-height: calc(100dvh - 32px);
+  max-width: calc(100vw - 32px);
+}
+.hub-cart-drawer.hub-cart-floating.hub-cart-right {
+  right: 16px;
+  transform: translateX(calc(100% + 16px));
+}
+.hub-cart-drawer.hub-cart-floating.hub-cart-left {
+  left: 16px;
+  transform: translateX(calc(-100% - 16px));
+}
+
+/* ── One Tick Upsell ── */
+.cart-plus-onetick-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cart-plus-onetick-track::-webkit-scrollbar {
+  display: none;
+}
+.cart-plus-onetick-check {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.cart-plus-onetick-check input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.cart-plus-onetick-check__box {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 2px solid var(--cp-border, #8a8a8a);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.cart-plus-onetick-check input:checked + .cart-plus-onetick-check__box {
+  background: var(--cp-accent, #303030);
+  border-color: transparent;
+}
+.cart-plus-onetick-check input:checked + .cart-plus-onetick-check__box::after {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid var(--cp-tick, #fff);
+  border-bottom: 2px solid var(--cp-tick, #fff);
+  transform: translateY(-1px) rotate(-45deg);
+}
+.cart-plus-onetick-switch {
+  all: unset;
+  box-sizing: border-box;
+  width: 36px;
+  height: 20px;
+  border-radius: 20px;
+  background: #c9cccf;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.cart-plus-onetick-switch span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+.cart-plus-onetick-switch[aria-checked="true"] {
+  background: var(--cp-accent, #303030);
+}
+.cart-plus-onetick-switch[aria-checked="true"] span {
+  transform: translateX(16px);
+}
+
+/* One Tick Upsell, Row layout with several offers: stacked cards */
+.cart-plus-drawer__ups-stack{position:relative;padding-bottom:24px}
+.cart-plus-drawer__ups-stack-item{transition:transform .25s ease,opacity .25s ease;transform-origin:top center}
+.cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="0"]{position:relative;z-index:3}
+.cart-plus-drawer__ups-stack-item:not([data-rapi-ups-stack-pos="0"]){position:absolute;top:0;left:0;right:0;pointer-events:none}
+.cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="1"]{z-index:2;transform:translateY(8px) scale(.96)}
+.cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="2"]{z-index:1;transform:translateY(16px) scale(.92)}
+.cart-plus-drawer__ups-stack-item:not([data-rapi-ups-stack-pos="0"]):not([data-rapi-ups-stack-pos="1"]):not([data-rapi-ups-stack-pos="2"]){z-index:0;opacity:0;visibility:hidden;transform:translateY(16px) scale(.92)}
+.cart-plus-drawer__ups-stack-item>div{min-height:96px;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+
+/* ── Cross-sell: Checkbox and Toggle triggers (same add-to-cart handler as the button) ── */
+.hub-upsell-check {
+  all: unset;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 2px solid var(--cp-border, #8a8a8a);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.hub-upsell-check:hover {
+  background: var(--cp-accent, #303030);
+  border-color: transparent;
+}
+.hub-upsell-switch {
+  all: unset;
+  box-sizing: border-box;
+  width: 36px;
+  height: 20px;
+  border-radius: 20px;
+  background: #c9cccf;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.hub-upsell-switch span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+.hub-upsell-switch:hover {
+  background: var(--cp-accent, #303030);
+}
+.hub-upsell-switch:hover span {
+  transform: translateX(16px);
+}
+
+/* ── Cross-sell: Compact strip and Side panel ── */
+.hub-compact-track::-webkit-scrollbar {
+  display: none;
+}
+.hub-upsell-side-panel {
+  display: flex;
+  visibility: hidden;
+  transform: translateX(var(--hub-side-shift, 100%));
+  transition: transform 0.3s ease, visibility 0s linear 0.3s;
+  position: fixed;
+  width: 190px;
+  box-sizing: border-box;
+  padding: 8px;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  z-index: 214748363858;
+  scrollbar-width: none;
+}
+/* only while the drawer is open (the panel sits right after the drawer) */
+.hub-cart-drawer[class*="hub-visible-"] + .hub-upsell-side-panel {
+  visibility: visible;
+  transform: none;
+  transition: transform 0.3s ease;
+}
+.hub-upsell-side-panel .hub-rec-product {
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+.hub-upsell-side-panel .upcart-internal-component-upsell-tile__info_count {
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 760px) {
+  .hub-upsell-side-panel {
+    display: none !important;
+  }
+}

@@ -159,14 +159,10 @@ window.hubCartRender = async function (drawer, opts = {}) {
     const notesSettings = window.__HUB_ACTIVE_CART__?.additionalNotesSettings;
     const belowEl = document.getElementById(`hub-notes-below-${blockId}`);
     const footerEl = document.getElementById(`hub-notes-footer-${blockId}`);
-    const _shouldShowBelow =
-      notesSettings?.enabled === false &&
-      notesSettings.placement === "below_items" &&
-      cart.items.length > 0;
+    // Order notes are a Footer row (the editor's Footer > Order notes), whatever the old placement was
+    const _shouldShowBelow = false;
     const _shouldShowFooter =
-      notesSettings?.enabled === false &&
-      notesSettings.placement === "top_of_footer" &&
-      cart.items.length > 0;
+      notesSettings?.enabled === false && cart.items.length > 0;
 
     if (!_shouldShowBelow && belowEl) belowEl.innerHTML = "";
     if (!_shouldShowFooter && footerEl) footerEl.innerHTML = "";
@@ -181,6 +177,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     if (footer) {
       if (cart.items.length === 0) {
         footer.classList.add("hub-empty-footer");
+        window.cartPlusHideOneTick?.(blockId);
         window._hubLastCartHadItems = false;
       } else {
         footer.classList.remove("hub-empty-footer");
@@ -247,25 +244,33 @@ window.hubCartRender = async function (drawer, opts = {}) {
         const timerText = ann.timer || "10:00";
         const isAfter = ann.position === "after";
         target.className =
-          "cart-plus-public-announcement cart-plus-announcement upcart-announcement";
+          "cart-plus-public-announcement cart-plus-announcement upcart-announcement" +
+          (isAfter ? " announcement-after" : "");
+
+        // same look as the editor: own background, else the Template colour / gradient (text goes white)
+        const templateBg = window.cartPlusTemplateBackground?.(
+          window.__HUB_ACTIVE_CART__?.designSettings,
+        );
+        const annBg = window.cartPlusBgCss(
+          ann.background ||
+            templateBg || { type: "plain", color: ann.backgroundColor || "#ffffff" },
+        );
+        const whiteText = !ann.background && templateBg;
         target.style.cssText = `
           display: block;
-          background-color: ${ann.backgroundColor || "#ffffff"};
-          border-top: 1px solid ${ann.borderColor || "#e5e5e5"};
-          border-bottom: 1px solid ${ann.borderColor || "#e5e5e5"};
+          background: ${annBg};
           padding: ${height};
           font-size: ${ann.fontSize || 14}px;
+          line-height: 30px;
           text-align: center;
-          color:#000000;
+          color: ${whiteText ? "#fff" : "#000000"};
           ${isAfter ? "margin-top: 0;" : ""}
         `;
-        target.innerHTML = ann.text
-          ? ann.text.replace(
-              "{TIMER}",
-              `<strong><span id="hub-timer-${blockId}">${timerText}</span></strong>`,
-            )
+        const annIcon = ann.icon
+          ? `<span style="display:inline-flex;vertical-align:middle;margin-right:8px;">${window.hubLibraryIconHTML?.(ann.icon, 20, ann.iconColor) || ""}</span>`
           : "";
-        if (ann.text?.includes("{TIMER}")) startAnnTimer(blockId, timerText);
+        // the retired {TIMER} placeholder is dropped, like in the editor
+        target.innerHTML = annIcon + (ann.text || "").replace(/\s*\{timer\}/gi, "");
       }
     }
 
@@ -406,6 +411,11 @@ if (savedEl) {
       const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
       if (grandEl) grandEl.textContent = fmt(grandTotal);
 
+      // Summary from the editor (cartSettings.summary)
+      window.cartPlusSummaryFromCart?.(blockId, cart);
+      window.cartPlusRenderOneTick?.(blockId, cart);
+      window.cartPlusAgeUpdate?.(blockId, cart);
+
       const checkoutBtn = document.getElementById(
         `hub-checkout-btn-${blockId}`,
       );
@@ -420,9 +430,15 @@ if (savedEl) {
           ? cartSettings.viewCartName || "View cart"
           : cartSettings.checkoutButtonText || "Proceed to checkout";
 
-        checkoutBtn.textContent = goToCartPageOnCheckout
-          ? rawText
-          : rawText.replace("{{total_price}}", fmt(grandTotal));
+        // a label set on the editor's Checkout Button page (rich text, {{Price}}) wins
+        const btnOpts = window.cartPlusGetCheckoutButton?.(cartSettings) || {};
+        if (btnOpts.label != null) {
+          checkoutBtn.innerHTML = window.cartPlusFillPrice(btnOpts.label, fmt(grandTotal));
+        } else {
+          checkoutBtn.textContent = goToCartPageOnCheckout
+            ? rawText
+            : rawText.replace("{{total_price}}", fmt(grandTotal));
+        }
       }
     })();
 
@@ -436,7 +452,20 @@ if (savedEl) {
     const showOfferBgColor =
       discountCodesSettings?.showOfferBgColor || "#6C4DFF";
 
-    hubUtils.applyCustomCSS(blockId, cartSettings.customCss);
+    // Custom CSS from Settings plus the enabled CSS blocks added in the editor sidebar
+    hubUtils.applyCustomCSS(
+      blockId,
+      [
+        cartSettings.customCss,
+        ...(Array.isArray(cartSettings.customBlocks)
+          ? cartSettings.customBlocks
+              .filter((b) => b && b.enabled && b.type === "css" && b.code)
+              .map((b) => b.code)
+          : []),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
     hubUtils.executeBeforeLoadScripts(
       customHtmlBlocks.scripts_before_load,
       drawer,
@@ -1012,9 +1041,13 @@ if (savedEl) {
 
         const showSavingsBelowPrices =
           cartSettings.showSavingsBelowPrices || false;
-        const colorItems = designSettings.textColor || "#000";
+        // "Products in cart" options from the editor
+        const itemOpts = window.cartPlusGetItemOptions(cartSettings);
+        const colorItems =
+          itemOpts.primaryTextColor || designSettings.textColor || "#000";
         const discountColor = designSettings.discountBageColor || "#1e7e34";
-        const showStrikethrough = designSettings.showStrikethrough || false;
+        const showStrikethrough =
+          (designSettings.showStrikethrough || false) && itemOpts.showCompareAt;
         const savingsColor = designSettings.savingsColor || "#16a34a";
         const iconColor = designSettings.iconColor || "#000000";
 
@@ -1105,9 +1138,12 @@ if (savedEl) {
         const layoutName = cartSettings.cartItemLayout || "classic";
         const savingsText = cartSettings.savingsText || "Save";
 
+        // "Show Savings" overrides the Preferences setting once it has been touched
+        const showSavings = itemOpts.showSavings ?? showSavingsBelowPrices;
+        const priceQty = itemOpts.singleItemPrice ? 1 : item.quantity;
         const saveHtml =
-          hasDiscount && showSavingsBelowPrices && layoutName !== "subscription"
-            ? `<p class="hub-item-save" style="color:${savingsColor};background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(unitSave * item.quantity)}</p>`
+          hasDiscount && showSavings && layoutName !== "subscription"
+            ? `<p class="hub-item-save" style="color:${savingsColor};background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(unitSave * priceQty)}</p>`
             : "";
 
         const priceHtml = hasDiscount
@@ -1118,6 +1154,7 @@ if (savedEl) {
         const hasCompare = effectiveCompare > 0;
 
         const variantHtml =
+          itemOpts.showVariants &&
           item.options_with_values &&
           item.options_with_values.length > 0 &&
           !item.product_has_only_default_variant
@@ -1172,6 +1209,7 @@ if (savedEl) {
           showSavingsBelowPrices,
           discountColor,
           iconColor,
+          singleItemPrice: itemOpts.singleItemPrice,
         };
 
         const layoutFn =
@@ -1215,16 +1253,10 @@ if (savedEl) {
         );
         hubUtils.initNoteListener(blockId);
       } else if (footerEl) {
-        const ta = footerEl.querySelector(".hub-notes-textarea");
-        if (
-          ta &&
-          document.activeElement !== ta &&
-          ta.value !== (cart.note || "")
-        ) {
-          ta.value = cart.note || "";
-        }
+        window.cartPlusNotesSync?.(blockId, cart.note || "");
       }
     }
+    window.cartPlusNotesSync?.(blockId, cart.note || "");
     // ── ADDONS ────────────────────────────────────────────────────────────
     const addonsSettings = window.__HUB_ACTIVE_CART__?.addonsSettings;
     const addonsEl = document.getElementById(`hub-addons-${blockId}`);
@@ -1499,20 +1531,49 @@ if (savedEl) {
           );
           upsellContainer.innerHTML = "";
 
-          if (upsellProducts.length > 0) {
+          const upLayout = window.cartPlusUpsellLayout?.(upsellSettings) || "list";
+          if (upLayout === "side") {
+            // Side panel: the cards live beside the cart, nothing inside the cart body
+            upsellContainer.style.display = "none";
+            window.cartPlusRenderSidePanel?.(blockId, upsellProducts);
+          } else if (upsellProducts.length > 0) {
+            window.cartPlusRemoveSidePanel?.(blockId);
             const wrapper = document.createElement("div");
             wrapper.className = "upsell-inner";
             const heading = document.createElement("h3");
             heading.className = "upsell-heading";
-            heading.innerHTML = headingUpsell;
-            heading.style.color = textColor;
+            // title icon from the icon library (star until one is picked, cleared = none)
+            const titleIcon =
+              upsellSettings.icon === undefined
+                ? { type: "icon", name: "star" }
+                : upsellSettings.icon;
+            const iconHtml = titleIcon
+              ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, upsellSettings.iconColor || undefined) || ""}</span>`
+              : "";
+            if (upLayout === "compact") {
+              // title on the left, prev / next arrows on the right
+              heading.style.display = "flex";
+              heading.style.alignItems = "center";
+              heading.style.justifyContent = "space-between";
+              heading.style.gap = "8px";
+              heading.innerHTML = `<div>${iconHtml}${headingUpsell}</div>${window.cartPlusCompactArrowsHTML?.() || ""}`;
+            } else {
+              heading.innerHTML = iconHtml + headingUpsell;
+            }
+            heading.style.color =
+              upsellSettings.primaryTextColor || textColor;
             const productsDiv = document.createElement("div");
             productsDiv.className = "upsell-products";
             wrapper.appendChild(heading);
             wrapper.appendChild(productsDiv);
             upsellContainer.appendChild(wrapper);
+            if (upLayout === "compact") {
+              productsDiv.innerHTML = window.cartPlusCompactHTML(upsellProducts);
+              const track = productsDiv.querySelector(".hub-compact-track");
+              if (track) setTimeout(() => window.cartPlusCompactEdges(track), 0);
+            } else
             window.renderProducts(productsDiv, upsellProducts, {
-              layout: upsellSettings.direction,
+              layout: upLayout === "carousel" ? "carousel" : "block",
               showReviews: upsellSettings.showReviews,
               carouselIndicator: upsellSettings.carouselIndicator,
               showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,
