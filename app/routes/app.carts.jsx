@@ -293,25 +293,6 @@ function AppCartsInner({
 
     useEffect(() => { setCarts(initialCarts); }, [initialCarts]);
 
-    // ─── Debug logging (open DevTools → Console). Safe to delete. ───────────────
-    useEffect(() => {
-        console.log("CARTS (raw):", carts);
-        console.table(
-            carts.map((c) => ({
-                cartId: c.cartId,
-                name: c.cartName,
-                status: c.status,
-                abTest: !!getAbTest(c),
-                variants: getAbTest(c)?.variants?.join(", ") || "—",
-                createdAt: c.createdAt,
-            }))
-        );
-    }, [carts]);
-
-    useEffect(() => {
-        if (!statsLoading) console.log("CART STATS:", cartStats);
-    }, [cartStats, statsLoading]);
-
     // ← no isFirstRender guard — runs on mount AND on range change
     useEffect(() => {
         const fetchStats = async () => {
