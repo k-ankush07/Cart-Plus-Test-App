@@ -7,6 +7,7 @@ import { applyDiscount } from "../utils/oneTick";
 import { backgroundToCss } from "../utils/background";
 import { getCartItemOptions } from "../utils/cartItemOptions";
 import { LibraryIcon } from "../ui/IconLibrary";
+import NoProductPlaceholder from "../ui/NoProductPlaceholder";
 
 function hexToRGBA(hex = "#16a34a", opacity = 1) {
   if (!hex || typeof hex !== "string") {
@@ -553,6 +554,27 @@ export default function Upsells({
 
   // Side panel: nothing inside the cart body, the panel itself is drawn beside the cart
   if (layout === "side" && !sidePanel) return null;
+
+  // manual selection with nothing picked yet: an empty slot instead of random store products
+  const nothingPicked =
+    !useAiRecommended &&
+    ((sourceType === "products" &&
+      !selectedItems?.variants?.length &&
+      !selectedItems?.products?.length) ||
+      (sourceType === "collections" && !selectedItems?.length));
+  if (nothingPicked && layout !== "side") {
+    return (
+      <NoProductPlaceholder
+        title={title}
+        icon={titleIcon}
+        iconColor={upsellsSettings?.iconColor || undefined}
+        titleColor={primary}
+        textColor={primary}
+        cardBackground={backgroundToCss(cardBackground) || designSettings.accentColor}
+        radius={radius ?? 8}
+      />
+    );
+  }
 
   if (loadingProducts) {
     if (layout === "side") return null;

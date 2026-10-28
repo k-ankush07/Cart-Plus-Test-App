@@ -69,6 +69,7 @@ window.cartPlusRenderSummary = function (blockId, data) {
   if (!el) return;
   const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
   const s = window.cartPlusGetSummary(cartSettings);
+  s.textColor = window.cartPlusDarkColor(s.textColor, "#303030", window.__HUB_ACTIVE_CART__?.designSettings?.textColor);
   if (!s.enabled) {
     el.style.display = "none";
     return;

@@ -197,6 +197,11 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
   if (!el) return;
   const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
   const oneTick = cartPlusGetOneTick(cartSettings);
+  // Appearance: Dark -> the saved light text colours become the dark theme's
+  const dsx = window.__HUB_ACTIVE_CART__?.designSettings || {};
+  oneTick.primaryTextColor = window.cartPlusDarkColor(oneTick.primaryTextColor, "#000000", dsx.textColor);
+  oneTick.secondaryTextColor = window.cartPlusDarkColor(oneTick.secondaryTextColor, "#616161", "#a8a8ad");
+  oneTick.iconColor = window.cartPlusDarkColor(oneTick.iconColor, "#000000", dsx.textColor);
   if (!oneTick.enabled || !oneTick.offers.length || !cart?.items?.length) {
     el.style.display = "none";
     el.innerHTML = "";
@@ -217,7 +222,9 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
   }
 
   // white unless a Card background is set in the editor
-  const cardBg = window.cartPlusBgCss(oneTick.cardBackground) || "#ffffff";
+  const cardBg =
+    window.cartPlusBgCss(oneTick.cardBackground) ||
+    (dsx.dark ? "var(--cp-card, #2a2a2d)" : "#ffffff");
   const isCarousel = oneTick.layout === "carousel";
   const title = oneTick.title
     ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-weight:600;color:${oneTick.primaryTextColor};">${

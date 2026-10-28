@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { getOneTick, applyDiscount } from "../utils/oneTick";
 import { backgroundToCss } from "../utils/background";
 import { LibraryIcon } from "../ui/IconLibrary";
+import NoProductPlaceholder from "../ui/NoProductPlaceholder";
 
 const money = (n) => Number(n).toFixed(2);
 
@@ -65,7 +66,19 @@ export default function OneTickUpsell({
   onAddPreviewProduct,
   onRemovePreviewProduct,
 }) {
-  const oneTick = getOneTick(cartSettings);
+  const oneTickSaved = getOneTick(cartSettings);
+  // Appearance: Dark -> the light defaults saved with the section become the dark theme's text colours
+  const dark = !!designSettings?.dark;
+  const darkText = (value, lightDefault, fallback) =>
+    dark && (!value || String(value).toLowerCase() === lightDefault) ? fallback : value;
+  const oneTick = dark
+    ? {
+        ...oneTickSaved,
+        primaryTextColor: darkText(oneTickSaved.primaryTextColor, "#000000", designSettings.textColor),
+        secondaryTextColor: darkText(oneTickSaved.secondaryTextColor, "#616161", "#a8a8ad"),
+        iconColor: darkText(oneTickSaved.iconColor, "#000000", designSettings.textColor),
+      }
+    : oneTickSaved;
   const offersKey = JSON.stringify(
     oneTick.offers.map((o) => [o.id, o.mode, o.selected?.items?.variants]),
   );
@@ -146,7 +159,26 @@ export default function OneTickUpsell({
     };
   }, [oneTick.enabled, offersKey]);
 
-  if (!oneTick.enabled || !oneTick.offers.length) return null;
+  if (!oneTick.enabled) return null;
+  // nothing to show yet (no offer, or manual offers with no product picked): say so, like an empty slot
+  const nothingPicked =
+    !oneTick.offers.length ||
+    oneTick.offers.every(
+      (o) => o.mode === "manual" && !o.selected?.items?.variants?.length,
+    );
+  if (nothingPicked) {
+    return (
+      <NoProductPlaceholder
+        title={oneTick.title}
+        icon={oneTick.icon}
+        iconColor={oneTick.iconColor}
+        titleColor={oneTick.primaryTextColor}
+        textColor={oneTick.primaryTextColor}
+        cardBackground={backgroundToCss(oneTick.cardBackground) || (dark ? "var(--cp-card, #2a2a2d)" : "#ffffff")}
+        radius={oneTick.radius}
+      />
+    );
+  }
 
   // an offer disappears once its product is in the cart (back again if it is removed)
   const inCartAlready = (product) =>
@@ -178,7 +210,7 @@ export default function OneTickUpsell({
   // stack sirf "row" layout me, aur jab 1 se zyada card ho
   const isStack = oneTick.layout === "row" && n > 1;
   // white unless a Card background is set
-  const cardBg = backgroundToCss(oneTick.cardBackground) || "#ffffff";
+  const cardBg = backgroundToCss(oneTick.cardBackground) || (dark ? "var(--cp-card, #2a2a2d)" : "#ffffff");
 
   /* ---------- stack helpers ---------- */
   // top card = 0, agla = 1, ... (circular)

@@ -219,7 +219,7 @@ const CartPreview = memo(function CartPreview({
 
   return (
     <div
-      className={`cart-app cart-plus ${designSettings.inheritFonts ? "" : "cart-app--customFont"} ${designSettings.themed ? "cart-app--themed" : ""}`}
+      className={`cart-app cart-plus ${designSettings.inheritFonts ? "" : "cart-app--customFont"} ${designSettings.themed ? "cart-app--themed" : ""} ${designSettings.dark ? "cart-app--dark" : ""}`}
       style={{
         backgroundColor: designSettings.backgroundColor,
         ...(designSettings.bodyBackground
@@ -231,6 +231,8 @@ const CartPreview = memo(function CartPreview({
         overflowY: cartSettings?.disableFixedFooter ? "auto" : "unset",
         ...(designSettings.themed
           ? {
+              "--cp-surface": designSettings.backgroundColor,
+              "--cp-text": designSettings.textColor,
               "--cp-card-radius": `${designSettings.cardRadius}px`,
               "--cp-field-radius": `${designSettings.fieldRadius}px`,
               "--cp-image-radius": `${designSettings.imageRadius}px`,

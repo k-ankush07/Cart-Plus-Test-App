@@ -2185,3 +2185,84 @@ input.cart-plus-offers-code-input:focus {
     color: inherit;
     fill: currentColor;
 }
+
+/* ── Template > Appearance: Dark ──
+   Everything that is light by default (cards, fields, dividers, text) takes a dark default.
+   Colours set per section in the editor are inline styles, so they still win over these rules. */
+.cart-app--dark {
+    --cp-card: color-mix(in srgb, #ffffff 9%, var(--cp-surface, #1c1c1e));
+    --cp-card-2: color-mix(in srgb, #ffffff 14%, var(--cp-surface, #1c1c1e));
+    --cp-text: #f3f3f3;
+    --cp-muted: #a8a8ad;
+    --cp-line: rgba(255, 255, 255, 0.14);
+    color-scheme: dark;
+}
+
+/* cards */
+.cart-app--dark .cart-plus-products-section.cart-app__items.cart-plus-public-cart-item.cart-plus-product-item,
+.cart-app--dark .cart-plus-internal-component-upsell-tile,
+.cart-app--dark .cart-plus-upsell-item-card,
+.cart-app--dark .upsell-suggestion,
+.cart-app--dark .cart-plus-coupon-card,
+.cart-app--dark .tier-card {
+    background: var(--cp-card);
+}
+
+/* quantity control, fields, selects */
+.cart-app--dark .cart-app-item__qty,
+.cart-app--dark .cart-plus-discount-input-btn,
+.cart-app--dark .cart-plus-discount-input-wrapped,
+.cart-app--dark .cart-plus-offers-input-row,
+.cart-app--dark .cart-plus-internal-component-upsell-tile__variant-row select,
+.cart-app--dark select,
+.cart-app--dark input[type="text"],
+.cart-app--dark input[type="email"],
+.cart-app--dark textarea {
+    background: var(--cp-card);
+    color: var(--cp-text);
+    border-color: var(--cp-line);
+}
+.cart-app--dark input::placeholder,
+.cart-app--dark textarea::placeholder {
+    color: var(--cp-muted);
+}
+.cart-app--dark .cart-app-item__qty-btn,
+.cart-app--dark .cart-app-item__qty-value {
+    color: var(--cp-text);
+}
+
+/* image wells, offer chips, dividers */
+.cart-app--dark .cart-plus-internal-component-upsell-tile__image-container,
+.cart-app--dark .discount-offer-btn,
+.cart-app--dark .cart-plus-progress-bar {
+    background: var(--cp-card-2);
+}
+.cart-app--dark .cart-app__divider,
+.cart-app--dark .cart-app__footer {
+    border-color: var(--cp-line);
+}
+
+/* text */
+.cart-app--dark .cart-plus-internal-component-upsell-tile__title-link,
+.cart-app--dark .cart-plus-internal-component-upsell-tile__title,
+.cart-app--dark .upcart-internal-component-upsell-tile__info p,
+.cart-app--dark .cart-plus-internal-style__title-large,
+.cart-app--dark .sale-price,
+.cart-app--dark .upsell-text,
+.cart-app--dark .cart-addon-tile__title,
+.cart-app--dark .cart-discount-row__input,
+.cart-app--dark .cart-additional-notes__textarea,
+.cart-app--dark .styles_Footer__continueShopping__,
+.cart-app--dark span.cart-plus-coupon-code,
+.cart-app--dark .cart-plus-breakdown-grand,
+.cart-app--dark span.cart-plus-total-arrow svg,
+.cart-app--dark .swiper-button-prev {
+    color: var(--cp-text);
+}
+
+/* the coupon panel slides over the cart */
+.cart-app--dark .cart-plus-offers-panel,
+.cart-app--dark .cart-plus-offers-open {
+    background: var(--cp-surface, #1c1c1e);
+    color: var(--cp-text);
+}

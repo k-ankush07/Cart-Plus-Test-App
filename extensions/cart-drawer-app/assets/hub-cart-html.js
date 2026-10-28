@@ -631,7 +631,7 @@ bs.textContent += `
   const floating = !!designSettings.floating;
   const drawerWidth = (designSettings.desktopWidth === "wide" ? 500 : 440) - (floating ? 32 : 0);
   const themedVars = designSettings.themed
-    ? `color:${designSettings.textColor};${floating ? "border-radius:" + designSettings.drawerRadius + "px;" : ""}--cp-surface:${designSettings.backgroundColor};--cp-card-radius:${designSettings.cardRadius}px;--cp-field-radius:${designSettings.fieldRadius}px;--cp-image-radius:${designSettings.imageRadius}px;`
+    ? `color:${designSettings.textColor};${floating ? "border-radius:" + designSettings.drawerRadius + "px;" : ""}--cp-surface:${designSettings.backgroundColor};--cp-text:${designSettings.textColor};--cp-card-radius:${designSettings.cardRadius}px;--cp-field-radius:${designSettings.fieldRadius}px;--cp-image-radius:${designSettings.imageRadius}px;`
     : "";
 
   root.insertAdjacentHTML(
@@ -639,7 +639,7 @@ bs.textContent += `
     `
     <div id="hub-cart-bg-${blockId}" class="hub-cart-bg cart-plus-drawer"></div>
     <div id="hub-cart-drawer-${blockId}"
-      class="hub-cart-drawer cart-app cart-plus ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"} ${designSettings.themed ? "cart-app--themed" : ""} ${floating ? "hub-cart-floating" : ""}"
+      class="hub-cart-drawer cart-app cart-plus ${positionClass} ${designSettings.inheritFonts ? "" : "cart-app--customFont"} ${designSettings.themed ? "cart-app--themed" : ""} ${designSettings.dark ? "cart-app--dark" : ""} ${floating ? "hub-cart-floating" : ""}"
       style="background-color:${designSettings.backgroundColor || ""};
       ${designSettings.bodyBackground ? "background:" + designSettings.bodyBackground + ";" : ""}
       ${themedVars}

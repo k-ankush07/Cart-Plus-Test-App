@@ -83,6 +83,7 @@ window.cartPlusApplyTemplateTheme = function (ds) {
   return {
     ...ds,
     themed: true,
+    dark, // Appearance: Dark
     backgroundColor: surface,
     textColor: text,
     subtotalColor: text,
@@ -99,6 +100,13 @@ window.cartPlusApplyTemplateTheme = function (ds) {
     drawerRadius: Number(t.radiusDrawer),
     floating: t.layout === "floating",
   };
+};
+
+// Appearance: Dark -> a colour still at its saved light default (or unset) becomes the dark theme's colour
+window.cartPlusDarkColor = function (value, lightDefault, darkValue) {
+  const ds = window.__HUB_ACTIVE_CART__?.designSettings;
+  if (!ds?.dark) return value;
+  return !value || String(value).toLowerCase() === lightDefault ? darkValue : value;
 };
 
 // ── Cart Visibility (schedule). Markets are not matched on the storefront. ───
@@ -197,10 +205,11 @@ function cartPlusTimerPaint(blockId, left, total) {
   const justify =
     timer.alignment === "left" ? "flex-start" : timer.alignment === "right" ? "flex-end" : "center";
   const icon = (size) =>
-    window.hubLibraryIconHTML?.(timer.icon, size, timer.iconColor) || "";
+    window.hubLibraryIconHTML?.(timer.icon, size, window.cartPlusDarkColor(timer.iconColor, "#000000", design.textColor)) || "";
 
+  // only the background picked for the Timer; by default it has none
   el.style.cssText = `background:${
-    timer.background ? window.cartPlusBgCss(timer.background) : design.headerBackground || "transparent"
+    timer.background ? window.cartPlusBgCss(timer.background) : "transparent"
   };color:${design.textColor || "inherit"};padding:10px 20px;text-align:${timer.alignment};font-size:14px;`;
 
   if (timer.style === "digits") {

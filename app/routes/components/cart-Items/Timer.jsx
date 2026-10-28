@@ -32,10 +32,8 @@ export default function Timer({ headerSettings, designSettings }) {
   const messageNoTimer = String(timer.message).replace(TOKEN, "").trim();
 
   const wrapper = {
-    // own background, else the light tint of the Template colour
-    background: timer.background
-      ? backgroundToCss(timer.background)
-      : designSettings?.headerBackground,
+    // only the background picked for the Timer; by default it has none
+    background: timer.background ? backgroundToCss(timer.background) : "transparent",
     color,
     padding: "10px 20px",
     textAlign: timer.alignment,

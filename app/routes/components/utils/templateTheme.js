@@ -75,6 +75,7 @@ export function applyTemplateTheme(ds) {
   return {
     ...ds,
     themed: true,
+    dark, // Appearance: Dark -> sections pick dark defaults (see .cart-app--dark in index.css)
     backgroundColor: surface,
     textColor: text,
     subtotalColor: text,

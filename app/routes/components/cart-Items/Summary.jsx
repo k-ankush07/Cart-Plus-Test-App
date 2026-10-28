@@ -44,7 +44,12 @@ export default function Summary({
   discountCodes = [],
   designSettings,
 }) {
-  const s = getSummary(cartSettings);
+  const savedSummary = getSummary(cartSettings);
+  // Appearance: Dark -> the saved light text colour becomes the theme's text colour
+  const s =
+    designSettings?.dark && String(savedSummary.textColor).toLowerCase() === "#303030"
+      ? { ...savedSummary, textColor: designSettings.textColor }
+      : savedSummary;
   const [open, setOpen] = useState(s.expandable ? !s.collapsedByDefault : true);
 
   useEffect(() => {
