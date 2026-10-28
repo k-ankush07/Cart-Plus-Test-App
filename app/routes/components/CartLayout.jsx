@@ -446,7 +446,7 @@ const CartLayout = memo(function CartLayout({
 
           {/* Right: actions */}
           <InlineStack gap="200">
-            <Popover
+            {/* <Popover
               active={previewPopoverOpen}
               activator={
                 <Button
@@ -479,11 +479,11 @@ const CartLayout = memo(function CartLayout({
                   },
                 ]}
               />
-            </Popover>
+            </Popover> */}
 
              <ABTesting key={abTesting?.resetKey} {...abTesting} />
              
-            <Button
+            {/* <Button
               variant="tertiary"
               loading={isResetting}
               onClick={() => setResetModal(true)}
@@ -497,9 +497,9 @@ const CartLayout = memo(function CartLayout({
               }
             >
               Preview in store
-            </Button>
+            </Button> */}
 
-            <Button
+            {/* <Button
               variant="secondary"
               loading={publishLoading}
               onClick={handleTogglePublish}
@@ -522,7 +522,7 @@ const CartLayout = memo(function CartLayout({
               }
             >
               {isPublished ? "Unpublish" : "Publish"}
-            </Button>
+            </Button> */}
           </InlineStack>
         </div>
 

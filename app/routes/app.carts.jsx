@@ -104,7 +104,7 @@ async function checkAppEmbed(shopDomain, accessToken, themeId) {
         const blocks = settings?.current?.blocks || {};
         for (const key in blocks) {
             const block = blocks[key];
-            if (block?.type?.includes("shopify://apps/cart-plus/")) {
+            if (block?.type?.includes("shopify://apps/cart-plus-testing/")) {
                 return !block?.disabled;
             }
         }

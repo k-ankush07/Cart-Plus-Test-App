@@ -398,7 +398,29 @@ bs.textContent += `
         <!-- ANNOUNCEMENT (position: after) -->
         <div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>
 
-        <!-- DISCOUNT -->
+        <div>${renderCustomHTML(customHtmlBlocks.above_footer)}</div>
+      </div>
+
+      <!-- FOOTER (fixed bottom) -->
+      <div id="hub-footer-rec-${blockId}"></div>
+
+      <div class="hub-cart-footer cart-app__footer cart-plus-footer" style="background-color:${designSettings.accentColor || ""};">
+
+        <!-- skeleton shown while cart data loads -->
+        <div id="hub-footer-skeleton-${blockId}" class="hub-footer-skeleton" style="display:none;">
+          <div class="hub-skeleton hub-skeleton-line" style="width:40%;">&nbsp;</div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:40px;border-radius:6px;margin-top:6px;">&nbsp;</div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:60%;height:18px;border-radius:4px;margin-top:6px;">&nbsp;</div>
+          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:44px;border-radius:6px;margin-top:6px;">&nbsp;</div>
+        </div>
+
+         <!-- NOTES (position: top of footer) -->
+        <div id="hub-notes-footer-${blockId}"></div>
+
+        <!-- ADD-ONS -->
+        <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
+        
+         <!-- DISCOUNT -->
         
         <div class="hub-discount-input-row-items cart-plus-discount-code-row cart-plus-public-discount-code cart-plus-discount-code-input-wrapper cart-plus-discount-code-module cart-plus-public-discount-code__input-wrapper" 
          id="hub-discount-row-${blockId}">
@@ -433,28 +455,6 @@ bs.textContent += `
          }
         </div>
         </div>
-
-        <div>${renderCustomHTML(customHtmlBlocks.above_footer)}</div>
-      </div>
-
-      <!-- FOOTER (fixed bottom) -->
-      <div id="hub-footer-rec-${blockId}"></div>
-
-      <div class="hub-cart-footer cart-app__footer cart-plus-footer" style="background-color:${designSettings.accentColor || ""};">
-
-        <!-- skeleton shown while cart data loads -->
-        <div id="hub-footer-skeleton-${blockId}" class="hub-footer-skeleton" style="display:none;">
-          <div class="hub-skeleton hub-skeleton-line" style="width:40%;">&nbsp;</div>
-          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:40px;border-radius:6px;margin-top:6px;">&nbsp;</div>
-          <div class="hub-skeleton hub-skeleton-line" style="width:60%;height:18px;border-radius:4px;margin-top:6px;">&nbsp;</div>
-          <div class="hub-skeleton hub-skeleton-line" style="width:100%;height:44px;border-radius:6px;margin-top:6px;">&nbsp;</div>
-        </div>
-
-         <!-- NOTES (position: top of footer) -->
-        <div id="hub-notes-footer-${blockId}"></div>
-
-        <!-- ADD-ONS -->
-        <div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>
         
         <!-- TOTAL SUMMARY -->
        ${
