@@ -201,7 +201,7 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
             <AgeVerification cartSettings={cartSettings} handleChange={handleChange} currency={currency} />
         ),
         Summary: (
-            <CartSummary cartSettings={cartSettings} handleChange={handleChange} />
+            <CartSummary cartSettings={cartSettings} handleChange={handleChange} shop={shop} accessToken={accessToken} apiUrl={apiUrl} />
         )
     }), [designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
         announcementSettings, rewardsSettings, currency, recommendationsSettings,

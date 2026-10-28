@@ -16,9 +16,18 @@ export const SUMMARY_DEFAULTS = {
   shippingFreeLabel: "Free",
   showAppliedDiscounts: true,
   appliedDiscountsLabel: "Discounts",
+  design: "classic", // "classic" | "card" | "striped"
+  showIcons: false,
+  titleIcon: { type: "icon", name: "receipt" }, // IconLibrary value, shown before the title
   textColor: "#303030",
   background: null, // BackgroundInput value, null = cart default
 };
+
+export const SUMMARY_DESIGNS = [
+  { label: "Classic", value: "classic" },
+  { label: "Card", value: "card" },
+  { label: "Striped", value: "striped" },
+];
 
 export const COMPARE_AT_OPTIONS = [
   { label: "Original compare-at price", value: "original" },

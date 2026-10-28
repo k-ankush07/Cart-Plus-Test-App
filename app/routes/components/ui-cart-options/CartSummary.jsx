@@ -1,6 +1,8 @@
 import {
   BlockStack,
   Box,
+  Button,
+  ButtonGroup,
   Card,
   Checkbox,
   Icon,
@@ -12,17 +14,19 @@ import {
 } from "@shopify/polaris";
 import { ReceiptIcon } from "@shopify/polaris-icons";
 
+import IconLibrary from "../ui/IconLibrary";
 import RichTextEditor from "../ui/RichTextEditor";
 import BackgroundInput from "../ui/BackgroundInput";
 import ColorInput from "../ui/ColorInput";
 import {
   COMPARE_AT_OPTIONS,
+  SUMMARY_DESIGNS,
   getSummary,
   patchSummary,
 } from "../utils/summary";
 import "../../../index.css";
 
-export default function CartSummary({ cartSettings, handleChange }) {
+export default function CartSummary({ cartSettings, handleChange, shop, accessToken, apiUrl }) {
   const s = getSummary(cartSettings);
   const update = (patch) => handleChange("cartSettings", patchSummary(patch));
 
@@ -55,7 +59,43 @@ export default function CartSummary({ cartSettings, handleChange }) {
       <BlockStack gap="400">
         <Card>
           <BlockStack gap="300">
-     
+            <BlockStack gap="100">
+              <Text variant="bodyMd" fontWeight="medium">
+                Design
+              </Text>
+              <ButtonGroup variant="segmented" fullWidth>
+                {SUMMARY_DESIGNS.map((d) => (
+                  <Button
+                    key={d.value}
+                    pressed={s.design === d.value}
+                    onClick={() => update({ design: d.value })}
+                  >
+                    {d.label}
+                  </Button>
+                ))}
+              </ButtonGroup>
+            </BlockStack>
+            <Checkbox
+              label="Show icons"
+              checked={s.showIcons}
+              onChange={(val) => update({ showIcons: val })}
+            />
+            {s.showIcons && (
+              <BlockStack gap="100">
+                <Text variant="bodyMd" fontWeight="medium">
+                  Summary icon
+                </Text>
+                <IconLibrary
+                  value={s.titleIcon}
+                  onChange={(val) => update({ titleIcon: val })}
+                  quickIcons={["receipt", "cart", "discount", "delivery", "payment", "gift", "star", "shield"]}
+                  shop={shop}
+                  accessToken={accessToken}
+                  apiUrl={apiUrl}
+                />
+              </BlockStack>
+            )}
+
             <Checkbox
               label="Make it expandable"
               checked={s.expandable}
