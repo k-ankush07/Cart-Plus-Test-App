@@ -83,6 +83,9 @@ const SECTIONS = [
   },
 ];
 
+// pseudo section for custom rows that are not inside Header / Body / Footer
+const UNPLACED = "unplaced";
+
 const ADVANCED = [
   { key: "Settings", icon: SettingsIcon, root: true },
   { key: "Cart Visibility", icon: GlobeIcon, root: true },
@@ -251,6 +254,51 @@ const Sidebar = memo(function Sidebar({
     setOverKey(null);
   };
 
+  const [localCustomItems, setLocalCustomItems] = useState([]);
+  const customItems = customItemsProp ?? localCustomItems;
+
+  // Custom HTML / CSS rows can be dragged into any section (or back to "end of cart")
+  const customRows = customItems.map((c) => ({
+    key: c.key,
+    label: c.label,
+    icon: CodeIcon,
+    toggle: true,
+    drag: true,
+  }));
+  const customMap = Object.fromEntries(customRows.map((r) => [r.key, r]));
+  const placedKeys = new Set(Object.values(order).flat());
+  const unplacedRows = customRows.filter((r) => !placedKeys.has(r.key));
+
+  const canDropOn = (section) =>
+    !!drag && !!section && (drag.section === section || drag.custom);
+
+  const moveCustom = (key, to, targetKey) => {
+    const stripped = Object.fromEntries(
+      Object.entries(order).map(([s, list]) => [s, list.filter((k) => k !== key)]),
+    );
+    let fullOrder = stripped;
+    if (to !== UNPLACED) {
+      const list = [...(stripped[to] || [])];
+      const at = targetKey ? list.indexOf(targetKey) : -1;
+      if (at === -1) list.push(key);
+      else list.splice(at, 0, key); // lands just above the row it is dropped on
+      fullOrder = { ...stripped, [to]: list };
+    }
+    setOrder(fullOrder);
+    onReorder?.(to, fullOrder[to] || [], fullOrder);
+  };
+
+  // targetKey: the row dropped on (null = end of the section)
+  const dropOn = (section, targetKey) => {
+    if (!canDropOn(section)) return;
+    if (drag.section === section) {
+      if (section !== UNPLACED && targetKey) moveItem(section, drag.key, targetKey);
+    } else {
+      moveCustom(drag.key, section, targetKey);
+    }
+    resetDrag();
+  };
+
   const moveItem = (section, fromKey, toKey) => {
     if (fromKey === toKey) return;
     const list = order[section];
@@ -269,9 +317,6 @@ const Sidebar = memo(function Sidebar({
   };
 
   /* ---------- custom html / css items ---------- */
-  const [localCustomItems, setLocalCustomItems] = useState([]);
-  const customItems = customItemsProp ?? localCustomItems;
-
   const addCustomItem = () => {
     const id = `custom-${Date.now()}`;
     if (!customItemsProp) {
@@ -295,10 +340,7 @@ const Sidebar = memo(function Sidebar({
 
     const isDragging = drag && drag.section === section && drag.key === headKey;
     const isOver =
-      drag &&
-      drag.section === section &&
-      overKey === headKey &&
-      drag.key !== headKey;
+      canDropOn(section) && overKey === headKey && drag.key !== headKey;
 
     return (
       <div
@@ -319,20 +361,21 @@ const Sidebar = memo(function Sidebar({
           if (!canDrag) return;
           e.dataTransfer.effectAllowed = "move";
           e.dataTransfer.setData("text/plain", item.key);
-          setDrag({ section, key: item.key });
+          setDrag({ section, key: item.key, custom: !!customMap[item.key] });
         }}
         onDragOver={(e) => {
-          // doosre section par drop allow nahi
-          if (!drag || drag.section !== section) return;
+          // doosre section par drop sirf custom html / css rows ka allow hai
+          if (!canDropOn(section)) return;
           e.preventDefault();
+          e.stopPropagation();
           e.dataTransfer.dropEffect = "move";
           if (overKey !== headKey) setOverKey(headKey);
         }}
         onDrop={(e) => {
-          if (!drag || drag.section !== section) return;
+          if (!canDropOn(section)) return;
           e.preventDefault();
-          moveItem(section, drag.key, headKey);
-          resetDrag();
+          e.stopPropagation();
+          dropOn(section, headKey);
         }}
         onDragEnd={resetDrag}
       >
@@ -377,12 +420,25 @@ const Sidebar = memo(function Sidebar({
   const renderSection = (section) => {
     const roots = section.items.filter((i) => i.root);
     const heads = (order[section.title] || [])
-      .map((k) => ITEM_MAP[k])
+      .map((k) => ITEM_MAP[k] || customMap[k])
       .filter(Boolean);
 
+    // dropping on the section area (title / gap) puts a custom row at the end of it
     return (
       <BlockStack key={section.title} gap="100">
-        <SectionTitle>{section.title}</SectionTitle>
+        <div
+          onDragOver={(e) => {
+            if (!canDropOn(section.title) || drag.section === section.title) return;
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            if (!canDropOn(section.title) || drag.section === section.title) return;
+            e.preventDefault();
+            dropOn(section.title, null);
+          }}
+        >
+          <SectionTitle>{section.title}</SectionTitle>
+        </div>
         <BlockStack gap="050">
           {roots.map((i) => renderRow(i, section.title))}
           {heads.map((h) => (
@@ -452,18 +508,24 @@ const Sidebar = memo(function Sidebar({
           {SECTIONS.map(renderSection)}
 
           {/* Custom HTML / CSS rows */}
-          {customItems.length > 0 && (
-            <BlockStack gap="050">
-              {customItems.map((c) =>
-                renderRow({
-                  key: c.key,
-                  label: c.label,
-                  icon: CodeIcon,
-                  toggle: true,
-                  drag: true,
-                }),
-              )}
-            </BlockStack>
+          {/* rows not dragged into a section: shown at the end of the cart */}
+          {(unplacedRows.length > 0 || drag?.custom) && (
+            <div
+              onDragOver={(e) => {
+                if (!canDropOn(UNPLACED)) return;
+                e.preventDefault();
+              }}
+              onDrop={(e) => {
+                if (!canDropOn(UNPLACED)) return;
+                e.preventDefault();
+                dropOn(UNPLACED, null);
+              }}
+              style={{ minHeight: 8 }}
+            >
+              <BlockStack gap="050">
+                {unplacedRows.map((r) => renderRow(r, UNPLACED))}
+              </BlockStack>
+            </div>
           )}
 
           <Divider />

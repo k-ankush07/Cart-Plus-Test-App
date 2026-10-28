@@ -20,7 +20,10 @@ export const DEFAULT_FOOTER_ORDER = [
   "Payment Badges",
 ];
 
+// Custom HTML / CSS blocks can be dragged into any section, so their ids stay in a saved order
 export const resolveOrder = (saved, fallback) => {
-  const known = (saved || []).filter((k) => fallback.includes(k));
+  const known = (saved || []).filter(
+    (k) => fallback.includes(k) || String(k).startsWith("custom-"),
+  );
   return [...known, ...fallback.filter((k) => !known.includes(k))];
 };

@@ -40,6 +40,13 @@ import {
   TemplateBackgroundContext,
   templateBackground,
 } from "./utils/background";
+import {
+  CUSTOM_BLOCK_LABEL,
+  addCustomBlock,
+  getCustomBlocks,
+  isCustomBlockKey,
+  toggleCustomBlock,
+} from "./utils/customBlocks";
 import ABTesting from "./ABTesting";
 
 const CartLayout = memo(function CartLayout({
@@ -95,7 +102,15 @@ const CartLayout = memo(function CartLayout({
   const [leaveSaving, setLeaveSaving] = useState(false);
   const [resetModal, setResetModal] = useState(false);
 
-  const [customItems, setCustomItems] = useState([]);
+  // Custom HTML / CSS rows live in cartSettings.customBlocks, so they are saved with the cart
+  const customItems = useMemo(
+    () =>
+      getCustomBlocks(cartSettings).map((b) => ({
+        key: b.id,
+        label: b.label || CUSTOM_BLOCK_LABEL,
+      })),
+    [cartSettings?.customBlocks],
+  );
   const [selectedProduct, setSelectedProduct] = useState("");
   const [previewProducts, setPreviewProducts] = useState(
     initialPreviewProduct ? [initialPreviewProduct] : [],
@@ -570,8 +585,14 @@ const CartLayout = memo(function CartLayout({
               "Shipping Protection & Add-ons": !addonsSettings?.enabled,
 
               "Discount code": !discountCodesSettings?.enabled,
+
+              ...Object.fromEntries(
+                getCustomBlocks(cartSettings).map((b) => [b.id, !!b.enabled]),
+              ),
             }}
             onToggleItem={(key) => {
+              if (isCustomBlockKey(key))
+                handleChange("cartSettings", toggleCustomBlock(key));
               if (key === "Banner Image") handleChange("header", toggleBanner);
               if (key === "Timer") handleChange("header", toggleTimer);
               if (key === "Order notes")
@@ -637,15 +658,13 @@ const CartLayout = memo(function CartLayout({
             onMarketChange={setSelectedMarket}
             customItems={customItems}
             onAddCustomItem={(id) =>
-              setCustomItems((p) => [
-                ...p,
-                { key: id, label: "Custom HTML / CSS" },
-              ])
+              handleChange("cartSettings", addCustomBlock(id))
             }
           />
 
           <MainContent
             activeTab={activeTab}
+            setActiveTab={setActiveTab}
             designSettings={designSettings}
             setDesignSettings={setDesignSettings}
             headerSettings={headerSettings}

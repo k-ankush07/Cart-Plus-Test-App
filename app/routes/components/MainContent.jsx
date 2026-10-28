@@ -29,12 +29,14 @@ import PaymentBadges from "./ui-cart-options/PaymentBadges";
 import CartVisibility from "./ui-cart-options/CartVisibility";
 import EmptyCart from "./ui-cart-options/EmptyCart";
 import { getEmptyUpsells, emptyUpsellsHandleChange } from "./utils/emptyUpsells";
+import CustomBlock from "./ui-cart-options/CustomBlock";
+import { isCustomBlockKey } from "./utils/customBlocks";
 import "../../index.css";
 
 const MainContent = memo(function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
     announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings, upsellsSettings,
     additionalNotesSettings, addonsSettings, discountCodesSettings, expressPaymentsSettings, trustBadgesSettings, cartSettings,
-    triggeredRewardsSettings, cartStatus, cartId
+    triggeredRewardsSettings, cartStatus, cartId, setActiveTab
 }) {
 
     const componentMap = useMemo(() => ({
@@ -210,7 +212,15 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
     return (
         <div className="mainContent">
 
-            {componentMap[activeTab] || (
+            {isCustomBlockKey(activeTab) ? (
+                <CustomBlock
+                    key={activeTab}
+                    blockId={activeTab}
+                    cartSettings={cartSettings}
+                    handleChange={handleChange}
+                    onDeleted={() => setActiveTab?.("Header")}
+                />
+            ) : componentMap[activeTab] || (
                 <Card>
                     <Text variant="headingMd">{activeTab} Settings</Text>
                 </Card>

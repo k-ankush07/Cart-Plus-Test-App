@@ -3,6 +3,7 @@ import AdditionalNotes from "./AdditionalNotes";
 import AddOns from "./AddOns";
 import TrustBadges from "./TrustBadges";
 import CustomHtml from "./CustomHtml";
+import { customBlockNodes } from "./CustomBlocks";
 import SectionBg from "./SectionBg";
 import Summary from "./Summary";
 import AgeVerification from "./AgeVerification";
@@ -69,6 +70,7 @@ export default function CartFooter({
 
   // Footer rows, in the order set by dragging them in the sidebar
   const footerBlocks = {
+    ...customBlockNodes(cartSettings),
     "Order notes": !additionalNotesSettings?.enabled && (
       <SectionBg id="Add Notes" cartSettings={cartSettings}>
         <AdditionalNotes

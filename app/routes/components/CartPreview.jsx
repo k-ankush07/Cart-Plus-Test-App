@@ -15,6 +15,8 @@ import Upsells from "./cart-Items/Upsells";
 import AdditionalNotes from "./cart-Items/AdditionalNotes";
 import TrustBadges from "./cart-Items/TrustBadges";
 import CustomHtml from "./cart-Items/CustomHtml";
+import { getCustomBlocks, placedBlockIds } from "./utils/customBlocks";
+import { customBlockNodes } from "./cart-Items/CustomBlocks";
 import BannerImage from "./cart-Items/BannerImage";
 import Timer from "./cart-Items/Timer";
 import OneTickUpsell from "./cart-Items/OneTickUpsell";
@@ -82,6 +84,30 @@ const CartPreview = memo(function CartPreview({
     () => scopeCss(cartSettings?.customCss, ".cart-app"),
     [cartSettings?.customCss],
   );
+  // sidebar "Custom HTML / CSS" rows: CSS rows join the custom CSS, HTML rows render under the body rows
+  const customBlocks = useMemo(
+    () => getCustomBlocks(cartSettings).filter((b) => b.enabled && b.code),
+    [cartSettings?.customBlocks],
+  );
+  const blocksCss = useMemo(
+    () =>
+      scopeCss(
+        customBlocks
+          .filter((b) => b.type === "css")
+          .map((b) => b.code)
+          .join("\n"),
+        ".cart-app",
+      ),
+    [customBlocks],
+  );
+  const blockNodes = useMemo(
+    () => customBlockNodes(cartSettings),
+    [cartSettings?.customBlocks],
+  );
+  const placed = useMemo(
+    () => placedBlockIds(cartSettings),
+    [cartSettings?.sectionOrder],
+  );
   const [qty, setQty] = useState(1);
   const [subtotal, setSubtotal] = useState(null);
   const [compareTotal, setCompareTotal] = useState(null);
@@ -94,6 +120,7 @@ const CartPreview = memo(function CartPreview({
   const bodyBg = backgroundToCss(getCartItemOptions(cartSettings).sectionBackground);
   const showTopRows =!emptyCart && activeTab !== "Recommended Products";
   const headerBlocks = {
+    ...blockNodes,
     "Banner Image": (
       <SectionBg id="Banner Image" cartSettings={cartSettings}>
         <BannerImage headerSettings={headerSettings} />
@@ -119,6 +146,7 @@ const CartPreview = memo(function CartPreview({
   };
   // Body-section rows. With no saved order, Cross-sell keeps following its Top / Bottom setting.
   const bodyBlocks = {
+    ...blockNodes,
     "One Tick Upsell": (
       <SectionBg id="One Tick Upsell" cartSettings={cartSettings}>
         <OneTickUpsell
@@ -249,8 +277,10 @@ const CartPreview = memo(function CartPreview({
         />
       )}
 
-      {cartSettings?.customCss && (
-        <style dangerouslySetInnerHTML={{ __html: scopedCustomCss }} />
+      {(cartSettings?.customCss || blocksCss) && (
+        <style
+          dangerouslySetInnerHTML={{ __html: scopedCustomCss + "\n" + blocksCss }}
+        />
       )}
 
       <div
@@ -407,6 +437,12 @@ const CartPreview = memo(function CartPreview({
         {!emptyCart && (
           <CustomHtml cartSettings={cartSettings} position="bottom_of_cart" />
         )}
+
+        {/* sidebar Custom HTML blocks not dragged into a section sit at the very end */}
+        {!emptyCart &&
+          customBlocks
+            .filter((b) => b.type !== "css" && !placed.has(b.id))
+            .map((b) => blockNodes[b.id])}
       </div>
     </div>
   );
