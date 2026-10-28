@@ -248,7 +248,9 @@ window.hubUtils = {
        data-pid="${product.id}"></div>`
       : "";
 
-    const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
+    // the empty cart's Cross-sell passes its own settings; otherwise the cart's Cross-sell
+    const upsellSettings =
+      settings.upsellSettings || window.__HUB_ACTIVE_CART__?.upsellsSettings;
     const designSettings = window.__HUB_ACTIVE_CART__?.designSettings || {};
     const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
 

@@ -110,12 +110,15 @@ function _discountBadgesHtml(item, discountColor = "#1e7e34") {
 
 function _wrapper(key, inner, sellingPlanHtml, customHtmlBlocks, isReward, item) {
   const linePrice = item?.final_line_price ?? 0;
+  // custom HTML slots only get a wrapper when they have content
+  const between = hubUtils.renderCustomHTML(customHtmlBlocks.between_line_items);
+  const below = hubUtils.renderCustomHTML(customHtmlBlocks.below_cart_items);
   return `
     <div class="hub-cart-for-item cart-plus-public-cart-item" data-item-key="${key}"${isReward ? ' data-is-reward="1"' : ""} data-line-price="${linePrice}" style="position:relative">
       ${inner}
-      <div>${hubUtils.renderCustomHTML(customHtmlBlocks.between_line_items)}</div>
+      ${between ? `<div>${between}</div>` : ""}
     </div>
-    <div>${hubUtils.renderCustomHTML(customHtmlBlocks.below_cart_items)}</div>`;
+    ${below ? `<div>${below}</div>` : ""}`;
 }
 
 // ── Layout 1: Classic ────────────────────────────────────────────────────────

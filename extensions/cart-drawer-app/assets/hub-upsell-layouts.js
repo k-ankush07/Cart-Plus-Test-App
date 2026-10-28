@@ -9,7 +9,7 @@ window.cartPlusUpsellLayout = function (settings) {
 };
 
 const cartPlusUpsellColors = () => {
-  const u = window.__HUB_ACTIVE_CART__?.upsellsSettings || {};
+  const u = window._cartPlusUpsellOverride || window.__HUB_ACTIVE_CART__?.upsellsSettings || {};
   const ds = window.__HUB_ACTIVE_CART__?.designSettings || {};
   return { u, ds, primary: u.primaryTextColor || ds.textColor || "#6b7280" };
 };
@@ -108,12 +108,17 @@ window.cartPlusRemoveSidePanel = function (blockId) {
 };
 
 // cards stacked in a strip beside the cart, no title (same as the editor)
-window.cartPlusRenderSidePanel = function (blockId, products) {
+window.cartPlusRenderSidePanel = function (blockId, products, settings) {
   const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
   if (!drawer) return;
   const { ds } = cartPlusUpsellColors();
   const cards = products
-    .map((p) => hubUtils.getProductCardHTML(p, window.__HUB_ACTIVE_CART__?.upsellsSettings || {}))
+    .map((p) =>
+      hubUtils.getProductCardHTML(p, {
+        ...(settings || window.__HUB_ACTIVE_CART__?.upsellsSettings || {}),
+        upsellSettings: settings,
+      }),
+    )
     .join("");
 
   let panel = document.getElementById(`hub-upsell-side-${blockId}`);
@@ -121,13 +126,20 @@ window.cartPlusRenderSidePanel = function (blockId, products) {
     panel?.remove();
     return;
   }
+  if (panel && panel.dataset.sig === cards) return; // same cards: leave it alone, no flicker
   if (!panel) {
     panel = document.createElement("div");
     panel.id = `hub-upsell-side-${blockId}`;
     panel.className = "hub-upsell-side-panel upsell-products";
+    // a panel created while the drawer is already open must not slide in again
+    if (/hub-visible-/.test(drawer.className)) {
+      panel.style.transition = "none";
+      requestAnimationFrame(() => requestAnimationFrame(() => (panel.style.transition = "")));
+    }
     // sits right after the drawer so the CSS can show it only while the drawer is open
     drawer.insertAdjacentElement("afterend", panel);
   }
+  panel.dataset.sig = cards;
 
   // same fill as the cart body: the "Products in cart" background if set, else the Template tint
   const bodyBg =
@@ -138,13 +150,11 @@ window.cartPlusRenderSidePanel = function (blockId, products) {
   const width = drawer.getBoundingClientRect().width || 440;
   const onLeft = drawer.classList.contains("hub-cart-left");
   const floating = drawer.classList.contains("hub-cart-floating");
-  panel.style.cssText = `
-    top:${floating ? 16 : 0}px;
-    ${onLeft ? "left" : "right"}:${width + (floating ? 16 : 0)}px;
-    height:${floating ? "calc(100% - 32px)" : "100%"};
-    --hub-side-shift:${(onLeft ? -1 : 1) * (width + 190 + (floating ? 16 : 0))}px;
-    background:${bodyBg};
-  `;
+  panel.style.top = `${floating ? 16 : 0}px`;
+  panel.style[onLeft ? "left" : "right"] = `${width + (floating ? 16 : 0)}px`;
+  panel.style.height = floating ? "calc(100% - 32px)" : "100%";
+  panel.style.setProperty("--hub-side-shift", `${(onLeft ? -1 : 1) * (width + 190 + (floating ? 16 : 0))}px`);
+  panel.style.background = bodyBg;
   panel.innerHTML = cards;
   // the side cards add through the shared button handler below
   panel.querySelectorAll(".hub-add-btn").forEach((b) => b.classList.add("hub-side-add"));

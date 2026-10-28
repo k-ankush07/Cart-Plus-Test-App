@@ -387,6 +387,19 @@ bs.textContent += `
       .filter((b) => b.type !== "css")
       .map((b) => [b.id, customBlockHTML(b)]),
   );
+  const on = (settings) => settings?.enabled === false; // inverted flag: false = section is ON
+  const slot = (content) => (content ? `<div>${content}</div>` : "");
+  const annSettings = activeCart.announcementSettings;
+  const upsellOn = on(activeCart.upsellsSettings);
+  const upsellPos = activeCart.upsellsSettings?.position === "top" ? "top" : "bottom";
+  const trustPos = activeCart.trustBadgesSettings?.position === "top" ? "top" : "bottom";
+  const trustHtml = (pos) =>
+    on(activeCart.trustBadgesSettings) && trustPos === pos
+      ? sectionBg(
+          "Security Badges",
+          `<div id="hub-trust-badges-${pos}-${blockId}" class="hub-trust-badges cart-plus-trust-badge upcart-trust-badge cart-plus-public-trust-badges" style="display:none;"></div>`,
+        )
+      : "";
   const renderRows = (order, rows) =>
     order.map((key) => (key in rows ? rows[key] : blockRows[key] || "")).join("");
 
@@ -554,9 +567,14 @@ bs.textContent += `
 
   const headerRows = {
     "Banner Image": sectionBg("Banner Image", window.cartPlusBannerHTML(headerSettings)),
-    Announcement: `<div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>`,
+    Announcement:
+      on(annSettings) && annSettings.position !== "after"
+        ? `<div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>`
+        : "",
     Timer: window.cartPlusTimerContainerHTML(blockId, headerSettings),
-    "Progress Bar": sectionBg(
+    "Progress Bar": !on(activeCart.rewardsSettings)
+      ? ""
+      : sectionBg(
       "Progress Bar",
       `<div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;" class="cart-plus-internal-rewards cart-plus-public-rewards tier-card upcart-rewards"></div>`,
     ),
@@ -568,31 +586,37 @@ bs.textContent += `
       <div id="hub-cart-items-${blockId}" class="hub-cart-items ${disableFixedFooter ? "no-fixed-footer" : ""}">
         ${itemsSkeleton}
       </div>
-      <div id="hub-suggested-product-${blockId}" class="hub-suggested-product" style="display:none;"></div>`,
-    "Cross-sell": sectionBg(
-      "Upsells",
-      `<div id="hub-upsell-top-${blockId}" class="hub-upsell"></div><div id="hub-upsell-bottom-${blockId}" class="hub-upsell"></div>`,
-    ),
+      ${activeCart.upsellsSettings?.showSuggestedProduct ? `<div id="hub-suggested-product-${blockId}" class="hub-suggested-product" style="display:none;"></div>` : ""}`,
+    "Cross-sell": upsellOn
+      ? sectionBg(
+          "Upsells",
+          `<div id="hub-upsell-${upsellPos}-${blockId}" class="hub-upsell"></div>`,
+        )
+      : "",
   };
 
   const footerRows = {
-    "Order notes": sectionBg("Add Notes", `<div id="hub-notes-footer-${blockId}"></div>`),
-    "Shipping Protection & Add-ons": sectionBg(
-      "Add ons",
-      `<div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>`,
-    ),
+    "Order notes": on(activeCart.additionalNotesSettings)
+      ? sectionBg("Add Notes", `<div id="hub-notes-footer-${blockId}"></div>`)
+      : "",
+    "Shipping Protection & Add-ons": on(activeCart.addonsSettings)
+      ? sectionBg(
+          "Add ons",
+          `<div id="hub-addons-${blockId}" class="hub-addons" style="display:none;"></div>`,
+        )
+      : "",
     Summary: `${window.cartPlusSummaryContainerHTML?.(blockId, cartSettings) || ""}${legacySummaryHTML}`,
     "Discount code": sectionBg("Discount code", discountRowHTML),
     "Age Verification": window.cartPlusAgeHTML(blockId, cartSettings),
     Login: window.cartPlusLoginHTML(cartSettings),
     "Checkout Button": `
-      <div>${renderCustomHTML(customHtmlBlocks.above_checkout)}</div>
+      ${slot(renderCustomHTML(customHtmlBlocks.above_checkout))}
       <div style="${checkoutBgCss ? "background:" + checkoutBgCss + ";" : ""}">
         <a id="hub-checkout-btn-${blockId}" href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" onclick="hubCheckoutClick(event, '${blockId}', this)" class="hub-cart-checkout-btn" style="border-radius:${checkoutOpts.radius ?? designSettings.buttonRadius}px;${checkoutOpts.borderColor ? "border:1px solid " + checkoutOpts.borderColor + ";" : ""}">
           ${checkoutOpts.label != null ? window.cartPlusFillPrice(checkoutOpts.label, "") : checkoutButtonText}
         </a>
       </div>
-      <div>${renderCustomHTML(customHtmlBlocks.below_checkout)}</div>
+      ${slot(renderCustomHTML(customHtmlBlocks.below_checkout))}
       ${expressHTML}
       ${continueHTML}`,
     "Payment Badges": window.cartPlusPaymentBadgesHTML(cartSettings),
@@ -644,42 +668,33 @@ bs.textContent += `
 
       <!-- Header section rows, in the order set in the editor -->
       ${renderRows(headerOrder, headerRows)}
-      <div>${renderCustomHTML(customHtmlBlocks.below_header)}</div>
+      ${slot(renderCustomHTML(customHtmlBlocks.below_header))}
 
       <!-- BODY (scrollable) -->
       <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview ${disableFixedFooter ? "scroll-auto" : "scroll-unset"} cart-plus-body" style="${bodyBackground ? "background:" + bodyBackground + ";" : ""}">
-        <div>${renderCustomHTML(customHtmlBlocks.above_announcements)}</div>
-        ${sectionBg(
-          "Security Badges",
-          `<div id="hub-trust-badges-top-${blockId}" class="hub-trust-badges cart-plus-trust-badge upcart-trust-badge cart-plus-public-trust-badges" style="display:none;"></div>`,
-        )}
+        ${slot(renderCustomHTML(customHtmlBlocks.above_announcements))}
+        ${trustHtml("top")}
 
         ${renderRows(bodyOrder, bodyRows)}
 
-        <div id="hub-notes-below-${blockId}"></div>
-        <div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>
-        <div>${renderCustomHTML(customHtmlBlocks.above_footer)}</div>
+        ${on(annSettings) && annSettings.position === "after" ? `<div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>` : ""}
+        ${slot(renderCustomHTML(customHtmlBlocks.above_footer))}
       </div>
 
       <!-- FOOTER (fixed bottom) -->
-      <div id="hub-footer-rec-${blockId}"></div>
-
       <div class="hub-cart-footer cart-app__footer cart-plus-footer" style="background:${footerBackground};">
         ${footerSkeleton}
 
         <!-- Footer section rows, in the order set in the editor -->
         ${renderRows(footerOrder, footerRows)}
 
-        ${sectionBg(
-          "Security Badges",
-          `<div id="hub-trust-badges-bottom-${blockId}" class="hub-trust-badges cart-plus-trust-badge upcart-trust-badge cart-plus-public-trust-badges" style="display:none;"></div>`,
-        )}
+        ${trustHtml("bottom")}
       </div>
 
-      <div class="hub-bottom-of-cart">${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>
+      ${customHtmlBlocks.bottom_of_cart ? `<div class="hub-bottom-of-cart">${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>` : ""}
 
       <!-- Custom HTML blocks not placed in a section: end of the cart -->
-      <div id="hub-custom-end-${blockId}">${endCustomBlocksHTML}</div>
+      ${endCustomBlocksHTML ? `<div id="hub-custom-end-${blockId}">${endCustomBlocksHTML}</div>` : ""}
 
       ${modalsHTML}
     </div>

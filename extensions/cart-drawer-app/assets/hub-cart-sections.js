@@ -250,7 +250,7 @@ window.cartPlusStartTimer = function (blockId) {
 };
 
 // ── Login message ──────────────────────────────────────────────────────────
-window.cartPlusLoginHTML = function (cartSettings) {
+window.cartPlusLoginHTML = function (cartSettings, key = "login") {
   const s = {
     enabled: false,
     beforeLink: "Have an account?",
@@ -259,7 +259,7 @@ window.cartPlusLoginHTML = function (cartSettings) {
     alignment: "center",
     top: 8,
     bottom: 8,
-    ...(cartSettings?.login || {}),
+    ...(cartSettings?.[key] || {}),
   };
   if (!s.enabled || window.Shopify?.customerId || window.__st?.cid) return "";
   return `<div class="cart-plus-login-message" style="text-align:${s.alignment};padding:${s.top}px 16px ${s.bottom}px;font-size:15px;">

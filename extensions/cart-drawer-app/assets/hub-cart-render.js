@@ -745,55 +745,13 @@ if (savedEl) {
       if (upsellTop) upsellTop.innerHTML = "";
       if (upsellBottom) upsellBottom.innerHTML = "";
 
-      let recHTML = "";
-      if (!recommendations?.enabled) {
-        recHTML = `
-          <div class="hub-cart-recommendations">
-            <h3 class="hub-rec-title hub-public-upsell__title cart-plus-internal-style__title-large" style="color:${designSettings.textColor};">
-              ${recommendations.productHeaderText || "You may also like"}
-            </h3>
-            <div id="hub-rec-products"></div>
-          </div>`;
+      // Empty cart from the editor's Empty view (Settings, Login, Cross-sell)
+      if (!container.querySelector(".cart-plus-empty-cart")) {
+        container.innerHTML = window.cartPlusEmptyCartHTML(blockId);
       }
+      window.cartPlusRenderEmptyUpsell?.(blockId);
 
-      container.innerHTML = `
-        <div class="hub-cart-empty cart_CartPreview__empty__body cart-plus-recommendation-module">
-          <div>${hubUtils.renderCustomHTML(customHtmlBlocks.empty_cart)}</div>
-          <h3 class="hub-empty-title styles_CartPreview__empty__ cart-plus-recommendations-title">${emptyCartMessage}</h3>
-          ${
-            !recommendations?.enabled
-              ? `
-            <p class="hub-rec-subtitle hub-public-upsell__header cart-plus-internal-upsell__header" style="color:${designSettings.textColor};">
-              ${recommendations?.headerText || ""}
-            </p>
-            ${
-              recommendations?.showShopNowButton
-                ? `
-              <a href="${recommendations.buttonUrl}" class="hub-rec-btn hub-public-upsell__shop-now-button cart-plus-internal-style__title-large_button cart-plus-recommendations-shop-now-button"
-                style="--btn-bg:${btnColor};--btn-hover:${btnHoverColor};--btn-text:${textColor};border-radius:${designSettings.buttonRadius}px;">
-                ${recommendations.buttonText || "Shop Now"}
-              </a>`
-                : ""
-            }`
-              : ""
-          }
-        </div>`;
-
-      const footerRec = document.getElementById(`hub-footer-rec-${blockId}`);
-      if (footerRec && !footerRec.innerHTML.trim())
-        footerRec.innerHTML = recHTML;
       if (footer) footer.classList.add("hub-empty-footer");
-
-      if (!recommendations?.enabled) {
-        const recContainer = document.getElementById("hub-rec-products");
-        if (
-          recContainer &&
-          recContainer.children.length === 0 &&
-          !window._hubRecInitialized
-        ) {
-          loadCartRecommendations(recommendations);
-        }
-      }
       hubUtils.hideCartSkeleton(blockId);
       hubUtils.revealCartItems(blockId);
       const bottomOfCartEl = drawer.querySelector(".hub-bottom-of-cart");

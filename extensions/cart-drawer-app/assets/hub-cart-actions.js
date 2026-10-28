@@ -380,31 +380,10 @@ async function _commitRemoval(key) {
         cartItemsEl.classList.add("footer-empty");
       }
       if (container) {
-        const btnColor = ds.buttonColor || "#000000";
-        const btnHoverColor = ds.buttonHoverColor || "#333333";
-        const txtColor = ds.buttonTextColor || "#ffffff";
-        const showRecsBlock = !rec.enabled;
-        container.innerHTML = `
-          <div class="hub-cart-empty">
-            <h3 class="hub-empty-title styles_CartPreview__empty__" >
-              ${cs.emptyCartMessage || "Your cart is empty"}
-            </h3>
-            ${
-              showRecsBlock
-                ? `<p class="hub-rec-subtitle hub-public-upsell__header" style="color:${ds.textColor || "#000"};">
-                    ${rec.headerText || ""}
-                  </p>`
-                : ""
-            }
-            ${
-              showRecsBlock && rec.showShopNowButton
-                ? `<a href="${rec.buttonUrl || "/collections/all"}" class="hub-rec-btn hub-public-upsell__shop-now-button"
-                  style="--btn-bg:${btnColor};--btn-hover:${btnHoverColor};--btn-text:${txtColor};border-radius:${ds.buttonRadius || 0}px;">
-                  ${rec.buttonText || "Shop Now"}
-                </a>`
-                : ""
-            }
-          </div>`;
+        container.innerHTML = window.cartPlusEmptyCartHTML
+          ? container.querySelector(".cart-plus-empty-cart")?.outerHTML || window.cartPlusEmptyCartHTML(blockId)
+          : `<div class="hub-cart-empty"><h3 class="hub-empty-title">${cs.emptyCartMessage || "Your cart is empty"}</h3></div>`;
+        window.cartPlusRenderEmptyUpsell?.(blockId);
       }
 
       const headerEl = document.querySelector(".upcart-header-text");

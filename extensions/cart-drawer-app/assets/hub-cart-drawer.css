@@ -2949,3 +2949,29 @@ select.hub-variant-option-select {
     display: none !important;
   }
 }
+
+/* Empty cart: the Cross-sell carousel must not stretch the drawer */
+.hub-cart-items.footer-empty,
+.hub-cart-items.footer-empty .hub-cart-empty,
+.cart-plus-empty-cart .upsell-container,
+.cart-plus-empty-cart .upsell-inner,
+.cart-plus-empty-cart .upsell-products,
+.cart-plus-empty-cart .hub-swiper-wrapper,
+.cart-plus-empty-cart .hub-swiper {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Empty cart fills the whole body, so the content stays centred and the Cross-sell sits at the bottom */
+.hub-cart-items.footer-empty {
+  margin-top: 0;
+  margin-bottom: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.hub-cart-items.footer-empty > .cart-plus-empty-cart {
+  flex: 1 1 auto;
+}
