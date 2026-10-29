@@ -122,7 +122,7 @@ function _wrapper(key, inner, sellingPlanHtml, customHtmlBlocks, isReward, item)
 }
 
 // ── Layout 1: Classic ────────────────────────────────────────────────────────
-// Image left | info middle (title, variants, discounts) | right (price + save + qty + trash)
+// Image left | info middle (title, variants, qty + trash) | right (price + save + discount badge)
 function classicItemHTML(ctx) {
   const {
     item,
@@ -181,10 +181,15 @@ function classicItemHTML(ctx) {
         }
       </div>
       ${saveHtml}
-      <div class="hub-item-actions" style="justify-content:flex-end;">
-        ${_qtyControl(item.key, item.quantity, iconColor)}
-        ${_deleteBtn(item.key, item.product_title, iconColor)}
-      </div>`;
+      ${discountBadges}`;
+
+  // qty + trash sit under the title on the left
+  const leftActions = isReward
+    ? ""
+    : `<div class="hub-item-actions" style="flex:0 0 100%;">
+         ${_qtyControl(item.key, item.quantity, iconColor)}
+         ${_deleteBtn(item.key, item.product_title, iconColor)}
+       </div>`;
 
   const inner = `
     <div class="hub-cart-item cart-plus-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">
@@ -197,7 +202,7 @@ function classicItemHTML(ctx) {
         ${variantHtml}
         ${propertiesHtml}
         ${discountHtml}
-        ${discountBadges}
+        ${leftActions}
       </div>
       <div class="hub-item-total cart-plus-public-component-product-title-container">
         ${rightCol}
@@ -294,16 +299,15 @@ function subscriptionItemHTML(ctx) {
 }
 
 // ── Layout 3: Modern ─────────────────────────────────────────────────────────
-// SAVE badge above image | title + variant dropdowns left | trash + price right |
-// subscribe-upgrade button + qty stepper bottom row
+// Image left | title, variants, price row, qty + trash together | discount badge bottom-right
 function modernItemHTML(ctx) {
   const {
     item,
     colorItems,
     showStrikethrough,
     savingsColor,
+    savingsText,
     isReward,
-    priceHtml,
     variantHtml,
     propertiesHtml,
     discountHtml,
@@ -316,137 +320,51 @@ function modernItemHTML(ctx) {
     unitSave,
     saveHtml,
     discountColor,
-    iconColor 
+    iconColor,
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
 
   const lineTotal = ctx.singleItemPrice ? effectiveUnitPrice : item.final_line_price;
   const compareTotal = effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
+  const totalSave = unitSave * (ctx.singleItemPrice ? 1 : item.quantity);
 
-  const saveBadge = hasCompare ? `${saveHtml}` : "";
-
-  // ── BUILD VARIANT SELECT DROPDOWNS ──────────────────────────────────────
-  const variantSelectHtml =
-    item.options_with_values &&
-    item.options_with_values.length > 0 &&
-    !item.product_has_only_default_variant
-      ? item.options_with_values
-          .map((opt) => {
-            const productData = window._hubProductDataByHandle?.[item.handle];
-
-            const optIndex = item.options_with_values.findIndex(
-              (o) => o.name === opt.name,
-            );
-
-            const currentVariantValue = (() => {
-              const currentVariant = productData?.variants?.find(
-                (v) => String(v.id) === String(item.variant_id),
-              );
-
-              if (currentVariant) {
-                return optIndex === 0
-                  ? currentVariant.option1
-                  : optIndex === 1
-                    ? currentVariant.option2
-                    : currentVariant.option3;
-              }
-              return null;
-            })();
-
-            const allValues = productData
-              ? [
-                  ...new Set(
-                    productData.variants
-                      .map((v) => {
-                        return optIndex === 0
-                          ? v.option1
-                          : optIndex === 1
-                            ? v.option2
-                            : v.option3;
-                      })
-                      .filter(Boolean),
-                  ),
-                ]
-              : [opt.value];
-
-            const encodedCurrentValue =
-              currentVariantValue
-                ?.replace(/&/g, "&amp;")
-                .replace(/"/g, "&quot;") ?? "";
-
-            const optionsHTML = allValues
-              .map((val) => {
-                const encodedVal = val
-                  .replace(/&/g, "&amp;")
-                  .replace(/"/g, "&quot;");
-                return `<option value="${encodedVal}" ${val === currentVariantValue ? "selected" : ""}>${val}</option>`;
-              })
-              .join("");
-
-            return `
-              <div class="hub-item-variant-select-wrap" style="display:flex;align-items:center;gap:4px;">
-                <span class="hub-item-variant-name" style="color:${colorItems};font-size:10px;white-space:nowrap;">${opt.name}:</span>
-                <select
-                  class="hub-variant-option-select"
-                  data-key="${item.key}"
-                  data-option-name="${opt.name}"
-                  data-option-index="${optIndex}" 
-                  data-handle="${item.handle}"
-                  style="font-size:10px;border:1px solid #d1d5db;border-radius:4px;padding:2px 4px;color:${colorItems};background:transparent;cursor:pointer;width:100%"
-                  onchange="hubChangeVariantOption(this)"
-                >
-                  ${optionsHTML}
-                </select>
-              </div>`;
-          })
-          .join("")
-      : variantHtml;
-
-  const priceBlock = `
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-      ${isReward ? `<span class="hub-price hub-price-free">FREE</span>` : ""}
-      ${
-        hasCompare && showStrikethrough
-          ? `<span class="hub-item-compare-price" style="color:${colorItems};">${hubUtils.formatMoney(compareTotal)}</span>`
-          : ""
-      }
+  const priceRow = `
+    ${isReward ? `<p class="hub-price hub-price-free">Free</p>` : ""}
+    <div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
         ${hubUtils.formatMoney(lineTotal)}
       </span>
-      ${discountBadges}
-    </div>`;
+      ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price" style="color:${colorItems};">${hubUtils.formatMoney(compareTotal)}</span>` : ""}
+      ${hasCompare && showStrikethrough && !isReward ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(totalSave)}</span>` : ""}
+    </div>
+    ${isReward ? "" : saveHtml}`;
 
   const inner = `
     <div class="hub-cart-item hub-cart-item--modern cart-plus-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">
-      <div style="display:flex;flex-direction:column;flex-shrink:0;">
-        ${saveBadge}
-        <div class="hub-item-img-wrap cart-plus-public-component-product-tile__image-wrapper" style="margin-top:${saveBadge ? "5px" : "0px"};">
-          <img src="${item.image}" alt="${item.product_title}" class="hub-item-img cart-plus-public-component-product-tile__image" />
-        </div>
+      <div class="hub-item-img-wrap cart-plus-public-component-product-tile__image-wrapper">
+        <img src="${item.image}" alt="${item.product_title}" class="hub-item-img cart-plus-public-component-product-tile__image" />
       </div>
-      <div class="hub-item-info cart-plus-public-component-product-tile__info">
-        <div style="width: 100%; display:flex;justify-content:space-between;align-items:flex-start;gap:8px" class="cart-plus-public-component-product-title-container">
-          <div class="hub-cart-item--modern-title">
-            <a href="/products/${item.handle}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
-            ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
-             ${variantSelectHtml}
-            ${propertiesHtml}
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
-           ${_deleteBtn(item.key, item.product_title,iconColor )}
-            ${priceBlock}
-            ${
-              isReward
-                ? ""
-                : `<div class="hub-item-actions" style="justify-content:space-between;">
-                     <div></div>
-                     ${_qtyControl(item.key, item.quantity, iconColor)}
-                   </div>`
-            }
-          </div>
+      <div class="hub-item-info cart-plus-public-component-product-tile__info" style="flex-wrap:nowrap;justify-content:space-between;align-items:stretch">
+        <div class="hub-cart-item--modern-title" style="flex-direction:column;flex-wrap:nowrap;gap:5px;min-width:0;flex:1">
+          <a href="/products/${item.handle}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
+          ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
+          ${variantHtml}
+          ${propertiesHtml}
+          ${priceRow}
+          ${discountHtml}
+          ${
+            isReward
+              ? ""
+              : `<div class="hub-item-actions">
+                   ${_qtyControl(item.key, item.quantity, iconColor)}
+                   ${_deleteBtn(item.key, item.product_title, iconColor)}
+                 </div>`
+          }
         </div>
-        ${discountHtml}
+        <div style="display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;flex-shrink:0">
+          ${discountBadges}
+        </div>
       </div>
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
     </div>`;
