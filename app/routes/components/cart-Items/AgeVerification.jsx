@@ -12,7 +12,7 @@ export default function AgeVerification({ cartSettings, checked, error, onChange
   const html = (value) => ({ __html: fillAge(value, s.minimumAge) });
 
   return (
-    <div className="cart-plus-age-verification" style={{ padding: "8px 16px" }}>
+    <div className="cart-plus-age-verification" style={{ padding: "12px 16px" }}>
       <div
         style={{
           padding: 12,
