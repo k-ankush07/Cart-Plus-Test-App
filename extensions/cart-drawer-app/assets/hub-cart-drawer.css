@@ -1038,7 +1038,6 @@ span.hub-total-arrow svg {
     cursor: pointer;
     transition: 0.3s ease;
     line-height: 1;
-    width: calc(100% - 30px);
     margin: 0px 15px 15px !important;
 }
 
@@ -3109,4 +3108,11 @@ select.hub-compact-variant {
 .hub-cart-footer > :not(.hub-footer-skeleton) ~ .cart-plus-age-verification .cart-plus-age-box {
   border-top-style: solid !important;
   border-top-color: var(--cp-age-edge, #dbe4f5) !important;
+}
+
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]):not(.cp-keep-pad),
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]):not(.cp-keep-pad) > :first-child,
+.cart-plus-age-verification {
+  padding-top: 0 !important;
+  border-top: none !important;
 }

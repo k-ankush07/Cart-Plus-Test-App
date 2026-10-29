@@ -403,6 +403,16 @@ bs.textContent += `
   const renderRows = (order, rows) =>
     order.map((key) => (key in rows ? rows[key] : blockRows[key] || "")).join("");
 
+  const renderFooterRows = (order, rows) =>
+    order
+      .map((key) => {
+        const html = key in rows ? rows[key] : blockRows[key] || "";
+        if (!html || !String(html).trim()) return "";
+        const keep = key === "Age Verification" || key === "Checkout Button";
+        return `<div class="cp-sec${keep ? " cp-keep-pad" : ""}">${html}</div>`;
+      })
+      .join("");
+
   const itemsSkeleton = `
           <!-- skeleton shown while cart data loads -->
           <div id="hub-skeleton-${blockId}" style="display:none;">
@@ -686,9 +696,10 @@ bs.textContent += `
         ${footerSkeleton}
 
         <!-- Footer section rows, in the order set in the editor -->
-        ${renderRows(footerOrder, footerRows)}
-
-        ${trustHtml("bottom")}
+       <div class="cart-plus-footer-stack">
+          ${renderFooterRows(footerOrder, footerRows)}
+          ${trustHtml("bottom")}
+        </div>
       </div>
 
       ${customHtmlBlocks.bottom_of_cart ? `<div class="hub-bottom-of-cart">${renderCustomHTML(customHtmlBlocks.bottom_of_cart)}</div>` : ""}
@@ -700,9 +711,37 @@ bs.textContent += `
     </div>
     `,
   );
-
+  window.cartPlusMarkFooterFirst(blockId);
   window.cartPlusStartTimer?.(blockId);
   activateCustomBlockScripts(blockId);
+};
+
+window.cartPlusMarkFooterFirst = function (blockId) {
+  const stack = document.querySelector(
+    `#hub-cart-drawer-${blockId} .cart-plus-footer-stack`,
+  );
+  if (!stack) return;
+
+  let found = false;
+  [...stack.children].forEach((el) => {
+    const first = !found && el.offsetHeight > 0;
+    if (first) found = true;
+    el.toggleAttribute("data-cp-first", first);
+  });
+
+  if (!stack._cpObs) {
+    let t;
+    stack._cpObs = new MutationObserver(() => {
+      clearTimeout(t);
+      t = setTimeout(() => window.cartPlusMarkFooterFirst(blockId), 0);
+    });
+    stack._cpObs.observe(stack, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["style", "class"],
+    });
+  }
 };
 
 window.hubMoveExpressPayments = function (blockId) {
