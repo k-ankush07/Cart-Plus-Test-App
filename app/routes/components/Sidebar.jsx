@@ -32,7 +32,7 @@ import {
   CodeIcon,
 } from "@shopify/polaris-icons";
 import PreviewProductPicker from "./ui/PreviewProductPicker";
-
+import { useAuthenticatedFetch } from "./utils/useAuthenticatedFetch";
 /*
   root: true      -> fixed item, drag nahi hota (section ke top par rehta hai)
   drag: true      -> section ke andar reorder ho sakta hai
@@ -112,8 +112,20 @@ const DEFAULT_ORDER = Object.fromEntries(
 // sidebar rows shown while the "Empty" cart tab is selected
 const EMPTY_ITEMS = [
   { key: "Empty Settings", label: "Settings", icon: SettingsIcon, root: true },
-  { key: "Empty Cross-sell", label: "Cross-sell", icon: PlusCircleIcon, toggle: true, drag: true },
-  { key: "Empty Login", label: "Login", icon: PersonIcon, toggle: true, drag: true },
+  {
+    key: "Empty Cross-sell",
+    label: "Cross-sell",
+    icon: PlusCircleIcon,
+    toggle: true,
+    drag: true,
+  },
+  {
+    key: "Empty Login",
+    label: "Login",
+    icon: PersonIcon,
+    toggle: true,
+    drag: true,
+  },
 ];
 
 const DEFAULT_ENABLED = { Announcement: true, Timer: true, "Cross-sell": true };
@@ -196,6 +208,38 @@ const Sidebar = memo(function Sidebar({
   /* ---------- previewing market ---------- */
   const [localMarket, setLocalMarket] = useState(markets[0]?.value ?? "");
 
+  const authenticatedFetch = useAuthenticatedFetch();
+  const [marketList, setMarketList] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await authenticatedFetch("/shopify/markets");
+        const data = await res.json();
+        if (!res.ok)
+          throw new Error(data?.error || `Request failed: ${res.status}`);
+        if (!cancelled) setMarketList(data.markets || []);
+      } catch (err) {
+        console.error("Failed to load markets:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const marketOptions = [
+    ...markets,
+    ...marketList.map((m) => ({
+      label:
+        m.status && m.status !== "ACTIVE"
+          ? `${m.name} (${m.status.toLowerCase()})`
+          : m.name,
+      value: m.id,
+    })),
+  ];
+
   const marketValue = market ?? localMarket;
 
   const changeMarket = (v) => {
@@ -219,7 +263,8 @@ const Sidebar = memo(function Sidebar({
   // keep the selected row valid when switching between the two cart views
   useEffect(() => {
     const onEmptyRow = String(activeTab).startsWith("Empty ");
-    if (previewMode === "empty" && !onEmptyRow) setActiveTab?.("Empty Settings");
+    if (previewMode === "empty" && !onEmptyRow)
+      setActiveTab?.("Empty Settings");
     if (previewMode !== "empty" && onEmptyRow) setActiveTab?.("Template");
   }, [previewMode]);
 
@@ -240,7 +285,10 @@ const Sidebar = memo(function Sidebar({
   };
 
   /* ---------- drag & drop (sirf apne section ke andar) ---------- */
-  const [order, setOrder] = useState({ ...DEFAULT_ORDER, ...(initialOrder || {}) });
+  const [order, setOrder] = useState({
+    ...DEFAULT_ORDER,
+    ...(initialOrder || {}),
+  });
   const [drag, setDrag] = useState(null); // { section, key }
   const [overKey, setOverKey] = useState(null);
 
@@ -274,7 +322,10 @@ const Sidebar = memo(function Sidebar({
 
   const moveCustom = (key, to, targetKey) => {
     const stripped = Object.fromEntries(
-      Object.entries(order).map(([s, list]) => [s, list.filter((k) => k !== key)]),
+      Object.entries(order).map(([s, list]) => [
+        s,
+        list.filter((k) => k !== key),
+      ]),
     );
     let fullOrder = stripped;
     if (to !== UNPLACED) {
@@ -292,7 +343,8 @@ const Sidebar = memo(function Sidebar({
   const dropOn = (section, targetKey) => {
     if (!canDropOn(section)) return;
     if (drag.section === section) {
-      if (section !== UNPLACED && targetKey) moveItem(section, drag.key, targetKey);
+      if (section !== UNPLACED && targetKey)
+        moveItem(section, drag.key, targetKey);
     } else {
       moveCustom(drag.key, section, targetKey);
     }
@@ -428,11 +480,13 @@ const Sidebar = memo(function Sidebar({
       <BlockStack key={section.title} gap="100">
         <div
           onDragOver={(e) => {
-            if (!canDropOn(section.title) || drag.section === section.title) return;
+            if (!canDropOn(section.title) || drag.section === section.title)
+              return;
             e.preventDefault();
           }}
           onDrop={(e) => {
-            if (!canDropOn(section.title) || drag.section === section.title) return;
+            if (!canDropOn(section.title) || drag.section === section.title)
+              return;
             e.preventDefault();
             dropOn(section.title, null);
           }}
@@ -456,118 +510,123 @@ const Sidebar = memo(function Sidebar({
   return (
     // fixed width so the sidebar keeps its size in both "Item in cart" and "Empty" views
     <div style={{ width: 300, minWidth: 300, flexShrink: 0 }}>
-    <BlockStack gap="300">
-      {/* ── Card 1: Previewing items & market ── */}
-      <Card>
-        <BlockStack gap="300">
-          <PreviewProductPicker
-            selected={selectedPreviewProducts}
-            onChange={(list) => onPreviewProductsChange?.(list)}
-            onInitialLoading={onPreviewLoading}
-          />
-          <Select
-            label="Previewing market"
-            options={markets}
-            value={marketValue}
-            onChange={changeMarket}
-          />
-        </BlockStack>
-      </Card>
-
-      {/* ── Card 2: Item in cart / Empty + sections ── */}
-      <Card>
-        <BlockStack gap="300">
-          {/* Item in cart / Empty */}
-          <ButtonGroup variant="segmented" fullWidth>
-            <Button
-              size="slim"
-              pressed={previewMode === "cart"}
-              onClick={() => changePreview("cart")}
-            >
-              Item in cart
-            </Button>
-            <Button
-              size="slim"
-              pressed={previewMode === "empty"}
-              onClick={() => changePreview("empty")}
-            >
-              Empty
-            </Button>
-          </ButtonGroup>
-
-          {previewMode === "empty" ? (
-            <BlockStack gap="050">{EMPTY_ITEMS.map((i) => renderRow(i))}</BlockStack>
-          ) : (
-            <>
-          {/* Template */}
-          <BlockStack gap="050">
-            {renderRow({ key: "Template", icon: AppsIcon, root: true })}
+      <BlockStack gap="300">
+        {/* ── Card 1: Previewing items & market ── */}
+        <Card>
+          <BlockStack gap="300">
+            <PreviewProductPicker
+              selected={selectedPreviewProducts}
+              onChange={(list) => onPreviewProductsChange?.(list)}
+              onInitialLoading={onPreviewLoading}
+            />
+            <Select
+              label="Previewing market"
+              options={marketOptions}
+              value={marketValue}
+              onChange={changeMarket}
+            />
           </BlockStack>
+        </Card>
 
-          {/* Header / Body / Footer (har section apna drag zone) */}
-          {SECTIONS.map(renderSection)}
+        {/* ── Card 2: Item in cart / Empty + sections ── */}
+        <Card>
+          <BlockStack gap="300">
+            {/* Item in cart / Empty */}
+            <ButtonGroup variant="segmented" fullWidth>
+              <Button
+                size="slim"
+                pressed={previewMode === "cart"}
+                onClick={() => changePreview("cart")}
+              >
+                Item in cart
+              </Button>
+              <Button
+                size="slim"
+                pressed={previewMode === "empty"}
+                onClick={() => changePreview("empty")}
+              >
+                Empty
+              </Button>
+            </ButtonGroup>
 
-          {/* Custom HTML / CSS rows */}
-          {/* rows not dragged into a section: shown at the end of the cart */}
-          {(unplacedRows.length > 0 || drag?.custom) && (
-            <div
-              onDragOver={(e) => {
-                if (!canDropOn(UNPLACED)) return;
-                e.preventDefault();
-              }}
-              onDrop={(e) => {
-                if (!canDropOn(UNPLACED)) return;
-                e.preventDefault();
-                dropOn(UNPLACED, null);
-              }}
-              style={{ minHeight: 8 }}
-            >
+            {previewMode === "empty" ? (
               <BlockStack gap="050">
-                {unplacedRows.map((r) => renderRow(r, UNPLACED))}
+                {EMPTY_ITEMS.map((i) => renderRow(i))}
               </BlockStack>
-            </div>
-          )}
+            ) : (
+              <>
+                {/* Template */}
+                <BlockStack gap="050">
+                  {renderRow({ key: "Template", icon: AppsIcon, root: true })}
+                </BlockStack>
 
-          <Divider />
+                {/* Header / Body / Footer (har section apna drag zone) */}
+                {SECTIONS.map(renderSection)}
 
-          {/* Add Custom html / css */}
-          <div
-            className="sb-row"
-            role="button"
-            tabIndex={0}
-            onClick={addCustomItem}
-            onKeyDown={(e) => e.key === "Enter" && addCustomItem()}
-          >
-            <Box borderRadius="200" paddingBlock="150" paddingInline="200">
-              <InlineStack gap="200" blockAlign="center" wrap={false}>
-                <span className="sb-slot">
-                  <Icon source={PlusCircleIcon} />
-                </span>
-                <Text as="span" variant="bodySm" fontWeight="medium">
-                  Add Custom html / css
-                </Text>
-              </InlineStack>
-            </Box>
-          </div>
+                {/* Custom HTML / CSS rows */}
+                {/* rows not dragged into a section: shown at the end of the cart */}
+                {(unplacedRows.length > 0 || drag?.custom) && (
+                  <div
+                    onDragOver={(e) => {
+                      if (!canDropOn(UNPLACED)) return;
+                      e.preventDefault();
+                    }}
+                    onDrop={(e) => {
+                      if (!canDropOn(UNPLACED)) return;
+                      e.preventDefault();
+                      dropOn(UNPLACED, null);
+                    }}
+                    style={{ minHeight: 8 }}
+                  >
+                    <BlockStack gap="050">
+                      {unplacedRows.map((r) => renderRow(r, UNPLACED))}
+                    </BlockStack>
+                  </div>
+                )}
 
-          {/* Advanced */}
-          <BlockStack gap="100">
-            <SectionTitle>Advanced</SectionTitle>
-            <BlockStack gap="050">
-              {ADVANCED.map((i) => renderRow(i))}
-            </BlockStack>
+                <Divider />
+
+                {/* Add Custom html / css */}
+                <div
+                  className="sb-row"
+                  role="button"
+                  tabIndex={0}
+                  onClick={addCustomItem}
+                  onKeyDown={(e) => e.key === "Enter" && addCustomItem()}
+                >
+                  <Box
+                    borderRadius="200"
+                    paddingBlock="150"
+                    paddingInline="200"
+                  >
+                    <InlineStack gap="200" blockAlign="center" wrap={false}>
+                      <span className="sb-slot">
+                        <Icon source={PlusCircleIcon} />
+                      </span>
+                      <Text as="span" variant="bodySm" fontWeight="medium">
+                        Add Custom html / css
+                      </Text>
+                    </InlineStack>
+                  </Box>
+                </div>
+
+                {/* Advanced */}
+                <BlockStack gap="100">
+                  <SectionTitle>Advanced</SectionTitle>
+                  <BlockStack gap="050">
+                    {ADVANCED.map((i) => renderRow(i))}
+                  </BlockStack>
+                </BlockStack>
+              </>
+            )}
           </BlockStack>
-            </>
-          )}
-        </BlockStack>
-      </Card>
-    </BlockStack>
+        </Card>
+      </BlockStack>
     </div>
   );
 });
 
 export default Sidebar;
-
 
 // import { LegacyCard, ActionList, Icon } from "@shopify/polaris";
 
