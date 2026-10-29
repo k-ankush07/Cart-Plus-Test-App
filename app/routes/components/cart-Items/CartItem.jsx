@@ -326,10 +326,31 @@ function ClassicLayout({
                 {item.variantTitle}
               </div>
             )}
-            <DiscountBadge
-              code="MEGA20"
-              color={designSettings.discountBageColor || "#1e7e34"}
-            />
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              className="cart-plus-public-component-product-tile__controls"
+            >
+              <QtyStepper
+                qty={qty}
+                loadingType={loadingType}
+                onDecrement={() => updateQty("dec")}
+                onIncrement={() => updateQty("inc")}
+                onQtyChange={(newQty) => {
+                  if (newQty >= 1) setQty(newQty);
+                }}
+                designSettings={designSettings}
+              />
+              <button
+                className="cart-app-item__remove cart-plus-public-component-product-tile__remove-button"
+                onClick={onRemoveClick}
+              >
+                {deleteLoading ? (
+                  <span className="loader"></span>
+                ) : (
+                  <TrashIcon color={designSettings.iconColor} />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Right */}
@@ -381,31 +402,10 @@ function ClassicLayout({
                 {cartSettings.savingsText} {item.savePct}%
               </div>
             )}
-            <div
-              style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              className="cart-plus-public-component-product-tile__controls"
-            >
-              <QtyStepper
-                qty={qty}
-                loadingType={loadingType}
-                onDecrement={() => updateQty("dec")}
-                onIncrement={() => updateQty("inc")}
-                onQtyChange={(newQty) => {
-                  if (newQty >= 1) setQty(newQty);
-                }}
-                designSettings={designSettings}
-              />
-              <button
-                className="cart-app-item__remove cart-plus-public-component-product-tile__remove-button"
-                onClick={onRemoveClick}
-              >
-                {deleteLoading ? (
-                  <span className="loader"></span>
-                ) : (
-                  <TrashIcon color={designSettings.iconColor} />
-                )}
-              </button>
-            </div>
+            <DiscountBadge
+              code="MEGA20"
+              color={designSettings.discountBageColor || "#1e7e34"}
+            />
           </div>
         </div>
       </div>
@@ -616,139 +616,67 @@ function ModernLayout({
   designSettings,
   deleteLoading,
   currency,
-  variants,
-  selectedVariantId,
-  onVariantChange,
 }) {
   return (
     <>
       <div className="cart-app-item cart-plus-product-item cart-plus-public-component-product-tile cart-plus-layout-modern">
         <div
-          style={{
-            position: "relative",
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: "4px",
-          }}
+          className="cart-app-item__image cart-plus-bundle-item-image-wrapper cart-plus-product-image-wrapper cart-plus-public-component-product-tile__image-wrapper"
+          style={{ width: "72px", height: "72px", flexShrink: 0, ...imageBox }}
         >
-          {cartSettings.showSavingsBelowPrices && item.hasDiscount && (
-            <span
-              className="cart-plus-public-component-product-tile__savings"
-              style={{
-                background: hexToRGBA(savingColor, 0.1),
-                color: savingColor,
-                fontSize: "10px",
-                fontWeight: 600,
-                padding: "2px 10px",
-                borderRadius: "14px",
-                lineHeight: "18px",
-              }}
-            >
-              {cartSettings.savingsText} {item.savePct}%
-            </span>
-          )}
-          <div
-            style={{
-              width: "80px",
-              height: "80px",
-              borderRadius: "6px",
-              overflow: "hidden",
-              ...imageBox,
-            }}
-            className="cart-app-item__image cart-plus-bundle-item-image-wrapper cart-plus-public-component-product-tile__image-wrapper"
-          >
-            <img
-              className="cart-plus-public-component-product-tile__image"
-              src={item.image}
-              alt={item.name}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
-          </div>
+          <img
+            className="cart-plus-public-component-product-tile__image"
+            src={item.image}
+            alt={item.name}
+          />
         </div>
-
         <div
           className="cart-plus-public-component-product-tile__info"
           style={{
             flex: 1,
             display: "flex",
-            flexDirection: "column",
-            gap: "6px",
+            justifyContent: "space-between",
+            alignItems: "stretch",
+            gap: "10px",
             minWidth: 0,
           }}
         >
           <div
             style={{
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              lineHeight: "8px",
+              flexDirection: "column",
+              gap: "4px",
+              flex: 1,
+              minWidth: 0,
             }}
           >
-            <div>
-              <div
-                className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title"
-                style={{
-                  color: textColor,
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  lineHeight: 1,
-                }}
-              >
-                <span className="cart-plus-product-title-link">{item.name}</span>
-              </div>
-
-              {variants.length > 1 && (
-                <div
-                  className="cart-plus-public-component-product-tile__variant cart-plus-bundle-item-variant-title"
-                  style={{ marginTop: "10px" }}
-                >
-                  <select
-                    value={selectedVariantId}
-                    onChange={(e) => onVariantChange(e.target.value)}
-                    style={{
-                      border: "1px solid #d1d5db",
-                      borderRadius: "4px",
-                      padding: "2px 4px",
-                      fontSize: "10px",
-                      background: "transparent",
-                      color: textColor,
-                      cursor: "pointer",
-                      maxWidth: "140px",
-                    }}
-                  >
-                    {variants.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
             <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                gap: "8px",
-              }}
+              className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title"
+              style={{ color: textColor, fontSize: "13px", fontWeight: 500 }}
             >
-              <button className="cart-app-item__remove" onClick={onRemoveClick}>
-                {deleteLoading ? (
-                  <span className="loader"></span>
-                ) : (
-                  <TrashIcon color={designSettings.iconColor} />
-                )}
-              </button>
+              <span className="cart-plus-product-title-link">{item.name}</span>
+            </div>
+            {item.variantTitle && (
+              <div
+                className="cart-plus-bundle-item-variant-title cart-plus-public-component-product-tile__variant"
+                style={{ fontSize: "10px", color: secondaryTextColor || textColor }}
+              >
+                {item.variantTitle}
+              </div>
+            )}
+            <div
+              className="cart-plus-public-component-product-tile__product-pricing"
+              style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}
+            >
+              <span
+                className="cart-plus-public-component-product-tile__price-group cart-plus-item-prices-row cart-plus-public-component-product-tile__price"
+                style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}
+              >
+                {money(currency, item.price)}
+              </span>
               {showStrikethrough && item.hasDiscount && (
                 <span
-                  className="cart-plus-public-component-product-tile__product-pricing cart-plus-item-compare-price"
+                  className="cart-plus-item-compare-price"
                   style={{
                     color: secondaryTextColor || textColor,
                     textDecoration: "line-through",
@@ -758,36 +686,62 @@ function ModernLayout({
                   {money(currency, item.compareAt)}
                 </span>
               )}
-              <span
-                className="cart-plus-public-component-product-tile__price-group cart-plus-item-prices-row cart-plus-public-component-product-tile__price"
-                style={{ color: textColor, fontWeight: 700, fontSize: "12px" }}
-              >
-                {money(currency, item.price)}
-              </span>
-              <DiscountBadge
-                code="MEGA20"
-                color={designSettings?.discountBageColor || "#1e7e34"}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginTop: "4px",
-                }}
-              >
-                <QtyStepper
-                  qty={qty}
-                  loadingType={loadingType}
-                  onDecrement={() => updateQty("dec")}
-                  onIncrement={() => updateQty("inc")}
-                  onQtyChange={(newQty) => {
-                    if (newQty >= 1) setQty(newQty);
+              {cartSettings.showSavingsBelowPrices && item.hasDiscount && (
+                <span
+                  className="cart-plus-public-component-product-tile__savings"
+                  style={{
+                    background: hexToRGBA(savingColor, 0.1),
+                    color: savingColor,
+                    fontSize: "10px",
+                    fontWeight: 600,
+                    padding: "2px 10px",
+                    borderRadius: "14px",
+                    lineHeight: "18px",
                   }}
-                  designSettings={designSettings}
-                />
-              </div>
+                >
+                  {cartSettings.savingsText} {item.savePct}%
+                </span>
+              )}
             </div>
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              className="cart-plus-public-component-product-tile__controls"
+            >
+              <QtyStepper
+                qty={qty}
+                loadingType={loadingType}
+                onDecrement={() => updateQty("dec")}
+                onIncrement={() => updateQty("inc")}
+                onQtyChange={(newQty) => {
+                  if (newQty >= 1) setQty(newQty);
+                }}
+                designSettings={designSettings}
+              />
+              <button
+                className="cart-app-item__remove cart-plus-public-component-product-tile__remove-button"
+                onClick={onRemoveClick}
+              >
+                {deleteLoading ? (
+                  <span className="loader"></span>
+                ) : (
+                  <TrashIcon color={designSettings.iconColor} />
+                )}
+              </button>
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
+              alignItems: "flex-end",
+              flexShrink: 0,
+            }}
+          >
+            <DiscountBadge
+              code="MEGA20"
+              color={designSettings?.discountBageColor || "#1e7e34"}
+            />
           </div>
         </div>
       </div>

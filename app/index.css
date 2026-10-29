@@ -15,6 +15,11 @@ body,
     background: #f6f6f7 !important;
 }
 
+span.sb-slot.main span.Polaris-Icon {
+    width: 24px;
+    height: 24px;
+}
+
 .appLayout {
     display: flex;
     gap: 20px;
@@ -195,7 +200,6 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
 
 .cart-app__items {
     padding: 15px;
-    border-bottom: 1px solid #E8E8E8;
 }
 
 .cart-app__footer {

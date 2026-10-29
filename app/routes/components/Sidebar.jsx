@@ -395,7 +395,7 @@ const Sidebar = memo(function Sidebar({
                 )}
               </span>
             )}
-            <span className="sb-slot">
+            <span className="sb-slot main">
               <Icon source={item.icon} />
             </span>
             <div className="sb-grow">
