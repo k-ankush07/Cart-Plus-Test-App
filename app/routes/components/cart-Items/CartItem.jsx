@@ -1,5 +1,8 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
-import { CART_ITEM_DEFAULTS, getCartItemOptions } from "../utils/cartItemOptions";
+import {
+  CART_ITEM_DEFAULTS,
+  getCartItemOptions,
+} from "../utils/cartItemOptions";
 import { backgroundToCss } from "../utils/background";
 import DeleteGlyph from "../ui/DeleteGlyph";
 
@@ -15,23 +18,49 @@ function CartItemSkeleton() {
       <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
         <div
           className="cart-plus-skeleton cart-plus-skeleton-img"
-          style={{ width: "72px", height: "72px", flexShrink: 0, borderRadius: "8px" }}
+          style={{
+            width: "72px",
+            height: "72px",
+            flexShrink: 0,
+            borderRadius: "8px",
+          }}
         >
           &nbsp;
         </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div className="cart-plus-skeleton cart-plus-skeleton-line" style={{ width: "80%", height: "14px" }}>
-            &nbsp;
-          </div>
-          <div className="cart-plus-skeleton cart-plus-skeleton-line" style={{ width: "45%", height: "10px" }}>
-            &nbsp;
-          </div>
-          <div className="cart-plus-skeleton cart-plus-skeleton-line" style={{ width: "30%", height: "12px" }}>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+          }}
+        >
+          <div
+            className="cart-plus-skeleton cart-plus-skeleton-line"
+            style={{ width: "80%", height: "14px" }}
+          >
             &nbsp;
           </div>
           <div
             className="cart-plus-skeleton cart-plus-skeleton-line"
-            style={{ width: "90px", height: "28px", borderRadius: "4px", marginTop: "4px" }}
+            style={{ width: "45%", height: "10px" }}
+          >
+            &nbsp;
+          </div>
+          <div
+            className="cart-plus-skeleton cart-plus-skeleton-line"
+            style={{ width: "30%", height: "12px" }}
+          >
+            &nbsp;
+          </div>
+          <div
+            className="cart-plus-skeleton cart-plus-skeleton-line"
+            style={{
+              width: "90px",
+              height: "28px",
+              borderRadius: "4px",
+              marginTop: "4px",
+            }}
           >
             &nbsp;
           </div>
@@ -67,7 +96,8 @@ function hexToRGBA(hex = "#16a34a", opacity = 1) {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
-const money = (currency, value) => `${currency} ${Number(value || 0).toFixed(2)}`;
+const money = (currency, value) =>
+  `${currency} ${Number(value || 0).toFixed(2)}`;
 
 // ─── Discount Badge ───────────────────────────────────────────────────────────
 function DiscountBadge({ code = "MEGA20", color: baseColor = "#1e7e34" }) {
@@ -173,7 +203,14 @@ function QtyStepper({
   const iconColor = designSettings.iconColor;
 
   return (
-    <div className="cart-app-item__qty cart-plus-public-component-product-tile__quantity-selector">
+    <div
+      className="cart-app-item__qty cart-plus-public-component-product-tile__quantity-selector"
+      style={
+        designSettings.accentBorder
+          ? { borderColor: designSettings.accentBorder }
+          : undefined
+      }
+    >
       <button
         onClick={onDecrement}
         disabled={(parseInt(qty, 10) || 1) <= 1}
@@ -321,7 +358,11 @@ function ClassicLayout({
             {item.variantTitle && (
               <div
                 className="cart-plus-bundle-item-variant-title cart-app-item__variant cart-plus-public-component-product-tile__variant"
-                style={{ color: secondaryTextColor || textColor, fontSize: "10px", lineHeight: "12px" }}
+                style={{
+                  color: secondaryTextColor || textColor,
+                  fontSize: "10px",
+                  lineHeight: "12px",
+                }}
               >
                 {item.variantTitle}
               </div>
@@ -499,7 +540,9 @@ function SubscriptionLayout({
                     color: secondaryTextColor || textColor,
                   }}
                 >
-                  <span style={{ color: secondaryTextColor || textColor }}>{item.variantTitle}</span>
+                  <span style={{ color: secondaryTextColor || textColor }}>
+                    {item.variantTitle}
+                  </span>
                 </div>
               )}
             </div>
@@ -659,14 +702,22 @@ function ModernLayout({
             {item.variantTitle && (
               <div
                 className="cart-plus-bundle-item-variant-title cart-plus-public-component-product-tile__variant"
-                style={{ fontSize: "10px", color: secondaryTextColor || textColor }}
+                style={{
+                  fontSize: "10px",
+                  color: secondaryTextColor || textColor,
+                }}
               >
                 {item.variantTitle}
               </div>
             )}
             <div
               className="cart-plus-public-component-product-tile__product-pricing"
-              style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                flexWrap: "wrap",
+              }}
             >
               <span
                 className="cart-plus-public-component-product-tile__price-group cart-plus-item-prices-row cart-plus-public-component-product-tile__price"
@@ -704,44 +755,43 @@ function ModernLayout({
               )}
             </div>
             <div
-              style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "10px",
+              }}
               className="cart-plus-public-component-product-tile__controls"
             >
-              <QtyStepper
-                qty={qty}
-                loadingType={loadingType}
-                onDecrement={() => updateQty("dec")}
-                onIncrement={() => updateQty("inc")}
-                onQtyChange={(newQty) => {
-                  if (newQty >= 1) setQty(newQty);
-                }}
-                designSettings={designSettings}
-              />
-              <button
-                className="cart-app-item__remove cart-plus-public-component-product-tile__remove-button"
-                onClick={onRemoveClick}
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
-                {deleteLoading ? (
-                  <span className="loader"></span>
-                ) : (
-                  <TrashIcon color={designSettings.iconColor} />
-                )}
-              </button>
+                <QtyStepper
+                  qty={qty}
+                  loadingType={loadingType}
+                  onDecrement={() => updateQty("dec")}
+                  onIncrement={() => updateQty("inc")}
+                  onQtyChange={(newQty) => {
+                    if (newQty >= 1) setQty(newQty);
+                  }}
+                  designSettings={designSettings}
+                />
+                <button
+                  className="cart-app-item__remove cart-plus-public-component-product-tile__remove-button"
+                  onClick={onRemoveClick}
+                >
+                  {deleteLoading ? (
+                    <span className="loader"></span>
+                  ) : (
+                    <TrashIcon color={designSettings.iconColor} />
+                  )}
+                </button>
+              </div>
+              <DiscountBadge
+                code="MEGA20"
+                color={designSettings?.discountBageColor || "#1e7e34"}
+              />
             </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-end",
-              alignItems: "flex-end",
-              flexShrink: 0,
-            }}
-          >
-            <DiscountBadge
-              code="MEGA20"
-              color={designSettings?.discountBageColor || "#1e7e34"}
-            />
           </div>
         </div>
       </div>
@@ -830,8 +880,12 @@ function CartItemRow({
 
   // image size / radius from the "Styles" card (unset = the layout's own size)
   const imageBox = {
-    ...(opts.imageSize ? { width: opts.imageSize, height: opts.imageSize } : {}),
-    ...(opts.radius !== null ? { borderRadius: opts.radius, overflow: "hidden" } : {}),
+    ...(opts.imageSize
+      ? { width: opts.imageSize, height: opts.imageSize }
+      : {}),
+    ...(opts.radius !== null
+      ? { borderRadius: opts.radius, overflow: "hidden" }
+      : {}),
   };
 
   const handleRemoveClick = () => {
@@ -865,6 +919,18 @@ function CartItemRow({
     setShowToast(false);
   };
 
+  // Template theme: the discount label follows the theme colour unless Styles set its own
+  const accentText = designSettings?.accentText;
+  const themedOpts = accentText
+    ? {
+        ...opts,
+        labelTextColor: opts.labelTextColor || accentText,
+        labelBackground:
+          opts.labelBackground ||
+          `color-mix(in srgb, ${accentText} 12%, transparent)`,
+      }
+    : opts;
+
   const sharedProps = {
     item,
     qty,
@@ -894,36 +960,40 @@ function CartItemRow({
   };
 
   return (
-    <ItemOpts.Provider value={opts}>
-    <div
-      style={{ position: "relative", marginBottom:"15px"}}
-      className="cart-plus-public-cart-items cart-plus-products-section"
-    >
-      {/* Item wrapper — dimmed when removed */}
+    <ItemOpts.Provider value={themedOpts}>
       <div
-        className="cart-plus-products-section cart-app__items cart-plus-public-cart-item cart-plus-product-item"
-        style={{
-          opacity: isRemoved ? 0.4 : 1,
-          pointerEvents: isRemoved ? "none" : "auto",
-          transition: "opacity 0.3s ease",
-          // "Card color"
-          ...(opts.cardBackground
-            ? { background: backgroundToCss(opts.cardBackground) }
-            : {}),
-        }}
+        style={{ position: "relative" }}
+        className="cart-plus-public-cart-items cart-plus-products-section"
       >
-        {layout === "subscription" ? (
-          <SubscriptionLayout {...sharedProps} />
-        ) : layout === "modern" ? (
-          <ModernLayout {...sharedProps} />
-        ) : (
-          <ClassicLayout {...sharedProps} />
-        )}
-      </div>
+        {/* Item wrapper — dimmed when removed */}
+        <div
+          className="cart-plus-products-section cart-app__items cart-plus-public-cart-item cart-plus-product-item"
+          style={{
+            opacity: isRemoved ? 0.4 : 1,
+            pointerEvents: isRemoved ? "none" : "auto",
+            transition: "opacity 0.3s ease",
+            // Template theme: the card border follows the theme colour
+            ...(designSettings?.accentBorder
+              ? { border: `1px solid ${designSettings.accentBorder}` }
+              : {}),
+            // "Card color"
+            ...(opts.cardBackground
+              ? { background: backgroundToCss(opts.cardBackground) }
+              : {}),
+          }}
+        >
+          {layout === "subscription" ? (
+            <SubscriptionLayout {...sharedProps} />
+          ) : layout === "modern" ? (
+            <ModernLayout {...sharedProps} />
+          ) : (
+            <ClassicLayout {...sharedProps} />
+          )}
+        </div>
 
-      {/* Undo Toast */}
-      {showToast && <UndoToast message={item.name} onUndo={handleUndo} />}
-    </div>
+        {/* Undo Toast */}
+        {showToast && <UndoToast message={item.name} onUndo={handleUndo} />}
+      </div>
     </ItemOpts.Provider>
   );
 }
@@ -961,7 +1031,8 @@ export default function CartItem({
   // cart subtotal = sum of unit price × quantity of every line
   const subtotal = rows.reduce(
     (sum, r) =>
-      sum + (parseFloat(r.product.variants[0]?.price) || 0) * (qtys[r.key] ?? 1),
+      sum +
+      (parseFloat(r.product.variants[0]?.price) || 0) * (qtys[r.key] ?? 1),
     0,
   );
   useEffect(() => {
@@ -990,24 +1061,27 @@ export default function CartItem({
 
   if (loading && !rows.length) return <CartItemSkeleton />;
 
-  return (
-    <div style={{padding: "12px 16px"}}>
-      <style>{`@keyframes cpRowIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}`}</style>
-      {rows.map((r) => (
-        // a newly added line (e.g. from One Tick Upsell) eases in
-        <div
-          key={r.key}
-          style={{ animation: "cpRowIn .35s ease" }}
-        >
-          <CartItemRow
-            product={r.product}
-            qty={qtys[r.key] ?? 1}
-            setQty={makeSetQty(r.key)}
-            onRemove={() => onRemovePreviewProduct?.(r.productId, r.variantId)}
-            {...rest}
-          />
-        </div>
-      ))}
-    </div>
-  );
+return (
+  <div
+    style={{
+      padding: "12px 16px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "15px",
+    }}
+  >
+    <style>{`@keyframes cpRowIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}`}</style>
+    {rows.map((r) => (
+      <div key={r.key} style={{ animation: "cpRowIn .35s ease" }}>
+        <CartItemRow
+          product={r.product}
+          qty={qtys[r.key] ?? 1}
+          setQty={makeSetQty(r.key)}
+          onRemove={() => onRemovePreviewProduct?.(r.productId, r.variantId)}
+          {...rest}
+        />
+      </div>
+    ))}
+  </div>
+);
 }

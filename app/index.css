@@ -331,7 +331,7 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
     display: inline-flex;
     align-items: center;
     border: 1px solid var(--p-color-border);
-    border-radius: 5px;
+    border-radius: 999px;
     overflow: hidden;
     background: white;
     /* inline me bg nahi hai */
@@ -354,13 +354,13 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
     padding: 0;
 }
 
-button.cart-app-item__qty-btn.cart-plus-product-quantity-plus.cart-plus-public-component-product-tile__quantity-plus {
+/* button.cart-app-item__qty-btn.cart-plus-product-quantity-plus.cart-plus-public-component-product-tile__quantity-plus {
     border-left: 1px solid #ddd;
 }
 
 button.cart-app-item__qty-btn.cart-plus-product-quantity-minus.cart-plus-public-component-product-tile__quantity-minus {
     border-right: 1px solid #ddd;
-}
+} */
 
 /* Value */
 .cart-app-item__qty-value {
@@ -1158,7 +1158,7 @@ a.upcart-product-title-link {
     display: flex;
     align-items: center;
     transition: color 0.15s;
-    border: 1px solid #E8E8E8;
+    border:0;
     height: 28px;
     border-radius: 5px;
     width: 28px;

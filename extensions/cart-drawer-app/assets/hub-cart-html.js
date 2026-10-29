@@ -631,7 +631,7 @@ bs.textContent += `
   const floating = !!designSettings.floating;
   const drawerWidth = (designSettings.desktopWidth === "wide" ? 500 : 440) - (floating ? 32 : 0);
   const themedVars = designSettings.themed
-    ? `color:${designSettings.textColor};${floating ? "border-radius:" + designSettings.drawerRadius + "px;" : ""}--cp-surface:${designSettings.backgroundColor};--cp-text:${designSettings.textColor};--cp-card-radius:${designSettings.cardRadius}px;--cp-field-radius:${designSettings.fieldRadius}px;--cp-image-radius:${designSettings.imageRadius}px;`
+    ? `color:${designSettings.textColor};${floating ? "border-radius:" + designSettings.drawerRadius + "px;" : ""}--cp-surface:${designSettings.backgroundColor};--cp-text:${designSettings.textColor};--cp-card-radius:${designSettings.cardRadius}px;--cp-field-radius:${designSettings.fieldRadius}px;--cp-image-radius:${designSettings.imageRadius}px;${designSettings.accentBorder ? "--cp-accent-border:" + designSettings.accentBorder + ";" : ""}`
     : "";
 
   root.insertAdjacentHTML(

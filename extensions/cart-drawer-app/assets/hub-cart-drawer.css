@@ -233,7 +233,7 @@
 .hub-qty-control {
   display: flex;
   align-items: center;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--cp-qty-border, #d0d0d0);
   border-radius: 5px;
   overflow: hidden;
   background: white;
@@ -261,11 +261,11 @@
 }
 
 button.hub-qty-btn.minus {
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--cp-qty-border, #ddd);
 }
 
 button.hub-qty-btn.plus {
-  border-left: 1px solid #ddd;
+  border-left: 1px solid var(--cp-qty-border, #ddd);
 }
 
 .hub-qty-btn:hover {
@@ -2753,6 +2753,8 @@ select.hub-variant-option-select {
 }
 .cart-app--themed .hub-cart-item {
   background: var(--cp-surface, #fff);
+  border: 1px solid var(--cp-accent-border, #f0f0f0);
+  border-radius: var(--cp-card-radius, 12px);
 }
 .cart-app--themed .hub-item-img-wrap,
 .cart-app--themed .hub-item-img,

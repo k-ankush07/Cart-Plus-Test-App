@@ -49,8 +49,10 @@ const _trashIcon = (color = "currentColor", hoverColor = "red") => `
 
 function _qtyControl(key, quantity, iconColor = "currentColor") {
   if (!window.cartPlusGetItemOptions().showQuantity) return "";
+  // Template theme: the stepper border follows the theme colour
+  const qtyBorder = window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder;
   return `
-    <div class="hub-qty-control cart-plus-public-component-product-tile__quantity-selector">
+    <div class="hub-qty-control cart-plus-public-component-product-tile__quantity-selector"${qtyBorder ? ` style="--cp-qty-border:${qtyBorder}"` : ""}>
       <button class="hub-qty-btn minus cart-plus-public-component-product-tile__quantity-minus" data-type="minus" onclick="updateQty('${key}', ${quantity - 1}, this); _hubDisableQtySiblings(this)"${quantity <= 1 ? " disabled" : ""}>
         <span class="svg-wrapper" style="color:${iconColor}"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="hub-icon hub-icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"></path></svg></span>
       </button>
@@ -92,12 +94,19 @@ function _unitPriceBlock(ctx) {
 function _discountBadgesHtml(item, discountColor = "#1e7e34") {
   const opts = window.cartPlusGetItemOptions();
   if (!opts.showDiscountTag || !item.discounts?.length) return "";
-  discountColor = opts.labelTextColor || discountColor;
+  const themeText = window.__HUB_ACTIVE_CART__?.designSettings?.accentText;
+  discountColor = opts.labelTextColor || themeText || discountColor;
+  // a themed colour is a color-mix() string, so the tint is mixed rather than converted from hex
+  const badgeBg =
+    opts.labelBackground ||
+    (!opts.labelTextColor && themeText
+      ? `color-mix(in srgb, ${themeText} 12%, transparent)`
+      : hexToRGBA(discountColor, 0.1));
 
   return item.discounts
     .map(
       (d) => `
-    <span class="hub-item-discount-badge cart-plus-public-component-product-tile__discount-codes" style="background:${window.cartPlusGetItemOptions().labelBackground || hexToRGBA(discountColor, 0.1)}; color:${discountColor};">
+    <span class="hub-item-discount-badge cart-plus-public-component-product-tile__discount-codes" style="background:${badgeBg}; color:${discountColor};">
       <svg viewBox="0 0 20 20" class="Icon_Icon__uZZKy" style="width: 15px; fill:${discountColor}">
         <path d="M13 2.5c.414 0 .75.336.75.75s-.336.75-.75.75h-3.029c-.468 0-.917.188-1.245.521l-4.692 4.756c-.291.295-.766.298-1.06.007-.296-.291-.299-.766-.008-1.06l4.692-4.756c.61-.62 1.444-.968 2.313-.968h3.029Z"></path>
         <path fill-rule="evenodd" d="M8.767 6.098c.703-.703 1.657-1.098 2.652-1.098h2.081c1.519 0 2.75 1.231 2.75 2.75v2.289c0 .861-.342 1.688-.952 2.298l-4.206 4.206c-.976.976-2.56.976-3.536 0l-2.672-2.672c-1.074-1.075-1.074-2.816 0-3.89l3.883-3.883Zm3.983 3.402c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1Z"></path>
@@ -356,14 +365,15 @@ function modernItemHTML(ctx) {
           ${
             isReward
               ? ""
-              : `<div class="hub-item-actions">
-                   ${_qtyControl(item.key, item.quantity, iconColor)}
-                   ${_deleteBtn(item.key, item.product_title, iconColor)}
+              : `<div class="hub-item-actions" style="justify-content:space-between;">
+                   <div style="display:flex;align-items:center;gap:10px;">
+                     ${_qtyControl(item.key, item.quantity, iconColor)}
+                     ${_deleteBtn(item.key, item.product_title, iconColor)}
+                   </div>
+                   ${discountBadges}
                  </div>`
           }
-        </div>
-        <div style="display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;flex-shrink:0">
-          ${discountBadges}
+          ${isReward ? discountBadges : ""}
         </div>
       </div>
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
