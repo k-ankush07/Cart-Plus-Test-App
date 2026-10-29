@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import AdditionalNotes from "./AdditionalNotes";
 import AddOns from "./AddOns";
 import TrustBadges from "./TrustBadges";
@@ -35,6 +35,7 @@ export default function CartFooter({
   shop,
   apiUrl,
 }) {
+  const stackRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [ageChecked, setAgeChecked] = useState(false);
   const [ageError, setAgeError] = useState(false);
@@ -173,6 +174,17 @@ export default function CartFooter({
   };
   const footerOrder = resolveOrder(sectionOrder?.Footer, DEFAULT_FOOTER_ORDER);
 
+  // the first section that actually takes up space keeps its padding; the rest lose their top padding
+  useLayoutEffect(() => {
+    const kids = [...(stackRef.current?.children || [])];
+    let found = false;
+    kids.forEach((el) => {
+      const first = !found && el.offsetHeight > 0;
+      if (first) found = true;
+      el.toggleAttribute("data-cp-first", first);
+    });
+  });
+
   return (
     <div
       className="cart-app__footer cart-plus-footer"
@@ -185,16 +197,19 @@ export default function CartFooter({
         ...(disableFixedFooter ? { flexShrink: 1 } : {}),
       }}
     >
-      <div className="cart-plus-footer-stack">
-        {footerOrder.map((key) =>
-          key === "Checkout Button" ? (
-            <div key={key} className="cp-keep-pad">
-              {footerBlocks[key]}
-            </div>
-          ) : (
-            <Fragment key={key}>{footerBlocks[key]}</Fragment>
-          ),
-        )}
+      <div className="cart-plus-footer-stack" ref={stackRef}>
+        {footerOrder.map((key) => (
+          <div
+            key={key}
+            className={
+              key === "Age Verification" || key === "Checkout Button"
+                ? "cp-sec cp-keep-pad"
+                : "cp-sec"
+            }
+          >
+            {footerBlocks[key]}
+          </div>
+        ))}
 
         {/* below_checkout */}
         <CustomHtml cartSettings={cartSettings} position="below_checkout" />

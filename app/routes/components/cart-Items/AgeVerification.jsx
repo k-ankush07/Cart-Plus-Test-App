@@ -18,6 +18,7 @@ export default function AgeVerification({ cartSettings, checked, error, onChange
           padding: 12,
           borderRadius: radius,
           border: `1px solid ${error ? s.errorBorderColor : s.borderColor}`,
+          "--cp-age-edge": error ? s.errorBorderColor : s.borderColor,
           background: error ? s.errorBackground : backgroundToCss(s.background),
         }}
       >

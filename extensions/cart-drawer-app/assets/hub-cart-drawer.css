@@ -3085,20 +3085,22 @@ select.hub-variant-option-select {
 
 /* Stacked footer sections: every section except the top one loses its top padding / border,
    so the gap between sections comes from one place and follows drag & drop order */
-.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn),
-.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn) > :first-child,
-.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn) > :first-child > :first-child {
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn):not(.cart-plus-age-verification),
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn):not(.cart-plus-age-verification) > :first-child,
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn):not(.cart-plus-age-verification) > :first-child > :first-child {
   padding-top: 0 !important;
   margin-top: 0 !important;
   border-top: none !important;
 }
 
-/* Age verification keeps a small gap so it does not touch the section above */
-.hub-cart-footer > :not(.hub-footer-skeleton) ~ .cart-plus-age-verification.cart-plus-age-verification {
-  padding-top: 8px !important;
-}
-
 /* the discount input keeps its own border inside the stacked footer */
 .hub-cart-footer > :not(.hub-footer-skeleton) ~ * .hub-discount-input-row {
   border-top: 1px solid var(--cp-accent-border, #E8E8E8) !important;
+}
+
+/* the age box keeps its full border (colour comes from its inline style) */
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ * .cart-plus-age-box,
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ .cart-plus-age-verification .cart-plus-age-box {
+  border-top-style: solid !important;
+  border-top-color: var(--cp-age-edge, #dbe4f5) !important;
 }
