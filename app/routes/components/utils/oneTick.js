@@ -1,10 +1,19 @@
-// One Tick Upsell lives in cartSettings.oneTick (saved with the cart settings).
-// Every cart starts with one auto-recommended offer (fixed id so it stays equal to the default).
+export const newOffer = () => ({
+  id: `offer-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+   mode: null,
+  selected: { type: "products", items: [] },
+  discountType: "percentage",
+  discountValue: 10,
+  showLabel: true,
+  label: "Save {{saved_percentage}}",
+});
+
+// default offer: fixed id, taaki isDefault comparison sahi chale
 const DEFAULT_OFFER = {
   id: "offer-default",
-  mode: "auto", // "auto" | "manual"
+   mode: null,
   selected: { type: "products", items: [] },
-  discountType: "percentage", // "none" | "percentage" | "amount"
+  discountType: "percentage",
   discountValue: 10,
   showLabel: true,
   label: "Save {{saved_percentage}}",
@@ -15,10 +24,10 @@ export const ONE_TICK_DEFAULTS = {
   title: "You might also like",
   icon: { type: "icon", name: "star" },
   iconColor: "#000000",
-  layout: "list", // "row" | "list" | "carousel"
-  trigger: "button", // "button" | "checkbox" | "toggle"
+  layout: "list",
+  trigger: "button",
   buttonLabel: "Add",
-  offers: [DEFAULT_OFFER], // see newOffer()
+  offers: [DEFAULT_OFFER], // <-- ab ek offer default open rahega
   imageSize: 120,
   radius: 8,
   primaryTextColor: "#000000",
@@ -27,23 +36,17 @@ export const ONE_TICK_DEFAULTS = {
   buttonFontSize: 14,
   buttonBackground: { type: "plain", color: "#303030" },
   buttonTextColor: "#ffffff",
-  cardBackground: null, // BackgroundInput value, null = cart default
+  cardBackground: null,
 };
 
-export const newOffer = () => ({
-  id: `offer-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-  mode: "auto", // "auto" | "manual"
-  selected: { type: "products", items: [] },
-  discountType: "percentage", // "none" | "percentage" | "amount"
-  discountValue: 10,
-  showLabel: true,
-  label: "Save {{saved_percentage}}",
-});
 
-export const getOneTick = (cartSettings) => ({
-  ...ONE_TICK_DEFAULTS,
-  ...(cartSettings?.oneTick || {}),
-});
+export const getOneTick = (cartSettings) => {
+  const merged = { ...ONE_TICK_DEFAULTS, ...(cartSettings?.oneTick || {}) };
+  if (!merged.offers || merged.offers.length === 0) {
+    merged.offers = ONE_TICK_DEFAULTS.offers;
+  }
+  return merged;
+};
 
 // functional updater for handleChange("cartSettings", ...)
 // Back at all defaults -> the `oneTick` key is dropped, so the save bar goes away.

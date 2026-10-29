@@ -2832,7 +2832,7 @@ select.hub-variant-option-select {
   width: 36px;
   height: 20px;
   border-radius: 20px;
-  background: #c9cccf;
+  background: var(--cp-off, #c9cccf);
   position: relative;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -2845,6 +2845,7 @@ select.hub-variant-option-select {
   height: 16px;
   border-radius: 50%;
   background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   transition: transform 0.2s ease;
 }
 .cart-plus-onetick-switch[aria-checked="true"] {

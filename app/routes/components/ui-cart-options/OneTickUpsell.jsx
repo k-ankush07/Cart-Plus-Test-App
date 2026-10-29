@@ -225,7 +225,6 @@ export default function OneTickUpsell({
                       label="Manual selection"
                       checked={offer.mode === "manual"}
                       onChange={() => updateOffer(offer.id, { mode: "manual" })}
-                      disabled
                     />
                   </InlineStack>
 
@@ -407,7 +406,7 @@ export default function OneTickUpsell({
               <RangeSlider
                 label="Radius"
                 min={0}
-                max={24}
+                max={96}
                 output
                 value={oneTick.radius}
                 suffix={<Text as="span">{oneTick.radius} px</Text>}

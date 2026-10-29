@@ -8,16 +8,22 @@ const money = (n) => Number(n).toFixed(2);
 
 const CAROUSEL_GAP = 10;
 
+// card corners are fixed; Styles > Radius only rounds the product image
+const CARD_RADIUS = 10;
+
+// how long a toggle / checkbox stays visibly "on" before its product is added
+const ARMED_MS = 450;
+
 /* Stack CSS: pos 0 = top card, 1 & 2 = peeking layers, 3+ = hidden */
 const STACK_CSS = `
-.cart-plus-drawer__ups-stack{position:relative;padding-bottom:24px}
+.cart-plus-drawer__ups-stack{position:relative;padding-bottom:14px}
 .cart-plus-drawer__ups-stack-item{transition:transform .25s ease,opacity .25s ease;transform-origin:top center}
 .cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="0"]{position:relative;z-index:3}
 .cart-plus-drawer__ups-stack-item:not([data-rapi-ups-stack-pos="0"]){position:absolute;top:0;left:0;right:0;pointer-events:none}
 .cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="1"]{z-index:2;transform:translateY(8px) scale(.96)}
 .cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="2"]{z-index:1;transform:translateY(16px) scale(.92)}
 .cart-plus-drawer__ups-stack-item:not([data-rapi-ups-stack-pos="0"]):not([data-rapi-ups-stack-pos="1"]):not([data-rapi-ups-stack-pos="2"]){z-index:0;opacity:0;visibility:hidden;transform:translateY(16px) scale(.92)}
-.cart-plus-drawer__ups-stack-item>div{min-height:96px;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.cart-plus-drawer__ups-stack-item>div{min-height:96px;box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,.12); border: 1px solid rgba(0, 0, 0, .08);}
 `;
 
 const CACHE_KEY = "cp-one-tick-products";
@@ -50,10 +56,19 @@ const leaveStyle = (isLeaving, collapse = true) => ({
         transform: "translateX(24px) scale(.97)",
         pointerEvents: "none",
         ...(collapse
-          ? { maxHeight: 0, paddingTop: 0, paddingBottom: 0, overflow: "hidden" }
+          ? {
+              maxHeight: 0,
+              paddingTop: 0,
+              paddingBottom: 0,
+              overflow: "hidden",
+            }
           : {}),
       }
-    : { opacity: 1, transform: "none", ...(collapse ? { maxHeight: 600 } : {}) }),
+    : {
+        opacity: 1,
+        transform: "none",
+        ...(collapse ? { maxHeight: 600 } : {}),
+      }),
 });
 
 const optionParts = (variant) => String(variant.title || "").split(" / ");
@@ -67,16 +82,33 @@ export default function OneTickUpsell({
   onRemovePreviewProduct,
 }) {
   const oneTickSaved = getOneTick(cartSettings);
+  const isActiveOffer = (o) =>
+    o.mode === "auto" ||
+    (o.mode === "manual" && o.selected?.items?.variants?.length > 0);
   // Appearance: Dark -> the light defaults saved with the section become the dark theme's text colours
   const dark = !!designSettings?.dark;
   const darkText = (value, lightDefault, fallback) =>
-    dark && (!value || String(value).toLowerCase() === lightDefault) ? fallback : value;
+    dark && (!value || String(value).toLowerCase() === lightDefault)
+      ? fallback
+      : value;
   const oneTick = dark
     ? {
         ...oneTickSaved,
-        primaryTextColor: darkText(oneTickSaved.primaryTextColor, "#000000", designSettings.textColor),
-        secondaryTextColor: darkText(oneTickSaved.secondaryTextColor, "#616161", "#a8a8ad"),
-        iconColor: darkText(oneTickSaved.iconColor, "#000000", designSettings.textColor),
+        primaryTextColor: darkText(
+          oneTickSaved.primaryTextColor,
+          "#000000",
+          designSettings.textColor,
+        ),
+        secondaryTextColor: darkText(
+          oneTickSaved.secondaryTextColor,
+          "#616161",
+          "#a8a8ad",
+        ),
+        iconColor: darkText(
+          oneTickSaved.iconColor,
+          "#000000",
+          designSettings.textColor,
+        ),
       }
     : oneTickSaved;
   const offersKey = JSON.stringify(
@@ -89,6 +121,7 @@ export default function OneTickUpsell({
   const [variantSel, setVariantSel] = useState({}); // offerId -> chosen variant id
   const [addedBy, setAddedBy] = useState({}); // offerId -> true once this offer added its product
   const [leaving, setLeaving] = useState({}); // offerId -> true while its card fades out
+  const [armed, setArmed] = useState({}); // offerId -> true while a toggle / checkbox shows "on" just before the product is added
   const [activeDot, setActiveDot] = useState(0);
   const [top, setTop] = useState(0); // stack: konsa card abhi upar hai
   const trackRef = useRef(null);
@@ -101,7 +134,9 @@ export default function OneTickUpsell({
   useEffect(() => {
     if (!oneTick.enabled || !oneTick.offers.length) return;
     let cancelled = false;
-    setProducts((prev) => (Object.keys(prev).length ? prev : readCache(offersKey)));
+    setProducts((prev) =>
+      Object.keys(prev).length ? prev : readCache(offersKey),
+    );
     setLoaded(false);
 
     const post = (body) =>
@@ -117,27 +152,35 @@ export default function OneTickUpsell({
     const manualOffers = oneTick.offers.filter(
       (o) => o.mode === "manual" && o.selected?.items?.variants?.length,
     );
-    const autoOffers = oneTick.offers.filter((o) => !manualOffers.includes(o));
+    const autoOffers = oneTick.offers.filter((o) => o.mode === "auto");
 
     const requests = [];
 
     // manual: the picked product, with only the variants ticked in the picker
     manualOffers.forEach((offer) => {
       const variantIds = offer.selected.items.variants;
-      const req = post({ variantIds, anyProducts: false, limit: 1 }).then(([found]) => {
-        if (cancelled || !found) return;
-        const chosen = found.variants.filter((v) =>
-          variantIds.some((id) => String(id) === String(v.id)),
-        );
-        const product = chosen.length ? { ...found, variants: chosen } : found;
-        setProducts((prev) => ({ ...prev, [offer.id]: product }));
-      });
+      const req = post({ variantIds, anyProducts: false, limit: 1 }).then(
+        ([found]) => {
+          if (cancelled || !found) return;
+          const chosen = found.variants.filter((v) =>
+            variantIds.some((id) => String(id) === String(v.id)),
+          );
+          const product = chosen.length
+            ? { ...found, variants: chosen }
+            : found;
+          setProducts((prev) => ({ ...prev, [offer.id]: product }));
+        },
+      );
       requests.push(req);
     });
 
     // auto: a different store product for each offer
     if (autoOffers.length) {
-      const req = post({ variantIds: [], anyProducts: true, limit: autoOffers.length }).then((list) => {
+      const req = post({
+        variantIds: [],
+        anyProducts: true,
+        limit: autoOffers.length,
+      }).then((list) => {
         if (cancelled || !list.length) return;
         setProducts((prev) => {
           const next = { ...prev };
@@ -161,11 +204,8 @@ export default function OneTickUpsell({
 
   if (!oneTick.enabled) return null;
   // nothing to show yet (no offer, or manual offers with no product picked): say so, like an empty slot
-  const nothingPicked =
-    !oneTick.offers.length ||
-    oneTick.offers.every(
-      (o) => o.mode === "manual" && !o.selected?.items?.variants?.length,
-    );
+  const nothingPicked = !oneTick.offers.some(isActiveOffer);
+
   if (nothingPicked) {
     return (
       <NoProductPlaceholder
@@ -174,29 +214,34 @@ export default function OneTickUpsell({
         iconColor={oneTick.iconColor}
         titleColor={oneTick.primaryTextColor}
         textColor={oneTick.primaryTextColor}
-        cardBackground={backgroundToCss(oneTick.cardBackground) || (dark ? "var(--cp-card, #2a2a2d)" : "#ffffff")}
-        radius={oneTick.radius}
+        cardBackground={
+          backgroundToCss(oneTick.cardBackground) ||
+          (dark ? "var(--cp-card, #2a2a2d)" : "#ffffff")
+        }
+        radius={CARD_RADIUS}
       />
     );
   }
 
   // an offer disappears once its product is in the cart (back again if it is removed)
   const inCartAlready = (product) =>
-    (previewProducts.find((p) => p.id === product.id)?.variants || []).some((v) =>
-      product.variants.some((pv) => pv.id === v.id),
+    (previewProducts.find((p) => p.id === product.id)?.variants || []).some(
+      (v) => product.variants.some((pv) => pv.id === v.id),
     );
 
   const cards = oneTick.offers
+    .filter(isActiveOffer)
     .map((offer) => ({ offer, product: products[offer.id] }))
-    // only the offer that added the product goes away, not the other offers
-    .filter((c) => c.product && !(addedBy[c.offer.id] && inCartAlready(c.product)));
+    .filter(
+      (c) => c.product && !(addedBy[c.offer.id] && inCartAlready(c.product)),
+    );
   // first load with nothing cached: a placeholder instead of an empty gap
   if (!cards.length) {
     return loaded ? null : (
       <div className="cart-plus-one-tick" style={{ padding: "12px 16px" }}>
         <div
           className="cart-plus-skeleton"
-          style={{ height: 92, borderRadius: oneTick.radius }}
+          style={{ height: 92, borderRadius: CARD_RADIUS }}
         >
           &nbsp;
         </div>
@@ -209,8 +254,12 @@ export default function OneTickUpsell({
   const isCarousel = oneTick.layout === "carousel";
   // stack sirf "row" layout me, aur jab 1 se zyada card ho
   const isStack = oneTick.layout === "row" && n > 1;
+  // card border follows the theme colour (Template), a soft grey otherwise
+  const cardBorder = designSettings?.accentBorder || "rgba(0, 0, 0, 0.08)";
   // white unless a Card background is set
-  const cardBg = backgroundToCss(oneTick.cardBackground) || (dark ? "var(--cp-card, #2a2a2d)" : "#ffffff");
+  const cardBg =
+    backgroundToCss(oneTick.cardBackground) ||
+    (dark ? "var(--cp-card, #2a2a2d)" : "#ffffff");
 
   /* ---------- stack helpers ---------- */
   // top card = 0, agla = 1, ... (circular)
@@ -235,30 +284,44 @@ export default function OneTickUpsell({
 
   // the offer's variants that are currently in the cart
   const inCart = (product) =>
-    (previewProducts.find((p) => p.id === product.id)?.variants || []).filter((v) =>
-      product.variants.some((pv) => pv.id === v.id),
+    (previewProducts.find((p) => p.id === product.id)?.variants || []).filter(
+      (v) => product.variants.some((pv) => pv.id === v.id),
     );
 
   // the cart line carries the offer price (original struck through)
   const cartVariant = (offer, variant) => {
     const { final, saved } = applyDiscount(offer, variant.price);
     return saved > 0
-      ? { ...variant, price: money(final), compareAtPrice: money(variant.price) }
+      ? {
+          ...variant,
+          price: money(final),
+          compareAtPrice: money(variant.price),
+        }
       : variant;
   };
 
   const trigger = (offer, product, variant, full = false) => {
-    const on = inCart(product).some((v) => v.id === variant.id);
+    const on = inCart(product).some((v) => v.id === variant.id) || !!armed[offer.id];
     const toggle = (v) => {
       // tick = this product goes into the cart items, untick = it is removed again
       if (v) {
-        // the product slides into the cart while this card fades out, then the card is removed
-        onAddPreviewProduct?.(product, cartVariant(offer, variant));
-        setLeaving((p) => ({ ...p, [offer.id]: true }));
-        setTimeout(() => {
-          setAddedBy((p) => ({ ...p, [offer.id]: true }));
-          setLeaving((p) => ({ ...p, [offer.id]: false }));
-        }, LEAVE_MS);
+        const addToCart = () => {
+          // the product slides into the cart while this card fades out, then the card is removed
+          onAddPreviewProduct?.(product, cartVariant(offer, variant));
+          setLeaving((p) => ({ ...p, [offer.id]: true }));
+          setTimeout(() => {
+            setAddedBy((p) => ({ ...p, [offer.id]: true }));
+            setLeaving((p) => ({ ...p, [offer.id]: false }));
+            setArmed((p) => ({ ...p, [offer.id]: false }));
+          }, LEAVE_MS);
+        };
+        if (oneTick.trigger === "button") {
+          addToCart();
+        } else {
+          // toggle / checkbox: show it switched on first, then add the product
+          setArmed((p) => ({ ...p, [offer.id]: true }));
+          setTimeout(addToCart, ARMED_MS);
+        }
       } else {
         onRemovePreviewProduct?.(product.id, variant.id);
       }
@@ -293,7 +356,9 @@ export default function OneTickUpsell({
               flexShrink: 0,
               boxSizing: "border-box",
               borderRadius: 5,
-              border: on ? "2px solid transparent" : `2px solid ${oneTick.secondaryTextColor || "#8a8a8a"}`,
+              border: on
+                ? "2px solid transparent"
+                : `2px solid ${oneTick.secondaryTextColor || "#8a8a8a"}`,
               background: on ? accent : "transparent",
               display: "inline-flex",
               alignItems: "center",
@@ -323,14 +388,46 @@ export default function OneTickUpsell({
           role="switch"
           aria-checked={on}
           aria-label={oneTick.buttonLabel}
-          className={`sb-switch ${on ? "is-on" : ""}`}
+          // pill switch: on = the Button / Checkbox colour, off = a soft tint of the theme
+          style={{
+            position: "relative",
+            width: 36,
+            height: 20,
+            padding: 0,
+            flexShrink: 0,
+            cursor: "pointer",
+            border: `1px solid ${on ? "transparent" : cardBorder}`,
+            borderRadius: 20,
+            boxSizing: "border-box",
+            background: on
+              ? accent
+              : designSettings?.accentBorder || "#c9cccf",
+            transition: "background .2s ease",
+          }}
           onClick={() => toggle(!on)}
         >
-          <span className="sb-switch-knob" />
+          <span
+            style={{
+              position: "absolute",
+              top: 1,
+              left: 1,
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              background: "#fff",
+              boxShadow: "0 1px 2px rgba(0,0,0,.25)",
+              transform: on ? "translateX(16px)" : "none",
+              transition: "transform .2s ease",
+            }}
+          />
         </button>
       );
       return full ? (
-        <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>{sw}</div>
+        <div
+          style={{ display: "flex", justifyContent: "center", width: "100%" }}
+        >
+          {sw}
+        </div>
       ) : (
         sw
       );
@@ -366,7 +463,7 @@ export default function OneTickUpsell({
   };
 
   // one select per option ("Multicolor" / "4"), only offering the picked variants
-  const variantSelect = (offer, product, variant) => {
+  const variantSelect = (offer, product, variant, inline = false) => {
     if (product.variants.length < 2) return null;
     const chosen = optionParts(variant);
 
@@ -375,7 +472,9 @@ export default function OneTickUpsell({
         ...new Set(
           product.variants
             .map(optionParts)
-            .filter((parts) => chosen.slice(0, i).every((c, k) => parts[k] === c))
+            .filter((parts) =>
+              chosen.slice(0, i).every((c, k) => parts[k] === c),
+            )
             .map((parts) => parts[i]),
         ),
       ];
@@ -400,9 +499,14 @@ export default function OneTickUpsell({
             if (best) chooseVariant(offer, product, best);
           }}
           style={{
-            width: "100%",
+            ...(inline
+              ? { flex: 1, minWidth: 0 }
+              : { width: "100%", marginTop: 4 }),
             fontSize: 12,
-            marginTop: 4,
+            padding: "6px 8px",
+            border: "1px solid #d1d5db",
+            borderRadius: 6,
+            background: "#fff",
             color: oneTick.secondaryTextColor,
           }}
         >
@@ -418,8 +522,9 @@ export default function OneTickUpsell({
 
   const card = ({ offer, product }) => {
     const variant =
-      product.variants.find((v) => String(v.id) === String(variantSel[offer.id])) ||
-      product.variants[0];
+      product.variants.find(
+        (v) => String(v.id) === String(variantSel[offer.id]),
+      ) || product.variants[0];
     const { final, saved, percent } = applyDiscount(offer, variant.price);
     const label = String(offer.label || "")
       .replace(/\{\{saved_percentage\}\}/gi, `${percent}%`)
@@ -432,7 +537,8 @@ export default function OneTickUpsell({
           key={offer.id}
           style={{
             background: cardBg,
-            borderRadius: oneTick.radius,
+            border: `1px solid ${cardBorder}`,
+            borderRadius: CARD_RADIUS,
             padding: 8,
             display: "flex",
             flexDirection: "column",
@@ -500,7 +606,7 @@ export default function OneTickUpsell({
             </div>
             {offer.showLabel && saved > 0 && (
               <div
-                style={{ fontSize: 11, color: oneTick.secondaryTextColor }}
+                style={{ fontSize: 10, color: oneTick.secondaryTextColor }}
                 dangerouslySetInnerHTML={{ __html: label }}
               />
             )}
@@ -512,14 +618,29 @@ export default function OneTickUpsell({
     }
 
     /* ---------- Row / List card ---------- */
+    const savingLabel =
+      offer.showLabel && saved > 0 ? (
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 400,
+            color: "#1e7e34",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
+          dangerouslySetInnerHTML={{ __html: label }}
+        />
+      ) : null;
+
     return (
       <div
         key={offer.id}
         style={{
           // stack me background opaque hona chahiye warna peeche wale cards dikhenge
           background: cardBg,
-          borderRadius: oneTick.radius,
-          padding: 12,
+          border: `1px solid ${cardBorder}`,
+          borderRadius: CARD_RADIUS,
+          padding: 10,
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
@@ -527,32 +648,65 @@ export default function OneTickUpsell({
           ...leaveStyle(leaving[offer.id]),
         }}
       >
-        <img
-          src={variant.image || product.image}
-          alt={product.title}
+        {/* thumb stays 90px; only the image inside follows Styles > Image size */}
+        <div
+          className="cart-plus-drawer__xs-row-thumb"
           style={{
-            width: oneTick.imageSize,
-            height: oneTick.imageSize,
-            maxWidth: "45%",
+            width: 90,
+            height: 90,
             flexShrink: 0,
-            objectFit: "cover",
-            borderRadius: oneTick.radius,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
+        >
+          <img
+            src={variant.image || product.image}
+            alt={product.title}
+            style={{
+              // row / list thumb is a scaled-down version of the Styles values
+              width: oneTick.imageSize * 0.45,
+              height: oneTick.imageSize * 0.45,
+              maxWidth: "100%",
+              maxHeight: "100%",
+              display: "block",
+              objectFit: "cover",
+              borderRadius: oneTick.radius * 0.45,
+            }}
+          />
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontWeight: 600,
-              fontSize: 13,
-              color: oneTick.primaryTextColor,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: isRow ? "nowrap" : "normal",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 8,
             }}
           >
-            {product.title}
+            <div
+              style={{
+                fontWeight: 600,
+                fontSize: 13,
+                lineHeight: 1.25,
+                color: oneTick.primaryTextColor,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {product.title}
+            </div>
+            {savingLabel}
           </div>
-          <div style={{ fontSize: 13, color: oneTick.primaryTextColor }}>
+          <div
+            style={{
+              fontSize: 13,
+              marginTop: 2,
+              color: oneTick.primaryTextColor,
+            }}
+          >
             {currency}
             {money(final)}{" "}
             {saved > 0 && (
@@ -568,16 +722,29 @@ export default function OneTickUpsell({
               </span>
             )}
           </div>
-          {offer.showLabel && saved > 0 && (
-            <div
-              style={{ fontSize: 11, color: oneTick.secondaryTextColor }}
-              dangerouslySetInnerHTML={{ __html: label }}
-            />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginTop: 8,
+            }}
+          >
+            <div style={{ display: "flex", gap: 8, flex: 1, minWidth: 0 }}>
+              {variantSelect(offer, product, variant, true)}
+            </div>
+            {isRow && (
+              <div style={{ flexShrink: 0 }}>
+                {trigger(offer, product, variant)}
+              </div>
+            )}
+          </div>
+          {!isRow && (
+            <div style={{ marginTop: 12 }}>
+              {trigger(offer, product, variant)}
+            </div>
           )}
-          {variantSelect(offer, product, variant)}
-          {!isRow && <div style={{ marginTop: 12 }}>{trigger(offer, product, variant)}</div>}
         </div>
-        {isRow && <div>{trigger(offer, product, variant)}</div>}
       </div>
     );
   };
@@ -596,12 +763,16 @@ export default function OneTickUpsell({
             display: "flex",
             alignItems: "center",
             gap: 6,
-            marginBottom: 8,
+            marginBottom: 15,
             fontWeight: 600,
             color: oneTick.primaryTextColor,
           }}
         >
-          <LibraryIcon value={oneTick.icon} size={20} color={oneTick.iconColor} />
+          <LibraryIcon
+            value={oneTick.icon}
+            size={20}
+            color={oneTick.iconColor}
+          />
           <span dangerouslySetInnerHTML={{ __html: oneTick.title }} />
         </div>
       )}
@@ -663,7 +834,12 @@ export default function OneTickUpsell({
                 border: "none",
                 borderRadius: "50%",
                 cursor: "pointer",
-                background: i === activeDot ? "#303030" : "#d0d0d0",
+                background:
+                  i === activeDot
+                    ? designSettings?.accentText ||
+                      backgroundToCss(oneTick.buttonBackground) ||
+                      "#303030"
+                    : designSettings?.accentBorder || "#d0d0d0",
               }}
             />
           ))}

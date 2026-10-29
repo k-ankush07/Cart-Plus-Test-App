@@ -131,17 +131,18 @@ function cartPlusOneTickTrigger(blockId, oneTick, offer, variantId) {
   const call = (on) => `cartPlusOneTickToggle('${blockId}','${offer.id}','${variantId}',${on})`;
   if (oneTick.trigger === "checkbox") {
     return `<label class="cart-plus-onetick-check" aria-label="${oneTick.buttonLabel}">
-      <input type="checkbox" onchange="${call("this.checked")}" />
+      <input type="checkbox" onchange="var c=this.checked;setTimeout(function(){${call("c")}},c?450:0)" />
       <span class="cart-plus-onetick-check__box" style="--cp-accent:${accent};--cp-tick:${oneTick.buttonTextColor || "#fff"};--cp-border:${oneTick.secondaryTextColor || "#8a8a8a"};"></span>
     </label>`;
   }
   if (oneTick.trigger === "toggle") {
-    return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${accent};" onclick="${call("true")}"><span></span></button>`;
+    return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${accent};--cp-off:${window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder || "#c9cccf"};" onclick="this.setAttribute('aria-checked','true');setTimeout(function(){${call("true")}},450)"><span></span></button>`;
   }
   return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true")}" style="border:none;cursor:pointer;padding:8px 16px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
 }
 
 function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
+  const cardBorder = window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder || "rgba(0,0,0,.08)";
   const fmt = hubUtils.formatMoney;
   const chosenId = (window._cartPlusOneTickVariant ||= {})[offer.id];
   const variant = product.variants.find((v) => v.id === chosenId) || product.variants[0];
@@ -163,7 +164,7 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
       : "";
   const select =
     product.variants.length > 1
-      ? `<select onchange="cartPlusOneTickVariant('${blockId}','${offer.id}',this.value)" style="width:100%;font-size:12px;margin-top:4px;color:${oneTick.secondaryTextColor};">${product.variants
+      ? `<select onchange="cartPlusOneTickVariant('${blockId}','${offer.id}',this.value)" style="width:100%;font-size:12px;margin-top:4px;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:${oneTick.secondaryTextColor};">${product.variants
           .map((v) => `<option value="${v.id}"${v.id === variant.id ? " selected" : ""}>${v.title}</option>`)
           .join("")}</select>`
       : "";
@@ -171,7 +172,7 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
   const img = variant.image || product.image;
 
   if (isCarousel) {
-    return `<div style="background:${cardBg};border-radius:${oneTick.radius}px;padding:8px;display:flex;flex-direction:column;gap:8px;flex:0 0 43%;min-width:0;box-sizing:border-box;scroll-snap-align:start;">
+    return `<div style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;flex:0 0 43%;min-width:0;box-sizing:border-box;scroll-snap-align:start;">
       <img src="${img}" alt="${product.title}" style="width:${oneTick.imageSize}px;max-width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${oneTick.radius}px;display:block;align-self:center;">
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0;">
         <div style="font-weight:600;font-size:13px;line-height:1.3;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
@@ -181,14 +182,26 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
     </div>`;
   }
 
-  return `<div style="background:${cardBg};border-radius:${oneTick.radius}px;padding:12px;display:flex;flex-direction:row;align-items:center;gap:12px;">
-    <img src="${img}" alt="${product.title}" style="width:${oneTick.imageSize}px;height:${oneTick.imageSize}px;max-width:45%;flex-shrink:0;object-fit:cover;border-radius:${oneTick.radius}px;">
-    <div style="flex:1;min-width:0;">
-      <div style="font-weight:600;font-size:13px;color:${oneTick.primaryTextColor};overflow:hidden;text-overflow:ellipsis;white-space:${isRow ? "nowrap" : "normal"};">${product.title}</div>
-      ${price}${labelHtml}${select}
-      ${!isRow ? `<div style="margin-top:8px;">${trigger}</div>` : ""}
+  const savingHtml =
+    offer.showLabel && saved > 0
+      ? `<div style="font-size:11px;font-weight:600;color:#1e7e34;white-space:nowrap;flex-shrink:0;">${label}</div>`
+      : "";
+  return `<div style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:12px;display:flex;flex-direction:row;align-items:center;gap:12px;">
+    <div class="cart-plus-drawer__xs-row-thumb" style="width:90px;height:90px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+      <img src="${img}" alt="${product.title}" style="width:${oneTick.imageSize * 0.45}px;height:${oneTick.imageSize * 0.45}px;max-width:100%;max-height:100%;display:block;object-fit:cover;border-radius:${oneTick.radius * 0.45}px;">
     </div>
-    ${isRow ? `<div>${trigger}</div>` : ""}
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="font-weight:600;font-size:13px;line-height:1.25;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
+        ${savingHtml}
+      </div>
+      <div style="margin-top:2px;">${price}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+        <div style="flex:1;min-width:0;">${select.replace("margin-top:4px;", "")}</div>
+        ${isRow ? `<div style="flex-shrink:0;">${trigger}</div>` : ""}
+      </div>
+      ${!isRow ? `<div style="margin-top:12px;">${trigger}</div>` : ""}
+    </div>
   </div>`;
 }
 
