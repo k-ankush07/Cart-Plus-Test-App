@@ -20,7 +20,10 @@ const PencilIcon = ({ color }) => (
   </svg>
 );
 
-export default function AdditionalNotes({ additionalNotesSettings, designSettings }) {
+export default function AdditionalNotes({
+  additionalNotesSettings,
+  designSettings,
+}) {
   const s = additionalNotesSettings || {};
   const expandable = s.expandable ?? true;
   const collapsedByDefault = s.collapsedByDefault ?? true;
@@ -58,12 +61,15 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
     return () => window.removeEventListener("keydown", onKey);
   }, [sheetOpen]);
 
+  const [closeHover, setCloseHover] = useState(false);
   const iconColor = designSettings?.iconColor || "#000000";
   const isBelowItems = s.placement === "below_items";
   const buttonBg = backgroundToCss(s.noteButtonBackground);
   const noteBg = backgroundToCss(s.orderNoteBackground);
   const saveBg =
-    backgroundToCss(s.saveNoteBackground) || designSettings?.buttonColor || "#303030";
+    backgroundToCss(s.saveNoteBackground) ||
+    designSettings?.buttonColor ||
+    "#303030";
 
   const openSheet = () => {
     setText(saved); // reopen with previously saved note
@@ -91,7 +97,8 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
           cursor: "pointer",
           padding: "6px 12px",
           borderRadius: 8,
-          border: "1px solid rgba(0,0,0,0.15)",
+          // Template theme: the border follows the theme colour
+          border: `1px solid ${designSettings?.accentBorder || "rgba(0,0,0,0.15)"}`,
           background: buttonBg || "transparent",
         }}
       >
@@ -99,7 +106,14 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
         <span dangerouslySetInnerHTML={{ __html: s.buttonLabel ?? "Note" }} />
       </button>
       {saved && (
-        <div style={{ fontSize: 12, marginTop: 6, opacity: 0.8, wordBreak: "break-word" }}>
+        <div
+          style={{
+            fontSize: 12,
+            marginTop: 6,
+            opacity: 0.8,
+            wordBreak: "break-word",
+          }}
+        >
           {saved}
         </div>
       )}
@@ -151,24 +165,43 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
                     letterSpacing: "0.04em",
                     textTransform: "uppercase",
                   }}
-                  dangerouslySetInnerHTML={{ __html: s.heading ?? "Order note" }}
-                />
-                <button
-                  type="button"
-                  aria-label="Close"
-                  onClick={closeSheet}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 4,
-                    display: "inline-flex",
+                  dangerouslySetInnerHTML={{
+                    __html: s.heading ?? "Order note",
                   }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round">
-                    <path d="M18 6 6 18M6 6l12 12" />
-                  </svg>
-                </button>
+                />
+                <>
+                  <style>{`
+    .cp-close-btn{background:none;transition:background .15s ease}
+    .cp-close-btn:hover{background:rgba(0,0,0,0.08)}
+  `}</style>
+                  <button
+                    type="button"
+                    aria-label="Close"
+                    className="cp-close-btn"
+                    onClick={closeSheet}
+                    style={{
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 4,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: 4,
+                    }}
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#000000"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    >
+                      <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </>
               </div>
 
               <textarea
@@ -184,8 +217,8 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
                   boxSizing: "border-box",
                   padding: 10,
                   borderRadius: 8,
-                  border: "1px solid rgba(0,0,0,0.3)",
-                  fontSize: 14,
+                  border: `1px solid ${designSettings?.accentBorder || "rgba(0,0,0,0.3)"}`,
+                  fontSize: 13,
                   fontFamily: "inherit",
                   resize: "vertical",
                 }}
@@ -235,9 +268,18 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
       >
         <span
           className="cart-plus-public-notes__text-container"
-          style={{ display: "flex", gap: 4, lineHeight: 1, alignItems: "center" }}
+          style={{
+            display: "flex",
+            gap: 4,
+            lineHeight: 1,
+            alignItems: "center",
+          }}
         >
-          <span dangerouslySetInnerHTML={{ __html: s.title || "Add special instructions" }} />
+          <span
+            dangerouslySetInnerHTML={{
+              __html: s.title || "Add special instructions",
+            }}
+          />
           <span
             className="cart-plus-public-component-collapse__expand-icon"
             style={{
@@ -246,7 +288,16 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
               transform: open ? "rotate(180deg)" : "rotate(0deg)",
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={iconColor}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M6 9l6 6 6-6" />
             </svg>
           </span>

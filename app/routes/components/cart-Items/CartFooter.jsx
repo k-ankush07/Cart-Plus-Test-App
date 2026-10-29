@@ -85,7 +85,11 @@ export default function CartFooter({
         <div
           style={{ background: backgroundToCss(addonsSettings?.background) }}
         >
-          <AddOns addonsSettings={addonsSettings} currency={currency} />
+          <AddOns
+            addonsSettings={addonsSettings}
+            currency={currency}
+            designSettings={designSettings}
+          />
         </div>
       </SectionBg>
     ),
@@ -144,8 +148,11 @@ export default function CartFooter({
               borderRadius: `${btn.radius ?? designSettings.buttonRadius}px`,
               background:
                 backgroundToCss(btn.background) || designSettings.buttonColor,
-              ...(btn.borderColor
-                ? { border: `1px solid ${btn.borderColor}` }
+              // Button Border; follows the theme colour until one is picked
+              ...(btn.borderColor || designSettings.accentSolid
+                ? {
+                    border: `1px solid ${btn.borderColor || designSettings.accentSolid}`,
+                  }
                 : {}),
               "--btn-hover-text": designSettings.buttonHoverColor,
               "--btn-text": designSettings.buttonTextColor,

@@ -124,13 +124,15 @@ export default function Summary({
   );
 
   const design = s.design;
+  // Template theme: Card / Striped borders follow the theme colour
+  const themeBorder = designSettings?.accentBorder;
   const wrapStyle = {
     classic: { display: "flex", flexDirection: "column", gap: 6 },
     card: {
       display: "flex",
       flexDirection: "column",
       gap: 8,
-      border: "1px solid rgba(0,0,0,0.12)",
+      border: `1px solid ${themeBorder || "rgba(0,0,0,0.12)"}`,
       borderRadius: 12,
       padding: 12,
     },
@@ -142,7 +144,7 @@ export default function Summary({
     striped: {
       ...row,
       padding: "8px 0",
-      borderBottom: "1px solid rgba(0,0,0,0.08)",
+      borderBottom: `1px solid ${themeBorder || "rgba(0,0,0,0.08)"}`,
     },
   }[design] || row;
   const totalStyle = {
@@ -156,7 +158,7 @@ export default function Summary({
       ...row,
       fontWeight: 700,
       fontSize: 16,
-      borderTop: "1px dashed rgba(0,0,0,0.2)",
+      borderTop: `1px dashed ${themeBorder || "rgba(0,0,0,0.2)"}`,
       paddingTop: 10,
       marginTop: 2,
     },
@@ -197,8 +199,8 @@ export default function Summary({
       style={{
         color: s.textColor,
         background: backgroundToCss(s.background),
-        padding: "8px 16px",
-        fontSize: 14,
+        padding: "12px 16px",
+        fontSize: 13,
       }}
     >
       {!s.expandable && s.title.replace(/<[^>]*>|&nbsp;/g, "").trim() && (

@@ -181,7 +181,7 @@ export default function DiscountCode({
     <div
       role="alert"
       className="cart-plus-discount-invalid"
-      style={{ color: "#D72C0D", fontSize: 13, marginTop: 6 }}
+      style={{ color: "#D72C0D", fontSize: 12, marginTop: 6 }}
       dangerouslySetInnerHTML={{ __html: invalidMessage }}
     />
   );

@@ -18,7 +18,7 @@ window.cartPlusNotesHTML = function (blockId, settings, note = "") {
 
   const pencil = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
   const noteButton = `<div style="padding:8px 0;">
-      <button type="button" class="cart-plus-note-btn" onclick="cartPlusNotesOpenSheet('${blockId}')" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.15);background:${buttonBg || "transparent"};color:inherit;">
+      <button type="button" class="cart-plus-note-btn" onclick="cartPlusNotesOpenSheet('${blockId}')" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid ${window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder || "rgba(0,0,0,0.15)"};background:${buttonBg || "transparent"};color:inherit;">
         ${pencil}<span>${settings.buttonLabel ?? "Note"}</span>
       </button>
       <div class="cart-plus-note-saved" style="font-size:12px;margin-top:6px;opacity:.8;word-break:break-word;${note ? "" : "display:none;"}">${cartPlusNoteEsc(note)}</div>
@@ -76,7 +76,7 @@ window.cartPlusNotesOpenSheet = function (blockId) {
         <div style="font-size:13px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;">${settings.heading ?? "Order note"}</div>
         <button type="button" aria-label="Close" onclick="cartPlusNotesCloseSheet('${blockId}')" style="background:none;border:none;cursor:pointer;padding:4px;display:inline-flex;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
-      <textarea id="cart-plus-note-text-${blockId}" class="cart-additional-notes__textarea cart-plus-public-notes__textarea" placeholder="${cartPlusNoteEsc(settings.placeholder || "Add instructions for your order")}" ${limit ? `maxlength="${CART_PLUS_NOTE_MAX}"` : ""} rows="4" oninput="cartPlusNotesInput('${blockId}')" style="width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,.3);font-size:14px;font-family:inherit;resize:vertical;"></textarea>
+      <textarea id="cart-plus-note-text-${blockId}" class="cart-additional-notes__textarea cart-plus-public-notes__textarea" placeholder="${cartPlusNoteEsc(settings.placeholder || "Add instructions for your order")}" ${limit ? `maxlength="${CART_PLUS_NOTE_MAX}"` : ""} rows="4" oninput="cartPlusNotesInput('${blockId}')" style="width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid ${ds.accentBorder || "rgba(0,0,0,.3)"};font-size:14px;font-family:inherit;resize:vertical;"></textarea>
       <button type="button" id="cart-plus-note-save-${blockId}" disabled onclick="cartPlusNotesSave('${blockId}')" style="border:none;cursor:not-allowed;opacity:.5;padding:10px 16px;border-radius:${ds.buttonRadius ?? 6}px;background:${saveBg};color:${ds.buttonTextColor || "#ffffff"};font-size:14px;align-self:flex-start;">${settings.saveLabel ?? "Save note"}</button>
     </div>`;
   drawer.appendChild(wrap);

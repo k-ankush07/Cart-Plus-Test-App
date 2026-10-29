@@ -612,7 +612,7 @@ bs.textContent += `
     "Checkout Button": `
       ${slot(renderCustomHTML(customHtmlBlocks.above_checkout))}
       <div style="${checkoutBgCss ? "background:" + checkoutBgCss + ";" : ""}">
-        <a id="hub-checkout-btn-${blockId}" href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" onclick="hubCheckoutClick(event, '${blockId}', this)" class="hub-cart-checkout-btn" style="border-radius:${checkoutOpts.radius ?? designSettings.buttonRadius}px;${checkoutOpts.borderColor ? "border:1px solid " + checkoutOpts.borderColor + ";" : ""}">
+        <a id="hub-checkout-btn-${blockId}" href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" onclick="hubCheckoutClick(event, '${blockId}', this)" class="hub-cart-checkout-btn" style="border-radius:${checkoutOpts.radius ?? designSettings.buttonRadius}px;${checkoutOpts.borderColor || designSettings.accentSolid ? "border:1px solid " + (checkoutOpts.borderColor || designSettings.accentSolid) + ";" : ""}">
           ${checkoutOpts.label != null ? window.cartPlusFillPrice(checkoutOpts.label, "") : checkoutButtonText}
         </a>
       </div>
@@ -631,7 +631,7 @@ bs.textContent += `
   const floating = !!designSettings.floating;
   const drawerWidth = (designSettings.desktopWidth === "wide" ? 500 : 440) - (floating ? 32 : 0);
   const themedVars = designSettings.themed
-    ? `color:${designSettings.textColor};${floating ? "border-radius:" + designSettings.drawerRadius + "px;" : ""}--cp-surface:${designSettings.backgroundColor};--cp-text:${designSettings.textColor};--cp-card-radius:${designSettings.cardRadius}px;--cp-field-radius:${designSettings.fieldRadius}px;--cp-image-radius:${designSettings.imageRadius}px;${designSettings.accentBorder ? "--cp-accent-border:" + designSettings.accentBorder + ";" : ""}`
+    ? `color:${designSettings.textColor};${floating ? "border-radius:" + designSettings.drawerRadius + "px;" : ""}--cp-surface:${designSettings.backgroundColor};--cp-text:${designSettings.textColor};--cp-card-radius:${designSettings.cardRadius}px;--cp-field-radius:${designSettings.fieldRadius}px;--cp-image-radius:${designSettings.imageRadius}px;${designSettings.accentBorder ? "--cp-accent-border:" + designSettings.accentBorder + ";" : ""}${designSettings.themed && designSettings.buttonColor ? "--cp-accent-bg:" + designSettings.buttonColor + ";" : ""}`
     : "";
 
   root.insertAdjacentHTML(

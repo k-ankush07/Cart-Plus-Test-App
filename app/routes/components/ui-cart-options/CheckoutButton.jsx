@@ -71,7 +71,7 @@ export default function CheckoutButton({ cartSettings, designSettings, handleCha
               />
               <ColorInput
                 label="Button Border"
-                value={s.borderColor || "#000000"}
+                value={s.borderColor || designSettings?.accentSolid || "#000000"}
                 onChange={(val) => update({ borderColor: val })}
               />
             </InlineGrid>

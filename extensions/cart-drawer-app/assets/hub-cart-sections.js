@@ -89,6 +89,7 @@ window.cartPlusApplyTemplateTheme = function (ds) {
     subtotalColor: text,
     accentColor: mix(gradient ? t.gradientStart : t.themeColor, t.tintFooter, surface),
     accentBorder: mix(gradient ? t.gradientStart : t.themeColor, 22, surface),
+    accentSolid: gradient ? t.gradientStart : t.themeColor,
     accentText: mix(gradient ? t.gradientStart : t.themeColor, 85, text),
     buttonColor: accent,
     buttonTextColor: "#ffffff",
@@ -315,7 +316,7 @@ window.cartPlusAgeHTML = function (blockId, cartSettings) {
   return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:8px 16px;${s.applyTo !== "all" ? "display:none;" : ""}">
     <div class="cart-plus-age-box" style="padding:12px;border-radius:${s.borderRadius}px;border:1px solid ${s.borderColor};background:${window.cartPlusBgCss(s.background)};">
       <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;">
-        <input type="checkbox" id="cart-plus-age-check-${blockId}" onchange="cartPlusAgeChanged('${blockId}')" style="accent-color:${s.toggleColor};width:16px;height:16px;margin-top:2px;">
+        <input type="checkbox" id="cart-plus-age-check-${blockId}" class="cart-plus-age-check" onchange="cartPlusAgeChanged('${blockId}')" style="--cp-age-toggle:${s.toggleColor};--cp-age-border:${s.borderColor};">
         <span><span style="font-size:14px;">${f(s.checkboxText)}</span><span style="display:block;font-size:12px;opacity:.7;">${f(s.subtitle)}</span></span>
       </label>
       <div id="cart-plus-age-error-${blockId}" role="alert" style="display:none;margin-top:6px;font-size:12px;color:#c0281c;">${f(s.errorText)}</div>

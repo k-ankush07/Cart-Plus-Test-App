@@ -82,6 +82,8 @@ export function applyTemplateTheme(ds) {
     accentColor: solidFooter,
     // dividers (e.g. under the Timer) follow the chosen theme color
     accentBorder: mix(gradient ? t.gradientStart : t.themeColor, 22, surface),
+    // the solid theme colour (gradient start), e.g. for the checkout button border
+    accentSolid: gradient ? t.gradientStart : t.themeColor,
     // text that sits on the tinted header area (e.g. the Timer)
     accentText: mix(gradient ? t.gradientStart : t.themeColor, 85, text),
     buttonColor: accent,

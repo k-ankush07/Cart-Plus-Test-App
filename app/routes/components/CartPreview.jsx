@@ -236,6 +236,7 @@ const CartPreview = memo(function CartPreview({
               "--cp-card-radius": `${designSettings.cardRadius}px`,
               "--cp-field-radius": `${designSettings.fieldRadius}px`,
               "--cp-image-radius": `${designSettings.imageRadius}px`,
+              ...(designSettings.accentBorder ? { "--cp-accent-border": designSettings.accentBorder } : {}),
               color: designSettings.textColor,
             }
           : {}),

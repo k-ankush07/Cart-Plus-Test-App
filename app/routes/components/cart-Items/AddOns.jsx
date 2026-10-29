@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { backgroundToCss } from "../utils/background";
 
-const ShippingIcon = () => (
+const ShippingIcon = ({ border = "#E8E8E8" }) => (
     <div
         style={{
             position: "relative",
@@ -9,7 +9,7 @@ const ShippingIcon = () => (
             height: "60px",
             borderRadius: "5px",
             overflow: "hidden",
-            border: "1px solid #E8E8E8",
+            border: `1px solid ${border}`,
             flexShrink: 0,
         }}
     >
@@ -25,7 +25,7 @@ const ShippingIcon = () => (
     </div>
 );
 
-const Toggle = ({ on, onChange, color = "#000" }) => (
+const Toggle = ({ on, onChange, color = "#000", offColor = "#c4c4c4" }) => (
     <button
         type="button"
         className="cart-plus-public-addons__toggle"
@@ -34,7 +34,7 @@ const Toggle = ({ on, onChange, color = "#000" }) => (
             width: 40,
             height: 22,
             borderRadius: 11,
-            background: on ? color : "#c4c4c4",
+            background: on ? color : offColor,
             border: "none",
             padding: 2,
             cursor: "pointer",
@@ -60,7 +60,9 @@ const Toggle = ({ on, onChange, color = "#000" }) => (
     </button>
 );
 
-export default function AddOns({ addonsSettings, currency }) {
+export default function AddOns({ addonsSettings, currency, designSettings }) {
+    // Template theme: borders and the off toggle follow the theme colour
+    const themeBorder = designSettings?.accentBorder;
     const [toggled, setToggled] = useState(false);
 
     if (addonsSettings?.enabled) return null;
@@ -86,7 +88,7 @@ export default function AddOns({ addonsSettings, currency }) {
             style={{ background: backgroundToCss(addonsSettings.cardBackground) }}
         >
             {isShipping ? (
-                <ShippingIcon />
+                <ShippingIcon border={themeBorder || "#E8E8E8"} />
             ) : (
                 <div
                     className=" cart-plus-addons-image-wrapper cart-plus-public-addons__image-wrapper"
@@ -95,7 +97,7 @@ export default function AddOns({ addonsSettings, currency }) {
                         height: 60,
                         borderRadius: 5,
                         overflow: "hidden",
-                        border: "1px solid #E8E8E8",
+                        border: `1px solid ${themeBorder || "#E8E8E8"}`,
                         flexShrink: 0,
                         background: "#f0f0f0",
                     }}
@@ -154,7 +156,19 @@ export default function AddOns({ addonsSettings, currency }) {
 
             {/* TOGGLE */}
             <div className=" cart-plus-addons-toggle cart-plus-public-addons__toggle-wrapper">
-                <Toggle on={toggled} onChange={handleToggle} color={addonsSettings.toggleColor || "#000"} />
+                <Toggle
+                    on={toggled}
+                    onChange={handleToggle}
+                    // theme gradient while the colour is still the default black
+                    color={
+                        designSettings?.themed &&
+                        (!addonsSettings.toggleColor ||
+                            addonsSettings.toggleColor.toLowerCase() === "#000000")
+                            ? designSettings.buttonColor
+                            : addonsSettings.toggleColor || "#000"
+                    }
+                    offColor={themeBorder || "#c4c4c4"}
+                />
             </div>
         </div>
     );
