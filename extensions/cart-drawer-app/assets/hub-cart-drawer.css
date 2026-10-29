@@ -3083,15 +3083,22 @@ select.hub-variant-option-select {
   background: var(--cp-age-toggle, #1553d8) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 6.5l2.6 2.6L10 3.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px no-repeat;
 }
 
-/* Stacked footer sections: where one touches the previous section, drop its top border / padding */
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton) {
-  border-top: none !important;
+/* Stacked footer sections: every section except the top one loses its top padding / border,
+   so the gap between sections comes from one place and follows drag & drop order */
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn),
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn) > :first-child,
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn) > :first-child > :first-child {
   padding-top: 0 !important;
+  margin-top: 0 !important;
+  border-top: none !important;
 }
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ * .cart-addon-tile,
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ * .cart-additional-notes,
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ * .hub-addon-shipping-protection,
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ * .hub-addon-product {
-  border-top: none !important;
-  padding-top: 0 !important;
+
+/* Age verification keeps a small gap so it does not touch the section above */
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ .cart-plus-age-verification.cart-plus-age-verification {
+  padding-top: 8px !important;
+}
+
+/* the discount input keeps its own border inside the stacked footer */
+.hub-cart-footer > :not(.hub-footer-skeleton) ~ * .hub-discount-input-row {
+  border-top: 1px solid var(--cp-accent-border, #E8E8E8) !important;
 }

@@ -36,7 +36,7 @@ body.library-modal-open .Polaris-Modal-Dialog__Modal {
 
 /* Custom HTML / CSS blocks in the cart preview */
 .cart-custom-html {
-  padding: 12px 16px;
+  padding: 0px 16px;
 }
 
 body.library-modal-open .Polaris-Modal-Dialog--sizeLarge,
@@ -1398,7 +1398,7 @@ span.cart-plus-rewards-tier-icon {
     height: 80px;
     flex-shrink: 0;
     border-radius: 5px;
-    border: 1px solid #E8E8E8;
+    /* border: 1px solid #E8E8E8; */
     overflow: hidden;
     display: flex;
     aspect-ratio: 1 / 1;
@@ -1439,7 +1439,7 @@ span.cart-plus-rewards-tier-icon {
 .cart-plus-discount-input-wrapped {
     width: 100%;
     background: white;
-    border-radius: 5px 5px 0 0;
+    border-radius: 5px;
 }
 
 span.custom-cart-item-compare-price {
@@ -2279,15 +2279,24 @@ input.cart-plus-offers-code-input:focus {
     color: var(--cp-text);
 }
 
-/* Stacked footer sections: where one touches the previous section, drop its top border / padding */
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton) {
-  border-top: none !important;
+/* Stacked footer sections: every section except the top one loses its top padding / border,
+   so the gap between sections comes from one place and follows drag & drop order */
+.cart-plus-footer-stack > :not(:first-child):not(.cp-keep-pad),
+.cart-plus-footer-stack > :not(:first-child):not(.cp-keep-pad) > :first-child {
   padding-top: 0 !important;
+  border-top: none !important;
 }
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ * .cart-addon-tile,
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ * .cart-additional-notes,
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ * .hub-addon-shipping-protection,
-.cart-plus-footer > :not(.hub-footer-skeleton) ~ * .hub-addon-product {
-  border-top: none !important;
-  padding-top: 0 !important;
+
+/* Age verification keeps a small gap so it does not touch the section above */
+.cart-plus-footer .cart-plus-footer-stack > :not(:first-child) .cart-plus-age-verification,
+.cart-plus-footer .cart-plus-footer-stack > .cart-plus-age-verification:not(:first-child) {
+  padding-top: 8px !important;
+}
+
+/* the discount input keeps its own border / padding inside the stacked footer */
+.cart-plus-footer .cart-plus-footer-stack > :not(:first-child) .cart-plus-discount-input-row {
+  border-top: 1px solid var(--cp-accent-border, #E8E8E8) !important;
+}
+.cart-plus-footer .cart-plus-footer-stack > :not(:first-child) .cart-plus-discount-input-btn {
+  padding-top: 10px !important;
 }

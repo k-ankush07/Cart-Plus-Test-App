@@ -185,10 +185,16 @@ export default function CartFooter({
         ...(disableFixedFooter ? { flexShrink: 1 } : {}),
       }}
     >
-      <div>
-        {footerOrder.map((key) => (
-          <Fragment key={key}>{footerBlocks[key]}</Fragment>
-        ))}
+      <div className="cart-plus-footer-stack">
+        {footerOrder.map((key) =>
+          key === "Checkout Button" ? (
+            <div key={key} className="cp-keep-pad">
+              {footerBlocks[key]}
+            </div>
+          ) : (
+            <Fragment key={key}>{footerBlocks[key]}</Fragment>
+          ),
+        )}
 
         {/* below_checkout */}
         <CustomHtml cartSettings={cartSettings} position="below_checkout" />
