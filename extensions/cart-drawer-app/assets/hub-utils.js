@@ -888,19 +888,21 @@ window.hubUtils = {
       const doneLabel = rewards.milestoneDoneLabel ?? "DONE";
       const wrap = (inner, extra = "") =>
         `<div class="cart-plus-rewards hub-rewards-wrap" style="padding:12px 16px;${extra}">${inner}</div>`;
-      const borderColor = String(fillColor).includes("gradient") ? "currentColor" : fillColor;
-      const dashed = `1px dashed ${borderColor}`;
+      // a gradient is not a valid border colour, so use its first stop
+      const labelColor = /#[0-9a-fA-F]{3,8}|rgba?([^)]*)/.exec(String(fillColor))?.[0] || "currentColor";
+      const dashed = `1px dashed ${labelColor}`;
+      const labelCss = `font-size:11px;font-weight:700;letter-spacing:.5px;color:${labelColor};`;
 
       let html = "";
       if (barStyle === "reward") {
-        html = wrap(`<div style="display:flex;border:${dashed};border-radius:6px;overflow:hidden;">
-          <div style="flex:1;padding:12px;text-align:center;">
-            <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-align:left;">${ticketLabel}</div>
+        html = wrap(`<div style="display:flex;border:${dashed};border-radius:16px;overflow:hidden;">
+          <div style="flex:1;min-width:0;padding:16px 18px;text-align:center;">
+            <div style="${labelCss}text-align:left;margin-bottom:8px;">${ticketLabel}</div>
             ${messageEl}${bar(fillPctNum)}
           </div>
-          <div style="width:110px;padding:12px;text-align:center;border-left:${dashed};">
-            <div style="font-size:11px;font-weight:700;letter-spacing:.5px;">${nextLabel}</div>
-            <div style="margin-top:6px;display:inline-flex;width:32px;height:32px;">${hubUtils.getTierIcon("product", "currentColor")}</div>
+          <div style="width:120px;flex-shrink:0;padding:16px 12px;text-align:center;border-left:${dashed};display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <div style="${labelCss}">${nextLabel}</div>
+            <div style="display:inline-flex;width:40px;height:40px;">${hubUtils.getTierIcon("product", "currentColor")}</div>
           </div>
         </div>`);
       } else if (barStyle === "nextReward") {

@@ -13,20 +13,58 @@ const FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32, 40].map((n) => ({
     value: String(n),
 }));
 
+const DEFAULT_COLOR = "#000000";
+const DEFAULT_SIZE = "14";
+
+const rgbToHex = (rgb) => {
+    const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(rgb || "");
+    if (!m) return null;
+    return "#" + [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, "0")).join("");
+};
+
+// the colour / size the saved html is already using (first styled element)
+function readStyle(html) {
+    const box = document.createElement("div");
+    box.innerHTML = html || "";
+    const colored = box.querySelector("[style*='color']");
+    const sized = box.querySelector("[style*='font-size']");
+    return {
+        color: (colored && rgbToHex(colored.style.color)) || DEFAULT_COLOR,
+        fontSize: (sized && String(parseInt(sized.style.fontSize, 10))) || DEFAULT_SIZE,
+    };
+}
+
+// Drop wrappers that only carry the default colour / size, so choosing the original
+// values again gives back the original html (and the unsaved-changes bar goes away).
+function normalize(root) {
+    root.querySelectorAll("font").forEach((node) => node.removeAttribute("size"));
+    root.querySelectorAll("span, font").forEach((node) => {
+        if (rgbToHex(node.style.color) === DEFAULT_COLOR) node.style.removeProperty("color");
+        if (parseInt(node.style.fontSize, 10) === Number(DEFAULT_SIZE)) node.style.removeProperty("font-size");
+        if (!node.getAttribute("style")?.trim()) node.removeAttribute("style");
+        if (!node.attributes.length) node.replaceWith(...node.childNodes);
+    });
+    root.normalize();
+}
+
 function RichTextEditor({ value, onChange }) {
     const ref = useRef(null);
     const savedRange = useRef(null);
 
-    const [color, setColor] = useState("#000000");
-    const [fontSize, setFontSize] = useState("14");
+    const [color, setColor] = useState(() => readStyle(value).color);
+    const [fontSize, setFontSize] = useState(() => readStyle(value).fontSize);
 
     useEffect(() => {
         if (ref.current && value !== ref.current.innerHTML) {
             ref.current.innerHTML = value || "";
+            const st = readStyle(value);
+            setColor(st.color);
+            setFontSize(st.fontSize);
         }
     }, [value]);
 
     const emit = () => {
+        normalize(ref.current);
         const html = ref.current.innerHTML;
         if (html !== value) onChange(html);
     };
@@ -45,59 +83,71 @@ function RichTextEditor({ value, onChange }) {
         }
     };
 
-    // colour the selected text, or the whole text when nothing is selected
+    // the saved selection, only while it is still inside the editor
+    const selectedRange = () => {
+        const range = savedRange.current;
+        return range && !range.collapsed && ref.current.contains(range.commonAncestorContainer)
+            ? range
+            : null;
+    };
+
+    // nothing selected -> style the whole message through one wrapper <span>
+    const styleWholeText = (prop, value) => {
+        const editor = ref.current;
+        let wrap =
+            editor.childNodes.length === 1 && editor.firstChild.tagName === "SPAN"
+                ? editor.firstChild
+                : null;
+        if (!wrap) {
+            wrap = document.createElement("span");
+            while (editor.firstChild) wrap.appendChild(editor.firstChild);
+            editor.appendChild(wrap);
+        }
+        // inner spans would override the new value
+        wrap.querySelectorAll("*").forEach((n) => n.style?.removeProperty(prop));
+        wrap.style.setProperty(prop, value);
+    };
+
     const applyColor = (hex) => {
         setColor(hex);
         if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
 
-        const editor = ref.current;
-        editor.focus();
-
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-
-        const range = savedRange.current;
-        if (range && !range.collapsed) {
+        const range = selectedRange();
+        if (range) {
+            ref.current.focus();
+            const sel = window.getSelection();
+            sel.removeAllRanges();
             sel.addRange(range);
+            document.execCommand("styleWithCSS", false, true);
+            document.execCommand("foreColor", false, hex);
         } else {
-            const all = document.createRange();
-            all.selectNodeContents(editor);
-            sel.addRange(all);
+            styleWholeText("color", hex);
         }
-
-        document.execCommand("styleWithCSS", false, true);
-        document.execCommand("foreColor", false, hex);
         emit();
     };
 
-    // font size in px for the selected text, or the whole text when nothing is selected.
-    // execCommand only knows sizes 1-7, so mark the text with 7 and swap in a real px size.
+    // execCommand only knows sizes 1-7, so a selection is marked with 7 and swapped for a real px size
     const applyFontSize = (px) => {
         setFontSize(px);
 
-        const editor = ref.current;
-        editor.focus();
-
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-
-        const range = savedRange.current;
-        if (range && !range.collapsed) {
+        const range = selectedRange();
+        if (range) {
+            const editor = ref.current;
+            editor.focus();
+            const sel = window.getSelection();
+            sel.removeAllRanges();
             sel.addRange(range);
+            document.execCommand("styleWithCSS", false, false);
+            document.execCommand("fontSize", false, "7");
+            editor.querySelectorAll('font[size="7"]').forEach((node) => {
+                const span = document.createElement("span");
+                span.style.fontSize = `${px}px`;
+                span.innerHTML = node.innerHTML;
+                node.replaceWith(span);
+            });
         } else {
-            const all = document.createRange();
-            all.selectNodeContents(editor);
-            sel.addRange(all);
+            styleWholeText("font-size", `${px}px`);
         }
-
-        document.execCommand("styleWithCSS", false, false);
-        document.execCommand("fontSize", false, "7");
-        editor.querySelectorAll(`font[size="7"]`).forEach((node) => {
-            const span = document.createElement("span");
-            span.style.fontSize = `${px}px`;
-            span.innerHTML = node.innerHTML;
-            node.replaceWith(span);
-        });
         emit();
     };
 

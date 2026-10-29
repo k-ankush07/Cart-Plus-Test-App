@@ -23,7 +23,7 @@ export const defaultSettings = {
 };
 
 export const defaultHeaderSettings = {
-  height: "tall",
+  height: "slim",
   border: "thin",
   backgroundColor: "#ffffff00",
   titleType: "inherit",
@@ -36,9 +36,9 @@ export const defaultHeaderSettings = {
   fontWeight: "semibold",
   fontSize: 16,
   closePosition: "right",
-  iconBgColor: "#ffffff",
-  iconbgHoverColor: "#00000014",
-  iconSize: "medium",
+  iconBgColor: "#00000000",
+  iconbgHoverColor: "#00000000",
+  iconSize: "small",
   iconThickNess: "normal",
   iconColor: "#637381",
   iconHoverColor: "#637381",
@@ -111,7 +111,7 @@ export const defaultRecommendationsSettings = {
 
 export const defaultUpsellsSettings = {
   enabled: true,
-  useAiRecommended: true,
+  useAiRecommended: false,
   recommendationAlgorithm: "related",
   useSmartVariantMatching: true,
   sourceType: "products",

@@ -51,7 +51,7 @@ export default function BannerImage({
 
       const data = await uploadImage(apiUrl, file, shop, accessToken);
       if (!data?.imageUrl) throw new Error("imageUrl missing in response");
-      update({ image: data.imageUrl, enabled: true });
+      update({ image: data.imageUrl });
     } catch (err) {
       console.error("Banner upload failed:", err);
       setError("Upload failed. Please try again.");

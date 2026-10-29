@@ -452,7 +452,7 @@ button.cart-app-item__qty-btn.cart-plus-product-quantity-minus.cart-plus-public-
 }
 
 .tier-card {
-    padding: 18px 20px 10px;
+    padding: 18px 20px 10px 16px;
     /* background: #fff; */
 }
 
@@ -461,6 +461,10 @@ button.cart-app-item__qty-btn.cart-plus-product-quantity-minus.cart-plus-public-
     font-weight: 500;
     margin-bottom: 15px;
     text-align: center;
+}
+
+.cart-plus-not-selected-product {
+    border: 1px solid rgba(0, 0, 0, .08);
 }
 
 .progress-wrapper {
@@ -2034,6 +2038,13 @@ input.cart-plus-offers-code-input:focus {
     outline: none;
 }
 
+.cart-plus-timer.cart-plus-timer--text {
+    line-height: 1.2;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, .08);
+    transition: background .15s, color .1s, font-size .1s;
+}
+
 .sb-row { cursor: pointer; outline: none; }
 .sb-row:hover > .Polaris-Box { background: var(--p-color-bg-surface-hover); }
 .sb-row:focus-visible > .Polaris-Box { outline: 2px solid var(--p-color-border-focus); }
@@ -2049,22 +2060,22 @@ input.cart-plus-offers-code-input:focus {
 
 .sb-switch {
   position: relative; width: 32px; height: 18px; padding: 0; flex-shrink: 0;
-  border: 1px solid var(--p-color-border); border-radius: 4px;
+  border: 1px solid var(--p-color-border); border-radius: 5px;
   background: var(--p-color-bg-fill-secondary); cursor: pointer; appearance: none;
-  transition: background .15s ease;
+  transition: background .15s ease; display: inline-block;
 }
 .sb-switch-knob {
-  position: absolute;
-  top: 50%;
-  left: 3px;
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
-  background: #fff;
-  box-shadow: 0 1px 2px #00000047;
-  transform: translateY(-50%);
-  transition: transform 0.3s;
-  pointer-events: none;
+    content: "";
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    left: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #fff;
+    border-radius: 3px;
+    transition: transform .3s;
+    box-shadow: 0 1px 2px #00000047;
 }
 
 .sb-switch.is-on .sb-switch-knob {

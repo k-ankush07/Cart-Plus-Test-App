@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { getTimer, formatParts, pad } from "../utils/timer";
 import { backgroundToCss } from "../utils/background";
 import { LibraryIcon } from "../ui/IconLibrary";
@@ -25,7 +25,7 @@ export default function Timer({ headerSettings, designSettings }) {
 
   const parts = formatParts(left);
   const clock = `${pad(parts.min + parts.hrs * 60 + parts.days * 1440)}:${pad(parts.sec)}`;
-  const color = designSettings?.textColor;
+  const color = designSettings?.accentText || designSettings?.textColor;
   // message is rich text (HTML); {{timer}} is swapped for the live countdown
   const TOKEN = /\{\{timer\}\}|\{timer\}/gi;
   const messageHtml = String(timer.message).replace(TOKEN, `<strong>${clock}</strong>`);
@@ -38,6 +38,12 @@ export default function Timer({ headerSettings, designSettings }) {
     padding: "10px 20px",
     textAlign: timer.alignment,
     fontSize: 14,
+    // divider follows the chosen theme color (text color when no theme is set)
+    // (inline so the digits and bar styles get it too, not only the text style)
+    borderBottom: `1px solid ${
+      designSettings?.accentBorder ||
+      (color ? `color-mix(in srgb, ${color} 14%, transparent)` : "rgba(0, 0, 0, 0.08)")
+    }`,
   };
   const justify =
     timer.alignment === "left" ? "flex-start" : timer.alignment === "right" ? "flex-end" : "center";
@@ -51,12 +57,46 @@ export default function Timer({ headerSettings, designSettings }) {
     ];
     return (
       <div className="cart-plus-timer cart-plus-timer--digits" style={wrapper}>
-        <div style={{ display: "flex", justifyContent: justify, gap: 10 }}>
-          {cells.map(([key, value]) => (
-            <div key={key} style={{ minWidth: 40 }}>
-              <div style={{ fontSize: 20, fontWeight: 700 }}>{pad(value)}</div>
-              <div style={{ fontSize: 10, opacity: 0.7 }}>{timer.labels[key]}</div>
-            </div>
+        <div style={{ display: "flex", justifyContent: justify, alignItems: "flex-start", gap: 6 }}>
+          {cells.map(([key, value], i) => (
+            <Fragment key={key}>
+              {i > 0 && (
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 700,
+                    lineHeight: "28px",
+                    ...(timer.digitsColor ? { color: timer.digitsColor } : {}),
+                  }}
+                >
+                  :
+                </div>
+              )}
+              <div style={{ minWidth: 40 }}>
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 700,
+                    lineHeight: "28px",
+                    ...(timer.digitsColor ? { color: timer.digitsColor } : {}),
+                    ...(timer.boxColor
+                      ? { background: timer.boxColor, borderRadius: 6, padding: "0 8px" }
+                      : {}),
+                  }}
+                >
+                  {pad(value)}
+                </div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    marginTop: 2,
+                    ...(timer.labelsColor ? { color: timer.labelsColor } : { opacity: 0.7 }),
+                  }}
+                >
+                  {timer.labels[key]}
+                </div>
+              </div>
+            </Fragment>
           ))}
         </div>
         <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>
@@ -73,19 +113,26 @@ export default function Timer({ headerSettings, designSettings }) {
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
           <span>
             <span style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 6 }}>
-              <LibraryIcon value={timer.icon} size={20} color={timer.iconColor} />
+              <LibraryIcon value={timer.icon} size={22} color={designSettings?.accentText || timer.iconColor} />
             </span>
             <span dangerouslySetInnerHTML={{ __html: messageNoTimer || "Offer expires soon" }} />
           </span>
-          <strong>{clock}</strong>
+          <strong style={timer.digitsColor ? { color: timer.digitsColor } : undefined}>{clock}</strong>
         </div>
-        <div style={{ height: 8, borderRadius: 4, background: "rgba(0,0,0,0.12)", marginTop: 6 }}>
+        <div
+          style={{
+            height: 8,
+            borderRadius: 4,
+            background: timer.barBackground || "rgba(0,0,0,0.12)",
+            marginTop: 6,
+          }}
+        >
           <div
             style={{
               width: `${pct}%`,
               height: "100%",
               borderRadius: 4,
-              background: designSettings?.buttonColor || "#303030",
+              background: timer.barColor || designSettings?.buttonColor || "#303030",
               transition: "width 1s linear",
             }}
           />
@@ -97,7 +144,7 @@ export default function Timer({ headerSettings, designSettings }) {
   return (
     <div className="cart-plus-timer cart-plus-timer--text" style={wrapper}>
       <span style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 8 }}>
-        <LibraryIcon value={timer.icon} size={16} color={timer.iconColor} />
+        <LibraryIcon value={timer.icon} size={20} color={designSettings?.accentText || timer.iconColor} />
       </span>
       <span dangerouslySetInnerHTML={{ __html: messageHtml }} />
     </div>

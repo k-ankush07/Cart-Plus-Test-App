@@ -225,6 +225,7 @@ export default function OneTickUpsell({
                       label="Manual selection"
                       checked={offer.mode === "manual"}
                       onChange={() => updateOffer(offer.id, { mode: "manual" })}
+                      disabled
                     />
                   </InlineStack>
 

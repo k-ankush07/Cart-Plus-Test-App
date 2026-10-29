@@ -5,30 +5,74 @@ const getIcon = (type) => {
   switch (type) {
     case "shipping":
       return (
-        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
-          <path d="M4.75 4.5a.75.75 0 0 0 0 1.5h3.25a1 1 0 0 1 0 2h-4.75a.75.75 0 0 0 0 1.5h3a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 0 0 1.5h.458a2.5 2.5 0 1 0 4.78.75h3.024a2.5 2.5 0 1 0 4.955-.153 1.75 1.75 0 0 0 1.033-1.597v-1.22a1.75 1.75 0 0 0-1.326-1.697l-1.682-.42a.25.25 0 0 1-.18-.174l-.426-1.494a2.75 2.75 0 0 0-2.645-1.995h-6.991Zm2.75 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm8 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" fillRule="evenodd" />
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          width="20"
+          height="20"
+          fill="currentColor"
+        >
+          <path
+            d="M4.75 4.5a.75.75 0 0 0 0 1.5h3.25a1 1 0 0 1 0 2h-4.75a.75.75 0 0 0 0 1.5h3a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 0 0 1.5h.458a2.5 2.5 0 1 0 4.78.75h3.024a2.5 2.5 0 1 0 4.955-.153 1.75 1.75 0 0 0 1.033-1.597v-1.22a1.75 1.75 0 0 0-1.326-1.697l-1.682-.42a.25.25 0 0 1-.18-.174l-.426-1.494a2.75 2.75 0 0 0-2.645-1.995h-6.991Zm2.75 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm8 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"
+            fillRule="evenodd"
+          />
         </svg>
       );
     case "discount":
       return (
-        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
-          <path d="M8.575 4.649a3.75 3.75 0 0 1 2.7-1.149h1.975a3.25 3.25 0 0 1 3.25 3.25v2.187a3.25 3.25 0 0 1-.996 2.34l-4.747 4.572a2.5 2.5 0 0 1-3.502-.033l-2.898-2.898a2.75 2.75 0 0 1-.036-3.852l4.254-4.417Zm4.425 3.351a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fillRule="evenodd" />
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          width="20"
+          height="20"
+          fill="currentColor"
+        >
+          <path
+            d="M8.575 4.649a3.75 3.75 0 0 1 2.7-1.149h1.975a3.25 3.25 0 0 1 3.25 3.25v2.187a3.25 3.25 0 0 1-.996 2.34l-4.747 4.572a2.5 2.5 0 0 1-3.502-.033l-2.898-2.898a2.75 2.75 0 0 1-.036-3.852l4.254-4.417Zm4.425 3.351a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+            fillRule="evenodd"
+          />
         </svg>
       );
     case "product":
       return (
-        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          width="20"
+          height="20"
+          fill="currentColor"
+        >
           <path d="M7.835 9.5h-.96c-.343 0-.625-.28-.625-.628 0-.344.28-.622.619-.622.242 0 .463.142.563.363l.403.887Z" />
           <path d="M10.665 9.5h.96c.343 0 .625-.28.625-.628 0-.344-.28-.622-.619-.622-.242 0-.463.142-.563.363l-.403.887Z" />
-          <path fillRule="evenodd" d="M8.5 4h-3.25c-1.519 0-2.75 1.231-2.75 2.75v2.25h1.25c.414 0 .75.336.75.75s-.336.75-.75.75h-1.25v2.75c0 1.519 1.231 2.75 2.75 2.75h3.441c-.119-.133-.191-.308-.191-.5v-2c0-.414.336-.75.75-.75s.75.336.75.75v2c0 .192-.072.367-.191.5h4.941c1.519 0 2.75-1.231 2.75-2.75v-2.75h-2.75c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h2.75v-2.25c0-1.519-1.231-2.75-2.75-2.75h-4.75v2.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75v-2.25Zm.297 3.992c-.343-.756-1.097-1.242-1.928-1.242-1.173 0-2.119.954-2.119 2.122 0 1.171.95 2.128 2.125 2.128h.858c-.595.51-1.256.924-1.84 1.008-.41.058-.694.438-.635.848.058.41.438.695.848.636 1.11-.158 2.128-.919 2.803-1.53.121-.11.235-.217.341-.322.106.105.22.213.34.322.676.611 1.693 1.372 2.804 1.53.41.059.79-.226.848-.636.059-.41-.226-.79-.636-.848-.583-.084-1.244-.498-1.839-1.008h.858c1.176 0 2.125-.957 2.125-2.128 0-1.168-.946-2.122-2.119-2.122-.83 0-1.585.486-1.928 1.242l-.453.996-.453-.996Z" />
+          <path
+            fillRule="evenodd"
+            d="M8.5 4h-3.25c-1.519 0-2.75 1.231-2.75 2.75v2.25h1.25c.414 0 .75.336.75.75s-.336.75-.75.75h-1.25v2.75c0 1.519 1.231 2.75 2.75 2.75h3.441c-.119-.133-.191-.308-.191-.5v-2c0-.414.336-.75.75-.75s.75.336.75.75v2c0 .192-.072.367-.191.5h4.941c1.519 0 2.75-1.231 2.75-2.75v-2.75h-2.75c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h2.75v-2.25c0-1.519-1.231-2.75-2.75-2.75h-4.75v2.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75v-2.25Zm.297 3.992c-.343-.756-1.097-1.242-1.928-1.242-1.173 0-2.119.954-2.119 2.122 0 1.171.95 2.128 2.125 2.128h.858c-.595.51-1.256.924-1.84 1.008-.41.058-.694.438-.635.848.058.41.438.695.848.636 1.11-.158 2.128-.919 2.803-1.53.121-.11.235-.217.341-.322.106.105.22.213.34.322.676.611 1.693 1.372 2.804 1.53.41.059.79-.226.848-.636.059-.41-.226-.79-.636-.848-.583-.084-1.244-.498-1.839-1.008h.858c1.176 0 2.125-.957 2.125-2.128 0-1.168-.946-2.122-2.119-2.122-.83 0-1.585.486-1.928 1.242l-.453.996-.453-.996Z"
+          />
         </svg>
       );
     default:
       return (
-        <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          width="20"
+          height="20"
+          fill="currentColor"
+        >
           <path d="M7.835 9.5h-.96c-.343 0-.625-.28-.625-.628 0-.344.28-.622.619-.622.242 0 .463.142.563.363l.403.887Z" />
           <path d="M10.665 9.5h.96c.343 0 .625-.28.625-.628 0-.344-.28-.622-.619-.622-.242 0-.463.142-.563.363l-.403.887Z" />
-          <path fillRule="evenodd" d="M8.5 4h-3.25c-1.519 0-2.75 1.231-2.75 2.75v2.25h1.25c.414 0 .75.336.75.75s-.336.75-.75.75h-1.25v2.75c0 1.519 1.231 2.75 2.75 2.75h3.441c-.119-.133-.191-.308-.191-.5v-2c0-.414.336-.75.75-.75s.75.336.75.75v2c0 .192-.072.367-.191.5h4.941c1.519 0 2.75-1.231 2.75-2.75v-2.75h-2.75c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h2.75v-2.25c0-1.519-1.231-2.75-2.75-2.75h-4.75v2.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75v-2.25Zm.297 3.992c-.343-.756-1.097-1.242-1.928-1.242-1.173 0-2.119.954-2.119 2.122 0 1.171.95 2.128 2.125 2.128h.858c-.595.51-1.256.924-1.84 1.008-.41.058-.694.438-.635.848.058.41.438.695.848.636 1.11-.158 2.128-.919 2.803-1.53.121-.11.235-.217.341-.322.106.105.22.213.34.322.676.611 1.693 1.372 2.804 1.53.41.059.79-.226.848-.636.059-.41-.226-.79-.636-.848-.583-.084-1.244-.498-1.839-1.008h.858c1.176 0 2.125-.957 2.125-2.128 0-1.168-.946-2.122-2.119-2.122-.83 0-1.585.486-1.928 1.242l-.453.996-.453-.996Z" />
+          <path
+            fillRule="evenodd"
+            d="M8.5 4h-3.25c-1.519 0-2.75 1.231-2.75 2.75v2.25h1.25c.414 0 .75.336.75.75s-.336.75-.75.75h-1.25v2.75c0 1.519 1.231 2.75 2.75 2.75h3.441c-.119-.133-.191-.308-.191-.5v-2c0-.414.336-.75.75-.75s.75.336.75.75v2c0 .192-.072.367-.191.5h4.941c1.519 0 2.75-1.231 2.75-2.75v-2.75h-2.75c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h2.75v-2.25c0-1.519-1.231-2.75-2.75-2.75h-4.75v2.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75v-2.25Zm.297 3.992c-.343-.756-1.097-1.242-1.928-1.242-1.173 0-2.119.954-2.119 2.122 0 1.171.95 2.128 2.125 2.128h.858c-.595.51-1.256.924-1.84 1.008-.41.058-.694.438-.635.848.058.41.438.695.848.636 1.11-.158 2.128-.919 2.803-1.53.121-.11.235-.217.341-.322.106.105.22.213.34.322.676.611 1.693 1.372 2.804 1.53.41.059.79-.226.848-.636.059-.41-.226-.79-.636-.848-.583-.084-1.244-.498-1.839-1.008h.858c1.176 0 2.125-.957 2.125-2.128 0-1.168-.946-2.122-2.119-2.122-.83 0-1.585.486-1.928 1.242l-.453.996-.453-.996Z"
+          />
         </svg>
       );
   }
@@ -43,19 +87,16 @@ export default function TieredRewards({ rewardsSettings, currency }) {
 
   const isQuantity = rewardsSettings.calculationType === "quantity";
 
-  const totalValue = isQuantity
-    ? totalMinProduct
-    : totalCart;
+  const totalValue = isQuantity ? totalMinProduct : totalCart;
 
   const getTierValue = (tier) =>
     isQuantity ? tier.minQuantity || 0 : tier.minAmount || 0;
 
   const sortedTiers = [...tiers].sort(
-    (a, b) => getTierValue(a) - getTierValue(b)
+    (a, b) => getTierValue(a) - getTierValue(b),
   );
 
-  const maxAmount =
-    getTierValue(sortedTiers[sortedTiers.length - 1]) || 1;
+  const maxAmount = getTierValue(sortedTiers[sortedTiers.length - 1]) || 1;
 
   const getStepPosition = (index) => {
     const len = sortedTiers.length;
@@ -64,7 +105,7 @@ export default function TieredRewards({ rewardsSettings, currency }) {
   };
 
   const currentTier = sortedTiers.find(
-    (tier) => totalValue < getTierValue(tier)
+    (tier) => totalValue < getTierValue(tier),
   );
 
   const getFillPercent = () => {
@@ -73,10 +114,7 @@ export default function TieredRewards({ rewardsSettings, currency }) {
     const firstTier = sortedTiers[0];
 
     if (totalValue < getTierValue(firstTier)) {
-      return (
-        (totalValue / getTierValue(firstTier)) *
-        getStepPosition(0)
-      );
+      return (totalValue / getTierValue(firstTier)) * getStepPosition(0);
     }
 
     for (let i = 0; i < sortedTiers.length - 1; i++) {
@@ -93,8 +131,7 @@ export default function TieredRewards({ rewardsSettings, currency }) {
 
         return (
           getStepPosition(i) +
-          progress *
-          (getStepPosition(i + 1) - getStepPosition(i))
+          progress * (getStepPosition(i + 1) - getStepPosition(i))
         );
       }
     }
@@ -118,15 +155,19 @@ export default function TieredRewards({ rewardsSettings, currency }) {
     totalValue >= maxAmount
       ? rewardsSettings.successText
       : currentTier?.title.replace(
-        "{AMOUNT}",
-        isQuantity
-          ? `${getRemainingAmount(currentTier)} items`
-          : `${currency}${getRemainingAmount(currentTier)}`
-      );
+          "{AMOUNT}",
+          isQuantity
+            ? `${getRemainingAmount(currentTier)} items`
+            : `${currency}${getRemainingAmount(currentTier)}`,
+        );
 
   // gradient-aware colours; fall back to the plain bar colours
-  const trackBg = backgroundToCss(rewardsSettings.barBackground) || rewardsSettings.backgroundColor;
-  const fillBg = backgroundToCss(rewardsSettings.barProgress || templateBg) || rewardsSettings.textColor;
+  const trackBg =
+    backgroundToCss(rewardsSettings.barBackground) ||
+    rewardsSettings.backgroundColor;
+  const fillBg =
+    backgroundToCss(rewardsSettings.barProgress || templateBg) ||
+    rewardsSettings.textColor;
   const barHeight = rewardsSettings.barLength || 5;
   const message = (
     <p
@@ -135,8 +176,17 @@ export default function TieredRewards({ rewardsSettings, currency }) {
     />
   );
   const bar = (percent) => (
-    <div style={{ height: barHeight, borderRadius: barHeight, background: trackBg, overflow: "hidden" }}>
-      <div style={{ width: `${percent}%`, height: "100%", background: fillBg }} />
+    <div
+      style={{
+        height: barHeight,
+        borderRadius: barHeight,
+        background: trackBg,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{ width: `${percent}%`, height: "100%", background: fillBg }}
+      />
     </div>
   );
   const fmt = (n) => (isQuantity ? `${n}` : `${currency}${n}`);
@@ -147,21 +197,49 @@ export default function TieredRewards({ rewardsSettings, currency }) {
 
   // Reward: ticket card with the current reward on the left, next reward on the right
   if (barStyle === "reward") {
+    // labels use the bar colour (first stop when it is a gradient)
+    const labelColor =
+      /#[0-9a-fA-F]{3,8}|rgba?([^)]*)/.exec(String(fillBg))?.[0] || "inherit";
+    const labelStyle = {
+      fontSize: 11,
+      fontWeight: 700,
+      letterSpacing: 0.5,
+      color: labelColor,
+    };
     return (
       <div className="cart-plus-rewards" style={{ padding: "12px 16px" }}>
-        <div style={{ display: "flex", border: "1px dashed", borderColor: fillBg, borderRadius: 6, overflow: "hidden" }}>
-          <div style={{ flex: 1, padding: 12, textAlign: "center" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textAlign: "left" }}>
+        <div
+          style={{
+            display: "flex",
+            border: "1px dashed",
+            borderColor: labelColor,
+            borderRadius: 16,
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0, padding: "16px 18px", textAlign: "center" }}>
+            <div style={{ ...labelStyle, textAlign: "left", marginBottom: 8 }}>
               {ticketLabel}
             </div>
             {message}
             {bar(fillPercent)}
           </div>
-          <div style={{ width: 110, padding: 12, textAlign: "center", borderLeft: "1px dashed", borderColor: fillBg }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>
-              {nextLabel}
-            </div>
-            <div style={{ marginTop: 6, display: "inline-flex", width: 32, height: 32 }}>{getIcon("product")}</div>
+          <div
+            style={{
+              width: 120,
+              flexShrink: 0,
+              padding: "16px 12px",
+              textAlign: "center",
+              borderLeft: "1px dashed",
+              borderColor: labelColor,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <div style={labelStyle}>{nextLabel}</div>
+            <div style={{ fontSize: 40, lineHeight: 1 }}>🎁</div>
           </div>
         </div>
       </div>
@@ -171,7 +249,10 @@ export default function TieredRewards({ rewardsSettings, currency }) {
   // Next Reward: message plus one continuous bar
   if (barStyle === "nextReward") {
     return (
-      <div className="cart-plus-rewards" style={{ padding: "12px 16px", textAlign: "center" }}>
+      <div
+        className="cart-plus-rewards"
+        style={{ padding: "12px 16px", textAlign: "center" }}
+      >
         {message}
         {bar(fillPercent)}
       </div>
@@ -181,13 +262,30 @@ export default function TieredRewards({ rewardsSettings, currency }) {
   // Milestone: one circle per tier, "DONE" once reached
   if (barStyle === "milestone") {
     return (
-      <div className="cart-plus-rewards" style={{ padding: "12px 16px", textAlign: "center" }}>
+      <div
+        className="cart-plus-rewards"
+        style={{ padding: "12px 16px", textAlign: "center" }}
+      >
         {message}
-        <div style={{ display: "flex", justifyContent: "space-around", marginTop: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-around",
+            marginTop: 8,
+          }}
+        >
           {sortedTiers.map((tier, index) => {
             const reached = totalValue >= getTierValue(tier);
             return (
-              <div key={tier.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+              <div
+                key={tier.id}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
                 <div
                   style={{
                     width: 64,
@@ -214,7 +312,9 @@ export default function TieredRewards({ rewardsSettings, currency }) {
                     index + 1
                   )}
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 600 }}>{tier.description}</span>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>
+                  {tier.description}
+                </span>
               </div>
             );
           })}
@@ -226,7 +326,10 @@ export default function TieredRewards({ rewardsSettings, currency }) {
   // Threshold Tracker: one bar per tier with the current and target values underneath
   if (barStyle === "threshold") {
     return (
-      <div className="cart-plus-rewards" style={{ padding: "12px 16px", textAlign: "center" }}>
+      <div
+        className="cart-plus-rewards"
+        style={{ padding: "12px 16px", textAlign: "center" }}
+      >
         {message}
         <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
           {sortedTiers.map((tier, index) => {
@@ -245,7 +348,14 @@ export default function TieredRewards({ rewardsSettings, currency }) {
             );
           })}
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginTop: 4 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: 11,
+            marginTop: 4,
+          }}
+        >
           <span>{fmt(totalValue)}</span>
           <span>{fmt(maxAmount)}</span>
         </div>
@@ -267,12 +377,16 @@ export default function TieredRewards({ rewardsSettings, currency }) {
                 let segFill = 0;
                 if (fillPercent >= segEnd) segFill = 100;
                 else if (fillPercent > segStart)
-                  segFill = ((fillPercent - segStart) / (segEnd - segStart)) * 100;
+                  segFill =
+                    ((fillPercent - segStart) / (segEnd - segStart)) * 100;
 
                 const reached = totalValue >= getTierValue(tier);
 
                 return (
-                  <div key={tier.id} className="tier-cell cart-plus-rewards-tier cart-plus-public-component-segmented-progress-bar__segment">
+                  <div
+                    key={tier.id}
+                    className="tier-cell cart-plus-rewards-tier cart-plus-public-component-segmented-progress-bar__segment"
+                  >
                     <div
                       className="cell-bar cart-plus-rewards-bar-background cart-plus-public-rewards__bar"
                       style={{
@@ -288,7 +402,10 @@ export default function TieredRewards({ rewardsSettings, currency }) {
                         }}
                       />
                     </div>
-                    <div className="tier-circle-wrap" style={{ padding: `0 ${rewardsSettings.barGap || 0}px` }}>
+                    <div
+                      className="tier-circle-wrap"
+                      style={{ padding: `0 ${rewardsSettings.barGap || 0}px` }}
+                    >
                       {tier.showIcon !== false && (
                         <>
                           <div

@@ -80,6 +80,10 @@ export function applyTemplateTheme(ds) {
     textColor: text,
     subtotalColor: text,
     accentColor: solidFooter,
+    // dividers (e.g. under the Timer) follow the chosen theme color
+    accentBorder: mix(gradient ? t.gradientStart : t.themeColor, 22, surface),
+    // text that sits on the tinted header area (e.g. the Timer)
+    accentText: mix(gradient ? t.gradientStart : t.themeColor, 85, text),
     buttonColor: accent,
     buttonTextColor: "#ffffff",
     buttonRadius: String(t.radiusButtons),

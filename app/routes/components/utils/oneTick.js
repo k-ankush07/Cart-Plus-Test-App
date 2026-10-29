@@ -1,4 +1,15 @@
 // One Tick Upsell lives in cartSettings.oneTick (saved with the cart settings).
+// Every cart starts with one auto-recommended offer (fixed id so it stays equal to the default).
+const DEFAULT_OFFER = {
+  id: "offer-default",
+  mode: "auto", // "auto" | "manual"
+  selected: { type: "products", items: [] },
+  discountType: "percentage", // "none" | "percentage" | "amount"
+  discountValue: 10,
+  showLabel: true,
+  label: "Save {{saved_percentage}}",
+};
+
 export const ONE_TICK_DEFAULTS = {
   enabled: false,
   title: "You might also like",
@@ -7,7 +18,7 @@ export const ONE_TICK_DEFAULTS = {
   layout: "list", // "row" | "list" | "carousel"
   trigger: "button", // "button" | "checkbox" | "toggle"
   buttonLabel: "Add",
-  offers: [], // see newOffer()
+  offers: [DEFAULT_OFFER], // see newOffer()
   imageSize: 120,
   radius: 8,
   primaryTextColor: "#000000",

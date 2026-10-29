@@ -10,7 +10,7 @@ export default function NoProductPlaceholder({
   titleColor,
   textColor,
   cardBackground,
-  radius = 8,
+  radius = 12,
 }) {
   return (
     <div className="cart-plus-no-product" style={{ padding: "12px 16px" }}>
@@ -25,12 +25,13 @@ export default function NoProductPlaceholder({
             color: titleColor,
           }}
         >
-          {icon && <LibraryIcon value={icon} size={20} color={iconColor} />}
+          {icon && <LibraryIcon value={icon} size={22} color={iconColor} />}
           <span dangerouslySetInnerHTML={{ __html: title }} />
         </div>
       )}
 
       <div
+       className="cart-plus-not-selected-product"
         style={{
           display: "flex",
           alignItems: "center",
@@ -55,8 +56,8 @@ export default function NoProductPlaceholder({
             background: "rgba(21, 83, 216, 0.06)",
           }}
         >
-          <span style={{ display: "inline-flex", width: 20, height: 20 }}>
-            <LockIcon width={20} height={20} style={{ fill: "currentColor" }} />
+          <span style={{ display: "inline-flex", width: 22, height: 22 }}>
+            <LockIcon width={22} height={22} style={{ fill: "currentColor" }} />
           </span>
         </span>
         <span style={{ fontSize: 14, fontWeight: 600, color: textColor }}>

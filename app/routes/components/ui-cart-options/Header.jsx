@@ -13,7 +13,7 @@ import {
   Divider,
   InlineGrid,
   DropZone,
-  ProgressBar
+  ProgressBar,
 } from "@shopify/polaris";
 
 import {
@@ -21,7 +21,7 @@ import {
   ImageIcon,
   AdjustIcon,
   LayoutHeaderIcon,
-  PlusCircleIcon
+  PlusCircleIcon,
 } from "@shopify/polaris-icons";
 
 import ColorInput from "../ui/ColorInput";
@@ -30,7 +30,13 @@ import { uploadImage } from "../../../services/apiRoutes";
 import { useState } from "react";
 import "../../../index.css";
 
-export default function Header({ handleChange, headerSettings, accessToken, shop, apiUrl }) {
+export default function Header({
+  handleChange,
+  headerSettings,
+  accessToken,
+  shop,
+  apiUrl,
+}) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -51,7 +57,10 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
 
       const interval = setInterval(() => {
         setUploadProgress((prev) => {
-          if (prev >= 90) { clearInterval(interval); return 90; }
+          if (prev >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
           return prev + 10;
         });
       }, 200);
@@ -67,7 +76,6 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
       }
 
       updateHeader("logo", data.imageUrl);
-
     } catch (err) {
       console.error("Upload failed:", err);
     } finally {
@@ -89,7 +97,9 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
                 <Icon source={LayoutHeaderIcon} />
               </Box>
               <InlineStack gap="200">
-                <Text variant="headingMd" as="h2">Header</Text>
+                <Text variant="headingMd" as="h2">
+                  Header
+                </Text>
               </InlineStack>
             </InlineStack>
             <InlineStack gap="200" />
@@ -150,9 +160,17 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
           <BlockStack gap="100">
             <LegacyStack distribution="fillEvenly">
               {[
-                { label: "Use theme titles", value: "inherit", icon: TextTitleIcon },
+                {
+                  label: "Use theme titles",
+                  value: "inherit",
+                  icon: TextTitleIcon,
+                },
                 { label: "Brand logo", value: "logo", icon: ImageIcon },
-                { label: "Customize text style", value: "custom", icon: AdjustIcon },
+                {
+                  label: "Customize text style",
+                  value: "custom",
+                  icon: AdjustIcon,
+                },
               ].map((item) => (
                 <div
                   key={item.value}
@@ -164,13 +182,25 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
                     borderRadius: "8px",
                     borderWidth: "1px",
                     borderStyle: "solid",
-                    borderColor: headerSettings.titleType === item.value ? "rgb(46, 94, 131)" : "rgb(202, 204, 207)",
-                    backgroundColor: headerSettings.titleType === item.value ? "rgb(236, 244, 254)" : "transparent",
+                    borderColor:
+                      headerSettings.titleType === item.value
+                        ? "rgb(46, 94, 131)"
+                        : "rgb(202, 204, 207)",
+                    backgroundColor:
+                      headerSettings.titleType === item.value
+                        ? "rgb(236, 244, 254)"
+                        : "transparent",
                   }}
                 >
                   <BlockStack inlineAlign="center" gap="100">
                     <Icon source={item.icon} />
-                    <Text variant={headerSettings.titleType === item.value ? "bodyMd" : "bodyMd"}>
+                    <Text
+                      variant={
+                        headerSettings.titleType === item.value
+                          ? "bodyMd"
+                          : "bodyMd"
+                      }
+                    >
                       {item.label}
                     </Text>
                   </BlockStack>
@@ -226,31 +256,35 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
 
           {headerSettings.titleType === "logo" && (
             <BlockStack gap="200">
-
               <InlineStack align="space-between" blockAlign="center">
                 <Text variant="bodyMd" fontWeight="medium">
                   Logo
                 </Text>
 
-                {headerSettings.logo && (<Button
-                  variant="plain"
-                  tone="critical"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateHeader("logo", null);
-                  }}
-                >
-                  Remove
-                </Button>)}
+                {headerSettings.logo && (
+                  <Button
+                    variant="plain"
+                    tone="critical"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateHeader("logo", null);
+                    }}
+                  >
+                    Remove
+                  </Button>
+                )}
               </InlineStack>
 
               {isUploading ? (
-                <DropZone
-                  accept="image/*"
-                  type="image"
-                  disabled
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                <DropZone accept="image/*" type="image" disabled>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: "100%",
+                    }}
+                  >
                     <Box width="35%">
                       <ProgressBar
                         progress={uploadProgress}
@@ -270,8 +304,13 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
                     }
                   }}
                 >
-                  <div style={{ position: "relative", width: "100%", height: "100%" }}>
-
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
                     <Box padding="500">
                       <img
                         alt="Logo"
@@ -328,7 +367,6 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
                 suffix={<Text>100px</Text>}
                 output
               />
-
             </BlockStack>
           )}
 
@@ -416,15 +454,14 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
           <InlineGrid columns={2} gap="200">
             <ColorInput
               label="Background color"
-              value={headerSettings.iconBgColor}
+              value={headerSettings.iconBgColor || "#00000000"}
               onChange={(val) => updateHeader("iconBgColor", val)}
             />
             <ColorInput
               label="Background hover color"
-              value={headerSettings.iconbgHoverColor}
+              value={headerSettings.iconbgHoverColor || "#00000000"}
               onChange={(val) => updateHeader("iconbgHoverColor", val)}
             />
-
           </InlineGrid>
           <Box paddingBlockStart="200" paddingBlockEnd="200">
             <Divider />
@@ -436,7 +473,7 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
               {["small", "medium", "large"].map((val) => (
                 <Button
                   key={val}
-                  pressed={headerSettings.iconSize === val}
+                  pressed={(headerSettings.iconSize || "small") === val}
                   onClick={() => updateHeader("iconSize", val)}
                 >
                   {val.charAt(0).toUpperCase() + val.slice(1)}
@@ -557,7 +594,7 @@ export default function Header({ handleChange, headerSettings, accessToken, shop
                 <ColorInput
                   label="Border color"
                   value={headerSettings.iconBorderColor || "#000000"}
-                  onChange={() => { }}
+                  onChange={() => {}}
                   disabled
                 />
               </div>

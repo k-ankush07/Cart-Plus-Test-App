@@ -40,7 +40,7 @@ export default function Announcements({ announcementSettings }) {
                 <span style={{ display: "inline-flex", verticalAlign: "middle", marginRight: 8 }}>
                     <LibraryIcon
                         value={announcementSettings.icon}
-                        size={20}
+                        size={25}
                         color={announcementSettings.iconColor}
                     />
                 </span>

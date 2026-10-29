@@ -88,6 +88,8 @@ window.cartPlusApplyTemplateTheme = function (ds) {
     textColor: text,
     subtotalColor: text,
     accentColor: mix(gradient ? t.gradientStart : t.themeColor, t.tintFooter, surface),
+    accentBorder: mix(gradient ? t.gradientStart : t.themeColor, 22, surface),
+    accentText: mix(gradient ? t.gradientStart : t.themeColor, 85, text),
     buttonColor: accent,
     buttonTextColor: "#ffffff",
     buttonRadius: String(t.radiusButtons),
@@ -205,12 +207,17 @@ function cartPlusTimerPaint(blockId, left, total) {
   const justify =
     timer.alignment === "left" ? "flex-start" : timer.alignment === "right" ? "flex-end" : "center";
   const icon = (size) =>
-    window.hubLibraryIconHTML?.(timer.icon, size, window.cartPlusDarkColor(timer.iconColor, "#000000", design.textColor)) || "";
+    window.hubLibraryIconHTML?.(timer.icon, size, design.accentText || window.cartPlusDarkColor(timer.iconColor, "#000000", design.textColor)) || "";
 
   // only the background picked for the Timer; by default it has none
   el.style.cssText = `background:${
     timer.background ? window.cartPlusBgCss(timer.background) : "transparent"
-  };color:${design.textColor || "inherit"};padding:10px 20px;text-align:${timer.alignment};font-size:14px;`;
+  };color:${design.accentText || design.textColor || "inherit"};padding:10px 20px;text-align:${timer.alignment};font-size:14px;border-bottom:1px solid ${
+    design.accentBorder ||
+    (design.textColor
+      ? `color-mix(in srgb, ${design.textColor} 14%, transparent)`
+      : "rgba(0,0,0,.08)")
+  };`;
 
   if (timer.style === "digits") {
     const cells = [
@@ -219,17 +226,19 @@ function cartPlusTimerPaint(blockId, left, total) {
       ["min", parts.min],
       ["sec", parts.sec],
     ];
-    el.innerHTML = `<div style="display:flex;justify-content:${justify};gap:10px;">${cells
+    const digitColor = timer.digitsColor ? `color:${timer.digitsColor};` : "";
+    const colon = `<div style="font-size:20px;font-weight:700;line-height:28px;${digitColor}">:</div>`;
+    el.innerHTML = `<div style="display:flex;justify-content:${justify};align-items:flex-start;gap:6px;">${cells
       .map(
-        ([k, v]) =>
-          `<div style="min-width:40px;"><div style="font-size:20px;font-weight:700;">${pad(v)}</div><div style="font-size:10px;opacity:.7;">${timer.labels[k]}</div></div>`,
+        ([k, v], i) =>
+          `${i > 0 ? colon : ""}<div style="min-width:40px;"><div style="font-size:20px;font-weight:700;line-height:28px;${digitColor}${timer.boxColor ? `background:${timer.boxColor};border-radius:6px;padding:0 8px;` : ""}">${pad(v)}</div><div style="font-size:10px;margin-top:2px;${timer.labelsColor ? `color:${timer.labelsColor};` : "opacity:.7;"}">${timer.labels[k]}</div></div>`,
       )
       .join("")}</div><div style="font-size:11px;opacity:.8;margin-top:4px;">${messageNoTimer}</div>`;
   } else if (timer.style === "bar") {
     const pct = Math.max(0, Math.min(100, (left / total) * 100));
     el.innerHTML = `<div style="display:flex;justify-content:space-between;font-size:14px;">
-        <span><span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${icon(20)}</span>${messageNoTimer || "Offer expires soon"}</span><strong>${clock}</strong></div>
-      <div style="height:8px;border-radius:4px;background:rgba(0,0,0,.12);margin-top:6px;"><div style="width:${pct}%;height:100%;border-radius:4px;background:${design.buttonColor || "#303030"};transition:width 1s linear;"></div></div>`;
+        <span><span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${icon(20)}</span>${messageNoTimer || "Offer expires soon"}</span><strong${timer.digitsColor ? ` style="color:${timer.digitsColor};"` : ""}>${clock}</strong></div>
+      <div style="height:8px;border-radius:4px;background:${timer.barBackground || "rgba(0,0,0,.12)"};margin-top:6px;"><div style="width:${pct}%;height:100%;border-radius:4px;background:${timer.barColor || design.buttonColor || "#303030"};transition:width 1s linear;"></div></div>`;
   } else {
     el.innerHTML = `<span style="display:inline-flex;vertical-align:middle;margin-right:8px;">${icon(16)}</span>${messageHtml}`;
   }

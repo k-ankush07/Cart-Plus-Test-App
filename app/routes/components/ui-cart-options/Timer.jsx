@@ -203,6 +203,50 @@ export default function Timer({
             </InlineGrid>
           </BlockStack>
 </Card>
+        {/* Styles (digits + progress bar only) */}
+        {(timer.style === "digits" || timer.style === "bar") && (
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h3" variant="headingSm">
+                Styles
+              </Text>
+              <InlineGrid columns={3} gap="300">
+                <ColorInput
+                  label="Digits"
+                  value={timer.digitsColor || "#303030"}
+                  onChange={(digitsColor) => update({ digitsColor })}
+                />
+                {timer.style === "digits" ? (
+                  <>
+                    <ColorInput
+                      label="Labels"
+                      value={timer.labelsColor || "#303030"}
+                      onChange={(labelsColor) => update({ labelsColor })}
+                    />
+                    <ColorInput
+                      label="Box"
+                      value={timer.boxColor || "#e8eefb"}
+                      onChange={(boxColor) => update({ boxColor })}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <ColorInput
+                      label="Bar"
+                      value={timer.barColor || "#1a56db"}
+                      onChange={(barColor) => update({ barColor })}
+                    />
+                    <ColorInput
+                      label="Bar Background"
+                      value={timer.barBackground || "#c9d6f5"}
+                      onChange={(barBackground) => update({ barBackground })}
+                    />
+                  </>
+                )}
+              </InlineGrid>
+            </BlockStack>
+          </Card>
+        )}
         <BackgroundInput
           value={timer.background || undefined}
           onChange={(background) => update({ background })}

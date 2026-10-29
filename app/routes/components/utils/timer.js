@@ -10,6 +10,12 @@ export const TIMER_DEFAULTS = {
   removeProducts: false,
   labels: { days: "days", hrs: "hrs", min: "min", sec: "sec" },
   background: null, // BackgroundInput value, null = transparent
+  // Styles card (null = follow the theme / text color)
+  digitsColor: null,
+  labelsColor: null,
+  boxColor: null,
+  barColor: null,
+  barBackground: null,
 };
 
 export const getTimer = (headerSettings) => ({

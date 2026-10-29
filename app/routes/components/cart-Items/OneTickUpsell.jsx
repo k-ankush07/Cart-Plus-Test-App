@@ -575,7 +575,7 @@ export default function OneTickUpsell({
             />
           )}
           {variantSelect(offer, product, variant)}
-          {!isRow && <div style={{ marginTop: 8 }}>{trigger(offer, product, variant)}</div>}
+          {!isRow && <div style={{ marginTop: 12 }}>{trigger(offer, product, variant)}</div>}
         </div>
         {isRow && <div>{trigger(offer, product, variant)}</div>}
       </div>

@@ -15,7 +15,7 @@ export default function EmptyCart({ cartSettings, designSettings, children, foot
       style={{
         display: "flex",
         flexDirection: "column",
-        flex: "1 1 auto", // fills the cart body
+        flex: "1 1 auto", 
         background: backgroundToCss(s.background),
       }}
     >
