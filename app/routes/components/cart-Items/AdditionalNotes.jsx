@@ -80,7 +80,7 @@ export default function AdditionalNotes({ additionalNotesSettings, designSetting
 
   // ── "Note" button (+ saved preview) ──
   const noteButton = (
-    <div style={{ padding: "8px 0" }}>
+    <div style={{ padding: "8px 0 0 0" }}>
       <button
         type="button"
         onClick={openSheet}

@@ -135,7 +135,7 @@ export default function CartFooter({
         <CustomHtml cartSettings={cartSettings} position="above_checkout" />
 
         <div
-          className="cart-plus-checkout-button-container cart-plus-checkout-button"
+          className="cart-plus-checkout-button-container-row"
           style={{ background: backgroundToCss(btn.sectionBackground) }}
         >
           <button
