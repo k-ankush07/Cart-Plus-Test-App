@@ -45,7 +45,7 @@ export default function CartFooter({
 
   const checkoutText = cartSettings.checkoutButtonText?.replace(
     "{{total_price}}",
-    `$${totalPrice}`,
+    `${currency}${totalPrice}`,
   );
 
   const handleCheckout = () => {

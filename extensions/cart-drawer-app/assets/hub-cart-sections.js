@@ -238,10 +238,10 @@ function cartPlusTimerPaint(blockId, left, total) {
   } else if (timer.style === "bar") {
     const pct = Math.max(0, Math.min(100, (left / total) * 100));
     el.innerHTML = `<div style="display:flex;justify-content:space-between;font-size:14px;">
-        <span><span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${icon(20)}</span>${messageNoTimer || "Offer expires soon"}</span><strong${timer.digitsColor ? ` style="color:${timer.digitsColor};"` : ""}>${clock}</strong></div>
+        <span><span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${icon(22)}</span>${messageNoTimer || "Offer expires soon"}</span><strong${timer.digitsColor ? ` style="color:${timer.digitsColor};"` : ""}>${clock}</strong></div>
       <div style="height:8px;border-radius:4px;background:${timer.barBackground || "rgba(0,0,0,.12)"};margin-top:6px;"><div style="width:${pct}%;height:100%;border-radius:4px;background:${timer.barColor || design.buttonColor || "#303030"};transition:width 1s linear;"></div></div>`;
   } else {
-    el.innerHTML = `<span style="display:inline-flex;vertical-align:middle;margin-right:8px;">${icon(16)}</span>${messageHtml}`;
+    el.innerHTML = `<span style="display:inline-flex;vertical-align:middle;margin-right:8px;">${icon(22)}</span>${messageHtml}`;
   }
 }
 

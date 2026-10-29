@@ -281,9 +281,9 @@ function subscriptionItemHTML(ctx) {
         <img src="${item.image}" alt="${item.product_title}" class="hub-item-img cart-plus-public-component-product-tile__image" />
       </div>
       <div class="hub-item-info cart-plus-public-component-product-tile__info">
-        <div style="width: 100%; display:flex;justify-content:space-between;align-items:flex-start">
-          <a href="/products/${item.handle}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+          <div style="width: 100%; display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+          <a href="/products/${item.handle}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems};flex:1;min-width:0;">${item.product_title || item.title}</a>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
             ${_deleteBtn(item.key, item.product_title, iconColor)}
             ${discountBadges}
           </div>

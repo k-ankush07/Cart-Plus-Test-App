@@ -30,14 +30,18 @@ function cartPlusApplyOfferDiscount(offer, cents) {
   const base = Number(cents) || 0;
   const value = Number(offer.discountValue) || 0;
   let final = base;
-  if (offer.discountType === "percentage") final = base * (1 - Math.min(100, value) / 100);
+  if (offer.discountType === "percentage")
+    final = base * (1 - Math.min(100, value) / 100);
   if (offer.discountType === "amount") final = base - value * 100;
   final = Math.max(0, Math.round(final));
   const saved = base - final;
   return { final, saved, percent: base ? Math.round((saved / base) * 100) : 0 };
 }
 
-const cartPlusIdOf = (gid) => String(gid || "").split("/").pop();
+const cartPlusIdOf = (gid) =>
+  String(gid || "")
+    .split("/")
+    .pop();
 
 window.cartPlusOneTickContainerHTML = function (blockId, cartSettings) {
   const s = cartPlusGetOneTick(cartSettings);
@@ -48,8 +52,15 @@ window.cartPlusOneTickContainerHTML = function (blockId, cartSettings) {
 // ── products ───────────────────────────────────────────────────────────────
 // /products.json gives prices as "12.00"; the recommendations endpoint gives cents
 function cartPlusNormalizeProduct(p, pricesInCents) {
-  const toCents = (v) => (pricesInCents ? Number(v) || 0 : Math.round(Number(v) * 100) || 0);
-  const image = p.featured_image?.url || p.featured_image || p.image?.src || p.images?.[0]?.src || p.images?.[0] || "";
+  const toCents = (v) =>
+    pricesInCents ? Number(v) || 0 : Math.round(Number(v) * 100) || 0;
+  const image =
+    p.featured_image?.url ||
+    p.featured_image ||
+    p.image?.src ||
+    p.images?.[0]?.src ||
+    p.images?.[0] ||
+    "";
   return {
     id: String(p.id),
     title: p.title,
@@ -82,23 +93,32 @@ async function cartPlusLoadAllProducts() {
 
 // offerId -> product, for the offers that currently apply
 async function cartPlusLoadOfferProducts(oneTick, cart) {
-  const key = JSON.stringify(oneTick.offers.map((o) => [o.id, o.mode, o.selected?.items?.variants]));
+  const key = JSON.stringify(
+    oneTick.offers.map((o) => [o.id, o.mode, o.selected?.items?.variants]),
+  );
   const cache = (window._cartPlusOneTickCache ||= {});
   if (cache.key === key && cache.products) return cache.products;
 
   const products = {};
-  const manual = oneTick.offers.filter((o) => o.mode === "manual" && o.selected?.items?.variants?.length);
+  const manual = oneTick.offers.filter(
+    (o) => o.mode === "manual" && o.selected?.items?.variants?.length,
+  );
   const auto = oneTick.offers.filter((o) => !manual.includes(o));
 
   if (manual.length) {
     const all = await cartPlusLoadAllProducts();
     manual.forEach((offer) => {
       const wanted = offer.selected.items.variants.map(cartPlusIdOf);
-      const product = all.find((p) => p.variants.some((v) => wanted.includes(v.id)));
+      const product = all.find((p) =>
+        p.variants.some((v) => wanted.includes(v.id)),
+      );
       if (!product) return;
       // only the variants ticked in the picker
       const chosen = product.variants.filter((v) => wanted.includes(v.id));
-      products[offer.id] = { ...product, variants: chosen.length ? chosen : product.variants };
+      products[offer.id] = {
+        ...product,
+        variants: chosen.length ? chosen : product.variants,
+      };
     });
   }
 
@@ -128,7 +148,8 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
 // ── painting ───────────────────────────────────────────────────────────────
 function cartPlusOneTickTrigger(blockId, oneTick, offer, variantId) {
   const accent = window.cartPlusBgCss(oneTick.buttonBackground) || "#303030";
-  const call = (on) => `cartPlusOneTickToggle('${blockId}','${offer.id}','${variantId}',${on})`;
+  const call = (on) =>
+    `cartPlusOneTickToggle('${blockId}','${offer.id}','${variantId}',${on})`;
   if (oneTick.trigger === "checkbox") {
     return `<label class="cart-plus-onetick-check" aria-label="${oneTick.buttonLabel}">
       <input type="checkbox" onchange="var c=this.checked;setTimeout(function(){${call("c")}},c?450:0)" />
@@ -138,15 +159,21 @@ function cartPlusOneTickTrigger(blockId, oneTick, offer, variantId) {
   if (oneTick.trigger === "toggle") {
     return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${accent};--cp-off:${window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder || "#c9cccf"};" onclick="this.setAttribute('aria-checked','true');setTimeout(function(){${call("true")}},450)"><span></span></button>`;
   }
-  return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true")}" style="border:none;cursor:pointer;padding:8px 16px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
+  return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true")}" style="width:100%; border:none;cursor:pointer;padding:8px 16px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
 }
 
 function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
-  const cardBorder = window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder || "rgba(0,0,0,.08)";
+  const cardBorder =
+    window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder ||
+    "rgba(0,0,0,.08)";
   const fmt = hubUtils.formatMoney;
   const chosenId = (window._cartPlusOneTickVariant ||= {})[offer.id];
-  const variant = product.variants.find((v) => v.id === chosenId) || product.variants[0];
-  const { final, saved, percent } = cartPlusApplyOfferDiscount(offer, variant.price);
+  const variant =
+    product.variants.find((v) => v.id === chosenId) || product.variants[0];
+  const { final, saved, percent } = cartPlusApplyOfferDiscount(
+    offer,
+    variant.price,
+  );
   const label = String(offer.label || "")
     .replace(/\{\{saved_percentage\}\}/gi, `${percent}%`)
     .replace(/\{\{saved_amount\}\}/gi, fmt(saved));
@@ -165,7 +192,10 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
   const select =
     product.variants.length > 1
       ? `<select onchange="cartPlusOneTickVariant('${blockId}','${offer.id}',this.value)" style="width:100%;font-size:12px;margin-top:4px;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:${oneTick.secondaryTextColor};">${product.variants
-          .map((v) => `<option value="${v.id}"${v.id === variant.id ? " selected" : ""}>${v.title}</option>`)
+          .map(
+            (v) =>
+              `<option value="${v.id}"${v.id === variant.id ? " selected" : ""}>${v.title}</option>`,
+          )
           .join("")}</select>`
       : "";
   const trigger = cartPlusOneTickTrigger(blockId, oneTick, offer, variant.id);
@@ -198,7 +228,7 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
       <div style="margin-top:2px;">${price}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
         <div style="flex:1;min-width:0;">${select.replace("margin-top:4px;", "")}</div>
-        ${isRow ? `<div style="flex-shrink:0;">${trigger}</div>` : ""}
+        ${isRow ? `<div style="flex-shrink:0; display:flex">${trigger}</div>` : ""}
       </div>
       ${!isRow ? `<div style="margin-top:12px;">${trigger}</div>` : ""}
     </div>
@@ -212,9 +242,22 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
   const oneTick = cartPlusGetOneTick(cartSettings);
   // Appearance: Dark -> the saved light text colours become the dark theme's
   const dsx = window.__HUB_ACTIVE_CART__?.designSettings || {};
-  oneTick.primaryTextColor = window.cartPlusDarkColor(oneTick.primaryTextColor, "#000000", dsx.textColor);
-  oneTick.secondaryTextColor = window.cartPlusDarkColor(oneTick.secondaryTextColor, "#616161", "#a8a8ad");
-  oneTick.iconColor = window.cartPlusDarkColor(oneTick.iconColor, "#000000", dsx.textColor);
+  const dotAccent = dsx.accentText || "#1a56db";
+  oneTick.primaryTextColor = window.cartPlusDarkColor(
+    oneTick.primaryTextColor,
+    "#000000",
+    dsx.textColor,
+  );
+  oneTick.secondaryTextColor = window.cartPlusDarkColor(
+    oneTick.secondaryTextColor,
+    "#616161",
+    "#a8a8ad",
+  );
+  oneTick.iconColor = window.cartPlusDarkColor(
+    oneTick.iconColor,
+    "#000000",
+    dsx.textColor,
+  );
   if (!oneTick.enabled || !oneTick.offers.length || !cart?.items?.length) {
     el.style.display = "none";
     el.innerHTML = "";
@@ -227,7 +270,9 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
   const cards = oneTick.offers
     .map((offer) => ({ offer, product: products[offer.id] }))
     // an offer is hidden while its product is in the cart (back again when it is removed)
-    .filter((c) => c.product && !c.product.variants.some((v) => inCart.has(v.id)));
+    .filter(
+      (c) => c.product && !c.product.variants.some((v) => inCart.has(v.id)),
+    );
   if (!cards.length) {
     el.style.display = "none";
     el.innerHTML = "";
@@ -258,18 +303,68 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
     return;
   }
 
+  const dotBg = (active) =>
+    active
+      ? `color-mix(in srgb, ${dotAccent} 85%, #121212 15%)`
+      : `color-mix(in srgb, ${dotAccent} 22%, #ffffff 78%)`;
+
+  const dots =
+    isCarousel && cards.length > 1
+      ? `<div class="cart-plus-onetick-dots" style="display:flex;justify-content:center;gap:6px;margin-top:10px;">${cards
+          .map(
+            (_, i) =>
+              `<button type="button" class="cart-plus-onetick-dot" aria-label="Go to offer ${i + 1}" onclick="cartPlusOneTickGoTo('${blockId}',${i})" style="width:6px;height:6px;padding:0;border:none;border-radius:50%;cursor:pointer;background:${dotBg(i === 0)};"></button>`,
+          )
+          .join("")}</div>`
+      : "";
+
   el.innerHTML = `${title}<div class="${isCarousel ? "cart-plus-onetick-track" : ""}" style="display:flex;flex-direction:${isCarousel ? "row" : "column"};gap:${isCarousel ? 10 : 8}px;${isCarousel ? "overflow-x:auto;scroll-snap-type:x mandatory;align-items:stretch;" : ""}">${cards
-    .map((c) => cartPlusOneTickCard(blockId, oneTick, c.offer, c.product, cardBg))
-    .join("")}</div>`;
+    .map((c) =>
+      cartPlusOneTickCard(blockId, oneTick, c.offer, c.product, cardBg),
+    )
+    .join("")}</div>${dots}`;
+
+  // scroll ke saath active dot update karo
+  if (dots) {
+    const track = el.querySelector(".cart-plus-onetick-track");
+    const dotEls = el.querySelectorAll(".cart-plus-onetick-dot");
+    track.addEventListener(
+      "scroll",
+      () => {
+        const first = track.firstElementChild;
+        if (!first) return;
+        const step = first.getBoundingClientRect().width + 10;
+        const idx = Math.max(
+          0,
+          Math.min(dotEls.length - 1, Math.round(track.scrollLeft / step)),
+        );
+        dotEls.forEach((d, i) => (d.style.background = dotBg(i === idx)));
+      },
+      { passive: true },
+    );
+  }
+};
+
+window.cartPlusOneTickGoTo = function (blockId, i) {
+  const track = document.querySelector(`#cart-plus-onetick-${blockId} .cart-plus-onetick-track`);
+  const child = track?.children[i];
+  if (!track || !child) return;
+  track.scrollTo({ left: child.offsetLeft - track.offsetLeft, behavior: "smooth" });
 };
 
 window.cartPlusOneTickVariant = function (blockId, offerId, variantId) {
   (window._cartPlusOneTickVariant ||= {})[offerId] = variantId;
-  if (window._cartPlusOneTickCart) window.cartPlusRenderOneTick(blockId, window._cartPlusOneTickCart);
+  if (window._cartPlusOneTickCart)
+    window.cartPlusRenderOneTick(blockId, window._cartPlusOneTickCart);
 };
 
 // tick = the offer's product goes into the cart, untick = it is removed again
-window.cartPlusOneTickToggle = async function (blockId, offerId, variantId, on) {
+window.cartPlusOneTickToggle = async function (
+  blockId,
+  offerId,
+  variantId,
+  on,
+) {
   try {
     if (on) {
       await fetch("/cart/add.js", {
@@ -283,7 +378,9 @@ window.cartPlusOneTickToggle = async function (blockId, offerId, variantId, on) 
       });
     } else {
       const latest = await (await fetch("/cart.js")).json();
-      const match = latest.items.find((i) => String(i.variant_id) === String(variantId));
+      const match = latest.items.find(
+        (i) => String(i.variant_id) === String(variantId),
+      );
       if (match) {
         await fetch("/cart/change.js", {
           method: "POST",

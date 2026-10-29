@@ -291,7 +291,7 @@ window.hubUtils = {
     const cardBg =
       window.cartPlusBgCss?.(u.cardBackground) || designSettings.accentColor || "";
     const imageBox = [
-      u.imageSize ? `width:${u.imageSize}px;height:${u.imageSize}px;` : "",
+      u.imageSize ? `width:${u.imageSize}px;` : "",
       u.radius !== null && u.radius !== undefined
         ? `border-radius:${u.radius}px;overflow:hidden;`
         : "",
@@ -902,7 +902,7 @@ window.hubUtils = {
           </div>
           <div style="width:120px;flex-shrink:0;padding:16px 12px;text-align:center;border-left:${dashed};display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="${labelCss}">${nextLabel}</div>
-            <div style="display:inline-flex;width:40px;height:40px;">${hubUtils.getTierIcon("product", "currentColor")}</div>
+          <div style="font-size:40px; line-height:1;">🎁</div>    
           </div>
         </div>`);
       } else if (barStyle === "nextReward") {

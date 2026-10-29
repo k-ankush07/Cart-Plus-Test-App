@@ -25,22 +25,36 @@ window.cartPlusCompactHTML = function (products) {
   const radius = u.radius ?? 8;
   const btnBg = window.cartPlusBgCss(u.buttonBackground) || ds.buttonColor || "#000";
   const btnText = u.buttonTextColor || ds.buttonTextColor || "#fff";
+  const tileW = Math.max(88, Math.min(u.imageSize || 96, 128));
 
   const tiles = products
     .filter((p) => (p.variants || []).length)
     .map((p) => {
       const v = p.variants[0];
-      const price = Math.round(Number(v.price) * 100);
-      return `<div class="hub-rec-product hub-compact-tile" style="position:relative;flex:0 0 auto;scroll-snap-align:start;width:${u.imageSize || 96}px;background:${bg};border-radius:${radius}px;padding:6px;box-sizing:border-box;">
-        <img src="${cartPlusFirstImage(p)}" alt="${p.title}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${u.radius ?? 6}px;display:block;">
+      const imgOf = (x) =>
+        (x.image_id && p.images?.find((i) => i.id === x.image_id)?.src) ||
+        x.featured_image?.src ||
+        "";
+      const select =
+        p.variants.length > 1
+          ? `<select class="hub-compact-variant" style="width:100%;min-width:0;font-size:11px;color:${primary};">${p.variants
+              .map(
+                (x) =>
+                  `<option value="${x.id}" data-price="${Math.round(Number(x.price) * 100)}" data-image="${imgOf(x)}"${x.id === v.id ? " selected" : ""}>${x.title}</option>`,
+              )
+              .join("")}</select>`
+          : "";
+      return `<div class="hub-rec-product hub-compact-tile" style="position:relative;flex:0 0 auto;scroll-snap-align:start;width:${tileW}px;background:${bg};border-radius:${radius}px;padding:8px;box-sizing:border-box;display:flex;flex-direction:column;gap:5px;">
+        <img class="hub-compact-img" src="${imgOf(v) || cartPlusFirstImage(p)}" alt="${p.title}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${u.radius ?? 6}px;display:block;">
         <button type="button" class="hub-compact-add" data-variant="${v.id}" aria-label="${u.buttonText || "Add"}" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;cursor:pointer;background:${btnBg};color:${btnText};font-size:14px;line-height:20px;padding:0;">+</button>
-        <a href="/products/${p.handle}" class="cart-plus-internal-component-upsell-tile__title-link"><h3 class="cart-plus-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title" style="color:${primary};">${p.title}</h3></a>
-        <div style="font-size:11px;color:${primary};margin-top:4px;">${fmt(price)}</div>
+        <a href="/products/${p.handle}" class="cart-plus-internal-component-upsell-tile__title-link" style="text-decoration:none;"><h3 class="cart-plus-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title" style="color:${primary};font-size:13px;line-height:1.3;margin:0;text-decoration:none;font-weight:600; display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${p.title}</h3></a>
+        <div class="hub-compact-price" style="font-size:11px;color:${primary};">${fmt(Math.round(Number(v.price) * 100))}</div>
+        ${select}
       </div>`;
     })
     .join("");
 
-  return `<div class="hub-compact-track" onscroll="cartPlusCompactEdges(this)" style="display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;">${tiles}</div>`;
+  return `<div class="hub-compact-track" onscroll="cartPlusCompactEdges(this)" style="display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;align-items:stretch;">${tiles}</div>`;
 };
 
 window.cartPlusCompactArrowsHTML = function () {
@@ -102,12 +116,28 @@ if (!window._cartPlusCompactBound) {
   });
 }
 
+if (!window._cartPlusCompactVariantBound) {
+  window._cartPlusCompactVariantBound = true;
+  document.addEventListener("change", (e) => {
+    const select = e.target.closest?.(".hub-compact-variant");
+    if (!select) return;
+    const tile = select.closest(".hub-compact-tile");
+    const opt = select.options[select.selectedIndex];
+    const add = tile?.querySelector(".hub-compact-add");
+    const price = tile?.querySelector(".hub-compact-price");
+    const img = tile?.querySelector(".hub-compact-img");
+    if (add) add.dataset.variant = select.value;
+    if (price) price.textContent = hubUtils.formatMoney(Number(opt.dataset.price));
+    if (img && opt.dataset.image) img.src = opt.dataset.image;
+  });
+}
+
 // ── Side panel ─────────────────────────────────────────────────────────────
 window.cartPlusRemoveSidePanel = function (blockId) {
   document.getElementById(`hub-upsell-side-${blockId}`)?.remove();
 };
 
-// cards stacked in a strip beside the cart, no title (same as the editor)
+// cards stacked in a strip beside the cart, with the Cross-sell title on top (same as the editor)
 window.cartPlusRenderSidePanel = function (blockId, products, settings) {
   const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
   if (!drawer) return;
@@ -121,12 +151,24 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     )
     .join("");
 
+  // title + icon, like the other layouts
+  const { u, primary } = cartPlusUpsellColors();
+  const cfg = settings || u;
+  const titleIcon = cfg.icon === undefined ? { type: "icon", name: "star" } : cfg.icon;
+  const iconHtml = titleIcon
+    ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, cfg.iconColor || undefined) || ""}</span>`
+    : "";
+  const titleHtml = cfg.title
+    ? `<div class="hub-side-title upcart-internal-style__title-large" style="color:${primary};text-align:left;flex-shrink:0;font-weight:450;font-size:14px;">${iconHtml}${cfg.title}</div>`
+    : "";
+  const html = titleHtml + cards;
+
   let panel = document.getElementById(`hub-upsell-side-${blockId}`);
   if (!cards.trim()) {
     panel?.remove();
     return;
   }
-  if (panel && panel.dataset.sig === cards) return; // same cards: leave it alone, no flicker
+  if (panel && panel.dataset.sig === html) return; // same cards: leave it alone, no flicker
   if (!panel) {
     panel = document.createElement("div");
     panel.id = `hub-upsell-side-${blockId}`;
@@ -139,7 +181,7 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     // sits right after the drawer so the CSS can show it only while the drawer is open
     drawer.insertAdjacentElement("afterend", panel);
   }
-  panel.dataset.sig = cards;
+  panel.dataset.sig = html;
 
   // same fill as the cart body: the "Products in cart" background if set, else the Template tint
   const bodyBg =
@@ -155,7 +197,7 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
   panel.style.height = floating ? "calc(100% - 32px)" : "100%";
   panel.style.setProperty("--hub-side-shift", `${(onLeft ? -1 : 1) * (width + 190 + (floating ? 16 : 0))}px`);
   panel.style.background = bodyBg;
-  panel.innerHTML = cards;
+  panel.innerHTML = html;
   // the side cards add through the shared button handler below
   panel.querySelectorAll(".hub-add-btn").forEach((b) => b.classList.add("hub-side-add"));
 };

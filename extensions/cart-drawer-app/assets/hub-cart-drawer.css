@@ -121,7 +121,8 @@
   flex-shrink: 0;
   border-radius: 5px;
   overflow: hidden;
-  border: 1px solid #E8E8E8;
+  display: flex;
+  aspect-ratio: 1 / 1;
 }
 
 .hub-item-img {
@@ -309,7 +310,7 @@ input.hub-qty-input:hover {
   display: flex;
   align-items: center;
   transition: color 0.15s;
-  border: 1px solid #E8E8E8;
+  border: 0;
   height: 26px;
   border-radius: 5px;
   width: 26px;
@@ -1391,7 +1392,7 @@ span.hub-total-arrow svg {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  justify-content: right;
+  justify-content: center;
 }
 
 .upcart-internal-component-upsell-tile__variant-row select {
@@ -1447,9 +1448,22 @@ span.hub-total-arrow svg {
   color: #000;
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 10px;
-  padding: 0 20px;
+  margin-bottom: 5px;
   text-align: center;
+}
+
+.cart-additional-notes__textarea:focus,
+.cart-additional-notes__textarea:focus-visible,
+.cart-plus-public-notes__textarea:focus,
+.cart-plus-public-notes__textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.cart-plus-public-notes {
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 16px;
 }
 
 .upcart-internal-style__title-large_button {
@@ -1754,6 +1768,13 @@ display: flex;
 
 #hub-upcart-cart-body::-webkit-scrollbar {
   display: none;
+}
+
+.hub-cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 12px 16px;
 }
 
 .hub-item-save {
@@ -2195,7 +2216,7 @@ span.upsell-text.suggestion-product {
 .upsell-inner h3.upsell-heading {
     font-size: 13px;
     color: #2D2D2D;
-    font-weight: 600;
+    font-weight: 450;
     margin-bottom: 5px;
     line-height: 13px;
     text-transform: capitalize;
@@ -2218,9 +2239,6 @@ span.upsell-text.suggestion-product {
 }
 
 /* upsell-bottom ko hamesha auto chahiye */
-.hub-upsell.upsell-container.upsell-bottom {
-  margin-top: auto !important;
-}
 
 /* Jab upsell-bottom present hai — notes aur announcement ka margin 0 kar do */
 .hub-cart-items-CartPreview:has(.hub-upsell.upsell-container.upsell-bottom) [id^="hub-notes-below-"] {
@@ -2916,6 +2934,11 @@ select.hub-variant-option-select {
 .hub-compact-track::-webkit-scrollbar {
   display: none;
 }
+
+select.hub-compact-variant {
+    padding: 6px;
+}
+
 .hub-upsell-side-panel {
   display: flex;
   visibility: hidden;
@@ -3083,22 +3106,10 @@ select.hub-variant-option-select {
   background: var(--cp-age-toggle, #1553d8) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 6.5l2.6 2.6L10 3.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px no-repeat;
 }
 
-/* Stacked footer sections: every section except the top one loses its top padding / border,
-   so the gap between sections comes from one place and follows drag & drop order */
-.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn):not(.cart-plus-age-verification),
-.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn):not(.cart-plus-age-verification) > :first-child,
-.hub-cart-footer > :not(.hub-footer-skeleton) ~ *:not(.hub-footer-skeleton):not(.cart-plus-checkout-button-container-row):not(.hub-cart-checkout-btn):not(.cart-plus-age-verification) > :first-child > :first-child {
-  padding-top: 0 !important;
-  margin-top: 0 !important;
-  border-top: none !important;
-}
-
-/* the discount input keeps its own border inside the stacked footer */
 .hub-cart-footer > :not(.hub-footer-skeleton) ~ * .hub-discount-input-row {
   border-top: 1px solid var(--cp-accent-border, #E8E8E8) !important;
 }
 
-/* the age box keeps its full border (colour comes from its inline style) */
 .hub-cart-footer > :not(.hub-footer-skeleton) ~ * .cart-plus-age-box,
 .hub-cart-footer > :not(.hub-footer-skeleton) ~ .cart-plus-age-verification .cart-plus-age-box {
   border-top-style: solid !important;

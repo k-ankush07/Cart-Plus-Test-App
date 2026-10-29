@@ -17,7 +17,7 @@ window.cartPlusNotesHTML = function (blockId, settings, note = "") {
   const buttonBg = window.cartPlusBgCss(settings.noteButtonBackground);
 
   const pencil = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
-  const noteButton = `<div style="padding:8px 0;">
+  const noteButton = `<div>
       <button type="button" class="cart-plus-note-btn" onclick="cartPlusNotesOpenSheet('${blockId}')" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid ${window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder || "rgba(0,0,0,0.15)"};background:${buttonBg || "transparent"};color:inherit;">
         ${pencil}<span>${settings.buttonLabel ?? "Note"}</span>
       </button>
@@ -26,7 +26,7 @@ window.cartPlusNotesHTML = function (blockId, settings, note = "") {
 
   const chevron = `<span class="cart-plus-note-chevron" style="display:inline-flex;transition:transform .3s ease;transform:${open ? "rotate(180deg)" : "rotate(0deg)"};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>`;
 
-  return `<div id="cart-plus-notes-${blockId}" class="cart-additional-notes cart-plus-public-notes hub-additional-notes" data-open="${open}" style="padding:0 16px;">
+  return `<div id="cart-plus-notes-${blockId}" class="cart-additional-notes cart-plus-public-notes hub-additional-notes" data-open="${open}">
     ${
       expandable
         ? `<button type="button" class="cart-additional-notes__toggle cart-plus-public-component-collapse__dropdown-container" aria-expanded="${open}" onclick="cartPlusNotesToggle('${blockId}')" style="all:unset;cursor:pointer;display:flex;gap:4px;align-items:center;line-height:1;padding:12px 0;"><span>${settings.title || "Add special instructions"}</span>${chevron}</button>

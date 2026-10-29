@@ -94,7 +94,7 @@ export default function Upsells({
       ? { type: "icon", name: "star" }
       : upsellsSettings.icon;
   const imageBox = {
-    ...(imageSize ? { width: imageSize, height: imageSize } : {}),
+    ...(imageSize ? { width: imageSize } : {}),
     ...(radius !== null ? { borderRadius: radius, overflow: "hidden" } : {}),
   };
 
@@ -344,6 +344,12 @@ export default function Upsells({
               className="cart-plus-item-image"
               src={selectedVariant.image || product.image}
               alt={product.title}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
             />
           </div>
 
@@ -570,7 +576,9 @@ export default function Upsells({
         iconColor={upsellsSettings?.iconColor || undefined}
         titleColor={primary}
         textColor={primary}
-        cardBackground={backgroundToCss(cardBackground) || designSettings.accentColor}
+        cardBackground={
+          backgroundToCss(cardBackground) || designSettings.accentColor
+        }
         radius={radius ?? 8}
       />
     );
@@ -859,12 +867,16 @@ export default function Upsells({
                   position: "relative",
                   flex: "0 0 auto",
                   scrollSnapAlign: "start",
-                  width: imageSize || 96,
+                  width: Math.max(88, Math.min(imageSize || 96, 128)),
+                  boxSizing: "border-box",
                   background:
                     backgroundToCss(cardBackground) ||
                     designSettings.accentColor,
                   borderRadius: radius ?? 8,
-                  padding: 6,
+                  padding: 8,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "5px",
                 }}
               >
                 <img
@@ -915,9 +927,33 @@ export default function Upsells({
                   </h3>
                 </a>
 
-                <div style={{ fontSize: 11, color: primary, marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: primary }}>
                   {currency} {v?.price}
                 </div>
+
+                {product.variants.length > 1 && (
+                <div className="  cart-plus-internal-component-upsell-tile__variant-row upsell">
+                  <select
+                    className="cart-plus-upsell-item-variant-selector"
+                    value={v.id}
+                    onChange={(e) =>
+                      handleVariantChange(product.id, e.target.value)
+                    }
+                    style={{
+                      width: "100%",
+                      fontSize: 11,
+                      color: primary,
+                      minWidth: 0,
+                    }}
+                  >
+                    {product.variants.map((variant) => (
+                      <option key={variant.id} value={variant.id}>
+                        {variant.title}
+                      </option>
+                    ))}
+                  </select>
+                  </div>
+                )}
               </div>
             );
           })}
