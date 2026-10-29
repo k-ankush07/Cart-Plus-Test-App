@@ -131,7 +131,7 @@ export default function CartVisibility({ cartSettings, handleChange }) {
           </BlockStack>
         </Card>
 
-        <Card>
+        {/* <Card>
           <BlockStack gap="300">
             <SectionTitle icon={CalendarTimeIcon}>Publish cart</SectionTitle>
 
@@ -212,7 +212,7 @@ export default function CartVisibility({ cartSettings, handleChange }) {
               </BlockStack>
             )}
           </BlockStack>
-        </Card>
+        </Card> */}
       </BlockStack>
 
       <Modal
