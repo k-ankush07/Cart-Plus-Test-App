@@ -10,7 +10,7 @@ import {
   BlockStack,
   Box,
   Icon,
-  Card
+  Card,
 } from "@shopify/polaris";
 import { ClockIcon } from "@shopify/polaris-icons";
 import IconLibrary from "../ui/IconLibrary";
@@ -18,42 +18,19 @@ import RichTextEditor from "../ui/RichTextEditor";
 import ColorInput from "../ui/ColorInput";
 import BackgroundInput from "../ui/BackgroundInput";
 import { getTimer, patchTimer, toggleTimer } from "../utils/timer";
+import { TIMER_TEMPLATES } from "../utils/timerTemplates";
 import "../../../index.css";
 
-const STYLES = [
-  { value: "text", label: "Text" },
-  { value: "digits", label: "Digits" },
-  { value: "bar", label: "Progress bar" },
+const quickIcons = [
+  "bolt",
+  "clock",
+  "discount",
+  "hourglass",
+  "gift",
+  "star",
+  "delivery",
+  "megaphone",
 ];
-
-const StylePreview = ({ value }) => {
-  if (value === "digits") {
-    return (
-      <div style={{ fontSize: 12, fontWeight: 700, textAlign: "center" }}>
-        00 : 09 : 42
-        <div style={{ fontSize: 9, fontWeight: 400 }}>Sale price expires soon</div>
-      </div>
-    );
-  }
-  if (value === "bar") {
-    return (
-      <div style={{ width: "100%", fontSize: 9 }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span>Offer expires soon</span>
-          <strong>09:42</strong>
-        </div>
-        <div style={{ height: 3, background: "#ddd", marginTop: 4, borderRadius: 3 }}>
-          <div style={{ width: "55%", height: "100%", background: "#888", borderRadius: 3 }} />
-        </div>
-      </div>
-    );
-  }
-  return (
-    <span style={{ fontSize: 10, background: "#f1f1f1", padding: "2px 8px", borderRadius: 10 }}>
-      This price expires in <strong>09:42</strong>
-    </span>
-  );
-};
 
 export default function Timer({
   headerSettings,
@@ -88,34 +65,30 @@ export default function Timer({
         </InlineStack>
       </Box>
 
+      <Card>
+        <BlockStack gap="300">
+          <Text as="h3" variant="headingSm">
+            Templates
+          </Text>
+          <InlineStack gap="200" wrap>
+            {Object.entries(TIMER_TEMPLATES).map(
+              ([key, { label, ...settings }]) => (
+                <Button
+                  key={key}
+                  pressed={timer.template === key}
+                  onClick={() => update({ template: key, ...settings })}
+                >
+                  {label}
+                </Button>
+              ),
+            )}
+          </InlineStack>
+        </BlockStack>
+      </Card>
+
       <BlockStack gap="400">
         {/* Style */}
-        <InlineGrid columns={3} gap="300">
-          {STYLES.map((s) => (
-            <div
-              key={s.value}
-              role="button"
-              tabIndex={0}
-              onClick={() => update({ style: s.value })}
-              onKeyDown={(e) => e.key === "Enter" && update({ style: s.value })}
-              style={{
-                cursor: "pointer",
-                borderRadius: 10,
-                padding: 12,
-                minHeight: 70,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "#fff",
-                border:
-                  timer.style === s.value ? "2px solid #303030" : "1px solid #e1e3e5",
-              }}
-              title={s.label}
-            >
-              <StylePreview value={s.value} />
-            </div>
-          ))}
-        </InlineGrid>
+        <InlineGrid columns={3} gap="300"></InlineGrid>
 
         {/* Message */}
         <LegacyCard sectioned>
@@ -124,9 +97,9 @@ export default function Timer({
               Message
             </Text>
             <IconLibrary
-              value={timer.icon}
+              value={timer.icon || { type: "icon", name: "clock" }}
               onChange={(icon) => update({ icon })}
-              quickIcons={["clock", "calendar", "star", "heart", "gift", "discount", "delivery", "megaphone"]}
+              quickIcons={quickIcons}
               shop={shop}
               accessToken={accessToken}
               apiUrl={apiUrl}
@@ -135,6 +108,25 @@ export default function Timer({
               label="Icon color"
               value={timer.iconColor || "#000000"}
               onChange={(iconColor) => update({ iconColor })}
+            />
+
+            <ColorInput
+              label="Icon background"
+              value={timer.iconBg || "#f1f1f1"}
+              onChange={(iconBg) => update({ iconBg })}
+            />
+            <TextField
+              label="Small heading"
+              value={timer.eyebrow || ""}
+              autoComplete="off"
+              onChange={(eyebrow) => update({ eyebrow })}
+            />
+            <TextField
+              label="Sub text"
+              value={timer.subText || ""}
+              autoComplete="off"
+              helpText="Use {{minutes}} for remaining minutes"
+              onChange={(subText) => update({ subText })}
             />
             <RichTextEditor
               value={timer.message}
@@ -182,7 +174,9 @@ export default function Timer({
                 value={String(timer.minutes)}
                 autoComplete="off"
                 onChange={(v) =>
-                  update({ minutes: Math.min(1440, Math.max(1, Number(v) || 1)) })
+                  update({
+                    minutes: Math.min(1440, Math.max(1, Number(v) || 1)),
+                  })
                 }
               />
             </div>
@@ -197,14 +191,18 @@ export default function Timer({
                   labelHidden
                   value={timer.labels[key]}
                   autoComplete="off"
-                  onChange={(v) => update({ labels: { ...timer.labels, [key]: v } })}
+                  onChange={(v) =>
+                    update({ labels: { ...timer.labels, [key]: v } })
+                  }
                 />
               ))}
             </InlineGrid>
           </BlockStack>
-</Card>
+        </Card>
         {/* Styles (digits + progress bar only) */}
-        {(timer.style === "digits" || timer.style === "bar") && (
+        {["boxes", "rings", "clock", "bar", "progress"].includes(
+          timer.style,
+        ) && (
           <Card>
             <BlockStack gap="300">
               <Text as="h3" variant="headingSm">
@@ -216,7 +214,7 @@ export default function Timer({
                   value={timer.digitsColor || "#303030"}
                   onChange={(digitsColor) => update({ digitsColor })}
                 />
-                {timer.style === "digits" ? (
+                {timer.style === "boxes" && (
                   <>
                     <ColorInput
                       label="Labels"
@@ -229,15 +227,59 @@ export default function Timer({
                       onChange={(boxColor) => update({ boxColor })}
                     />
                   </>
-                ) : (
+                )}
+                {timer.style === "rings" && (
                   <>
                     <ColorInput
-                      label="Bar"
+                      label="Labels"
+                      value={timer.labelsColor || "#303030"}
+                      onChange={(labelsColor) => update({ labelsColor })}
+                    />
+                    <ColorInput
+                      label="Ring"
+                      value={timer.barColor || "#4b2fc0"}
+                      onChange={(barColor) => update({ barColor })}
+                    />
+                    <ColorInput
+                      label="Ring background"
+                      value={timer.barBackground || "#d8cfff"}
+                      onChange={(barBackground) => update({ barBackground })}
+                    />
+                  </>
+                )}
+                {(timer.style === "clock" || timer.style === "bar") && (
+                  <>
+                    <ColorInput
+                      label={timer.style === "bar" ? "Bar" : "Ring"}
                       value={timer.barColor || "#1a56db"}
                       onChange={(barColor) => update({ barColor })}
                     />
                     <ColorInput
-                      label="Bar Background"
+                      label={
+                        timer.style === "bar"
+                          ? "Bar background"
+                          : "Ring background"
+                      }
+                      value={timer.barBackground || "#c9d6f5"}
+                      onChange={(barBackground) => update({ barBackground })}
+                    />
+                  </>
+                )}
+                {(timer.style === "clock" ||
+                  timer.style === "bar" ||
+                  timer.style === "progress") && (
+                  <>
+                    <ColorInput
+                      label={timer.style === "clock" ? "Ring" : "Bar"}
+                      value={timer.barColor || "#1a56db"}
+                      onChange={(barColor) => update({ barColor })}
+                    />
+                    <ColorInput
+                      label={
+                        timer.style === "clock"
+                          ? "Ring background"
+                          : "Bar background"
+                      }
                       value={timer.barBackground || "#c9d6f5"}
                       onChange={(barBackground) => update({ barBackground })}
                     />

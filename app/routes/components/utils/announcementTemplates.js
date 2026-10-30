@@ -54,4 +54,14 @@ export const ANNOUNCEMENT_TEMPLATES = {
     accentBg: "#ffffff",
     accentText: "#ff4d5e",
   },
+  free_gift: {
+    label: "Free gift",
+    text: "<b>Free gift</b> on orders over $60",
+    background: "#ffc93c",
+    color: "#2b2100",
+    iconColor: "#2b2100",
+    buttonText: "View gift →",
+    accentBg: "#ffffff",
+    accentText: "#2b2100",
+  },
 };

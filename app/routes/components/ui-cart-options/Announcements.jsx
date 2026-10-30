@@ -97,9 +97,14 @@ export default function Announcements({
         </InlineStack>
       </LegacyCard>
 
-      {["coupon", "progress", "vip", "countdown", "flash_sale"].includes(
-        announcementSettings.template,
-      ) && (
+      {[
+        "coupon",
+        "progress",
+        "vip",
+        "countdown",
+        "flash_sale",
+        "free_gift",
+      ].includes(announcementSettings.template) && (
         <LegacyCard sectioned title="Right side">
           <BlockStack gap="300">
             {announcementSettings.template === "coupon" && (
@@ -151,19 +156,22 @@ export default function Announcements({
               />
             )}
 
-            {announcementSettings.template === "flash_sale" && (
+            {["flash_sale", "free_gift"].includes(
+              announcementSettings.template,
+            ) && (
               <TextField
                 label="Button text"
                 autoComplete="off"
                 value={
                   announcementSettings.buttonText ??
-                  ANNOUNCEMENT_TEMPLATES.flash_sale.buttonText
+                  ANNOUNCEMENT_TEMPLATES[announcementSettings.template]
+                    .buttonText
                 }
                 onChange={(v) => update("buttonText", v)}
               />
             )}
 
-            {["vip", "flash_sale"].includes(announcementSettings.template) && (
+            {["vip", "flash_sale", "free_gift"].includes(announcementSettings.template) && (
               <TextField
                 label="Link (URL)"
                 autoComplete="off"
@@ -187,7 +195,8 @@ export default function Announcements({
                 onChange={(v) => update("seconds", Number(v) * 60)}
               />
             )}
-            {["coupon", "flash_sale", "progress", "countdown"].includes(
+
+           {["coupon", "flash_sale", "free_gift", "progress", "countdown"].includes(
               announcementSettings.template,
             ) && (
               <InlineGrid columns={2} gap="300">

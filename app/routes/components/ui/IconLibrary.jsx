@@ -56,7 +56,24 @@ import {
 } from "@shopify/polaris-icons";
 import { uploadImage } from "../../../services/apiRoutes";
 
+const BoltIcon = (props) => (
+  <svg viewBox="0 0 20 20" {...props}>
+    <path d="M11.6 1.5 4.2 11.2h4.4l-1 7.3 8.2-10.2h-4.6z" />
+  </svg>
+);
+
+const HourglassIcon = (props) => (
+  <svg viewBox="0 0 20 20" {...props}>
+    <path
+      fillRule="evenodd"
+      d="M5 2h10v3.2L11.6 10l3.4 4.8V18H5v-3.2L8.4 10 5 5.2zm2 2v.6L10 8.9l3-4.3V4zm3 7.1-3 4.3V16h6v-.6z"
+    />
+  </svg>
+);
+
 export const ICON_LIBRARY = [
+  { name: "bolt", label: "Bolt", source: BoltIcon },
+  { name: "hourglass", label: "Hourglass", source: HourglassIcon },
   { name: "home", label: "Home", source: HomeIcon },
   { name: "settings", label: "Settings", source: SettingsIcon },
   { name: "user", label: "User", source: PersonIcon },
@@ -102,7 +119,14 @@ export const ICON_LIBRARY = [
 ];
 
 const DEFAULT_QUICK_ICONS = [
-  "star", "heart", "right", "gift", "discount", "delivery", "megaphone", "cart",
+  "star",
+  "heart",
+  "right",
+  "gift",
+  "discount",
+  "delivery",
+  "megaphone",
+  "cart",
 ];
 
 const byName = Object.fromEntries(ICON_LIBRARY.map((i) => [i.name, i]));
@@ -119,7 +143,12 @@ export function LibraryIcon({ value, size = 20, color }) {
       <img
         src={value.url}
         alt=""
-        style={{ width: size, height: size, objectFit: "contain", display: "block" }}
+        style={{
+          width: size,
+          height: size,
+          objectFit: "contain",
+          display: "block",
+        }}
       />
     );
   }
@@ -194,7 +223,11 @@ export default function IconLibrary({
     const items = quickIcons
       .map((name) => byName[name])
       .filter(Boolean)
-      .map((i) => ({ key: i.name, value: { type: "icon", name: i.name }, item: i }));
+      .map((i) => ({
+        key: i.name,
+        value: { type: "icon", name: i.name },
+        item: i,
+      }));
     if (value && !items.some((i) => sameValue(i.value, value))) {
       items.unshift({
         key: "current",
@@ -312,7 +345,10 @@ export default function IconLibrary({
               }}
             >
               {filtered.map((i) => {
-                const selected = sameValue(value, { type: "icon", name: i.name });
+                const selected = sameValue(value, {
+                  type: "icon",
+                  name: i.name,
+                });
                 return (
                   <button
                     key={i.name}
@@ -330,7 +366,9 @@ export default function IconLibrary({
                       background: selected ? "#f1f1f1" : "transparent",
                     }}
                   >
-                    <span style={{ display: "inline-flex", width: 20, height: 20 }}>
+                    <span
+                      style={{ display: "inline-flex", width: 20, height: 20 }}
+                    >
                       <Icon source={i.source} />
                     </span>
                     <Text as="span" variant="bodyXs" tone="subdued" truncate>
@@ -340,7 +378,13 @@ export default function IconLibrary({
                 );
               })}
               {!filtered.length && (
-                <div style={{ gridColumn: "1 / -1", padding: 16, textAlign: "center" }}>
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    padding: 16,
+                    textAlign: "center",
+                  }}
+                >
                   <Text as="p" tone="subdued">
                     No icons found
                   </Text>

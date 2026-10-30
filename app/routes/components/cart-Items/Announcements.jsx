@@ -52,6 +52,12 @@ const ICONS = {
     </>,
   ),
   flash_sale: svg(<path d="M13 2L4 14h7l-1 8 9-12h-7z" />),
+  free_gift: svg(
+    <>
+      <rect x="3" y="8" width="18" height="13" />
+      <path d="M12 8v13M3 12h18M12 8c-3-5-7-2-4 0M12 8c3-5 7-2 4 0" />
+    </>,
+  ),
 };
 
 const pad = (n) => String(n).padStart(2, "0");
@@ -174,7 +180,7 @@ function TemplateAnnouncement({ s }) {
       </span>
     );
 
-  if (s.template === "flash_sale")
+ if (["flash_sale", "free_gift"].includes(s.template))
     right = (
       <a
         href={s.link || "#"}
@@ -227,24 +233,26 @@ function TemplateAnnouncement({ s }) {
         }}
       >
         {right}
-       {s.showClose !== false && s.template !== "progress" && s.template !== "vip" && (
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            aria-label="Close"
-            style={{
-              background: "none",
-              border: 0,
-              color,
-              cursor: "pointer",
-              fontSize: 18,
-              lineHeight: 1,
-              padding: 0,
-            }}
-          >
-            ×
-          </button>
-        )}
+        {s.showClose !== false &&
+          s.template !== "progress" &&
+          s.template !== "vip" && (
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close"
+              style={{
+                background: "none",
+                border: 0,
+                color,
+                cursor: "pointer",
+                fontSize: 18,
+                lineHeight: 1,
+                padding: 0,
+              }}
+            >
+              ×
+            </button>
+          )}
       </span>
     </div>
   );
