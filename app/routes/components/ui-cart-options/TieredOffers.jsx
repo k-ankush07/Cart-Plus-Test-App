@@ -14,13 +14,14 @@ import {
 } from "@shopify/polaris";
 
 import { GiftCardIcon } from "@shopify/polaris-icons";
-
+import { THEMES, getTheme } from "../utils/rewardThemes";
+import IconLibrary from "../ui/IconLibrary";
 import ColorInput from "../ui/ColorInput";
 import RichTextEditor from "../ui/RichTextEditor";
 import RewardsCalculation from "../ui/Rewards-calculation";
 import BackgroundInput from "../ui/BackgroundInput";
 
-/* ---------- mini previews (style cards ke andar) ---------- */
+/* ---------- mini previews  ---------- */
 const DARK = "#1a1a1a";
 const GRAY = "#d9d9d9";
 const LIGHT = "#ececec";
@@ -130,16 +131,10 @@ const PreviewMilestone = () => (
       gap: 6,
     }}
   >
-    {/* upar ki line */}
     <Line w="60%" h={2} />
 
-    {/* neeche circles, center me paas-paas */}
     <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-      {[
-        { n: "✓", done: true },
-        { n: "2" },
-        { n: "3" },
-      ].map((d) => (
+      {[{ n: "✓", done: true }, { n: "2" }, { n: "3" }].map((d) => (
         <div
           key={d.n}
           style={{
@@ -173,6 +168,116 @@ const PreviewThreshold = () => (
   </div>
 );
 
+const Mini = ({ bg, children }) => (
+  <div
+    style={{
+      background: bg,
+      borderRadius: 6,
+      padding: "6px 8px",
+      display: "grid",
+      gap: 4,
+    }}
+  >
+    {children}
+  </div>
+);
+
+const PreviewCard = () => (
+  <Mini bg="#fff">
+    <Line w="50%" h={2} />
+    <Line h={3} color={DARK} w="70%" />
+  </Mini>
+);
+const PreviewGift = () => (
+  <Mini bg="#e6f6ec">
+    <Line w="45%" h={2} color="#1a9a4a" />
+    <div style={{ display: "flex", gap: 14, justifyContent: "center" }}>
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: i === 0 ? "#1a9a4a" : "#c4e8d1",
+          }}
+        />
+      ))}
+    </div>
+  </Mini>
+);
+const PreviewRing = () => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      background: "#efeaff",
+      borderRadius: 6,
+      padding: 6,
+    }}
+  >
+    <div
+      style={{
+        width: 16,
+        height: 16,
+        borderRadius: "50%",
+        border: "3px solid #4b2fc0",
+        borderRightColor: "#d8cfff",
+      }}
+    />
+    <div style={{ flex: 1, display: "grid", gap: 3 }}>
+      <Line h={2} color="#4b2fc0" />
+      <Line w="50%" h={2} />
+    </div>
+  </div>
+);
+const PreviewUnlock = () => (
+  <Mini bg="#fff8ea">
+    <Line w="40%" h={2} color={DARK} />
+    <Line h={3} color="#f59e0b" w="60%" />
+  </Mini>
+);
+const PreviewStriped = () => (
+  <Mini bg="#eef4ff">
+    <Line w="40%" h={2} color="#2563eb" />
+    <div
+      style={{
+        height: 4,
+        borderRadius: 4,
+        backgroundImage:
+          "repeating-linear-gradient(45deg,#2563eb 0 4px,#7aa2f7 4px 8px)",
+        width: "70%",
+      }}
+    />
+  </Mini>
+);
+const PreviewAlmost = () => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      background: "#fff0f2",
+      borderRadius: 6,
+      padding: 6,
+    }}
+  >
+    <div
+      style={{
+        width: 12,
+        height: 12,
+        borderRadius: "50%",
+        background: "#e11d48",
+      }}
+    />
+    <Line h={3} color="#e11d48" w="45%" />
+    <div
+      style={{ width: 16, height: 8, borderRadius: 6, background: "#e11d48" }}
+    />
+  </div>
+);
+
 const BAR_STYLES = [
   { value: "icon", label: "Icon", preview: <PreviewIcon /> },
   { value: "reward", label: "Reward", preview: <PreviewReward /> },
@@ -183,14 +288,42 @@ const BAR_STYLES = [
     label: "Threshold Tracker",
     preview: <PreviewThreshold />,
   },
+  { value: "card", label: "Card", preview: <PreviewCard /> },
+  { value: "gift", label: "Gift steps", preview: <PreviewGift /> },
+  { value: "ring", label: "Ring", preview: <PreviewRing /> },
+  { value: "unlock", label: "Unlock rewards", preview: <PreviewUnlock /> },
+  { value: "striped", label: "Striped", preview: <PreviewStriped /> },
+  { value: "almost", label: "Almost there", preview: <PreviewAlmost /> },
 ];
 
 export default function TieredOffers({
   handleChange,
   rewardsSettings,
   currency,
+  shop,
+  accessToken,
+  apiUrl,
 }) {
   const barStyle = rewardsSettings.barStyle || "icon";
+
+  const isThemed = !!THEMES[barStyle];
+  const t = isThemed
+    ? getTheme(barStyle, rewardsSettings.styleConfig?.[barStyle])
+    : {};
+  const setCfg = (key, value) =>
+    handleChange("rewardsSettings", (prev) => ({
+      ...prev,
+      styleConfig: {
+        ...prev.styleConfig,
+        [barStyle]: { ...prev.styleConfig?.[barStyle], [key]: value },
+      },
+    }));
+  const resetCfg = () =>
+    handleChange("rewardsSettings", (prev) => ({
+      ...prev,
+      styleConfig: { ...prev.styleConfig, [barStyle]: {} },
+    }));
+
   const update = (key, value) => {
     handleChange("rewardsSettings", (prev) => ({
       ...prev,
@@ -200,7 +333,6 @@ export default function TieredOffers({
 
   return (
     <div className="mainContent">
-      {/* Page heading — matches reference HTML exactly */}
       <Box paddingBlockEnd="400">
         <BlockStack gap="400">
           <InlineStack gap="300" align="space-between" blockAlign="center">
@@ -233,6 +365,7 @@ export default function TieredOffers({
           Show customers a progress bar that highlights reward milestones.
         </Text>
       </Box>
+
       <LegacyCard sectioned title="Style">
         <BlockStack gap="300">
           <InlineGrid columns={3} gap="300">
@@ -253,7 +386,6 @@ export default function TieredOffers({
                     borderRadius: 10,
                     padding: 10,
                     background: "#fff",
-                    // border hamesha 2px, taaki select par layout na hile
                     border: `2px solid ${selected ? "#303030" : "#e1e3e5"}`,
                     display: "flex",
                     flexDirection: "column",
@@ -283,6 +415,269 @@ export default function TieredOffers({
               );
             })}
           </InlineGrid>
+
+          {isThemed && (
+            <LegacyCard sectioned title="Customize this style">
+              <BlockStack gap="300">
+                <InlineGrid columns={2} gap="300">
+                  <ColorInput
+                    label="Background"
+                    value={t.bg}
+                    onChange={(v) => setCfg("bg", v)}
+                  />
+                  <ColorInput
+                    label="Bar / accent color"
+                    value={t.accent}
+                    onChange={(v) => setCfg("accent", v)}
+                  />
+                  <ColorInput
+                    label="Bar background"
+                    value={t.track}
+                    onChange={(v) => setCfg("track", v)}
+                  />
+                  <ColorInput
+                    label="Text color"
+                    value={t.textColor}
+                    onChange={(v) => setCfg("textColor", v)}
+                  />
+                  <ColorInput
+                    label="Icon background"
+                    value={t.iconBg}
+                    onChange={(v) => setCfg("iconBg", v)}
+                  />
+                  <ColorInput
+                    label="Icon color"
+                    value={t.iconColor || t.accent}
+                    onChange={(v) => setCfg("iconColor", v)}
+                  />
+                </InlineGrid>
+
+                <RangeSlider
+                  label="Border radius"
+                  min={0}
+                  max={40}
+                  value={t.radius}
+                  onChange={(v) => setCfg("radius", v)}
+                  suffix={<Text>{t.radius}px</Text>}
+                  output
+                />
+                <RangeSlider
+                  label="Padding (top / bottom)"
+                  min={6}
+                  max={32}
+                  value={t.padding}
+                  onChange={(v) => setCfg("padding", v)}
+                  suffix={<Text>{t.padding}px</Text>}
+                  output
+                />
+                <RangeSlider
+                  label="Message font size"
+                  min={11}
+                  max={22}
+                  value={t.fontSize}
+                  onChange={(v) => setCfg("fontSize", v)}
+                  suffix={<Text>{t.fontSize}px</Text>}
+                  output
+                />
+                <RangeSlider
+                  label="Bar height"
+                  min={4}
+                  max={16}
+                  value={t.barHeight}
+                  onChange={(v) => setCfg("barHeight", v)}
+                  suffix={<Text>{t.barHeight}px</Text>}
+                  output
+                />
+
+                {["card", "gift", "striped", "almost"].includes(barStyle) && (
+                  <BlockStack gap="200">
+                    <Checkbox
+                      label="Show icon"
+                      checked={t.showIcon}
+                      onChange={(v) => setCfg("showIcon", v)}
+                    />
+                    {t.showIcon && (
+                      <>
+                        <Text as="p" variant="bodyMd">
+                          Icon
+                        </Text>
+                        <IconLibrary
+                          value={t.icon}
+                          onChange={(icon) => setCfg("icon", icon)}
+                          quickIcons={[
+                            "delivery",
+                            "gift",
+                            "star",
+                            "product",
+                            "discount",
+                            "bolt",
+                            "heart",
+                            "cart",
+                          ]}
+                          shop={shop}
+                          accessToken={accessToken}
+                          apiUrl={apiUrl}
+                        />
+                        <RangeSlider
+                          label="Icon size"
+                          min={14}
+                          max={36}
+                          value={t.iconSize}
+                          onChange={(v) => setCfg("iconSize", v)}
+                          suffix={<Text>{t.iconSize}px</Text>}
+                          output
+                        />
+                        <Text as="p" variant="bodySm" tone="subdued">
+                          Double-click the selected icon to reset it to the
+                          default.
+                        </Text>
+                      </>
+                    )}
+                  </BlockStack>
+                )}
+
+                {barStyle === "card" && (
+                  <Checkbox
+                    label="Show start / end amounts"
+                    checked={t.showLabels}
+                    onChange={(v) => setCfg("showLabels", v)}
+                  />
+                )}
+
+                {barStyle === "gift" && (
+                  <>
+                    <Checkbox
+                      label="Show amounts and labels under dots"
+                      checked={t.showLabels}
+                      onChange={(v) => setCfg("showLabels", v)}
+                    />
+                    <RangeSlider
+                      label="Dot size"
+                      min={12}
+                      max={28}
+                      value={t.dotSize}
+                      onChange={(v) => setCfg("dotSize", v)}
+                      suffix={<Text>{t.dotSize}px</Text>}
+                      output
+                    />
+                  </>
+                )}
+
+                {barStyle === "unlock" && (
+                  <>
+                    <Checkbox
+                      label="Show amounts and labels under dots"
+                      checked={t.showLabels}
+                      onChange={(v) => setCfg("showLabels", v)}
+                    />
+                    <RangeSlider
+                      label="Dot size"
+                      min={12}
+                      max={28}
+                      value={t.dotSize}
+                      onChange={(v) => setCfg("dotSize", v)}
+                      suffix={<Text>{t.dotSize}px</Text>}
+                      output
+                    />
+                    <RangeSlider
+                      label="Message width"
+                      min={20}
+                      max={50}
+                      value={t.titleWidth}
+                      onChange={(v) => setCfg("titleWidth", v)}
+                      suffix={<Text>{t.titleWidth}%</Text>}
+                      output
+                    />
+                  </>
+                )}
+
+                {barStyle === "ring" && (
+                  <>
+                    <TextField
+                      label="Sub text"
+                      autoComplete="off"
+                      value={t.subText}
+                      helpText="Use {remaining} for the remaining amount"
+                      onChange={(v) => setCfg("subText", v)}
+                    />
+                    <RangeSlider
+                      label="Ring size"
+                      min={36}
+                      max={70}
+                      value={t.ringSize}
+                      onChange={(v) => setCfg("ringSize", v)}
+                      suffix={<Text>{t.ringSize}px</Text>}
+                      output
+                    />
+                    <Checkbox
+                      label="Show next reward card"
+                      checked={t.showNext}
+                      onChange={(v) => setCfg("showNext", v)}
+                    />
+                    <ColorInput
+                      label="Next reward card background"
+                      value={t.nextBg}
+                      onChange={(v) => setCfg("nextBg", v)}
+                    />
+                  </>
+                )}
+
+                {barStyle === "striped" && (
+                  <>
+                    <Checkbox
+                      label="Show next reward card"
+                      checked={t.showNext}
+                      onChange={(v) => setCfg("showNext", v)}
+                    />
+                    <ColorInput
+                      label="Next reward card background"
+                      value={t.nextBg}
+                      onChange={(v) => setCfg("nextBg", v)}
+                    />
+                  </>
+                )}
+
+                {barStyle === "almost" && (
+                  <>
+                    <Checkbox
+                      label="Show amount counter ($32 / $50)"
+                      checked={t.showCounter}
+                      onChange={(v) => setCfg("showCounter", v)}
+                    />
+                    <Checkbox
+                      label="Show button"
+                      checked={t.showButton}
+                      onChange={(v) => setCfg("showButton", v)}
+                    />
+                    {t.showButton && (
+                      <>
+                        <TextField
+                          label="Button text"
+                          autoComplete="off"
+                          value={t.buttonText}
+                          onChange={(v) => setCfg("buttonText", v)}
+                        />
+                        <InlineGrid columns={2} gap="300">
+                          <ColorInput
+                            label="Button color"
+                            value={t.buttonBg || t.accent}
+                            onChange={(v) => setCfg("buttonBg", v)}
+                          />
+                          <ColorInput
+                            label="Button text color"
+                            value={t.buttonColor}
+                            onChange={(v) => setCfg("buttonColor", v)}
+                          />
+                        </InlineGrid>
+                      </>
+                    )}
+                  </>
+                )}
+
+                <Button onClick={resetCfg}>Reset to default</Button>
+              </BlockStack>
+            </LegacyCard>
+          )}
 
           {barStyle === "reward" && (
             <>

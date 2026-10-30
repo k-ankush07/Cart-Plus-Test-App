@@ -1,5 +1,7 @@
 import "../../../index.css";
 import { backgroundToCss, useTemplateBackground } from "../utils/background";
+import { THEMES, getTheme } from "../utils/rewardThemes";
+import { LibraryIcon } from "../ui/IconLibrary";
 
 const getIcon = (type) => {
   switch (type) {
@@ -195,6 +197,337 @@ export default function TieredRewards({ rewardsSettings, currency }) {
   const nextLabel = rewardsSettings.nextRewardLabel ?? "NEXT REWARD";
   const doneLabel = rewardsSettings.milestoneDoneLabel ?? "DONE";
 
+  const theme = THEMES[barStyle];
+  if (THEMES[barStyle]) {
+    const t = getTheme(barStyle, rewardsSettings.styleConfig?.[barStyle]);
+    const { bg, accent, track } = t;
+    const h = t.barHeight;
+    const iconColor = t.iconColor || accent;
+    const iconNode =
+      typeof t.icon === "string" ? (
+        t.icon
+      ) : (
+        <LibraryIcon value={t.icon} size={t.iconSize} color={iconColor} />
+      );
+
+    const remainingNext = getRemainingAmount(currentTier);
+    const pctRound = Math.round(Math.min(100, (totalValue / maxAmount) * 100));
+
+    const shell = {
+      background: bg,
+      borderRadius: t.radius,
+      padding: `${t.padding}px 16px`,
+      margin: "12px",
+      color: t.textColor,
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+    };
+    const msg = (
+      <div
+        style={{ fontSize: t.fontSize, fontWeight: 700, lineHeight: 1.3 }}
+        dangerouslySetInnerHTML={{ __html: messageHtml }}
+      />
+    );
+    const sub = (text) => (
+      <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>{text}</div>
+    );
+    const iconBox = (content, round = true) => (
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          flexShrink: 0,
+          borderRadius: round ? "50%" : 10,
+          background: t.iconBg,
+          color: iconColor,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 20,
+        }}
+      >
+        {content}
+      </div>
+    );
+    const simpleBar = (striped, pct = fillPercent) => (
+      <div
+        style={{
+          height: h,
+          borderRadius: h,
+          background: track,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${pct}%`,
+            height: "100%",
+            background: striped
+              ? `repeating-linear-gradient(45deg, ${accent} 0 6px, ${accent}99 6px 12px)`
+              : accent,
+            transition: "width .4s",
+          }}
+        />
+      </div>
+    );
+
+    const n = sortedTiers.length;
+    const evenPos = (i) => (n > 1 ? (i / (n - 1)) * 100 : 100);
+    const evenFill = (() => {
+      if (!n) return 0;
+      const first = getTierValue(sortedTiers[0]);
+      if (n === 1) return Math.min(100, (totalValue / (first || 1)) * 100);
+      if (totalValue <= first) return 0;
+      for (let i = 0; i < n - 1; i++) {
+        const a = getTierValue(sortedTiers[i]);
+        const b = getTierValue(sortedTiers[i + 1]);
+        if (totalValue < b)
+          return (
+            evenPos(i) +
+            ((totalValue - a) / (b - a)) * (evenPos(i + 1) - evenPos(i))
+          );
+      }
+      return 100;
+    })();
+
+    const tierTrack = (
+      <div
+        style={{
+          position: "relative",
+          paddingTop: t.dotSize / 2,
+          paddingBottom: t.showLabels ? 44 : t.dotSize / 2,
+        }}
+      >
+        {simpleBar(false, evenFill)}
+        {sortedTiers.map((tier, i) => {
+          const pos = evenPos(i);
+          const reached = totalValue >= getTierValue(tier);
+          return (
+            <div
+              key={tier.id}
+              style={{
+                position: "absolute",
+                left: `${pos}%`,
+                top: h / 2,
+                transform: `translateX(-${pos}%)`,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                fontSize: 10,
+                textAlign: "center",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <span
+                style={{
+                  width: t.dotSize,
+                  height: t.dotSize,
+                  borderRadius: "50%",
+                  boxSizing: "border-box",
+                  background: reached ? accent : "#fff",
+                  border: `2px solid ${reached ? accent : track}`,
+                  color: "#fff",
+                  fontSize: Math.max(8, t.dotSize - 8),
+                  lineHeight: `${t.dotSize - 4}px`,
+                }}
+              >
+                {reached ? "✓" : ""}
+              </span>
+              {t.showLabels && (
+                <>
+                  <b style={{ marginTop: 6 }}>{fmt(getTierValue(tier))}</b>
+                  <span style={{ opacity: 0.7 }}>{tier.description}</span>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+    const nextCard = t.showNext && currentTier && (
+      <div
+        style={{
+          background: t.nextBg,
+          borderRadius: 10,
+          padding: "8px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          color: accent,
+          flexShrink: 0,
+        }}
+      >
+        {getIcon(currentTier.type)}
+        <div style={{ color: t.textColor, fontSize: 11, lineHeight: 1.3 }}>
+          <b style={{ display: "block", fontSize: 13 }}>
+            {fmt(getTierValue(currentTier))}
+          </b>
+          {currentTier.description}
+        </div>
+      </div>
+    );
+
+    if (barStyle === "card")
+      return (
+        <div className="cart-plus-rewards" style={shell}>
+          {t.showIcon && iconBox(iconNode, false)}
+          <div style={{ flex: 1 }}>
+            {msg}
+            <div style={{ marginTop: 8 }}>{simpleBar(false)}</div>
+            {t.showLabels && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: 10,
+                  marginTop: 3,
+                }}
+              >
+                <span>{fmt(0)}</span>
+                <span>{fmt(maxAmount)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+
+    if (barStyle === "gift")
+      return (
+        <div
+          className="cart-plus-rewards"
+          style={{ ...shell, alignItems: "flex-start" }}
+        >
+          {t.showIcon && iconBox(iconNode)}
+          <div style={{ flex: 1 }}>
+            {msg}
+            <div style={{ marginTop: 14 }}>{tierTrack}</div>
+          </div>
+        </div>
+      );
+
+    if (barStyle === "ring") {
+      const size = t.ringSize;
+      const stroke = 4;
+      const r = (size - stroke - 2) / 2;
+      const c = 2 * Math.PI * r;
+      const subHtml = String(t.subText || "").replace(
+        /\{remaining\}/gi,
+        fmt(remainingNext),
+      );
+      return (
+        <div className="cart-plus-rewards" style={shell}>
+          <div
+            style={{
+              position: "relative",
+              width: size,
+              height: size,
+              flexShrink: 0,
+            }}
+          >
+            <svg
+              width={size}
+              height={size}
+              style={{ transform: "rotate(-90deg)" }}
+            >
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={r}
+                fill="none"
+                stroke={track}
+                strokeWidth={stroke}
+              />
+              <circle
+                cx={size / 2}
+                cy={size / 2}
+                r={r}
+                fill="none"
+                stroke={accent}
+                strokeWidth={stroke}
+                strokeLinecap="round"
+                strokeDasharray={`${(c * pctRound) / 100} ${c}`}
+              />
+            </svg>
+            <span
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 10,
+                fontWeight: 700,
+                color: accent,
+              }}
+            >
+              {pctRound}%
+            </span>
+          </div>
+          <div style={{ flex: 1 }}>
+            {msg}
+            {remainingNext > 0 && subHtml && sub(subHtml)}
+          </div>
+          {nextCard}
+        </div>
+      );
+    }
+
+    if (barStyle === "unlock")
+      return (
+        <div
+          className="cart-plus-rewards"
+          style={{ ...shell, alignItems: "flex-start" }}
+        >
+          <div style={{ width: `${t.titleWidth}%`, flexShrink: 0 }}>{msg}</div>
+          <div style={{ flex: 1, paddingTop: 6 }}>{tierTrack}</div>
+        </div>
+      );
+
+    if (barStyle === "striped")
+      return (
+        <div className="cart-plus-rewards" style={shell}>
+          {t.showIcon && iconBox(iconNode, false)}
+          <div style={{ flex: 1 }}>
+            {msg}
+            <div style={{ marginTop: 8 }}>{simpleBar(true)}</div>
+          </div>
+          {nextCard}
+        </div>
+      );
+
+    // almost
+    return (
+      <div className="cart-plus-rewards" style={shell}>
+        {t.showIcon && iconBox(iconNode)}
+        <div style={{ flex: 1 }}>
+          {msg}
+          <div style={{ marginTop: 8 }}>{simpleBar(false)}</div>
+        </div>
+        {t.showCounter && (
+          <div style={{ fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>
+            {fmt(totalValue)} / {fmt(maxAmount)}
+          </div>
+        )}
+        {t.showButton && (
+          <span
+            style={{
+              background: t.buttonBg || accent,
+              color: t.buttonColor,
+              borderRadius: 999,
+              padding: "6px 12px",
+              fontSize: 11,
+              fontWeight: 700,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {t.buttonText}
+          </span>
+        )}
+      </div>
+    );
+  }
+
   // Reward: ticket card with the current reward on the left, next reward on the right
   if (barStyle === "reward") {
     // labels use the bar colour (first stop when it is a gradient)
@@ -217,7 +550,14 @@ export default function TieredRewards({ rewardsSettings, currency }) {
             overflow: "hidden",
           }}
         >
-          <div style={{ flex: 1, minWidth: 0, padding: "16px 18px", textAlign: "center" }}>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              padding: "16px 18px",
+              textAlign: "center",
+            }}
+          >
             <div style={{ ...labelStyle, textAlign: "left", marginBottom: 8 }}>
               {ticketLabel}
             </div>
