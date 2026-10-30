@@ -13,15 +13,18 @@ export const ANNOUNCEMENT_TEMPLATES = {
     color: "#7a1030",
     iconColor: "#7a1030",
     code: "WELCOME",
+    accentBg: "#8a1538",
+    accentText: "#ffffff",
   },
   progress: {
     label: "Free shipping progress",
-    text: "You're only <b>$12</b> away from free shipping!",
+    text: "You're only <b>{remaining}</b> away from free shipping!",
     background: "#e6f6ec",
     color: "#14351f",
     iconColor: "#1a9a4a",
     current: 38,
     goal: 50,
+    accentBg: "#1a9a4a",
   },
   vip: {
     label: "VIP members",
@@ -38,6 +41,8 @@ export const ANNOUNCEMENT_TEMPLATES = {
     color: "#4b2a9a",
     iconColor: "#6b3fd4",
     seconds: 2 * 3600 + 14 * 60 + 36,
+    accentBg: "#ddd0ff",
+    accentText: "#4b2a9a",
   },
   flash_sale: {
     label: "Flash Sale",
@@ -46,5 +51,7 @@ export const ANNOUNCEMENT_TEMPLATES = {
     color: "#ffffff",
     iconColor: "#ffffff",
     buttonText: "Shop now →",
+    accentBg: "#ffffff",
+    accentText: "#ff4d5e",
   },
 };

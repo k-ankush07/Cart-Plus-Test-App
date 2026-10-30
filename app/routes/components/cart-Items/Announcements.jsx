@@ -23,6 +23,7 @@ const svg = (d) => (c) => (
     {d}
   </svg>
 );
+
 const ICONS = {
   free_shipping: svg(
     <>
@@ -50,7 +51,7 @@ const ICONS = {
       <path d="M12 9v4l2 2M9 2h6" />
     </>,
   ),
-  flash_sale: svg(<path d="M13 2L4 14h7l-1 8 9-12h-7z" fill={undefined} />),
+  flash_sale: svg(<path d="M13 2L4 14h7l-1 8 9-12h-7z" />),
 };
 
 const pad = (n) => String(n).padStart(2, "0");
@@ -73,8 +74,14 @@ function TemplateAnnouncement({ s }) {
 
   const color = s.textColor || t.color;
   const iconColor = s.iconColor || t.iconColor;
-  const html = s.text || t.text;
+  const accentBg = s.accentBg || t.accentBg;
+  const accentText = s.accentText || t.accentText;
   const Icon = ICONS[s.template];
+
+  const current = Number(s.current ?? t.current) || 0;
+  const goal = Number(s.goal ?? t.goal) || t.goal || 1;
+  const remaining = Math.max(0, goal - current);
+  const html = (s.text || t.text).replace(/\{remaining\}/g, `$${remaining}`);
 
   const pill = {
     background: "#fff",
@@ -89,15 +96,15 @@ function TemplateAnnouncement({ s }) {
   };
 
   let right = null;
+
   if (s.template === "coupon")
     right = (
-      <span style={{ ...pill, background: "#8a1538", color: "#fff" }}>
+      <span style={{ ...pill, background: accentBg, color: accentText }}>
         Use code: {s.couponCode || t.code}
       </span>
     );
+
   if (s.template === "progress") {
-    const current = Number(s.current ?? t.current) || 0;
-    const goal = Number(s.goal ?? t.goal) || t.goal;
     const pct = Math.min(100, (current / goal) * 100);
     right = (
       <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
@@ -106,7 +113,7 @@ function TemplateAnnouncement({ s }) {
             width: 90,
             height: 6,
             borderRadius: 6,
-            background: "#cfe9d8",
+            background: `${accentBg}33`,
             overflow: "hidden",
           }}
         >
@@ -115,7 +122,7 @@ function TemplateAnnouncement({ s }) {
               display: "block",
               width: `${pct}%`,
               height: "100%",
-              background: "#1a9a4a",
+              background: accentBg,
             }}
           />
         </span>
@@ -125,6 +132,7 @@ function TemplateAnnouncement({ s }) {
       </span>
     );
   }
+
   if (s.template === "vip")
     right = (
       <a
@@ -134,6 +142,7 @@ function TemplateAnnouncement({ s }) {
         {s.linkText || t.linkText}
       </a>
     );
+
   if (s.template === "countdown")
     right = (
       <span
@@ -151,7 +160,8 @@ function TemplateAnnouncement({ s }) {
           >
             <span
               style={{
-                background: "#ddd0ff",
+                background: accentBg,
+                color: accentText,
                 borderRadius: 6,
                 padding: "2px 8px",
               }}
@@ -163,11 +173,17 @@ function TemplateAnnouncement({ s }) {
         ))}
       </span>
     );
+
   if (s.template === "flash_sale")
     right = (
       <a
         href={s.link || "#"}
-        style={{ ...pill, color: "#ff4d5e", textDecoration: "none" }}
+        style={{
+          ...pill,
+          background: accentBg,
+          color: accentText,
+          textDecoration: "none",
+        }}
       >
         {s.buttonText || t.buttonText}
       </a>
@@ -211,7 +227,7 @@ function TemplateAnnouncement({ s }) {
         }}
       >
         {right}
-        {s.template !== "progress" && s.template !== "vip" && (
+       {s.showClose !== false && s.template !== "progress" && s.template !== "vip" && (
           <button
             type="button"
             onClick={() => setOpen(false)}

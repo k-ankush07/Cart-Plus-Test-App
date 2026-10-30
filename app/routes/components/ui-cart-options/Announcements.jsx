@@ -1,5 +1,4 @@
 import {
-  Card,
   Text,
   Button,
   ButtonGroup,
@@ -8,15 +7,11 @@ import {
   InlineGrid,
   BlockStack,
   RangeSlider,
-  Badge,
   LegacyCard,
   LegacyStack,
   Box,
   Icon,
-  Divider,
-  DropZone,
-  ProgressBar,
-  Tooltip,
+  Checkbox,
 } from "@shopify/polaris";
 
 import { MegaphoneIcon, InfoIcon } from "@shopify/polaris-icons";
@@ -53,9 +48,10 @@ export default function Announcements({
       iconColor: t.iconColor,
       background: { type: "plain", color: t.background },
       textColor: t.color,
+      accentBg: t.accentBg,
+      accentText: t.accentText,
     });
   };
-
   return (
     <div className="mainContent">
       {/* Page heading — matches reference HTML exactly */}
@@ -191,6 +187,42 @@ export default function Announcements({
                 onChange={(v) => update("seconds", Number(v) * 60)}
               />
             )}
+            {["coupon", "flash_sale", "progress", "countdown"].includes(
+              announcementSettings.template,
+            ) && (
+              <InlineGrid columns={2} gap="300">
+                <ColorInput
+                  label={
+                    announcementSettings.template === "progress"
+                      ? "Bar color"
+                      : announcementSettings.template === "countdown"
+                        ? "Timer box color"
+                        : "Button color"
+                  }
+                  value={
+                    announcementSettings.accentBg ??
+                    ANNOUNCEMENT_TEMPLATES[announcementSettings.template]
+                      .accentBg
+                  }
+                  onChange={(val) => update("accentBg", val)}
+                />
+                {announcementSettings.template !== "progress" && (
+                  <ColorInput
+                    label={
+                      announcementSettings.template === "countdown"
+                        ? "Timer text color"
+                        : "Button text color"
+                    }
+                    value={
+                      announcementSettings.accentText ??
+                      ANNOUNCEMENT_TEMPLATES[announcementSettings.template]
+                        .accentText
+                    }
+                    onChange={(val) => update("accentText", val)}
+                  />
+                )}
+              </InlineGrid>
+            )}
           </BlockStack>
         </LegacyCard>
       )}
@@ -273,7 +305,10 @@ export default function Announcements({
           </BlockStack>
           <RangeSlider
             label="Border radius"
-            value={announcementSettings.borderRadius ?? 0}
+            value={
+              announcementSettings.borderRadius ??
+              (announcementSettings.template ? 12 : 0)
+            }
             onChange={(val) => update("borderRadius", val)}
             min={0}
             max={40}
@@ -281,6 +316,11 @@ export default function Announcements({
             prefix={<Text>0px</Text>}
             suffix={<Text>40px</Text>}
             output
+          />
+          <Checkbox
+            label="Show close (×) button"
+            checked={announcementSettings.showClose ?? true}
+            onChange={(val) => update("showClose", val)}
           />
           {/* <RangeSlider
             label="Font size"
