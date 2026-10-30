@@ -93,8 +93,12 @@ export default function Upsells({
     upsellsSettings?.icon === undefined
       ? { type: "icon", name: "star" }
       : upsellsSettings.icon;
+
   const imageBox = {
-    ...(imageSize ? { width: imageSize } : {}),
+    width: imageSize || 70,
+    minWidth: imageSize || 70,
+    flexShrink: 0,
+    aspectRatio: "1 / 1",
     ...(radius !== null ? { borderRadius: radius, overflow: "hidden" } : {}),
   };
 
@@ -593,10 +597,10 @@ export default function Upsells({
     );
   }
 
-  // Koi real product nahi mila -> kuch bhi mat dikhao (no fake products)
+  const isFloating = designSettings?.layout === "floating";
+
   if (!products.length) return null;
 
-  // Side panel: product cards stacked in a strip to the left of the cart, no title
   if (layout === "side") {
     return (
       <div
@@ -604,7 +608,7 @@ export default function Upsells({
         style={{
           position: "absolute",
           top: 0,
-          right: "100%",
+          right: isFloating ? "calc(100% + 12px)" : "100%",
           width: 190,
           maxHeight: "100%",
           overflowY: "auto",
@@ -614,13 +618,13 @@ export default function Upsells({
           padding: 8,
           boxSizing: "border-box",
           zIndex: 5,
-          // same fill as the cart (.cart-app): the Template tint, else the design background
           background:
             designSettings?.bodyBackground ||
             designSettings?.backgroundColor ||
-            "#ffffff", // fallback
+            "#ffffff",
           ...(bodyBg ? { background: bodyBg } : {}),
-          height: "100vh",
+          height: isFloating ? "100%" : "100vh",
+          ...(isFloating ? { borderRadius: 14 } : {}),
         }}
       >
         {title && (
@@ -932,26 +936,26 @@ export default function Upsells({
                 </div>
 
                 {product.variants.length > 1 && (
-                <div className="  cart-plus-internal-component-upsell-tile__variant-row upsell">
-                  <select
-                    className="cart-plus-upsell-item-variant-selector"
-                    value={v.id}
-                    onChange={(e) =>
-                      handleVariantChange(product.id, e.target.value)
-                    }
-                    style={{
-                      width: "100%",
-                      fontSize: 11,
-                      color: primary,
-                      minWidth: 0,
-                    }}
-                  >
-                    {product.variants.map((variant) => (
-                      <option key={variant.id} value={variant.id}>
-                        {variant.title}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="  cart-plus-internal-component-upsell-tile__variant-row upsell">
+                    <select
+                      className="cart-plus-upsell-item-variant-selector"
+                      value={v.id}
+                      onChange={(e) =>
+                        handleVariantChange(product.id, e.target.value)
+                      }
+                      style={{
+                        width: "100%",
+                        fontSize: 11,
+                        color: primary,
+                        minWidth: 0,
+                      }}
+                    >
+                      {product.variants.map((variant) => (
+                        <option key={variant.id} value={variant.id}>
+                          {variant.title}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 )}
               </div>

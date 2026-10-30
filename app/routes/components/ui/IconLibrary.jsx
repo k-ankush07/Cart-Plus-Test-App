@@ -53,6 +53,23 @@ import {
   ProductIcon,
   StoreIcon,
   PlayIcon,
+  StarFilledIcon,
+  PackageIcon,
+  CashDollarIcon,
+  CreditCardIcon,
+  ConfettiIcon,
+  ThumbsUpIcon,
+  LightbulbIcon,
+  TargetIcon,
+  SmileyHappyIcon,
+  OrderIcon,
+  CheckCircleIcon,
+  AlertCircleIcon,
+  QuestionCircleIcon,
+  LinkIcon,
+  ViewIcon,
+  MenuIcon,
+  ChevronRightIcon,
 } from "@shopify/polaris-icons";
 import { uploadImage } from "../../../services/apiRoutes";
 
@@ -68,6 +85,45 @@ const HourglassIcon = (props) => (
       fillRule="evenodd"
       d="M5 2h10v3.2L11.6 10l3.4 4.8V18H5v-3.2L8.4 10 5 5.2zm2 2v.6L10 8.9l3-4.3V4zm3 7.1-3 4.3V16h6v-.6z"
     />
+  </svg>
+);
+
+const CrownIcon = (props) => (
+  <svg viewBox="0 0 20 20" {...props}>
+    <path d="M2.5 15.5 1.5 6l4.3 3.4L10 3l4.2 6.4L18.5 6l-1 9.5zm1.2 1h12.6v1.5H3.7z" />
+  </svg>
+);
+
+const FireIcon = (props) => (
+  <svg viewBox="0 0 20 20" {...props}>
+    <path d="M10.6 1.5c.3 2.4-.7 3.9-2 5.3-1.4 1.5-2.7 3-2.7 5.1a4.1 4.1 0 0 0 8.2 0c0-1-.3-1.9-.8-2.7-.2 1-.7 1.6-1.4 1.9.5-2.6-.1-6.1-1.3-9.6ZM10 18.5a3 3 0 0 1-3-3c0-1.4 1-2.3 2-3.4.5.9 2.1 1.4 3 2.7.1 3.1-1 3.7-2 3.7Z" />
+  </svg>
+);
+
+const PercentIcon = (props) => (
+  <svg viewBox="0 0 20 20" {...props}>
+    <path
+      fillRule="evenodd"
+      d="M14.7 4.3a.75.75 0 0 1 0 1.06l-9.34 9.34a.75.75 0 1 1-1.06-1.06l9.34-9.34a.75.75 0 0 1 1.06 0ZM6 4.5a1.75 1.75 0 1 0 0 3.5 1.75 1.75 0 0 0 0-3.5Zm8 7.5a1.75 1.75 0 1 0 0 3.5 1.75 1.75 0 0 0 0-3.5Z"
+    />
+  </svg>
+);
+
+const SparkleIcon = (props) => (
+  <svg viewBox="0 0 20 20" {...props}>
+    <path d="M8 2.5 9.4 7 14 8.5 9.4 10 8 14.5 6.6 10 2 8.5 6.6 7zm7 7 .8 2.4 2.4.8-2.4.8L15 16l-.8-2.5-2.4-.8 2.4-.8z" />
+  </svg>
+);
+
+const TrophyIcon = (props) => (
+  <svg viewBox="0 0 20 20" {...props}>
+    <path d="M5 2.5h10v1.8h2.5V7c0 1.7-1.3 3-3 3h-.3A4.5 4.5 0 0 1 11 12.4V15h2.5v1.5h-7V15H9v-2.6A4.5 4.5 0 0 1 5.8 10h-.3c-1.7 0-3-1.3-3-3V4.3H5zm-1 3.3V7c0 .8.6 1.5 1.3 1.5V5.8zm10.7 0v2.7c.7 0 1.3-.7 1.3-1.5V5.8z" />
+  </svg>
+);
+
+const TruckFastIcon = (props) => (
+  <svg viewBox="0 0 20 20" {...props}>
+    <path d="M1 5h10v8H1zm10 2.5h3.5L18 10.5V13h-7zM5 14.5a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Zm9 0a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Z" />
   </svg>
 );
 
@@ -116,6 +172,29 @@ export const ICON_LIBRARY = [
   { name: "product", label: "Product", source: ProductIcon },
   { name: "store", label: "Store", source: StoreIcon },
   { name: "play", label: "Play", source: PlayIcon },
+    { name: "crown", label: "Crown", source: CrownIcon },
+  { name: "fire", label: "Fire", source: FireIcon },
+  { name: "percent", label: "Percent", source: PercentIcon },
+  { name: "sparkle", label: "Sparkle", source: SparkleIcon },
+  { name: "trophy", label: "Trophy", source: TrophyIcon },
+  { name: "truck", label: "Fast truck", source: TruckFastIcon },
+  { name: "star-filled", label: "Star filled", source: StarFilledIcon },
+  { name: "package", label: "Package", source: PackageIcon },
+  { name: "cash", label: "Cash", source: CashDollarIcon },
+  { name: "card", label: "Credit card", source: CreditCardIcon },
+  { name: "confetti", label: "Confetti", source: ConfettiIcon },
+  { name: "thumbs-up", label: "Thumbs up", source: ThumbsUpIcon },
+  { name: "idea", label: "Idea", source: LightbulbIcon },
+  { name: "target", label: "Target", source: TargetIcon },
+  { name: "smile", label: "Smile", source: SmileyHappyIcon },
+  { name: "order", label: "Order", source: OrderIcon },
+  { name: "check-circle", label: "Check circle", source: CheckCircleIcon },
+  { name: "alert", label: "Alert", source: AlertCircleIcon },
+  { name: "help", label: "Help", source: QuestionCircleIcon },
+  { name: "link", label: "Link", source: LinkIcon },
+  { name: "view", label: "View", source: ViewIcon },
+  { name: "menu", label: "Menu", source: MenuIcon },
+  { name: "chevron-right", label: "Chevron right", source: ChevronRightIcon },
 ];
 
 const DEFAULT_QUICK_ICONS = [

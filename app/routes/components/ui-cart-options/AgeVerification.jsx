@@ -15,6 +15,7 @@ import {
   TextField,
 } from "@shopify/polaris";
 import { PersonIcon } from "@shopify/polaris-icons";
+import { AGE_TEMPLATES, CLASSIC_BASE } from "../utils/ageTemplates";
 
 import RichTextEditor from "../ui/RichTextEditor";
 import BackgroundInput from "../ui/BackgroundInput";
@@ -40,11 +41,16 @@ const Field = ({ label, value, onChange }) => (
 const countText = (s) => {
   const items = s?.items;
   if (!items) return "Nothing selected";
-  if (s.type === "products") return `${items.products?.length || 0} product(s) selected`;
+  if (s.type === "products")
+    return `${items.products?.length || 0} product(s) selected`;
   return `${items.length || 0} collection(s) selected`;
 };
 
-export default function AgeVerification({ cartSettings, handleChange, currency }) {
+export default function AgeVerification({
+  cartSettings,
+  handleChange,
+  currency,
+}) {
   const s = getAgeVerification(cartSettings);
   const update = (patch) =>
     handleChange("cartSettings", patchAgeVerification(patch));
@@ -59,34 +65,127 @@ export default function AgeVerification({ cartSettings, handleChange, currency }
   });
 
   const needsPicker = s.applyTo !== "all";
-  const selectedForType = s.selected?.type === s.applyTo ? s.selected : undefined;
+  const selectedForType =
+    s.selected?.type === s.applyTo ? s.selected : undefined;
+
+  const applyTemplate = (key) => {
+    const { label, ...settings } = AGE_TEMPLATES[key];
+    update({ template: key, ...settings });
+  };
+  const isTpl = !!s.template && !!AGE_TEMPLATES[s.template];
 
   return (
     <div className="mainContent">
       <BlockStack gap="400">
+        <InlineStack align="space-between" blockAlign="center">
+          <InlineStack blockAlign="center" gap="100">
+            <Box>
+              <Icon source={PersonIcon} />
+            </Box>
+            <Text variant="headingMd" as="h2">
+              Apply the age verification for :
+            </Text>
+          </InlineStack>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={s.enabled}
+            aria-label="Age Verification"
+            className={`sb-switch ${s.enabled ? "is-on" : ""}`}
+            onClick={() => update({ enabled: !s.enabled })}
+          >
+            <span className="sb-switch-knob" />
+          </button>
+        </InlineStack>
         <Card>
           <BlockStack gap="300">
-            <InlineStack align="space-between" blockAlign="center">
-              <InlineStack blockAlign="center" gap="100">
-                <Box>
-                  <Icon source={PersonIcon} />
-                </Box>
-                <Text variant="headingMd" as="h2">
-                  Apply the age verification for :
-                </Text>
-              </InlineStack>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={s.enabled}
-                aria-label="Age Verification"
-                className={`sb-switch ${s.enabled ? "is-on" : ""}`}
-                onClick={() => update({ enabled: !s.enabled })}
+            <Text variant="headingSm">Template</Text>
+            <InlineStack gap="200" wrap>
+              <Button
+                pressed={!s.template}
+                onClick={() => update({ template: "", ...CLASSIC_BASE })}
               >
-                <span className="sb-switch-knob" />
-              </button>
+                Classic
+              </Button>
+              {Object.entries(AGE_TEMPLATES).map(([key, t]) => (
+                <Button
+                  key={key}
+                  pressed={s.template === key}
+                  onClick={() => applyTemplate(key)}
+                >
+                  {t.label}
+                </Button>
+              ))}
             </InlineStack>
+          </BlockStack>
+        </Card>
 
+        {isTpl && (
+          <Card>
+            <BlockStack gap="300">
+              <Text variant="headingSm">Customize template</Text>
+              {["inline", "badge-row", "badge-stack", "title"].includes(
+                AGE_TEMPLATES[s.template].layout,
+              ) && (
+                <InlineGrid columns={2} gap="300">
+                  <TextField
+                    label="Yes button text"
+                    autoComplete="off"
+                    value={s.yesText ?? ""}
+                    onChange={(v) => update({ yesText: v })}
+                  />
+                  <TextField
+                    label="No button text"
+                    autoComplete="off"
+                    value={s.noText ?? ""}
+                    onChange={(v) => update({ noText: v })}
+                  />
+                </InlineGrid>
+              )}
+              {AGE_TEMPLATES[s.template].layout === "confirm" && (
+                <TextField
+                  label="Continue button text"
+                  autoComplete="off"
+                  value={s.continueText ?? ""}
+                  onChange={(v) => update({ continueText: v })}
+                />
+              )}
+              <InlineGrid columns={2} gap="300">
+                <ColorInput
+                  label="Button / toggle color"
+                  value={s.accent ?? "#111827"}
+                  onChange={(v) => update({ accent: v })}
+                />
+                <ColorInput
+                  label="Button text color"
+                  value={s.accentText ?? "#ffffff"}
+                  onChange={(v) => update({ accentText: v })}
+                />
+                <ColorInput
+                  label="Second button color"
+                  value={s.secondaryBg ?? "#f1f3f5"}
+                  onChange={(v) => update({ secondaryBg: v })}
+                />
+                <ColorInput
+                  label="Second button text"
+                  value={s.secondaryText ?? "#1a1a1a"}
+                  onChange={(v) => update({ secondaryText: v })}
+                />
+                <ColorInput
+                  label="18+ badge color"
+                  value={s.badgeColor ?? "#e5383b"}
+                  onChange={(v) => update({ badgeColor: v })}
+                />
+              </InlineGrid>
+              <Text variant="bodySm" tone="subdued">
+                Question, subtitle, background, border and radius use the fields
+                below.
+              </Text>
+            </BlockStack>
+          </Card>
+        )}
+        <Card>
+          <BlockStack gap="300">
             <BlockStack gap="100">
               {APPLY_TO_OPTIONS.map((o) => (
                 <RadioButton
@@ -106,7 +205,9 @@ export default function AgeVerification({ cartSettings, handleChange, currency }
                     setPickerOpen(true);
                   }}
                 >
-                  {s.applyTo === "products" ? "Select products" : "Select collections"}
+                  {s.applyTo === "products"
+                    ? "Select products"
+                    : "Select collections"}
                 </Button>
                 <Text tone="subdued">{countText(selectedForType)}</Text>
               </InlineStack>
@@ -127,7 +228,9 @@ export default function AgeVerification({ cartSettings, handleChange, currency }
                 value={String(s.minimumAge)}
                 suffix="Years"
                 onChange={(val) =>
-                  update({ minimumAge: Math.max(1, Math.min(99, Number(val) || 1)) })
+                  update({
+                    minimumAge: Math.max(1, Math.min(99, Number(val) || 1)),
+                  })
                 }
                 autoComplete="off"
               />
@@ -208,7 +311,9 @@ export default function AgeVerification({ cartSettings, handleChange, currency }
       <Modal
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
-        title={s.applyTo === "products" ? "Select products" : "Select collections"}
+        title={
+          s.applyTo === "products" ? "Select products" : "Select collections"
+        }
         primaryAction={{
           content: "Save",
           onAction: () => {
@@ -216,7 +321,9 @@ export default function AgeVerification({ cartSettings, handleChange, currency }
             setPickerOpen(false);
           },
         }}
-        secondaryActions={[{ content: "Close", onAction: () => setPickerOpen(false) }]}
+        secondaryActions={[
+          { content: "Close", onAction: () => setPickerOpen(false) },
+        ]}
         footer={
           <InlineStack align="space-between" blockAlign="center">
             <Pagination

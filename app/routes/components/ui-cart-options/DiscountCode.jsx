@@ -15,6 +15,8 @@ import {
 } from "@shopify/polaris";
 import ColorInput from "../ui/ColorInput";
 import RichTextEditor from "../ui/RichTextEditor";
+import { DISCOUNT_TEMPLATES } from "../utils/discountTemplates";
+import IconLibrary from "../ui/IconLibrary";
 
 // a labelled rich-text field
 const Field = ({ label, value, onChange, helpText }) => (
@@ -35,13 +37,29 @@ import {
   DiscountIcon, // Discount codes
 } from "@shopify/polaris-icons";
 
-export default function DiscountCode({ discountCodesSettings, handleChange }) {
+export default function DiscountCode({
+  discountCodesSettings,
+  handleChange,
+  shop,
+  accessToken,
+  apiUrl,
+}) {
   const [showLimitations, setShowLimitations] = useState(false);
 
   const update = (key, value) => {
     handleChange("discountCodesSettings", (prev) => ({
       ...prev,
       [key]: value,
+    }));
+  };
+
+  const applyTemplate = (key) => {
+    const { label, ...settings } = DISCOUNT_TEMPLATES[key];
+    handleChange("discountCodesSettings", (prev) => ({
+      ...prev,
+      template: key,
+      showOfferBox: true,
+      ...settings,
     }));
   };
 
@@ -79,6 +97,125 @@ export default function DiscountCode({ discountCodesSettings, handleChange }) {
       </Box>
 
       <BlockStack gap="400">
+        <Card>
+          <BlockStack gap="300">
+            <Text as="h3" variant="headingSm">
+              Template
+            </Text>
+            <InlineStack gap="200" wrap>
+              <Button
+                pressed={!discountCodesSettings.template}
+                onClick={() => update("template", "")}
+              >
+                Classic
+              </Button>
+              {Object.entries(DISCOUNT_TEMPLATES).map(([key, t]) => (
+                <Button
+                  key={key}
+                  pressed={discountCodesSettings.template === key}
+                  onClick={() => applyTemplate(key)}
+                >
+                  {t.label}
+                </Button>
+              ))}
+            </InlineStack>
+          </BlockStack>
+        </Card>
+
+        {discountCodesSettings.template && (
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h3" variant="headingSm">
+                Customize template
+              </Text>
+              <TextField
+                label="Heading"
+                autoComplete="off"
+                value={discountCodesSettings.heading ?? ""}
+                onChange={(v) => update("heading", v)}
+              />
+              <TextField
+                label="Sub text"
+                autoComplete="off"
+                value={discountCodesSettings.subtitle ?? ""}
+                onChange={(v) => update("subtitle", v)}
+              />
+              <TextField
+                label="View all link text"
+                autoComplete="off"
+                value={discountCodesSettings.linkText ?? ""}
+                onChange={(v) => update("linkText", v)}
+              />
+              <BlockStack gap="200">
+                <Text as="p" variant="bodyMd">
+                  Icon
+                </Text>
+                <IconLibrary
+                  value={discountCodesSettings.icon}
+                  onChange={(icon) => update("icon", icon)}
+                  quickIcons={[
+                    "discount",
+                    "percent",
+                    "gift",
+                    "star",
+                    "fire",
+                    "crown",
+                    "truck",
+                    "cart",
+                  ]}
+                  shop={shop}
+                  accessToken={accessToken}
+                  apiUrl={apiUrl}
+                />
+                <ColorInput
+                  label="Icon color"
+                  value={
+                    discountCodesSettings.iconColor ??
+                    discountCodesSettings.accent ??
+                    "#0a7d3b"
+                  }
+                  onChange={(v) => update("iconColor", v)}
+                />
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Double-click the selected icon to reset it to the default.
+                </Text>
+              </BlockStack>
+              {discountCodesSettings.template === "popular_codes" && (
+                <TextField
+                  label="Popular codes"
+                  autoComplete="off"
+                  helpText="Comma separated"
+                  value={discountCodesSettings.popularCodes ?? ""}
+                  onChange={(v) => update("popularCodes", v)}
+                />
+              )}
+              <ColorInput
+                label="Background"
+                value={discountCodesSettings.bg ?? "#ffffff"}
+                onChange={(v) => update("bg", v)}
+              />
+              <ColorInput
+                label="Text color"
+                value={discountCodesSettings.textColor ?? "#1a1a1a"}
+                onChange={(v) => update("textColor", v)}
+              />
+              <ColorInput
+                label="Button / accent color"
+                value={discountCodesSettings.accent ?? "#0a7d3b"}
+                onChange={(v) => update("accent", v)}
+              />
+              <TextField
+                label="Border radius (px)"
+                type="number"
+                autoComplete="off"
+                value={String(discountCodesSettings.radius ?? 12)}
+                onChange={(v) =>
+                  update("radius", Math.min(40, Math.max(0, Number(v) || 0)))
+                }
+              />
+            </BlockStack>
+          </Card>
+        )}
         <Card>
           <BlockStack gap="300">
             {/* Checkbox — Show Offer Box */}
@@ -197,21 +334,6 @@ export default function DiscountCode({ discountCodesSettings, handleChange }) {
             </Banner>
           </BlockStack>
         </Card>
-
-        {/* <Card>
-                <BlockStack gap="200">
-                    <InlineStack gap="200" blockAlign="center">
-                        <Text variant="headingSm">Custom template</Text>
-                        <Badge tone="info">Advanced</Badge>
-                    </InlineStack>
-                    <Text variant="bodySm" tone="subdued">
-                        Custom templates aren't enabled.{" "}
-                        <Link url="/app/settings/advanced">
-                            Navigate to Settings &gt; Advanced Settings to enable.
-                        </Link>
-                    </Text>
-                </BlockStack>
-            </Card> */}
       </BlockStack>
     </div>
   );

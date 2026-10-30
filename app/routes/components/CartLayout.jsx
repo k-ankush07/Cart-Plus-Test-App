@@ -36,6 +36,7 @@ import { toggleAgeVerification } from "./utils/ageVerification";
 import { toggleLogin, toggleEmptyLogin } from "./utils/loginMessage";
 import { getEmptyUpsells, toggleEmptyUpsells } from "./utils/emptyUpsells";
 import { togglePaymentBadges } from "./utils/paymentBadges";
+import Upsells from "./cart-Items/Upsells";
 import {
   TemplateBackgroundContext,
   templateBackground,
@@ -399,6 +400,11 @@ const CartLayout = memo(function CartLayout({
     ],
   );
 
+  const sideUpsells =
+    previewMode === "items" ? upsellsSettings : getEmptyUpsells(cartSettings);
+  const sideLayout = sideUpsells?.layout === "side";
+  const isFloating = designSettings?.layout === "floating";
+
   return (
     <TemplateBackgroundContext.Provider value={templateBg}>
       <Page fullWidth>
@@ -481,8 +487,8 @@ const CartLayout = memo(function CartLayout({
               />
             </Popover> */}
 
-             <ABTesting key={abTesting?.resetKey} {...abTesting} />
-             
+            <ABTesting key={abTesting?.resetKey} {...abTesting} />
+
             {/* <Button
               variant="tertiary"
               loading={isResetting}
@@ -603,8 +609,10 @@ const CartLayout = memo(function CartLayout({
               if (key === "Summary")
                 handleChange("cartSettings", toggleSummary);
               if (key === "Login") handleChange("cartSettings", toggleLogin);
-              if (key === "Empty Login") handleChange("cartSettings", toggleEmptyLogin);
-              if (key === "Empty Cross-sell") handleChange("cartSettings", toggleEmptyUpsells);
+              if (key === "Empty Login")
+                handleChange("cartSettings", toggleEmptyLogin);
+              if (key === "Empty Cross-sell")
+                handleChange("cartSettings", toggleEmptyUpsells);
               if (key === "Payment Badges")
                 handleChange("cartSettings", togglePaymentBadges);
               if (key === "Age Verification")
@@ -890,14 +898,13 @@ const CartLayout = memo(function CartLayout({
         className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
         style={{
           width: isPreviewVisible ? undefined : "0px",
-          ...(isPreviewVisible && (previewMode === "items" ? upsellsSettings : getEmptyUpsells(cartSettings))?.layout === "side"
-            ? { overflow: "visible" }
-            : {}),
+          ...(sideLayout ? { overflow: "visible" } : {}),
           ...(designSettings?.colorMode && designSettings?.layout === "floating"
             ? { background: "#eceef0" }
             : {}),
         }}
       >
+        <div className="cart-plus-upsell-site"></div>
         <CartPreview
           designSettings={designSettings}
           headerSettings={headerSettings}
