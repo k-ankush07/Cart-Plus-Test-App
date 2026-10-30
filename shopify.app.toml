@@ -2,7 +2,7 @@
 
 client_id = "0741db22a559208f286f8afcfb6dcc65"
 name = "Cart Plus Testing"
-application_url = "https://wilson-deutschland-fiscal-latina.trycloudflare.com"
+application_url = "https://you-elephant-activity-handling.trycloudflare.com"
 embedded = true
 
 [build]
@@ -37,10 +37,10 @@ scopes = "read_discounts,read_locations,read_markets,read_orders,read_pixels,rea
 
 [auth]
 redirect_urls = [
-  "https://wilson-deutschland-fiscal-latina.trycloudflare.com/api/auth"
+  "https://you-elephant-activity-handling.trycloudflare.com/api/auth"
 ]
 
 [app_proxy]
-url = "https://wilson-deutschland-fiscal-latina.trycloudflare.com/api/proxy-order-track"
+url = "https://you-elephant-activity-handling.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"
