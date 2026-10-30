@@ -58,6 +58,7 @@ export const defaultAnnouncementSettings = {
   fontSize: 15,
   backgroundColor: "#f6f6f7",
   borderColor: "#e8e8e8",
+  borderRadius :0
 };
 
 export const defaultRewardsSettings = {

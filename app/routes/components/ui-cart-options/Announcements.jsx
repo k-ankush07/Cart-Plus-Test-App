@@ -19,15 +19,14 @@ import {
   Tooltip,
 } from "@shopify/polaris";
 
-import {
-  MegaphoneIcon,
-  InfoIcon, // Announcements
-} from "@shopify/polaris-icons";
+import { MegaphoneIcon, InfoIcon } from "@shopify/polaris-icons";
 
 import RichTextEditor from "../ui/RichTextEditor";
 import ColorInput from "../ui/ColorInput";
 import IconLibrary from "../ui/IconLibrary";
 import BackgroundInput from "../ui/BackgroundInput";
+import { ANNOUNCEMENT_TEMPLATES } from "../utils/announcementTemplates";
+
 import "../../../index.css";
 
 export default function Announcements({
@@ -41,6 +40,19 @@ export default function Announcements({
     handleChange("announcement", {
       ...announcementSettings,
       [key]: value,
+    });
+  };
+
+  const applyTemplate = (key) => {
+    const t = ANNOUNCEMENT_TEMPLATES[key];
+    handleChange("announcement", {
+      ...announcementSettings,
+      template: key,
+      icon: null,
+      text: t.text,
+      iconColor: t.iconColor,
+      background: { type: "plain", color: t.background },
+      textColor: t.color,
     });
   };
 
@@ -74,6 +86,114 @@ export default function Announcements({
           </InlineStack>
         </BlockStack>
       </Box>
+
+      <LegacyCard sectioned title="Template">
+        <InlineStack gap="200" wrap>
+          {Object.entries(ANNOUNCEMENT_TEMPLATES).map(([key, t]) => (
+            <Button
+              key={key}
+              pressed={announcementSettings.template === key}
+              onClick={() => applyTemplate(key)}
+            >
+              {t.label}
+            </Button>
+          ))}
+        </InlineStack>
+      </LegacyCard>
+
+      {["coupon", "progress", "vip", "countdown", "flash_sale"].includes(
+        announcementSettings.template,
+      ) && (
+        <LegacyCard sectioned title="Right side">
+          <BlockStack gap="300">
+            {announcementSettings.template === "coupon" && (
+              <TextField
+                label="Coupon code"
+                autoComplete="off"
+                value={
+                  announcementSettings.couponCode ??
+                  ANNOUNCEMENT_TEMPLATES.coupon.code
+                }
+                onChange={(v) => update("couponCode", v)}
+              />
+            )}
+
+            {announcementSettings.template === "progress" && (
+              <InlineGrid columns={2} gap="300">
+                <TextField
+                  label="Current amount ($)"
+                  type="number"
+                  autoComplete="off"
+                  value={String(
+                    announcementSettings.current ??
+                      ANNOUNCEMENT_TEMPLATES.progress.current,
+                  )}
+                  onChange={(v) => update("current", Number(v))}
+                />
+                <TextField
+                  label="Goal ($)"
+                  type="number"
+                  autoComplete="off"
+                  value={String(
+                    announcementSettings.goal ??
+                      ANNOUNCEMENT_TEMPLATES.progress.goal,
+                  )}
+                  onChange={(v) => update("goal", Number(v))}
+                />
+              </InlineGrid>
+            )}
+
+            {announcementSettings.template === "vip" && (
+              <TextField
+                label="Link text"
+                autoComplete="off"
+                value={
+                  announcementSettings.linkText ??
+                  ANNOUNCEMENT_TEMPLATES.vip.linkText
+                }
+                onChange={(v) => update("linkText", v)}
+              />
+            )}
+
+            {announcementSettings.template === "flash_sale" && (
+              <TextField
+                label="Button text"
+                autoComplete="off"
+                value={
+                  announcementSettings.buttonText ??
+                  ANNOUNCEMENT_TEMPLATES.flash_sale.buttonText
+                }
+                onChange={(v) => update("buttonText", v)}
+              />
+            )}
+
+            {["vip", "flash_sale"].includes(announcementSettings.template) && (
+              <TextField
+                label="Link (URL)"
+                autoComplete="off"
+                placeholder="/collections/sale"
+                value={announcementSettings.link || ""}
+                onChange={(v) => update("link", v)}
+              />
+            )}
+
+            {announcementSettings.template === "countdown" && (
+              <TextField
+                label="Countdown (minutes)"
+                type="number"
+                autoComplete="off"
+                value={String(
+                  Math.round(
+                    (announcementSettings.seconds ??
+                      ANNOUNCEMENT_TEMPLATES.countdown.seconds) / 60,
+                  ),
+                )}
+                onChange={(v) => update("seconds", Number(v) * 60)}
+              />
+            )}
+          </BlockStack>
+        </LegacyCard>
+      )}
 
       <LegacyCard sectioned title="Settings">
         <LegacyStack vertical spacing="tight">
@@ -124,6 +244,11 @@ export default function Announcements({
               accessToken={accessToken}
               apiUrl={apiUrl}
             />
+            {announcementSettings.template && announcementSettings.icon && (
+              <Button variant="plain" onClick={() => update("icon", null)}>
+                Reset to template icon
+              </Button>
+            )}
             <ColorInput
               label="Icon color"
               value={announcementSettings.iconColor || "#000000"}
@@ -147,6 +272,17 @@ export default function Announcements({
             />
           </BlockStack>
           <RangeSlider
+            label="Border radius"
+            value={announcementSettings.borderRadius ?? 0}
+            onChange={(val) => update("borderRadius", val)}
+            min={0}
+            max={40}
+            step={1}
+            prefix={<Text>0px</Text>}
+            suffix={<Text>40px</Text>}
+            output
+          />
+          {/* <RangeSlider
             label="Font size"
             value={announcementSettings.fontSize || 10}
             onChange={(val) => update("fontSize", val)}
@@ -156,7 +292,7 @@ export default function Announcements({
             prefix={<Text>10px</Text>}
             suffix={<Text>24px</Text>}
             output
-          />
+          /> */}
           {/* <ColorInput
             label="Border color"
             value={announcementSettings.borderColor}
