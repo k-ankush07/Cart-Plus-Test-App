@@ -441,7 +441,17 @@ window.cartPlusLoginHTML = function (cartSettings, key = "login") {
 
 // ── Age verification ───────────────────────────────────────────────────────
 function cartPlusGetAge(cartSettings) {
-  return {
+  const savedSettings = cartSettings?.ageVerification || {};
+  const defaultBorder = "#dbe4f5";
+  const design = window.__HUB_ACTIVE_CART__?.designSettings || {};
+  const themeBorder =
+    design.accentSolid ||
+    design.themeColor ||
+    design.accentBorder ||
+    (design.buttonColor && !String(design.buttonColor).startsWith("linear-gradient")
+      ? design.buttonColor
+      : null);
+  const settings = {
     enabled: false,
     applyTo: "all", // "all" | "products" | "collections"
     selected: null, // { type, items } from the editor's product / collection picker
@@ -456,8 +466,16 @@ function cartPlusGetAge(cartSettings) {
     toggleColor: "#1553d8",
     errorBackground: "#fff1f1",
     errorBorderColor: "#f7b8b8",
-    ...(cartSettings?.ageVerification || {}),
+    ...savedSettings,
   };
+  if (
+    themeBorder &&
+    (typeof savedSettings.borderColor !== "string" ||
+      savedSettings.borderColor.toLowerCase() === defaultBorder)
+  ) {
+    settings.borderColor = themeBorder;
+  }
+  return settings;
 }
 const cartPlusFillAge = (html, age) =>
   String(html ?? "").replace(/\{\{\s*minimumAge\s*\}\}/g, String(age));
@@ -484,17 +502,20 @@ window.cartPlusAgeHTML = function (blockId, cartSettings) {
   const layout = CART_PLUS_AGE_LAYOUTS[s.template];
 
   // Classic: the original checkbox box
-  if (!layout) {
-    return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:8px 16px;${hidden}">
-    <div class="cart-plus-age-box" style="padding:12px;border-radius:${s.borderRadius}px;border:1px solid ${s.borderColor};--cp-age-edge:${s.borderColor};background:${window.cartPlusBgCss(s.background)};">
-      <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;">
-        <input type="checkbox" id="cart-plus-age-check-${blockId}" class="cart-plus-age-check" onchange="cartPlusAgeChanged('${blockId}')" style="--cp-age-toggle:${s.toggleColor};--cp-age-border:${s.borderColor};">
-        <span><span style="font-size:14px;">${f(s.checkboxText)}</span><span style="display:block;font-size:12px;opacity:.7;">${f(s.subtitle)}</span></span>
-      </label>
-      ${errorHtml}
-    </div>
-  </div>`;
-  }
+ if (!layout) {
+  return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:8px 16px;${hidden}">
+  <div class="cart-plus-age-box" style="padding:12px;border-radius:${s.borderRadius}px;border:1px solid ${s.borderColor};--cp-age-edge:${s.borderColor};background:${window.cartPlusBgCss(s.background)};">
+    <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:0;padding:0;min-height:0;">
+      <input type="checkbox" id="cart-plus-age-check-${blockId}" class="cart-plus-age-check" onchange="cartPlusAgeChanged('${blockId}')" style="--cp-age-toggle:${s.toggleColor};--cp-age-border:${s.borderColor};margin:2px 0 0;padding:0;flex:0 0 auto;width:18px;height:18px;">
+      <span style="display:block;min-width:0;line-height:1.4;">
+        <span style="display:block;font-size:14px;line-height:1.4;">${f(s.checkboxText)}</span>
+        <span style="display:block;font-size:12px;line-height:1.4;margin-top:2px;opacity:.7;">${f(s.subtitle)}</span>
+      </span>
+    </label>
+    ${errorHtml}
+  </div>
+</div>`;
+}
 
   // Templates: the checkbox stays in the page (hidden) so the checkout check keeps working
   const accent = s.accent ?? "#111827";
@@ -535,7 +556,7 @@ window.cartPlusAgeHTML = function (blockId, cartSettings) {
     content = `<div style="display:flex;align-items:center;gap:10px;">
       <span style="font-size:15px;font-weight:800;color:${badgeColor};">${badgeLabel}</span>
       <div style="flex:1;">${question(13)}${sub()}</div>
-      <button type="button" role="switch" aria-checked="false" class="cp-age-switch" onclick="cartPlusAgeSet('${blockId}',this.getAttribute('aria-checked')!=='true')" style="width:42px;height:24px;border-radius:999px;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;justify-content:flex-start;background:#d1d5db;transition:background .15s;flex-shrink:0;"><span style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);"></span></button>
+      <button type="button" role="switch" aria-checked="false" class="cp-age-switch" onclick="cartPlusAgeSet('${blockId}',this.getAttribute('aria-checked')!=='true')" style="position:relative;width:42px;height:24px;border-radius:999px;border:none;cursor:pointer;padding:0;background:#d1d5db;transition:background .2s ease;flex-shrink:0;"><span class="cp-age-knob" style="position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .2s ease;"></span></button>
     </div>`;
   } else if (layout === "confirm") {
     // a visible checkbox + a Continue button that unlocks once it is ticked
@@ -563,7 +584,7 @@ window.cartPlusAgeHTML = function (blockId, cartSettings) {
     content = column(`${question(18, true, 700)}${sub(true)}${yesBtn("width:100%;")}${noLink()}`, 8);
   }
 
-  return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:12px 16px;${hidden}">
+  return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:8px 16px;${hidden}">
     <div class="cart-plus-age-box" style="padding:14px;border-radius:${s.borderRadius}px;border:1px solid ${s.borderColor};--cp-age-edge:${s.borderColor};background:${window.cartPlusBgCss(s.background)};">
       ${content}${input}
       ${errorHtml}
@@ -577,15 +598,17 @@ window.cartPlusAgeSet = function (blockId, on) {
   if (input) input.checked = on;
   const root = document.getElementById(`cart-plus-age-${blockId}`);
   if (!root) return;
-  const accent = cartPlusGetAge(window.__HUB_ACTIVE_CART__?.cartSettings).accent ?? "#111827";
+  const age = cartPlusGetAge(window.__HUB_ACTIVE_CART__?.cartSettings);
+  const accent = age.accent || "#111827";
   root.querySelectorAll(".cp-age-yes").forEach((b) => {
     b.style.boxShadow = on ? `0 0 0 2px #fff, 0 0 0 4px ${accent}` : "none";
   });
-  root.querySelectorAll(".cp-age-switch").forEach((b) => {
-    b.setAttribute("aria-checked", String(on));
-    b.style.background = on ? accent : "#d1d5db";
-    b.style.justifyContent = on ? "flex-end" : "flex-start";
-  });
+ root.querySelectorAll(".cp-age-switch").forEach((b) => {
+  b.setAttribute("aria-checked", String(on));
+  b.style.background = on ? accent : "#d1d5db";
+  const knob = b.querySelector(".cp-age-knob");
+  if (knob) knob.style.transform = on ? "translateX(18px)" : "translateX(0)";
+});
   root.querySelectorAll(".cp-age-continue").forEach((b) => {
     b.disabled = !on;
     b.style.opacity = on ? "1" : ".35";

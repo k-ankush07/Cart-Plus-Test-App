@@ -649,17 +649,13 @@ window.applyDiscountCode = async function (btn) {
     const res = await fetch("/cart.js");
     const cart = await res.json();
 
-    const hasLineDiscount = cart.items.some(
-      (item) => item.line_level_discount_allocations?.length > 0,
-    );
-
-    const hasCartDiscount = cart.cart_level_discount_applications?.length > 0;
-
     const hasCodeDiscount = cart.discount_codes?.some(
-      (d) => d.code.toLowerCase() === code.toLowerCase() && d.applicable,
+      (d) =>
+        d.code?.toLowerCase() === code.toLowerCase() &&
+        d.applicable === true,
     );
 
-    hasRealDiscount = hasLineDiscount || hasCartDiscount || hasCodeDiscount;
+    hasRealDiscount = hasCodeDiscount;
 
     if (!hasRealDiscount) {
       await fetch(`/discount/INVALID_REMOVE`, {
@@ -673,6 +669,11 @@ window.applyDiscountCode = async function (btn) {
     const newMessage = document.getElementById("discount-message");
 
     if (hasRealDiscount) {
+      if (newMessage) newMessage.textContent = "";
+      const offersMessage = document.getElementById(
+        `hub-offers-msg-${window.HUB_CART_BLOCK_ID}`,
+      );
+      if (offersMessage) offersMessage.textContent = "";
       showMessage(newMessage, "Discount applied successfully", "green");
 
       localStorage.setItem("appliedDiscount", code);

@@ -38,12 +38,25 @@ const btnBase = {
 // Preview of the age confirmation box above the checkout button
 export default function AgeVerification({
   cartSettings,
+  designSettings,
   checked,
   error,
   onChange,
 }) {
   const s = getAgeVerification(cartSettings);
   if (!s.enabled) return null;
+  const defaultBorder = "#dbe4f5";
+  const themeBorder =
+    designSettings?.accentSolid ||
+    designSettings?.themeColor ||
+    designSettings?.accentBorder;
+  const ageBorderColor =
+    themeBorder &&
+    (typeof s.borderColor !== "string" ||
+      s.borderColor.toLowerCase() === defaultBorder)
+      ? themeBorder
+      : s.borderColor;
+  const checkboxBorder = ageBorderColor;
 
   const radius = error ? s.errorBorderRadius : s.borderRadius;
   const html = (value) => ({ __html: fillAge(value, s.minimumAge) });
@@ -52,8 +65,8 @@ export default function AgeVerification({
   const boxStyle = {
     padding: 14,
     borderRadius: radius,
-    border: `1px solid ${error ? s.errorBorderColor : s.borderColor}`,
-    "--cp-age-edge": error ? s.errorBorderColor : s.borderColor,
+    border: `1px solid ${error ? s.errorBorderColor : ageBorderColor}`,
+    "--cp-age-edge": error ? s.errorBorderColor : ageBorderColor,
     background: error ? s.errorBackground : backgroundToCss(s.background),
   };
 
@@ -76,7 +89,7 @@ export default function AgeVerification({
           style={{
             padding: 12,
             borderRadius: radius,
-            border: `1px solid ${error ? s.errorBorderColor : s.borderColor}`,
+            border: `1px solid ${error ? s.errorBorderColor : ageBorderColor}`,
             background: error
               ? s.errorBackground
               : backgroundToCss(s.background),
@@ -106,7 +119,7 @@ export default function AgeVerification({
                 cursor: "pointer",
                 borderRadius: 4,
                 border: `1.5px solid ${
-                  checked ? s.toggleColor : s.borderColor
+                  checked ? s.toggleColor : checkboxBorder
                 }`,
                 background: checked
                   ? `${s.toggleColor} ${TICK_IMG} center / 12px no-repeat`
@@ -131,7 +144,18 @@ export default function AgeVerification({
   }
 
   /* ---------------- TEMPLATES (Figma match) ---------------- */
-  const accent = s.accent ?? "#111827";
+const accent = s.accent ?? "#111827";
+const templateDefaultAccent = AGE_TEMPLATES[s.template]?.accent;
+const accentCustomized =
+  !!templateDefaultAccent &&
+  accent.toLowerCase() !== templateDefaultAccent.toLowerCase();
+
+const themeAccent = accentCustomized
+  ? accent
+  : designSettings?.accentSolid ||
+    designSettings?.themeColor ||
+    designSettings?.buttonColor ||
+    accent;
   const accentText = s.accentText ?? "#ffffff";
   const secBg = s.secondaryBg ?? "#f1f3f5";
   const secText = s.secondaryText ?? "#1a1a1a";
@@ -262,7 +286,7 @@ export default function AgeVerification({
             display: "flex",
             alignItems: "center",
             justifyContent: checked ? "flex-end" : "flex-start",
-            background: checked ? accent : "#d1d5db",
+            background: checked ? themeAccent : "#d1d5db",
             transition: "background .15s",
             flexShrink: 0,
           }}
@@ -305,7 +329,7 @@ export default function AgeVerification({
               flexShrink: 0,
               cursor: "pointer",
               borderRadius: 4,
-              border: `1.5px solid ${checked ? accent : s.borderColor}`,
+              border: `1.5px solid ${checked ? accent : checkboxBorder}`,
               background: checked
                 ? `${accent} ${TICK_IMG} center / 12px no-repeat`
                 : "transparent",

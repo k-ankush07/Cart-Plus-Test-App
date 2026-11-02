@@ -123,6 +123,7 @@ export default function CartFooter({
     "Age Verification": (
       <AgeVerification
         cartSettings={cartSettings}
+        designSettings={designSettings}
         checked={ageChecked}
         error={ageError && !ageChecked}
         onChange={(v) => {

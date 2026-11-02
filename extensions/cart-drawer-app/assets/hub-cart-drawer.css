@@ -1341,6 +1341,15 @@ span.hub-total-arrow svg {
   flex-wrap: wrap;
 }
 
+.cp-close-btn {
+  background: none;
+  transition: background 0.15s ease;
+}
+
+.cp-close-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
 .hub-compare-price {
   font-size: 9px;
   color: #999;
@@ -1701,6 +1710,7 @@ display: flex;
   border-radius: 5px;
   overflow: hidden;
   border: 1px solid var(--cp-accent-border, #E8E8E8);
+  aspect-ratio: 1 / 1;
 }
 
 .hub-addon-product-info {
@@ -2336,7 +2346,7 @@ span.notes-title {
   width: 60px;
   border-radius: 5px;
   overflow: hidden;
-  border: 1px solid #E8E8E8;
+  border: 1px solid var(--cp-accent-border, #E8E8E8);
 }
 
 .hub-addon-product-price {
@@ -2388,9 +2398,9 @@ span.hub-rating-count {
   padding-bottom: 10px;
 }
 
-.error-discount {
+/* .error-discount {
   padding: 0px 20px;
-}
+} */
 
 .hub-discount-status {
   display: none;
@@ -2586,6 +2596,7 @@ span.hub-item-discount-badge img.discount-code-img {
   -moz-appearance: menulist !important;
   background-image: none !important;
   padding-right: 8px !important;
+      border: 1px solid #ccc;
 }
 
 button.hub-qty-btn span.svg-wrapper {

@@ -1810,6 +1810,10 @@ async function hubApplyOfferCode2(code, blockId, messageEl = null) {
     if (drawer) await window.hubCartRender(drawer);
 
     const overlay = document.getElementById(`hub-coupon-success-${blockId}`);
+    const discountMessage = document.getElementById("discount-message");
+    const offersMessage = document.getElementById(`hub-offers-msg-${blockId}`);
+    if (discountMessage) discountMessage.textContent = "";
+    if (offersMessage) offersMessage.textContent = "";
     if (overlay) {
       const label = code.toUpperCase();
       document.getElementById(
