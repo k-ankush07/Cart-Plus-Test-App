@@ -2754,6 +2754,102 @@ select.hub-variant-option-select {
   margin-top: 8px;
 }
 
+/* Bill details */
+.cart-plus-summary--bill-details .cart-plus-summary__rows {
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(20, 45, 80, 0.08);
+}
+.cart-plus-summary--bill-details .cart-plus-summary__total {
+  font-weight: 700;
+  border-top: 1px dashed #9db8ec;
+  padding-top: 10px;
+  margin-top: 2px;
+}
+
+/* Bill summary */
+.cart-plus-summary--bill-summary .cart-plus-summary__rows {
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--cp-accent-border, #e5e9f0);
+  border-radius: 10px;
+  background: #fff;
+}
+.cart-plus-summary--bill-summary .cart-plus-summary__row:not(.cart-plus-summary__total) {
+  color: #667085;
+  font-size: 12px;
+}
+.cart-plus-summary--bill-summary .cart-plus-summary__total {
+  font-weight: 700;
+  border-top: 1px solid #e8ebf0;
+  padding-top: 10px;
+  margin-top: 2px;
+}
+
+/* Price details */
+.cart-plus-summary--price-details .cart-plus-summary__rows {
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(20, 45, 80, 0.06);
+}
+.cart-plus-summary--price-details .cart-plus-summary__row:nth-child(2) {
+  color: #16803c;
+}
+.cart-plus-summary--price-details .cart-plus-summary__total {
+  font-weight: 700;
+  font-size: 15px;
+  border-top: 1px solid #e8ebf0;
+  padding-top: 10px;
+  margin-top: 2px;
+}
+.cart-plus-summary--price-details .cart-plus-summary__savings {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 4px 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--summary-savings-border, #91d476);
+  background: linear-gradient(
+    90deg,
+    var(--summary-savings-start, #a2d984) 0%,
+    var(--summary-savings-bg, #b6eb98) 50%,
+    var(--summary-savings-end, #bcf09e) 100%
+  );
+  color: var(--summary-savings-text, #1d2b1a);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+.cart-plus-summary--price-details .cart-plus-summary__savings::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0) 60%
+  );
+}
+.cart-plus-summary--price-details .cart-plus-summary__savings-amount {
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: #2f8f4e;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
 /* ── Template (themed cart): card / image / field corner radii and the white item card ── */
 .cart-app--themed .hub-cart-item,
 .cart-app--themed .cart-plus-public-component-product-tile,

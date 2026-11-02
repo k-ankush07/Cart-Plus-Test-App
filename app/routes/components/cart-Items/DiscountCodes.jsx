@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { DISCOUNT_TEMPLATES } from "../utils/discountTemplates";
+import { resolveDiscountStyle } from "../utils/discountTemplates";
 import { LibraryIcon } from "../ui/IconLibrary";
 
 const API_KEY = import.meta.env.VITE_API_SECRET_KEY || "";
@@ -52,6 +52,74 @@ const formatSavingsText = (discount, currency, cartTotal) => {
   return "Apply this offer at checkout";
 };
 
+// sample rows shown in the editor preview before any code is really applied
+const SAMPLE_APPLIED = [
+  { code: "SAVE15", amount: 711.75 },
+  { code: "EXTRAS", amount: 237.25 },
+];
+
+const discountAmount = (d, total = 0) => {
+  const dv = d?.discountValue;
+  if (!dv) return 0;
+  if (dv.type === "percentage") {
+    let a = (total * dv.value) / 100;
+    if (d.maximumDiscount) a = Math.min(a, d.maximumDiscount);
+    return a;
+  }
+  return Number(dv.value) || 0;
+};
+
+const num = (v) => (v === "" || v == null ? undefined : Number(v));
+
+const PercentBadge = ({ bg, fg = "#fff", text = "%", size = 44, radius = 22 }) => (
+  <span
+    style={{
+      width: size,
+      height: size,
+      borderRadius: radius,
+      background: bg,
+      color: fg,
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontWeight: 800,
+      fontSize: size * 0.42,
+      flexShrink: 0,
+    }}
+  >
+    {text}
+  </span>
+);
+
+const XBtn = ({ onClick, color }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label="Remove code"
+    style={{
+      background: "none",
+      border: 0,
+      cursor: "pointer",
+      color,
+      padding: 2,
+      display: "inline-flex",
+    }}
+  >
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  </button>
+);
+
 const CloseIcon = () => (
   <svg
     width="20"
@@ -73,6 +141,18 @@ const BackIcon = () => (
     <path
       fillRule="evenodd"
       d="M16.5 10a.75.75 0 0 1-.75.75h-9.69l2.72 2.72a.75.75 0 0 1-1.06 1.06l-4-4a.75.75 0 0 1 0-1.06l4-4a.75.75 0 1 1 1.06 1.06l-2.72 2.72h9.69a.75.75 0 0 1 .75.75Z"
+    />
+  </svg>
+);
+
+const CouponIconSvg = ({ color }) => (
+  <svg viewBox="0 0 20 20" width="20" height="20" style={{ fill: color }}>
+    <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z" />
+    <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
+    <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
+    <path
+      fillRule="evenodd"
+      d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"
     />
   </svg>
 );
@@ -141,17 +221,21 @@ export default function DiscountCode({
   currency,
   shop,
   apiUrl,
+  subtotal = 0, // pass the cart subtotal so % discounts get a real amount
 }) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [applyingCode, setApplyingCode] = useState("");
   const [invalid, setInvalid] = useState(false);
-  const [offerTab, setOfferTab] = useState("coupons");
 
   const [discounts, setDiscounts] = useState([]);
   const [discountsLoading, setDiscountsLoading] = useState(false);
   const [discountsError, setDiscountsError] = useState("");
-  const [activeCodes, setActiveCodes] = useState([]);
+
+  // applied codes (for Compact card / Chip badges templates)
+  const [applied, setApplied] = useState([]);
+  const [touched, setTouched] = useState(false);
+  const [showInput, setShowInput] = useState(false);
 
   const iconColor = designSettings?.iconColor || "#0000";
 
@@ -179,17 +263,7 @@ export default function DiscountCode({
           d.type !== "DiscountAutomaticBasic",
       );
 
-      console.log(valid);
       setDiscounts(valid);
-
-      if (Array.isArray(data.activeDiscountCodes)) {
-        setActiveCodes(
-          data.activeDiscountCodes
-            .map(toCodeString)
-            .filter(Boolean)
-            .map((s) => s.toUpperCase()),
-        );
-      }
     } catch (err) {
       console.error("[hub] Failed to fetch discounts:", err);
       setDiscountsError("Couldn't load offers right now.");
@@ -206,11 +280,15 @@ export default function DiscountCode({
 
   if (discountCodesSettings?.enabled) return null;
 
-  const placeholder = discountCodesSettings?.placeholder || "Discount code";
-  const buttonText = discountCodesSettings?.buttonText || "Apply";
-  const showOfferBgColor = discountCodesSettings?.showOfferBgColor || "#6C4DFF";
+  const cs = discountCodesSettings || {};
+  const T = resolveDiscountStyle(cs);
+  const layout = T.layout; // "compact" | "chipbadges" | undefined (classic)
+
+  const placeholder = cs.placeholder || "Discount code";
+  const buttonText = cs.buttonText || "Apply";
+  const showOfferBgColor = cs.showOfferBgColor || "#6C4DFF";
   const invalidMessage =
-    discountCodesSettings?.invalidCodeMessage ??
+    cs.invalidCodeMessage ??
     "This discount code isn't valid. Please check the code and try again.";
 
   const invalidBox = invalid &&
@@ -218,7 +296,7 @@ export default function DiscountCode({
       <div
         role="alert"
         className="cart-plus-discount-invalid"
-        style={{ color: "#D72C0D", fontSize: 12, marginTop: 6 }}
+        style={{ color: T.invalidColor, fontSize: 12, marginTop: 6 }}
         dangerouslySetInnerHTML={{ __html: invalidMessage }}
       />
     );
@@ -232,38 +310,47 @@ export default function DiscountCode({
     // TODO: replace with real cart-apply API call.
     // Until then the preview treats any code that is not in the loaded offers as invalid.
     setTimeout(() => {
-      const known = discounts.some(
-        (d) => toCodeString(d).toUpperCase() === trimmed.toUpperCase(),
+      const d = discounts.find(
+        (x) => toCodeString(x).toUpperCase() === trimmed.toUpperCase(),
       );
       setLoading(false);
       setApplyingCode("");
-      if (known) setCode("");
-      else setInvalid(true);
+      if (d) {
+        const up = trimmed.toUpperCase();
+        setApplied((p) =>
+          p.some((a) => a.code === up)
+            ? p
+            : [...p, { code: up, amount: discountAmount(d, subtotal) }],
+        );
+        setTouched(true);
+        setCode("");
+        setShowInput(false);
+      } else {
+        setInvalid(true);
+      }
     }, 2000);
   };
 
   const handleDiscount = () => applyDiscountCode(code);
   const handleClose = () => setOfferOpen(false);
-
   const isThisButtonLoading = loading && applyingCode === code.trim();
 
-  const tpl = discountCodesSettings?.template;
-  const layout = DISCOUNT_TEMPLATES[tpl]?.layout;
-
-  const tx = {
-    bg: discountCodesSettings?.bg ?? "#ffffff",
-    color: discountCodesSettings?.textColor ?? "#1a1a1a",
-    accent: discountCodesSettings?.accent ?? "#0a7d3b",
-    radius: discountCodesSettings?.radius ?? 12,
-    heading: discountCodesSettings?.heading ?? "",
-    subtitle: discountCodesSettings?.subtitle ?? "",
-    linkText: discountCodesSettings?.linkText ?? "View all coupon code options",
+  // applied list: sample rows in the editor until a real code is applied
+  const list = touched || applied.length ? applied : SAMPLE_APPLIED;
+  const totalSaved = list.reduce((s, a) => s + a.amount, 0);
+  const moreCount = Math.max(1, discounts.length - list.length);
+  const money = (n) => `${currency} ${Number(n).toFixed(2)}`;
+  const removeCode = (c) => {
+    setApplied(list.filter((a) => a.code !== c));
+    setTouched(true);
   };
-  const chips = String(discountCodesSettings?.popularCodes || "")
-    .split(",")
-    .map((c) => c.trim())
-    .filter(Boolean);
+  const clearAll = () => {
+    setApplied([]);
+    setTouched(true);
+  };
+  const openOffers = () => setOfferOpen(!offerOpen);
 
+  // ───────── shared pieces for Compact / Chip ─────────
   const tInput = (extra = {}) => (
     <input
       type="text"
@@ -279,10 +366,10 @@ export default function DiscountCode({
         minWidth: 0,
         padding: "10px 12px",
         fontSize: 13,
-        color: tx.color,
-        background: "#fff",
-        border: "1px solid #dcdcdc",
-        borderRadius: 8,
+        color: T.inputColor,
+        background: T.inputBg,
+        border: `1px solid ${T.inputBorder}`,
+        borderRadius: T.inputRadius,
         outline: "none",
         ...extra,
       }}
@@ -295,10 +382,10 @@ export default function DiscountCode({
       onClick={handleDiscount}
       disabled={loading}
       style={{
-        background: tx.accent,
-        color: "#fff",
+        background: T.buttonBg,
+        color: T.buttonColor,
         border: 0,
-        borderRadius: 8,
+        borderRadius: T.buttonRadius,
         padding: "10px 18px",
         fontSize: 13,
         fontWeight: 700,
@@ -314,9 +401,6 @@ export default function DiscountCode({
     </button>
   );
 
-  const openOffers = () => setOfferOpen(!offerOpen);
-  const showAll = discountCodesSettings?.showOfferBox ?? false;
-
   const arrow = (
     <svg
       viewBox="0 0 20 20"
@@ -330,398 +414,295 @@ export default function DiscountCode({
       />
     </svg>
   );
-  const linkBtn = (extra = {}) =>
-    !showAll ? null : (
-      <button
-        type="button"
-        onClick={openOffers}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-          background: "none",
-          border: 0,
-          padding: 0,
-          fontSize: 12,
-          color: tx.color,
-          cursor: "pointer",
-          ...extra,
-        }}
-      >
-        {tx.linkText} {arrow}
-      </button>
-    );
 
   const shell = {
-    background: tx.bg,
-    color: tx.color,
-    borderRadius: tx.radius,
-    padding: 16,
+    background: T.bg,
+    color: T.textColor,
+    borderRadius: T.radius,
+    padding: T.padding,
     margin: "12px",
-    boxShadow: "0 1px 3px rgba(0,0,0,.08)",
+    boxShadow: T.shadow ? "0 1px 3px rgba(0,0,0,.08)" : "none",
   };
-  const tplIcon = discountCodesSettings?.icon ||
-    DISCOUNT_TEMPLATES[tpl]?.icon || { type: "icon", name: "discount" };
-  const tplIconColor = discountCodesSettings?.iconColor || tx.accent;
 
-  const iconBubble = (
-    <span
+  const banner = T.showBanner && list.length > 0 && (
+    <div
       style={{
-        width: 32,
-        height: 32,
-        borderRadius: "50%",
-        background: `${tplIconColor}22`,
-        color: tplIconColor,
-        display: "inline-flex",
+        display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
+        gap: 12,
+        padding: 12,
+        borderRadius: T.bannerRadius,
+        background: T.bannerBg,
       }}
     >
-      <LibraryIcon value={tplIcon} size={16} color={tplIconColor} />
-    </span>
+      <PercentBadge
+        bg={T.badgeBg}
+        fg={T.badgeColor}
+        text={T.badgeText}
+        radius={T.badgeRadius}
+      />
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: T.headingColor }}>
+          {T.heading}
+        </div>
+        <div
+          style={{
+            fontSize: T.amountSize,
+            fontWeight: 800,
+            color: T.amountColor,
+          }}
+        >
+          {money(totalSaved)}
+        </div>
+      </div>
+      {layout === "chipbadges" ? (
+        <button
+          type="button"
+          onClick={clearAll}
+          style={{
+            border: `1px solid ${T.pillBorder}`,
+            background: T.pillBg,
+            color: T.pillColor,
+            borderRadius: 999,
+            padding: "6px 12px",
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          {T.clearAllText}
+        </button>
+      ) : (
+        <span
+          style={{
+            border: `1px solid ${T.pillBorder}`,
+            color: T.pillColor,
+            background: T.pillBg,
+            borderRadius: 999,
+            padding: "6px 12px",
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          {String(T.appliedLabel)
+            .replace(/\{n\}/g, list.length)
+            .replace(/\bDiscounts\b/, list.length === 1 ? "Discount" : "Discounts")}
+        </span>
+      )}
+    </div>
   );
 
-  const templated = layout && (
-    <>
-      {layout === "card" && (
-        <div className="cart-plus-discount-tpl" style={shell}>
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              alignItems: "center",
-              marginBottom: 12,
-            }}
-          >
-            {iconBubble}
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 700 }}>{tx.heading}</div>
-              <div style={{ fontSize: 11, opacity: 0.65 }}>{tx.subtitle}</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {tInput()}
-            {tButton()}
-          </div>
-          {invalidBox}
-          {showAll && (
-            <div style={{ marginTop: 12 }}>
-              {linkBtn({ textDecoration: "underline" })}
-            </div>
-          )}
-        </div>
-      )}
+  const tplIcon = T.icon || { type: "icon", name: "discount" };
 
-      {layout === "chips" && (
-        <div className="cart-plus-discount-tpl" style={shell}>
-          {showAll && (
-            <div style={{ marginBottom: 10 }}>
-              {linkBtn({ width: "100%", justifyContent: "space-between" })}
-            </div>
-          )}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 8,
-            }}
-          >
-            <b style={{ fontSize: 13 }}>{tx.heading}</b>
-            {tx.subtitle && (
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#c0283d",
-                  background: "#fde8ec",
-                  borderRadius: 6,
-                  padding: "2px 8px",
-                }}
-              >
-                {tx.subtitle}
-              </span>
-            )}
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {tInput()}
-            {tButton()}
-          </div>
-          {invalidBox}
-          {chips.length > 0 && (
-            <div style={{ marginTop: 10 }}>
-              <div style={{ fontSize: 11, opacity: 0.6, marginBottom: 6 }}>
-                Popular codes
-              </div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {chips.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setCode(c)}
-                    style={{
-                      border: "1px solid #dcdcdc",
-                      background: "#fff",
-                      borderRadius: 999,
-                      padding: "3px 10px",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {layout === "underline" && (
-        <div className="cart-plus-discount-tpl" style={shell}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
-            {tx.heading}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              borderBottom: `2px solid ${tx.accent}`,
-            }}
-          >
-            {tInput({
-              border: 0,
-              borderRadius: 0,
-              background: "transparent",
-              paddingLeft: 0,
-            })}
-            {tButton({
-              background: "transparent",
-              color: tx.accent,
-              padding: "8px 0",
-            })}
-          </div>
-          {invalidBox}
-          {showAll && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                marginTop: 12,
-              }}
-            >
-              <LibraryIcon value={tplIcon} size={20} color={tplIconColor} />
-              {linkBtn({ width: "100%", justifyContent: "space-between" })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {layout === "rows" &&
-        (showAll ? (
-          <div
-            className="cart-plus-discount-tpl"
-            style={{ ...shell, padding: 0, overflow: "hidden" }}
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setOfferTab("coupons");
-                setOfferOpen(true);
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                width: "100%",
-                padding: "12px 16px",
-                background: "none",
-                border: 0,
-                color: tx.accent,
-                fontSize: 13,
-                cursor: "pointer",
-              }}
-            >
-              {iconBubble}
-              <span style={{ flex: 1, textAlign: "left" }}>{tx.heading}</span>
-              {arrow}
-            </button>
-            {showAll && (
-              <button
-                type="button"
-                onClick={() => {
-                  setOfferTab("more");
-                  setOfferOpen(true);
-                }}
+  const templated =
+    layout === "compact" ? (
+      <div className="cart-plus-discount-tpl" style={shell}>
+        {banner}
+        {T.showList && list.length > 0 && (
+          <div style={{ marginTop: 4 }}>
+            {list.map((a) => (
+              <div
+                key={a.code}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
-                  width: "100%",
-                  marginTop: 0,
-                  padding: "12px 16px",
-                  background: "none",
-                  border: 0,
-                  cursor: "pointer",
-                  color: tx.color,
-                  textAlign: "left",
-                  backgroundColor: "#f7f7f7",
-                  borderTop: "1px solid #e9e9e9",
+                  padding: "10px 4px",
+                  borderBottom: `1px solid ${T.rowDivider}`,
                 }}
               >
-                {iconBubble}
-                <span style={{ flex: 1 }}>
-                  <b style={{ display: "block", fontSize: 13 }}>
-                    {tx.linkText}
-                  </b>
-                  <span style={{ fontSize: 11, opacity: 0.65 }}>
-                    {tx.subtitle}
-                  </span>
-                </span>
-                {arrow}
+                <TagIcon color={T.rowIconColor} size={18} />
+                <b style={{ flex: 1, fontSize: 13, color: T.rowColor }}>
+                  {a.code}
+                </b>
+                <b style={{ fontSize: 13, color: T.rowAmountColor }}>
+                  -{money(a.amount)}
+                </b>
+                <XBtn color={T.removeColor} onClick={() => removeCode(a.code)} />
+              </div>
+            ))}
+          </div>
+        )}
+        {(T.showMoreOffers || T.showEnterLink) && (
+          <div style={{ display: "flex", alignItems: "center", marginTop: 10 }}>
+            {T.showMoreOffers && (
+              <button
+                type="button"
+                onClick={openOffers}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: "none",
+                  border: 0,
+                  padding: 0,
+                  cursor: "pointer",
+                  color: T.moreOffersColor,
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                <LibraryIcon value={tplIcon} size={18} color={T.iconColor} />+
+                {moreCount} {T.moreOffersText}
+              </button>
+            )}
+            {T.showMoreOffers && T.showEnterLink && (
+              <span
+                style={{
+                  width: 1,
+                  alignSelf: "stretch",
+                  background: "#e1e3e5",
+                  margin: "0 12px",
+                }}
+              />
+            )}
+            {T.showEnterLink && (
+              <button
+                type="button"
+                onClick={() => setShowInput((v) => !v)}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: 4,
+                  background: "none",
+                  border: 0,
+                  padding: 0,
+                  cursor: "pointer",
+                  color: T.linkColor,
+                  fontSize: 13,
+                }}
+              >
+                {T.linkText} {arrow}
               </button>
             )}
           </div>
-        ) : (
-          <div className="cart-plus-discount-tpl" style={shell}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 10,
-              }}
-            >
-              {iconBubble}
-              <b style={{ fontSize: 13 }}>{tx.heading}</b>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {tInput()}
-              {tButton()}
-            </div>
-            {invalidBox}
+        )}
+        {(showInput || list.length === 0 || !T.showEnterLink) && (
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            {tInput()}
+            {tButton()}
           </div>
-        ))}
-
-      {layout === "offers" && (
-        <div className="cart-plus-discount-tpl" style={shell}>
+        )}
+        {invalidBox}
+      </div>
+    ) : layout === "chipbadges" ? (
+      <div className="cart-plus-discount-tpl" style={shell}>
+        {banner}
+        {T.showList && list.length > 0 && (
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              gap: 6,
-              marginBottom: 12,
+              gap: 8,
+              flexWrap: "wrap",
+              marginTop: 12,
             }}
           >
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: "#22c55e",
-              }}
-            />
-            <b style={{ fontSize: 14 }}>{tx.heading}</b>
+            {list.map((a) => (
+              <span
+                key={a.code}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: T.chipBg,
+                  color: T.chipColor,
+                  borderRadius: T.chipRadius,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                <TagIcon color={T.chipColor} size={16} />
+                {a.code}
+                <XBtn color={T.chipColor} onClick={() => removeCode(a.code)} />
+              </span>
+            ))}
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {tInput({ textTransform: "uppercase" })}
-            {tButton({
-              background: "#fff",
-              color: tx.color,
-              border: "1px solid #dcdcdc",
-            })}
-          </div>
-          {invalidBox}
+        )}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            alignItems: "center",
+            marginTop: 12,
+            padding: T.showDashedBox ? 6 : 0,
+            borderRadius: T.dashedRadius,
+            border: T.showDashedBox ? `1.5px dashed ${T.dashedColor}` : "none",
+          }}
+        >
+          {tInput(T.showDashedBox ? { border: 0, background: "transparent" } : {})}
+          {tButton()}
+        </div>
+        {invalidBox}
+        {T.showEnterLink && (
           <button
             type="button"
             onClick={openOffers}
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 10,
-              width: "100%",
-              marginTop: 12,
-              padding: 0,
+              gap: 4,
               background: "none",
               border: 0,
+              padding: 0,
+              marginTop: 10,
+              fontSize: 12,
+              color: T.linkColor,
               cursor: "pointer",
-              color: tx.color,
-              textAlign: "left",
             }}
           >
-            {iconBubble}
-            <span style={{ flex: 1 }}>
-              <b style={{ display: "block", fontSize: 13 }}>{tx.linkText}</b>
-              <span style={{ fontSize: 11, opacity: 0.65 }}>{tx.subtitle}</span>
-            </span>
-            {arrow}
+            {T.linkText} {arrow}
           </button>
-        </div>
-      )}
+        )}
+      </div>
+    ) : null;
 
-      {layout === "stacked" && (
-        <div className="cart-plus-discount-tpl" style={shell}>
-          <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 8 }}>
-            {tx.heading}
-          </div>
-          {tInput({ width: "100%", boxSizing: "border-box" })}
-          {invalidBox}
-          {tButton({ width: "100%", marginTop: 10, borderRadius: 999 })}
-          {showAll && (
-            <div style={{ marginTop: 10 }}>
-              {linkBtn({ width: "100%", justifyContent: "space-between" })}
-            </div>
-          )}
-        </div>
-      )}
-    </>
-  );
+  // ───────── Classic: only override what the merchant customised ─────────
+  const classicWrapStyle = {
+    background: cs.inputBg || undefined,
+    border: cs.inputBorder ? `1px solid ${cs.inputBorder}` : undefined,
+    borderRadius: num(cs.inputRadius),
+  };
+  const classicInputStyle = { color: cs.inputColor || undefined };
+  const classicBtnStyle = {
+    background: cs.buttonBg || undefined,
+    color: cs.buttonColor || undefined,
+    borderRadius: num(cs.buttonRadius),
+  };
+  const classicIconColor = cs.iconColor || iconColor;
 
   return (
     <>
       {templated}
 
-      {/* ── Inline discount row ── */}
+      {/* ── Inline discount row (Classic) ── */}
       {!layout && (
         <div className="cart-discount-row cart-plus-discount-code-row cart-plus-discount-code-row cart-plus-discount-code-module cart-plus-public-discount-code">
           <div className="cart-plus-discount-code-input-wrapper cart-plus-discount-code-input-wrapper cart-plus-discount-code-module cart-plus-public-discount-code__input-wrapper">
-            {discountCodesSettings.showTitle && (
+            {cs.showTitle && (
               <div
                 className="cart-plus-discount-heading"
-                style={{
-                  color: discountCodesSettings?.couponHeadingColor || "#000000",
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: discountCodesSettings?.title || "",
-                }}
+                style={{ color: cs.couponHeadingColor || "#000000" }}
+                dangerouslySetInnerHTML={{ __html: cs.title || "" }}
               ></div>
             )}
 
             <div className="cart-plus-discount-input-row">
-              <div className="cart-plus-discount-input-wrapped">
+              <div
+                className="cart-plus-discount-input-wrapped"
+                style={classicWrapStyle}
+              >
                 <div className="cart-plus-discount-input-btn cart-plus-discount-code-icon">
-                  <svg
-                    viewBox="0 0 20 20"
-                    width="20"
-                    height="20"
-                    style={{ fill: iconColor }}
-                  >
-                    <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z" />
-                    <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
-                    <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
-                    <path
-                      fillRule="evenodd"
-                      d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"
-                    />
-                  </svg>
+                  <CouponIconSvg color={classicIconColor} />
                   <input
                     type="text"
                     className="cart-discount-row__input cart-plus-discount-code-text cart-plus-discount-code-input cart-plus-discount-input upcart-discount-code-input cart-plus-public-discount-code__input"
                     placeholder={placeholder}
                     value={code}
+                    style={classicInputStyle}
                     onChange={(e) => {
                       setCode(e.target.value);
                       setInvalid(false);
@@ -731,6 +712,7 @@ export default function DiscountCode({
                   <button
                     type="button"
                     className="cart-discount-row__btn cart-plus-discount-code-button cart-plus-public-discount-code__button cart-plus-discount-code-button"
+                    style={classicBtnStyle}
                     onClick={handleDiscount}
                     disabled={loading}
                   >
@@ -743,20 +725,16 @@ export default function DiscountCode({
                 </div>
               </div>
 
-              {discountCodesSettings?.showOfferBox && (
+              {cs.showOfferBox && (
                 <div
                   className="discount-offer-btn"
                   onClick={() => setOfferOpen(!offerOpen)}
                   style={{
-                    backgroundColor:
-                      discountCodesSettings?.viewAllOffersBgColor || "#000000",
+                    backgroundColor: cs.viewAllOffersBgColor || "#000000",
                   }}
                 >
                   <button
-                    style={{
-                      color:
-                        discountCodesSettings?.viewAllOffersColor || "#ffffff",
-                    }}
+                    style={{ color: cs.viewAllOffersColor || "#ffffff" }}
                     className="cart-plus-view-offers-btn"
                   >
                     View all offers
@@ -766,8 +744,7 @@ export default function DiscountCode({
                     style={{
                       width: 20,
                       height: 20,
-                      fill:
-                        discountCodesSettings?.viewAllOffersColor || "#ffffff",
+                      fill: cs.viewAllOffersColor || "#ffffff",
                     }}
                   >
                     <path
@@ -790,6 +767,7 @@ export default function DiscountCode({
           </div>
         </div>
       )}
+
       {/* ── Offers panel / backdrop ── */}
       <div
         className="cart-plus-offers-backdrop"
@@ -813,9 +791,11 @@ export default function DiscountCode({
                 <BackIcon />
               </button>
               <div className="cart-plus-offers-title-subtitle">
-                <span className="cart-plus-offers-title">Apply Coupon</span>
+                <span className="cart-plus-offers-title">
+                  {cs.panelTitle || "Apply Coupon"}
+                </span>
                 <span className="cart-plus-offers-cart-total">
-                  Your Cart: {currency} 200
+                  Your Cart: {currency} {subtotal || 200}
                 </span>
               </div>
             </div>
@@ -825,20 +805,7 @@ export default function DiscountCode({
             <div className="cart-plus-offers-input-row">
               <div className="cart-plus-offers-input-wrap">
                 <div className="cart-plus-offers-input">
-                  <svg
-                    viewBox="0 0 20 20"
-                    width="20"
-                    height="20"
-                    style={{ fill: iconColor }}
-                  >
-                    <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z" />
-                    <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
-                    <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
-                    <path
-                      fillRule="evenodd"
-                      d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"
-                    />
-                  </svg>
+                  <CouponIconSvg color={classicIconColor} />
                   <input
                     type="text"
                     className="cart-plus-offers-code-input cart-plus-discount-code-text cart-plus-discount-code-input"
@@ -855,6 +822,7 @@ export default function DiscountCode({
                 <button
                   type="button"
                   className="cart-discount-row__btn cart-plus-discount-code-button cart-plus-public-discount-code__button cart-plus-discount-code-button"
+                  style={layout ? undefined : classicBtnStyle}
                   onClick={handleDiscount}
                   disabled={loading}
                 >
@@ -878,27 +846,21 @@ export default function DiscountCode({
             </div>
           )}
           <div className="cart-plus-cart-disounts">
-            {discounts
-              .filter((d) =>
-                offerTab === "more"
-                  ? d.discountValue?.type !== "percentage"
-                  : true,
-              )
-              .map((d) => {
-                const codeStr = toCodeString(d).toUpperCase();
-                return (
-                  <CouponCard
-                    key={d.id || codeStr}
-                    code={codeStr}
-                    badgeText={formatBadgeText(d)}
-                    savings={formatSavingsText(d, currency)}
-                    description={d.description}
-                    onApply={applyDiscountCode}
-                    loading={loading && applyingCode === codeStr}
-                    showOfferBgColor={showOfferBgColor}
-                  />
-                );
-              })}
+            {discounts.map((d) => {
+              const codeStr = toCodeString(d).toUpperCase();
+              return (
+                <CouponCard
+                  key={d.id || codeStr}
+                  code={codeStr}
+                  badgeText={formatBadgeText(d)}
+                  savings={formatSavingsText(d, currency, subtotal)}
+                  description={d.description}
+                  onApply={applyDiscountCode}
+                  loading={loading && applyingCode === codeStr}
+                  showOfferBgColor={showOfferBgColor}
+                />
+              );
+            })}
           </div>
         </div>
       </div>

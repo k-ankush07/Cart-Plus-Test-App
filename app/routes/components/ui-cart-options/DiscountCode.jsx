@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Badge,
   Banner,
   BlockStack,
   Button,
@@ -14,12 +13,16 @@ import {
   Box,
   Icon,
 } from "@shopify/polaris";
+import { DiscountIcon } from "@shopify/polaris-icons";
 import ColorInput from "../ui/ColorInput";
 import RichTextEditor from "../ui/RichTextEditor";
-import { DISCOUNT_TEMPLATES } from "../utils/discountTemplates";
 import IconLibrary from "../ui/IconLibrary";
+import {
+  DISCOUNT_TEMPLATES,
+  TOKEN_KEYS,
+  resolveDiscountStyle,
+} from "../utils/discountTemplates";
 
-// a labelled rich-text field
 const Field = ({ label, value, onChange, helpText }) => (
   <BlockStack gap="100">
     <Text variant="bodyMd" fontWeight="medium">
@@ -34,9 +37,23 @@ const Field = ({ label, value, onChange, helpText }) => (
   </BlockStack>
 );
 
-import {
-  DiscountIcon, // Discount codes
-} from "@shopify/polaris-icons";
+const Section = ({ title, hint, children }) => (
+  <Card>
+    <BlockStack gap="300">
+      <BlockStack gap="050">
+        <Text as="h3" variant="headingSm">
+          {title}
+        </Text>
+        {hint && (
+          <Text as="p" variant="bodySm" tone="subdued">
+            {hint}
+          </Text>
+        )}
+      </BlockStack>
+      {children}
+    </BlockStack>
+  </Card>
+);
 
 const MiniLine = ({ width = "100%", color = "#d9dce1", height = 4 }) => (
   <span
@@ -54,10 +71,10 @@ const MiniLine = ({ width = "100%", color = "#d9dce1", height = 4 }) => (
 function DiscountTemplatePreview({ template, selected, onSelect }) {
   const settings = template ? DISCOUNT_TEMPLATES[template] : null;
   const accent = settings?.accent || "#16803c";
-  const borderRadius = settings?.radius ?? 8;
 
   const previewContent = (() => {
     if (!settings) {
+      // Classic
       return (
         <div style={{ display: "grid", gap: 7 }}>
           <div style={{ display: "flex", gap: 5 }}>
@@ -69,130 +86,75 @@ function DiscountTemplatePreview({ template, selected, onSelect }) {
       );
     }
 
-    if (settings.layout === "card") {
+    if (settings.layout === "compact") {
       return (
         <div style={{ display: "grid", gap: 5 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ color: accent, fontSize: 10 }}>●</span>
-            <MiniLine width="52%" color={settings.textColor} />
-          </div>
-          <MiniLine width="58%" height={3} />
-          <div style={{ display: "flex", gap: 4 }}>
-            <MiniLine width="72%" height={13} color="#f1f3f5" />
-            <MiniLine width="28%" height={13} color={accent} />
-          </div>
-          <MiniLine width="45%" height={3} color={accent} />
-        </div>
-      );
-    }
-
-    if (settings.layout === "chips") {
-      return (
-        <div style={{ display: "grid", gap: 6 }}>
-          <MiniLine width="40%" color={settings.textColor} />
-          <div style={{ display: "flex", gap: 4 }}>
-            <MiniLine width="72%" height={13} color="#f1f3f5" />
-            <MiniLine width="28%" height={13} color={accent} />
-          </div>
-          <div style={{ display: "flex", gap: 3 }}>
-            {["SAVE10", "WELCOME20", "FREESHIP"].map((code) => (
-              <span
-                key={code}
-                style={{
-                  padding: "2px 4px",
-                  border: "1px solid #e4e6e9",
-                  borderRadius: 5,
-                  color: "#525866",
-                  fontSize: 5,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {code}
-              </span>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    if (settings.layout === "underline") {
-      return (
-        <div style={{ display: "grid", gap: 7 }}>
-          <MiniLine width="40%" color={settings.textColor} />
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              paddingBottom: 4,
-              borderBottom: `1px solid ${accent}`,
+              gap: 5,
+              padding: 4,
+              borderRadius: 6,
+              background: `${accent}1a`,
             }}
           >
-            <MiniLine width="65%" height={3} />
-            <span style={{ color: accent, fontSize: 7 }}>Apply</span>
-          </div>
-          <MiniLine width="58%" height={3} />
-        </div>
-      );
-    }
-
-    if (settings.layout === "rows") {
-      return (
-        <div style={{ display: "grid", gap: 1 }}>
-          {["View Coupons", "More offers"].map((label) => (
-            <div
-              key={label}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "5px 2px",
-                borderBottom: "1px solid #edf0f2",
-                color: accent,
-                fontSize: 7,
-              }}
-            >
-              <span>◉ &nbsp;{label}</span>
-              <span>›</span>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (settings.layout === "offers") {
-      return (
-        <div style={{ display: "grid", gap: 4 }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <MiniLine width="53%" color={settings.textColor} />
             <span
               style={{
-                padding: "1px 4px",
-                borderRadius: 5,
-                background: "#eef8f1",
-                color: accent,
-                fontSize: 5,
+                width: 12,
+                height: 12,
+                borderRadius: "50%",
+                background: accent,
               }}
-            >
-              1 Applied
-            </span>
+            />
+            <MiniLine width="40%" height={5} color={accent} />
           </div>
-          <MiniLine height={13} color="#eef8f1" />
-          <MiniLine height={13} color="#f1f3f5" />
-          <div style={{ display: "flex", gap: 4 }}>
-            <MiniLine width="76%" height={12} color="#f1f3f5" />
-            <MiniLine width="24%" height={12} color={accent} />
-          </div>
-          <MiniLine width="62%" height={3} color={accent} />
+          <MiniLine height={3} />
+          <MiniLine height={3} />
+          <MiniLine width="60%" height={3} color={accent} />
         </div>
       );
     }
 
+    // chip badges
     return (
       <div style={{ display: "grid", gap: 5 }}>
-        <MiniLine width="45%" color={settings.textColor} />
-        <MiniLine height={13} color="#f1f3f5" />
-        <MiniLine height={13} color={accent} />
-        <MiniLine width="58%" height={3} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            padding: 4,
+            borderRadius: 6,
+            background: `${accent}1a`,
+          }}
+        >
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: 4,
+              background: accent,
+            }}
+          />
+          <MiniLine width="40%" height={5} color={accent} />
+        </div>
+        <div style={{ display: "flex", gap: 3 }}>
+          <MiniLine width="38%" height={9} color={`${accent}33`} />
+          <MiniLine width="38%" height={9} color={`${accent}33`} />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: 3,
+            padding: 2,
+            border: `1px dashed ${accent}66`,
+            borderRadius: 5,
+          }}
+        >
+          <MiniLine width="70%" height={7} color="#f1f3f5" />
+          <MiniLine width="30%" height={7} color={accent} />
+        </div>
       </div>
     );
   })();
@@ -224,9 +186,9 @@ function DiscountTemplatePreview({ template, selected, onSelect }) {
           display: "flex",
           alignItems: "center",
           border: "1px solid #eceef0",
-          borderRadius,
-          background: settings?.bg || "#fff",
-          color: settings?.textColor || "#1a1a1a",
+          borderRadius: settings ? 12 : 8,
+          background: "#fff",
+          color: "#1a1a1a",
           textAlign: "left",
         }}
       >
@@ -235,6 +197,8 @@ function DiscountTemplatePreview({ template, selected, onSelect }) {
     </button>
   );
 }
+
+const clamp = (v, min, max) => Math.min(max, Math.max(min, Number(v) || 0));
 
 export default function DiscountCode({
   discountCodesSettings,
@@ -245,6 +209,13 @@ export default function DiscountCode({
 }) {
   const [showLimitations, setShowLimitations] = useState(false);
 
+  const s = discountCodesSettings || {};
+  const template = s.template || "";
+  const T = resolveDiscountStyle(s);
+  const isClassic = !template;
+  const isCompact = template === "compact_card";
+  const isChip = template === "chip_badges";
+
   const update = (key, value) => {
     handleChange("discountCodesSettings", (prev) => ({
       ...prev,
@@ -252,19 +223,54 @@ export default function DiscountCode({
     }));
   };
 
+  // select a template: clear every customised token so the template defaults apply
   const applyTemplate = (key) => {
-    const { label, ...settings } = DISCOUNT_TEMPLATES[key];
+    const cleared = Object.fromEntries(TOKEN_KEYS.map((k) => [k, undefined]));
     handleChange("discountCodesSettings", (prev) => ({
       ...prev,
+      ...cleared,
       template: key,
-      showOfferBox: true,
-      ...settings,
     }));
   };
 
+  // ── small field builders ──
+  const color = (key, label, fallback = "#ffffff") => (
+    <ColorInput
+      label={label}
+      value={T[key] || fallback}
+      onChange={(v) => update(key, v)}
+    />
+  );
+  const text = (key, label, helpText) => (
+    <TextField
+      label={label}
+      autoComplete="off"
+      helpText={helpText}
+      value={T[key] ?? ""}
+      onChange={(v) => update(key, v)}
+    />
+  );
+  const num = (key, label, min, max, allowEmpty = false) => (
+    <TextField
+      label={label}
+      type="number"
+      autoComplete="off"
+      value={String(T[key] ?? "")}
+      onChange={(v) =>
+        update(key, allowEmpty && v === "" ? "" : clamp(v, min, max))
+      }
+    />
+  );
+  const toggle = (key, label) => (
+    <Checkbox
+      label={label}
+      checked={!!T[key]}
+      onChange={(v) => update(key, v)}
+    />
+  );
+
   return (
     <div className="mainContent">
-      {/* Page heading — matches reference HTML exactly */}
       <Box paddingBlockEnd="400">
         <BlockStack gap="400">
           <InlineStack gap="300" align="space-between" blockAlign="center">
@@ -282,12 +288,10 @@ export default function DiscountCode({
             <button
               type="button"
               role="switch"
-              aria-checked={!discountCodesSettings.enabled}
+              aria-checked={!s.enabled}
               aria-label="Discount Code"
-              className={`sb-switch ${
-                !discountCodesSettings.enabled ? "is-on" : ""
-              }`}
-              onClick={() => update("enabled", !discountCodesSettings.enabled)}
+              className={`sb-switch ${!s.enabled ? "is-on" : ""}`}
+              onClick={() => update("enabled", !s.enabled)}
             >
               <span className="sb-switch-knob" />
             </button>
@@ -296,21 +300,27 @@ export default function DiscountCode({
       </Box>
 
       <BlockStack gap="400">
+        {/* ───────── Template picker (Classic + 2) ───────── */}
         <Card>
           <BlockStack gap="300">
-            <Text as="h3" variant="headingSm">
-              Template
-            </Text>
+            <InlineStack align="space-between" blockAlign="center">
+              <Text as="h3" variant="headingSm">
+                Template
+              </Text>
+              <Button variant="plain" onClick={() => applyTemplate(template)}>
+                Reset to template defaults
+              </Button>
+            </InlineStack>
             <InlineGrid columns={3} gap="200">
               <DiscountTemplatePreview
-                selected={!discountCodesSettings.template}
-                onSelect={() => update("template", "")}
+                selected={isClassic}
+                onSelect={() => applyTemplate("")}
               />
-              {Object.entries(DISCOUNT_TEMPLATES).map(([key]) => (
+              {Object.keys(DISCOUNT_TEMPLATES).map((key) => (
                 <DiscountTemplatePreview
                   key={key}
                   template={key}
-                  selected={discountCodesSettings.template === key}
+                  selected={template === key}
                   onSelect={() => applyTemplate(key)}
                 />
               ))}
@@ -318,218 +328,285 @@ export default function DiscountCode({
           </BlockStack>
         </Card>
 
-        {discountCodesSettings.template && (
-          <Card>
-            <BlockStack gap="300">
-              <Text as="h3" variant="headingSm">
-                Customize template
-              </Text>
-              <TextField
-                label="Heading"
-                autoComplete="off"
-                value={discountCodesSettings.heading ?? ""}
-                onChange={(v) => update("heading", v)}
-              />
-              <TextField
-                label="Sub text"
-                autoComplete="off"
-                value={discountCodesSettings.subtitle ?? ""}
-                onChange={(v) => update("subtitle", v)}
-              />
-              <TextField
-                label="View all link text"
-                autoComplete="off"
-                value={discountCodesSettings.linkText ?? ""}
-                onChange={(v) => update("linkText", v)}
-              />
-              <BlockStack gap="200">
-                <Text as="p" variant="bodyMd">
-                  Icon
+        {/* ───────── Container (Compact + Chip) ───────── */}
+        {!isClassic && (
+          <Section title="Container" hint="The outer box of the discount block.">
+            {color("bg", "Background")}
+            {color("textColor", "Text color", "#1a1a1a")}
+            {color("accent", "Accent color")}
+            <InlineGrid columns={2} gap="300">
+              {num("radius", "Border radius (px)", 0, 40)}
+              {num("padding", "Inner padding (px)", 0, 48)}
+            </InlineGrid>
+            {toggle("shadow", "Show shadow")}
+          </Section>
+        )}
+
+        {/* ───────── Savings banner (Compact + Chip) ───────── */}
+        {!isClassic && (
+          <Section
+            title="Savings banner"
+            hint="Shown at the top when at least one code is applied."
+          >
+            {toggle("showBanner", "Show savings banner")}
+            {T.showBanner && (
+              <>
+                {text("heading", "Heading text")}
+                {color("headingColor", "Heading color")}
+                {color("amountColor", "Saved amount color")}
+                {num("amountSize", "Saved amount size (px)", 12, 40)}
+                {color("bannerBg", "Banner background", T.accent)}
+                {num("bannerRadius", "Banner border radius (px)", 0, 30)}
+
+                <Text as="p" variant="bodyMd" fontWeight="medium">
+                  Badge
                 </Text>
-                <IconLibrary
-                  value={discountCodesSettings.icon}
-                  onChange={(icon) => update("icon", icon)}
-                  quickIcons={[
-                    "discount",
-                    "percent",
-                    "gift",
-                    "star",
-                    "fire",
-                    "crown",
-                    "truck",
-                    "cart",
-                  ]}
-                  shop={shop}
-                  accessToken={accessToken}
-                  apiUrl={apiUrl}
+                {text("badgeText", "Badge symbol")}
+                {color("badgeBg", "Badge background")}
+                {color("badgeColor", "Badge symbol color")}
+                {num("badgeRadius", "Badge border radius (px)", 0, 22)}
+
+                <Text as="p" variant="bodyMd" fontWeight="medium">
+                  {isCompact ? "Applied-count pill" : "Remove-all button"}
+                </Text>
+                {isCompact
+                  ? text(
+                      "appliedLabel",
+                      "Pill text",
+                      "Use {n} for the number of applied codes.",
+                    )
+                  : text("clearAllText", "Button text")}
+                {color("pillBg", "Pill background")}
+                {color("pillColor", "Pill text color")}
+                {color("pillBorder", "Pill border color")}
+              </>
+            )}
+          </Section>
+        )}
+
+        {/* ───────── Applied codes (Compact rows / Chip chips) ───────── */}
+        {!isClassic && (
+          <Section
+            title={isCompact ? "Applied code rows" : "Applied code chips"}
+          >
+            {toggle("showList", "Show applied codes")}
+            {T.showList && isCompact && (
+              <>
+                {color("rowColor", "Code text color")}
+                {color("rowIconColor", "Tag icon color")}
+                {color("rowAmountColor", "Amount color")}
+                {color("removeColor", "Remove (×) color")}
+                {color("rowDivider", "Divider color")}
+              </>
+            )}
+            {T.showList && isChip && (
+              <>
+                {color("chipBg", "Chip background", T.accent)}
+                {color("chipColor", "Chip text & icon color")}
+                {num("chipRadius", "Chip border radius (px)", 0, 30)}
+              </>
+            )}
+          </Section>
+        )}
+
+        {/* ───────── Links & icon (Compact + Chip) ───────── */}
+        {!isClassic && (
+          <Section title="Links">
+            {isCompact && (
+              <>
+                {toggle("showMoreOffers", "Show “+N more offers” button")}
+                {T.showMoreOffers && (
+                  <>
+                    {text(
+                      "moreOffersText",
+                      "More offers text",
+                      "Shown as “+N …”.",
+                    )}
+                    {color("moreOffersColor", "More offers text color")}
+                    <BlockStack gap="200">
+                      <Text as="p" variant="bodyMd">
+                        Icon
+                      </Text>
+                      <IconLibrary
+                        value={T.icon}
+                        onChange={(icon) => update("icon", icon)}
+                        quickIcons={[
+                          "discount",
+                          "percent",
+                          "gift",
+                          "star",
+                          "fire",
+                          "crown",
+                          "truck",
+                          "cart",
+                        ]}
+                        shop={shop}
+                        accessToken={accessToken}
+                        apiUrl={apiUrl}
+                      />
+                      {color("iconColor", "Icon color")}
+                      <Text as="p" variant="bodySm" tone="subdued">
+                        Double-click the selected icon to reset it to the
+                        default.
+                      </Text>
+                    </BlockStack>
+                  </>
+                )}
+              </>
+            )}
+            {toggle("showEnterLink", "Show “Enter a coupon code” link")}
+            {T.showEnterLink && (
+              <>
+                {text("linkText", "Link text")}
+                {color("linkColor", "Link color")}
+              </>
+            )}
+          </Section>
+        )}
+
+        {/* ───────── Input & button (all 3) ───────── */}
+        <Section
+          title="Coupon input & button"
+          hint={
+            isClassic
+              ? "Leave a color empty/unchanged to keep the storefront theme default."
+              : undefined
+          }
+        >
+          <TextField
+            label="Input placeholder"
+            value={s.placeholder ?? ""}
+            onChange={(v) => update("placeholder", v)}
+            autoComplete="off"
+          />
+          <Field
+            label="Apply button text"
+            value={s.buttonText}
+            onChange={(v) => update("buttonText", v)}
+          />
+          {color("inputBg", "Input background")}
+          {color("inputColor", "Input text color", "#1a1a1a")}
+          {color("inputBorder", "Input border color", "#dcdcdc")}
+          {num("inputRadius", "Input border radius (px)", 0, 40, isClassic)}
+          {color("buttonBg", "Button background", "#16803c")}
+          {color("buttonColor", "Button text color")}
+          {num("buttonRadius", "Button border radius (px)", 0, 40, isClassic)}
+          {isChip && (
+            <>
+              {toggle("showDashedBox", "Show dashed box around input")}
+              {T.showDashedBox && (
+                <>
+                  {color("dashedColor", "Dashed border color")}
+                  {num("dashedRadius", "Dashed box radius (px)", 0, 30)}
+                </>
+              )}
+            </>
+          )}
+          {isClassic && color("iconColor", "Coupon icon color", "#000000")}
+        </Section>
+
+        {/* ───────── Classic-only parts ───────── */}
+        {isClassic && (
+          <Section title="Classic layout">
+            {toggle("showTitle", "Show Discount Code Title")}
+            {s.showTitle && (
+              <>
+                <Field
+                  label="Discount Code Title"
+                  value={s.title}
+                  onChange={(v) => update("title", v)}
                 />
                 <ColorInput
-                  label="Icon color"
-                  value={
-                    discountCodesSettings.iconColor ??
-                    discountCodesSettings.accent ??
-                    "#0a7d3b"
-                  }
-                  onChange={(v) => update("iconColor", v)}
+                  label="Coupon Heading Text Color"
+                  value={s.couponHeadingColor ?? "#000000"}
+                  onChange={(v) => update("couponHeadingColor", v)}
                 />
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Double-click the selected icon to reset it to the default.
-                </Text>
-              </BlockStack>
-              {discountCodesSettings.template === "popular_codes" && (
-                <TextField
-                  label="Popular codes"
-                  autoComplete="off"
-                  helpText="Comma separated"
-                  value={discountCodesSettings.popularCodes ?? ""}
-                  onChange={(v) => update("popularCodes", v)}
-                />
-              )}
-              <ColorInput
-                label="Background"
-                value={discountCodesSettings.bg ?? "#ffffff"}
-                onChange={(v) => update("bg", v)}
-              />
-              <ColorInput
-                label="Text color"
-                value={discountCodesSettings.textColor ?? "#1a1a1a"}
-                onChange={(v) => update("textColor", v)}
-              />
-              <ColorInput
-                label="Button / accent color"
-                value={discountCodesSettings.accent ?? "#0a7d3b"}
-                onChange={(v) => update("accent", v)}
-              />
-              <TextField
-                label="Border radius (px)"
-                type="number"
-                autoComplete="off"
-                value={String(discountCodesSettings.radius ?? 12)}
-                onChange={(v) =>
-                  update("radius", Math.min(40, Math.max(0, Number(v) || 0)))
-                }
-              />
-            </BlockStack>
-          </Card>
-        )}
-        <Card>
-          <BlockStack gap="300">
-            {/* Checkbox — Show Offer Box */}
-            <InlineStack>
-              <Checkbox
-                label="Show Discount Code Title"
-                checked={discountCodesSettings.showTitle ?? false}
-                onChange={(val) => update("showTitle", val)}
-              />
-            </InlineStack>
-
-            {discountCodesSettings.showTitle && (
-              <Field
-                label="Discount Code Title"
-                value={discountCodesSettings.title}
-                onChange={(val) => update("title", val)}
-              />
+              </>
             )}
-
-            <TextField
-              label="Discount input placeholder"
-              value={discountCodesSettings.placeholder}
-              onChange={(val) => update("placeholder", val)}
-              autoComplete="off"
+            <Checkbox
+              label="Show All Discount code"
+              checked={s.showOfferBox ?? false}
+              onChange={(v) => update("showOfferBox", v)}
             />
-
-            <Field
-              label="Discount apply button text"
-              value={discountCodesSettings.buttonText}
-              onChange={(val) => update("buttonText", val)}
-            />
-
-            <Field
-              label="Invalid code message"
-              value={discountCodesSettings.invalidCodeMessage ?? ""}
-              onChange={(val) => update("invalidCodeMessage", val)}
-              helpText="Shown below the input when the customer enters a code that does not exist or cannot be applied."
-            />
-
-            {/* Checkbox — Show Offer Box */}
-            <InlineStack>
-              <Checkbox
-                label="Show All Discount code"
-                checked={discountCodesSettings.showOfferBox ?? false}
-                onChange={(val) => update("showOfferBox", val)}
-              />
-            </InlineStack>
-
-            <ColorInput
-              label="Coupon Heading Text Color"
-              value={discountCodesSettings.couponHeadingColor ?? "#000000"}
-              onChange={(val) => update("couponHeadingColor", val)}
-              autoComplete="off"
-            />
-            {discountCodesSettings.showOfferBox && (
-              <BlockStack gap="300">
+            {s.showOfferBox && (
+              <>
                 <ColorInput
                   label="View All Offers Text Color"
-                  value={discountCodesSettings.viewAllOffersColor ?? "#000000"}
-                  onChange={(val) => update("viewAllOffersColor", val)}
+                  value={s.viewAllOffersColor ?? "#ffffff"}
+                  onChange={(v) => update("viewAllOffersColor", v)}
                 />
                 <ColorInput
                   label="View All Offers Background Color"
-                  value={
-                    discountCodesSettings.viewAllOffersBgColor ?? "#ffffff"
-                  }
-                  onChange={(val) => update("viewAllOffersBgColor", val)}
+                  value={s.viewAllOffersBgColor ?? "#000000"}
+                  onChange={(v) => update("viewAllOffersBgColor", v)}
                 />
-              </BlockStack>
+              </>
             )}
+          </Section>
+        )}
 
-            <ColorInput
-              label="Offer Background Color"
-              value={discountCodesSettings.showOfferBgColor ?? "#000000"}
-              onChange={(val) => update("showOfferBgColor", val)}
-              autoComplete="off"
-            />
+        {/* ───────── Offers panel (all 3) ───────── */}
+        <Section title="Offers panel" hint="The slide-in list of all coupons.">
+          <TextField
+            label="Panel title"
+            autoComplete="off"
+            value={s.panelTitle ?? "Apply Coupon"}
+            onChange={(v) => update("panelTitle", v)}
+          />
+          <ColorInput
+            label="Offer badge color"
+            value={s.showOfferBgColor ?? "#6C4DFF"}
+            onChange={(v) => update("showOfferBgColor", v)}
+          />
+        </Section>
 
-            <Banner tone="warning">
-              <BlockStack gap="200">
-                <Text variant="bodyMd" fontWeight="semibold">
-                  Discount limitations
+        {/* ───────── Invalid message (all 3) ───────── */}
+        <Section title="Error message">
+          <Field
+            label="Invalid code message"
+            value={s.invalidCodeMessage ?? ""}
+            onChange={(v) => update("invalidCodeMessage", v)}
+            helpText="Shown below the input when the customer enters a code that does not exist or cannot be applied."
+          />
+          {color("invalidColor", "Error text color", "#D72C0D")}
+        </Section>
+
+        <Banner tone="warning">
+          <BlockStack gap="200">
+            <Text variant="bodyMd" fontWeight="semibold">
+              Discount limitations
+            </Text>
+            <Text variant="bodySm">
+              Cart Plus is not able to support all discount functionality
+              available in checkout. Please review the following limitations.
+            </Text>
+            <Collapsible open={showLimitations} id="discount-limitations">
+              <BlockStack gap="100">
+                <Text variant="bodySm">
+                  • Buy X Get Y discounts are not supported
                 </Text>
                 <Text variant="bodySm">
-                  Cart Plus is not able to support all discount functionality
-                  available in checkout. Please review the following
-                  limitations.
+                  • Free shipping discounts may not apply correctly
                 </Text>
-                <Collapsible open={showLimitations} id="discount-limitations">
-                  <BlockStack gap="100">
-                    <Text variant="bodySm">
-                      • Buy X Get Y discounts are not supported
-                    </Text>
-                    <Text variant="bodySm">
-                      • Free shipping discounts may not apply correctly
-                    </Text>
-                    <Text variant="bodySm">
-                      • Some automatic discounts may not stack with code
-                      discounts
-                    </Text>
-                    <Text variant="bodySm">
-                      • Discounts requiring minimum purchase amounts may behave
-                      differently
-                    </Text>
-                  </BlockStack>
-                </Collapsible>
-                <div>
-                  <Button
-                    variant="plain"
-                    onClick={() => setShowLimitations((v) => !v)}
-                  >
-                    {showLimitations ? "Show less" : "Show more"}
-                  </Button>
-                </div>
+                <Text variant="bodySm">
+                  • Some automatic discounts may not stack with code discounts
+                </Text>
+                <Text variant="bodySm">
+                  • Discounts requiring minimum purchase amounts may behave
+                  differently
+                </Text>
               </BlockStack>
-            </Banner>
+            </Collapsible>
+            <div>
+              <Button
+                variant="plain"
+                onClick={() => setShowLimitations((v) => !v)}
+              >
+                {showLimitations ? "Show less" : "Show more"}
+              </Button>
+            </div>
           </BlockStack>
-        </Card>
+        </Banner>
       </BlockStack>
     </div>
   );

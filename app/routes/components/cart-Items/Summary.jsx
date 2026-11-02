@@ -16,6 +16,24 @@ const ICON_PATHS = {
   total: "M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3",
 };
 
+// 24-point scalloped badge outline
+const BADGE_POINTS = Array.from({ length: 24 }, (_, i) => {
+  const a = (Math.PI * 2 * i) / 24 - Math.PI / 2;
+  const r = i % 2 === 0 ? 11.6 : 9.9;
+  return `${(12 + r * Math.cos(a)).toFixed(2)},${(12 + r * Math.sin(a)).toFixed(2)}`;
+}).join(" ");
+
+const shade = (hex, amt) => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const c = (v) => Math.max(0, Math.min(255, v + amt));
+  const r = c(n >> 16),
+    g = c((n >> 8) & 255),
+    b = c(n & 255);
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+};
+
 function SummaryIcon({ name, color }) {
   return (
     <svg
@@ -47,7 +65,8 @@ export default function Summary({
   const savedSummary = getSummary(cartSettings);
   // Appearance: Dark -> the saved light text colour becomes the theme's text colour
   const s =
-    designSettings?.dark && String(savedSummary.textColor).toLowerCase() === "#303030"
+    designSettings?.dark &&
+    String(savedSummary.textColor).toLowerCase() === "#303030"
       ? { ...savedSummary, textColor: designSettings.textColor }
       : savedSummary;
   const [open, setOpen] = useState(s.expandable ? !s.collapsedByDefault : true);
@@ -62,6 +81,13 @@ export default function Summary({
   const compare = Number(compareTotal) > total ? Number(compareTotal) : 0;
   const saved = compare - total;
   const money = (n) => `${currency} ${Number(n).toFixed(2)}`;
+  const designTitles = {
+    "bill-details": "Bill details",
+    "bill-summary": "Bill Summary",
+    "price-details": "Price Details",
+  };
+  const displayTitle =
+    s.title === "Summary" ? designTitles[s.design] || s.title : s.title;
 
   const row = {
     display: "flex",
@@ -72,7 +98,12 @@ export default function Summary({
 
   // same rows and values for every design, only the styling differs
   const items = [
-    { key: "mrp", icon: "tag", label: "Total MRP", value: money(compare || total) },
+    {
+      key: "mrp",
+      icon: "tag",
+      label: "Total MRP",
+      value: money(compare || total),
+    },
     s.showDiscountsRow &&
       saved > 0 && {
         key: "savings",
@@ -83,7 +114,12 @@ export default function Summary({
     s.showSubtotal && {
       key: "subtotal",
       icon: "receipt",
-      label: s.subtotalLabel,
+      label:
+        s.design === "bill-details" && s.subtotalLabel === "Subtotal"
+          ? "Items total"
+          : s.design === "bill-summary" && s.subtotalLabel === "Subtotal"
+            ? "Item Total"
+            : s.subtotalLabel,
       value: (
         <>
           {money(total)}
@@ -109,7 +145,12 @@ export default function Summary({
     s.showShipping && {
       key: "shipping",
       icon: "truck",
-      label: s.shippingLabel,
+      label:
+        s.design === "bill-details" && s.shippingLabel === "Shipping"
+          ? "Delivery charge"
+          : s.design === "bill-summary" && s.shippingLabel === "Shipping"
+            ? "Delivery Fee"
+            : s.shippingLabel,
       value: s.showShippingFree ? (
         <span style={{ color: "#10812F" }}>{s.shippingFreeLabel}</span>
       ) : null,
@@ -123,67 +164,204 @@ export default function Summary({
     </span>
   );
 
+  const bannerBg = s.savingsBannerBg || "#b6eb98";
+  const bannerTextColor = s.savingsBannerTextColor || "#1d2b1a";
+
   const design = s.design;
   // Template theme: Card / Striped borders follow the theme colour
   const themeBorder = designSettings?.accentBorder;
-  const wrapStyle = {
-    classic: { display: "flex", flexDirection: "column", gap: 6 },
-    card: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 8,
-      border: `1px solid ${themeBorder || "rgba(0,0,0,0.12)"}`,
-      borderRadius: 12,
-      padding: 12,
-    },
-    striped: { display: "flex", flexDirection: "column" },
-  }[design] || {};
-  const itemStyle = {
-    classic: row,
-    card: row,
-    striped: {
-      ...row,
-      padding: "8px 0",
-      borderBottom: `1px solid ${themeBorder || "rgba(0,0,0,0.08)"}`,
-    },
-  }[design] || row;
-  const totalStyle = {
-    classic: {
-      ...row,
-      fontWeight: 600,
-      borderTop: "1px solid rgba(0,0,0,0.1)",
-      paddingTop: 6,
-    },
-    card: {
-      ...row,
-      fontWeight: 700,
-      fontSize: 16,
-      borderTop: `1px dashed ${themeBorder || "rgba(0,0,0,0.2)"}`,
-      paddingTop: 10,
-      marginTop: 2,
-    },
-    striped: {
-      ...row,
-      fontWeight: 700,
-      background: "rgba(0,0,0,0.05)",
-      borderRadius: 8,
-      padding: "10px 12px",
-      marginTop: 8,
-    },
-  }[design] || row;
+  const wrapStyle =
+    {
+      classic: { display: "flex", flexDirection: "column", gap: 6 },
+      card: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        border: `1px solid ${themeBorder || "rgba(0,0,0,0.12)"}`,
+        borderRadius: 12,
+        padding: 12,
+      },
+      striped: { display: "flex", flexDirection: "column" },
+      "bill-details": {
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        background: "#fff",
+        borderRadius: 12,
+        padding: 12,
+        boxShadow: "0 2px 12px rgba(20, 45, 80, 0.08)",
+      },
+      "bill-summary": {
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        background: "#fff",
+        border: `1px solid ${themeBorder || "#e5e9f0"}`,
+        borderRadius: 10,
+        padding: 12,
+      },
+      "price-details": {
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        background: "#fff",
+        borderRadius: 10,
+        padding: 12,
+        boxShadow: "0 2px 10px rgba(20, 45, 80, 0.06)",
+      },
+    }[design] || {};
+  const itemStyle =
+    {
+      classic: row,
+      card: row,
+      striped: {
+        ...row,
+        padding: "8px 0",
+        borderBottom: `1px solid ${themeBorder || "rgba(0,0,0,0.08)"}`,
+      },
+      "bill-details": row,
+      "bill-summary": {
+        ...row,
+        color: "#667085",
+        fontSize: 12,
+      },
+      "price-details": row,
+    }[design] || row;
+  const totalStyle =
+    {
+      classic: {
+        ...row,
+        fontWeight: 600,
+        borderTop: "1px solid rgba(0,0,0,0.1)",
+        paddingTop: 6,
+      },
+      card: {
+        ...row,
+        fontWeight: 700,
+        fontSize: 16,
+        borderTop: `1px dashed ${themeBorder || "rgba(0,0,0,0.2)"}`,
+        paddingTop: 10,
+        marginTop: 2,
+      },
+      striped: {
+        ...row,
+        fontWeight: 700,
+        background: "rgba(0,0,0,0.05)",
+        borderRadius: 8,
+        padding: "10px 12px",
+        marginTop: 8,
+      },
+      "bill-details": {
+        ...row,
+        fontWeight: 700,
+        borderTop: "1px dashed #9db8ec",
+        paddingTop: 10,
+        marginTop: 2,
+      },
+      "bill-summary": {
+        ...row,
+        fontWeight: 700,
+        color: s.textColor,
+        borderTop: "1px solid #e8ebf0",
+        paddingTop: 10,
+        marginTop: 2,
+      },
+      "price-details": {
+        ...row,
+        fontWeight: 700,
+        fontSize: 15,
+        borderTop: "1px solid #e8ebf0",
+        paddingTop: 10,
+        marginTop: 2,
+      },
+    }[design] || row;
 
   const rows = (
     <div style={wrapStyle}>
       {items.map((it) => (
-        <div key={it.key} style={itemStyle}>
+        <div
+          key={it.key}
+          style={{
+            ...itemStyle,
+            ...(design === "price-details" && it.key === "savings"
+              ? { color: "#16803c" }
+              : {}),
+          }}
+        >
           {label(it.icon, it.label)}
           <span>{it.value}</span>
         </div>
       ))}
       <div style={totalStyle}>
-        {label("total", "Grand Total")}
+        {label(
+          "total",
+          design === "bill-summary"
+            ? "To Pay"
+            : design === "price-details"
+              ? "Total Amount"
+              : "Grand Total",
+        )}
         <span>{money(total)}</span>
       </div>
+      {design === "price-details" && saved > 0 && s.showSavingsBanner && (
+        <div
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            padding: "4px 10px",
+            marginTop: 6,
+            borderRadius: 8,
+            border: "1px solid #b7e8a0",
+            border: `1px solid ${shade(bannerBg, -25)}`,
+            background: `linear-gradient(90deg, ${shade(bannerBg, -12)} 0%, ${bannerBg} 50%, ${shade(bannerBg, 6)} 100%)`,
+            color: s.savingsBannerTextColor || "#1d2b1a",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+            fontSize: 13,
+            fontWeight: 500,
+          }}
+        >
+          {/* soft diagonal shine, like the Figma sheen */}
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+              background:
+                "linear-gradient(115deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 60%)",
+            }}
+          />
+
+          
+          <span style={{ position: "relative" }}>
+            {(s.savingsBannerText || "You're saving {amount} on this order")
+              .split("{amount}")
+              .map((part, i, arr) => (
+                <span key={i}>
+                  {part}
+                  {i < arr.length - 1 && (
+                    <span
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 15 ,
+                        textDecoration: "underline",
+                        textDecorationColor: "#2f8f4e",
+                        textDecorationThickness: 2,
+                        textUnderlineOffset: 4,
+                      }}
+                    >
+                      {currency} {Math.round(saved).toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </span>
+              ))}
+          </span>
+        </div>
+      )}
     </div>
   );
 
@@ -203,10 +381,10 @@ export default function Summary({
         fontSize: 13,
       }}
     >
-      {!s.expandable && s.title.replace(/<[^>]*>|&nbsp;/g, "").trim() && (
+      {!s.expandable && displayTitle.replace(/<[^>]*>|&nbsp;/g, "").trim() && (
         <div style={{ marginBottom: 6, ...titleRow }}>
           {titleIcon}
-          <span dangerouslySetInnerHTML={{ __html: s.title }} />
+          <span dangerouslySetInnerHTML={{ __html: displayTitle }} />
         </div>
       )}
       {s.expandable && (
@@ -225,7 +403,7 @@ export default function Summary({
         >
           <span style={titleRow}>
             {titleIcon}
-            <span dangerouslySetInnerHTML={{ __html: s.title }} />
+            <span dangerouslySetInnerHTML={{ __html: displayTitle }} />
           </span>
           <svg
             width="12"

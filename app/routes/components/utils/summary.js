@@ -16,17 +16,24 @@ export const SUMMARY_DEFAULTS = {
   shippingFreeLabel: "Free",
   showAppliedDiscounts: true,
   appliedDiscountsLabel: "Discounts",
-  design: "classic", // "classic" | "card" | "striped"
+  design: "classic", // summary layout template
   showIcons: false,
   titleIcon: { type: "icon", name: "receipt" }, // IconLibrary value, shown before the title
   textColor: "#303030",
-  background: null, // BackgroundInput value, null = cart default
+  background: null,
+  showSavingsBanner: true,
+  savingsBannerText: "You're saving {amount} on this order",
+  savingsBannerBg: "#b6eb98",
+  savingsBannerTextColor: "#1d2b1a",
 };
 
 export const SUMMARY_DESIGNS = [
   { label: "Classic", value: "classic" },
   { label: "Card", value: "card" },
   { label: "Striped", value: "striped" },
+  { label: "Bill details", value: "bill-details" },
+  { label: "Bill Summary", value: "bill-summary" },
+  { label: "Price Details", value: "price-details" },
 ];
 
 export const COMPARE_AT_OPTIONS = [

@@ -17,11 +17,15 @@ const CART_PLUS_SUMMARY_DEFAULTS = {
   shippingFreeLabel: "Free",
   showAppliedDiscounts: true,
   appliedDiscountsLabel: "Discounts",
-  design: "classic", // "classic" | "card" | "striped"
+  design: "classic", // summary layout template
   showIcons: false,
   titleIcon: { type: "icon", name: "receipt" },
   textColor: "#303030",
   background: null,
+  showSavingsBanner: true,
+  savingsBannerText: "You're saving {amount} on this order",
+  savingsBannerBg: "#b6eb98",
+  savingsBannerTextColor: "#1d2b1a",
 };
 
 const CART_PLUS_SUMMARY_ICONS = {
@@ -48,6 +52,27 @@ function cartPlusBackgroundCss(bg) {
     return `linear-gradient(${Number(bg.angle) || 0}deg, ${bg.color || "#ffffff"}, ${bg.color2 || "#e2e2e2"})`;
   }
   return bg.color || "";
+}
+
+function cartPlusShade(hex, amount) {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex || "");
+  if (!match) return hex || "#b6eb98";
+  const color = parseInt(match[1], 16);
+  const channel = (value) => Math.max(0, Math.min(255, value + amount));
+  const red = channel(color >> 16);
+  const green = channel((color >> 8) & 255);
+  const blue = channel(color & 255);
+  return `#${((1 << 24) | (red << 16) | (green << 8) | blue).toString(16).slice(1)}`;
+}
+
+function cartPlusEscapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[char]);
 }
 
 function cartPlusSummaryIcon(name, color) {
@@ -107,20 +132,69 @@ window.cartPlusRenderSummary = function (blockId, data) {
     s.showDiscountsRow && saved > 0
       ? row("percent", s.discountsRowLabel, `-${fmt(saved)}`)
       : "",
-    s.showSubtotal ? row("receipt", s.subtotalLabel, subtotalValue) : "",
+    s.showSubtotal
+      ? row(
+          "receipt",
+          s.design === "bill-details" && s.subtotalLabel === "Subtotal"
+            ? "Items total"
+            : s.design === "bill-summary" && s.subtotalLabel === "Subtotal"
+              ? "Item Total"
+              : s.subtotalLabel,
+          subtotalValue,
+        )
+      : "",
     s.showAppliedDiscounts && data.discountCodes?.length
       ? row("ticket", s.appliedDiscountsLabel, data.discountCodes.join(", "))
       : "",
-    s.showShipping ? row("truck", s.shippingLabel, shippingValue) : "",
-    row("total", "Grand Total", fmt(data.grandTotal), "cart-plus-summary__total"),
+    s.showShipping
+      ? row(
+          "truck",
+          s.design === "bill-details" && s.shippingLabel === "Shipping"
+            ? "Delivery charge"
+            : s.design === "bill-summary" && s.shippingLabel === "Shipping"
+              ? "Delivery Fee"
+              : s.shippingLabel,
+          shippingValue,
+        )
+      : "",
+    row(
+      "total",
+      s.design === "bill-summary"
+        ? "To Pay"
+        : s.design === "price-details"
+          ? "Total Amount"
+          : "Grand Total",
+      fmt(data.grandTotal),
+      "cart-plus-summary__total",
+    ),
   ].join("");
+  const savingsBannerBg = s.savingsBannerBg || "#b6eb98";
+  const savingsBannerText = (s.savingsBannerText || "You're saving {amount} on this order")
+    .split("{amount}")
+    .map((part, index, parts) => {
+      const safePart = cartPlusEscapeHtml(part);
+      if (index === parts.length - 1) return safePart;
+      return `${safePart}<span class="cart-plus-summary__savings-amount">${fmt(saved)}</span>`;
+    })
+    .join("");
+  const savingsBanner =
+    s.design === "price-details" && saved > 0 && s.showSavingsBanner
+      ? `<div class="cart-plus-summary__savings" style="--summary-savings-bg:${savingsBannerBg};--summary-savings-text:${s.savingsBannerTextColor || "#1d2b1a"};--summary-savings-border:${cartPlusShade(savingsBannerBg, -25)};--summary-savings-start:${cartPlusShade(savingsBannerBg, -12)};--summary-savings-end:${cartPlusShade(savingsBannerBg, 6)}">${savingsBannerText}</div>`
+      : "";
 
-  const hasTitle = s.title.replace(/<[^>]*>|&nbsp;/g, "").trim();
+  const designTitles = {
+    "bill-details": "Bill details",
+    "bill-summary": "Bill Summary",
+    "price-details": "Price Details",
+  };
+  const displayTitle =
+    s.title === "Summary" ? designTitles[s.design] || s.title : s.title;
+  const hasTitle = displayTitle.replace(/<[^>]*>|&nbsp;/g, "").trim();
   const titleIcon =
     s.showIcons && s.titleIcon
       ? window.hubLibraryIconHTML?.(s.titleIcon, 18, s.textColor) || ""
       : "";
-  const titleInner = `<span class="cart-plus-summary__title-text">${titleIcon}<span>${s.title}</span></span>`;
+  const titleInner = `<span class="cart-plus-summary__title-text">${titleIcon}<span>${displayTitle}</span></span>`;
 
   // keep the open / closed state across re-renders
   let open = el.dataset.open;
@@ -144,7 +218,7 @@ window.cartPlusRenderSummary = function (blockId, data) {
           ? `<div class="cart-plus-summary__title">${titleInner}</div>`
           : ""
     }
-    ${open ? `<div class="cart-plus-summary__rows">${rows}</div>` : ""}`;
+    ${open ? `<div class="cart-plus-summary__rows">${rows}${savingsBanner}</div>` : ""}`;
 };
 
 window.cartPlusToggleSummary = function (blockId) {
