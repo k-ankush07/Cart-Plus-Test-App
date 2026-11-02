@@ -893,7 +893,12 @@ window.hubUtils = {
       const dashed = `1px dashed ${labelColor}`;
       const labelCss = `font-size:11px;font-weight:700;letter-spacing:.5px;color:${labelColor};`;
 
-      let html = "";
+      let html = window.cartPlusRewardThemed?.(barStyle, rewards, { sorted, cartTotal, maxAmount, getTierValue, fmt: hubFmt }) || "";
+      if (html) {
+        el.style.display = "block";
+        el.innerHTML = html;
+        return;
+      }
       if (barStyle === "reward") {
         html = wrap(`<div style="display:flex;border:${dashed};border-radius:16px;overflow:hidden;">
           <div style="flex:1;min-width:0;padding:16px 18px;text-align:center;">

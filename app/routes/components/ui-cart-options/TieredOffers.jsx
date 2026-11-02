@@ -342,7 +342,7 @@ export default function TieredOffers({
               </Box>
               <InlineStack gap="200">
                 <Text variant="headingMd" as="h2">
-                  Tiered Offers
+                 Progress Bar
                 </Text>
               </InlineStack>
             </InlineStack>

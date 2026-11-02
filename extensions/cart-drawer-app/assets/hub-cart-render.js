@@ -247,6 +247,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
           "cart-plus-public-announcement cart-plus-announcement upcart-announcement" +
           (isAfter ? " announcement-after" : "");
 
+        const annTpl = window.cartPlusAnnouncementTemplate?.(ann);
+        if (annTpl) {
+          // a picked template draws its own bar (see hub-cart-sections.js)
+          target.style.cssText = annTpl.css + (isAfter ? 'margin-top:0;' : '');
+          target.innerHTML = annTpl.html;
+          window.cartPlusAnnouncementBind?.(target);
+        } else {
         // same look as the editor: own background, else the Template colour / gradient (text goes white)
         const templateBg = window.cartPlusTemplateBackground?.(
           window.__HUB_ACTIVE_CART__?.designSettings,
@@ -271,6 +278,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
           : "";
         // the retired {TIMER} placeholder is dropped, like in the editor
         target.innerHTML = annIcon + (ann.text || "").replace(/\s*\{timer\}/gi, "");
+        }
       }
     }
 

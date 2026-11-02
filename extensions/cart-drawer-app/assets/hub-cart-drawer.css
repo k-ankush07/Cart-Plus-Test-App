@@ -1038,7 +1038,7 @@ span.hub-total-arrow svg {
     cursor: pointer;
     transition: 0.3s ease;
     line-height: 1;
-    margin: 0px 15px 15px !important;
+    margin: 15px 15px 15px !important;
 }
 
 .hub-cart-checkout-btn:hover {

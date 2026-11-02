@@ -616,12 +616,15 @@ bs.textContent += `
         )
       : "",
     Summary: `${window.cartPlusSummaryContainerHTML?.(blockId, cartSettings) || ""}${legacySummaryHTML}`,
-    "Discount code": sectionBg("Discount code", discountRowHTML),
+    "Discount code": sectionBg(
+      "Discount code",
+      window.cartPlusDiscountTemplateHTML?.(blockId, discountCodesSettings) || discountRowHTML,
+    ),
     "Age Verification": window.cartPlusAgeHTML(blockId, cartSettings),
     Login: window.cartPlusLoginHTML(cartSettings),
     "Checkout Button": `
       ${slot(renderCustomHTML(customHtmlBlocks.above_checkout))}
-      <div style="${checkoutBgCss ? "background:" + checkoutBgCss + ";" : ""}">
+      <div class="cart-plus-checkout-btn-container" style="${checkoutBgCss ? "background:" + checkoutBgCss + ";" : ""}">
         <a id="hub-checkout-btn-${blockId}" href="${goToCartPageOnCheckout ? "/cart" : "/checkout"}" onclick="hubCheckoutClick(event, '${blockId}', this)" class="hub-cart-checkout-btn" style="border-radius:${checkoutOpts.radius ?? designSettings.buttonRadius}px;${checkoutOpts.borderColor || designSettings.accentSolid ? "border:1px solid " + (checkoutOpts.borderColor || designSettings.accentSolid) + ";" : ""}">
           ${checkoutOpts.label != null ? window.cartPlusFillPrice(checkoutOpts.label, "") : checkoutButtonText}
         </a>
