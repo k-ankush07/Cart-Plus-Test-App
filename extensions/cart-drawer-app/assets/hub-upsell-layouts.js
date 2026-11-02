@@ -135,6 +135,9 @@ if (!window._cartPlusCompactVariantBound) {
 // ── Side panel ─────────────────────────────────────────────────────────────
 window.cartPlusRemoveSidePanel = function (blockId) {
   document.getElementById(`hub-upsell-side-${blockId}`)?.remove();
+  // the cart goes back to its own spot once the panel is gone
+  const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+  drawer?.classList.remove("hub-side-shifted");
 };
 
 // cards stacked in a strip beside the cart, with the Cross-sell title on top (same as the editor)
@@ -165,40 +168,55 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
 
   let panel = document.getElementById(`hub-upsell-side-${blockId}`);
   if (!cards.trim()) {
-    panel?.remove();
+    window.cartPlusRemoveSidePanel(blockId);
     return;
   }
-  if (panel && panel.dataset.sig === html) return; // same cards: leave it alone, no flicker
+  const signature = html;
+  if (panel && panel.dataset.sig === signature) return;
   if (!panel) {
     panel = document.createElement("div");
     panel.id = `hub-upsell-side-${blockId}`;
     panel.className = "hub-upsell-side-panel upsell-products";
-    // a panel created while the drawer is already open must not slide in again
     if (/hub-visible-/.test(drawer.className)) {
       panel.style.transition = "none";
       requestAnimationFrame(() => requestAnimationFrame(() => (panel.style.transition = "")));
     }
-    // sits right after the drawer so the CSS can show it only while the drawer is open
     drawer.insertAdjacentElement("afterend", panel);
   }
-  panel.dataset.sig = html;
+  panel.dataset.sig = signature;
 
-  // same fill as the cart body: the "Products in cart" background if set, else the Template tint
   const bodyBg =
     window.cartPlusBgCss(window.__HUB_ACTIVE_CART__?.cartSettings?.cartItem?.sectionBackground) ||
     ds.bodyBackground ||
     ds.backgroundColor ||
     "#ffffff";
   const width = drawer.getBoundingClientRect().width || 440;
-  const onLeft = drawer.classList.contains("hub-cart-left");
+  const drawerOnLeft = drawer.classList.contains("hub-cart-left");
   const floating = drawer.classList.contains("hub-cart-floating");
+  const sideInset = floating ? 16 : 0;
   panel.style.top = `${floating ? 16 : 0}px`;
-  panel.style[onLeft ? "left" : "right"] = `${width + (floating ? 16 : 0)}px`;
+  // Editor "Left" / "Right" of the cart. Outer side: next to the drawer. Inner side: at the screen edge,
+  // and the cart moves over to make room (same as the editor preview).
+  const wantRight = (settings || window.__HUB_ACTIVE_CART__?.upsellsSettings || {}).sidePanelPosition === "right";
+  const outer = !wantRight !== drawerOnLeft;
+  const edge = drawerOnLeft ? "left" : "right";
+  panel.style.left = "";
+  panel.style.right = "";
+  if (outer) {
+    drawer.classList.remove("hub-side-shifted");
+    panel.style[edge] = `${width + sideInset}px`;
+  } else {
+    panel.style[edge] = `${sideInset}px`;
+    // only while the cart is open (see .hub-side-shifted in the css), so a closed cart stays off screen
+    drawer.style.setProperty("--hub-side-offset", `${190 + sideInset}px`);
+    drawer.classList.add("hub-side-shifted");
+  }
+  // slide the panel exactly as far as the cart travels (and fade it), so both come and go together
+  const travel = outer ? width : width + 190 + sideInset;
+  panel.style.setProperty("--hub-side-shift", `${(drawerOnLeft ? -1 : 1) * travel}px`);
   panel.style.height = floating ? "calc(100% - 32px)" : "100%";
-  panel.style.setProperty("--hub-side-shift", `${(onLeft ? -1 : 1) * (width + 190 + (floating ? 16 : 0))}px`);
   panel.style.background = bodyBg;
   panel.innerHTML = html;
-  // the side cards add through the shared button handler below
   panel.querySelectorAll(".hub-add-btn").forEach((b) => b.classList.add("hub-side-add"));
 };
 
@@ -214,7 +232,6 @@ if (!window._cartPlusSideBound) {
       btn.disabled = false;
     });
   });
-  // changing the variant in a side card updates its price / image
   document.addEventListener("change", (e) => {
     const select = e.target.closest?.(".hub-upsell-side-panel .hub-variant-select");
     if (!select) return;

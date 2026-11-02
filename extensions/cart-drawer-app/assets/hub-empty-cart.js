@@ -92,8 +92,8 @@ window.cartPlusRenderEmptyUpsell = async function (blockId) {
   const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
   const s = window.cartPlusGetEmptyUpsells(cartSettings);
   if (s.enabled !== false) {
-    window.cartPlusRemoveSidePanel?.(blockId);
     host.innerHTML = "";
+    window.cartPlusRemoveSidePanel?.(blockId);
     return;
   }
 
@@ -101,26 +101,32 @@ window.cartPlusRenderEmptyUpsell = async function (blockId) {
   if (!document.getElementById(`cart-plus-empty-upsell-${blockId}`)) return; // cart changed meanwhile
   if (!products.length) {
     host.innerHTML = "";
+    window.cartPlusRemoveSidePanel?.(blockId);
     return;
   }
 
-  const layout = window.cartPlusUpsellLayout?.(s) || "list";
-  if (layout !== "side") window.cartPlusRemoveSidePanel?.(blockId);
+  const layout =
+    s.layout && s.layout !== "row"
+      ? s.layout
+      : s.direction === "carousel"
+        ? "carousel"
+        : "list";
   const ds = window.__HUB_ACTIVE_CART__?.designSettings || {};
+
+  // Side panel: nothing inside the empty cart, the strip sits beside it
+  if (layout === "side") {
+    host.innerHTML = "";
+    delete host.dataset.sig;
+    window.cartPlusRenderSidePanel?.(blockId, products, s);
+    return;
+  }
+  window.cartPlusRemoveSidePanel?.(blockId);
 
   // same products and layout as what is already on screen: nothing to redraw
   const sig = JSON.stringify([layout, products.map((p) => p.id), s.title, s.trigger]);
-  if (host.dataset.sig === sig && (layout === "side" || host.firstElementChild)) return;
+  if (host.dataset.sig === sig && host.firstElementChild) return;
   host.dataset.sig = sig;
   const primary = s.primaryTextColor || ds.textColor || "#6b7280";
-
-  if (layout === "side") {
-    host.innerHTML = "";
-    window._cartPlusUpsellOverride = s;
-    window.cartPlusRenderSidePanel?.(blockId, products, s);
-    window._cartPlusUpsellOverride = null;
-    return;
-  }
 
   const titleIcon = s.icon === undefined ? { type: "icon", name: "star" } : s.icon;
   const iconHtml = titleIcon

@@ -414,6 +414,19 @@ export default function UpsellsSettings({
               }
             />
 
+            {layout === "side" && (
+              <OptionCards
+                label="Side panel position"
+                columns={2}
+                options={[
+                  { value: "left", label: "Left of cart" },
+                  { value: "right", label: "Right of cart" },
+                ]}
+                value={upsellsSettings.sidePanelPosition || "left"}
+                onChange={(val) => update("sidePanelPosition", val)}
+              />
+            )}
+
             {/* <OptionCards
               label="Trigger"
               options={UPSELL_TRIGGERS}

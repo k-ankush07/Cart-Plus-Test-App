@@ -101,6 +101,11 @@ export default function Upsells({
     aspectRatio: "1 / 1",
     ...(radius !== null ? { borderRadius: radius, overflow: "hidden" } : {}),
   };
+  const sidePanelImageBox = {
+    ...imageBox,
+    width: Math.min(imageSize || 70, 56),
+    minWidth: Math.min(imageSize || 70, 56),
+  };
 
   const updateProgress = (swiper) => {
     if (!swiper || swiper.destroyed || !swiper.slides?.length) return;
@@ -316,12 +321,13 @@ export default function Upsells({
         style={{
           background:
             backgroundToCss(cardBackground) || designSettings.accentColor,
+          ...(vertical ? { padding: 9 } : {}),
           ...(radius !== null ? { borderRadius: radius } : {}),
           ...(vertical
             ? {
                 display: "flex",
                 flexDirection: "column",
-                gap: 8,
+                gap: 5,
                 textAlign: "center",
               }
             : {}),
@@ -335,14 +341,14 @@ export default function Upsells({
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 8,
+                  gap: 5,
                 }
               : undefined
           }
         >
           <div
             className="cart-plus-internal-component-upsell-tile__image-container cart-plus-upsell-item-image-wrapper cart-plus-public-component-upsell-tile__image-container"
-            style={imageBox}
+            style={vertical ? sidePanelImageBox : imageBox}
           >
             <img
               className="cart-plus-item-image"
@@ -461,8 +467,9 @@ export default function Upsells({
               ? {
                   display: "flex",
                   flexDirection: "column",
-                  gap: 6,
+                  gap: 4,
                   width: "100%",
+                  marginTop: 0,
                 }
               : {}),
           }}
@@ -602,20 +609,30 @@ export default function Upsells({
   if (!products.length) return null;
 
   if (layout === "side") {
+    const sidePosition = upsellsSettings?.sidePanelPosition || "left";
+    const panelOnLeft = sidePosition !== "right";
     return (
       <div
         className="cart-plus-upsells-side-panel"
         style={{
           position: "absolute",
           top: 0,
-          right: isFloating ? "calc(100% + 12px)" : "100%",
+          ...(panelOnLeft
+            ? {
+                right: "100%",
+              }
+            : {
+                left: "100%",
+              }),
           width: 190,
           maxHeight: "100%",
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
-          gap: 10,
-          padding: 8,
+          gap: 6,
+          padding: 6,
+          // no padding on the side that touches the cart, so there is no gap or seam
+          ...(panelOnLeft ? { paddingRight: 0 } : { paddingLeft: 0 }),
           boxSizing: "border-box",
           zIndex: 5,
           background:
@@ -624,7 +641,13 @@ export default function Upsells({
             "#ffffff",
           ...(bodyBg ? { background: bodyBg } : {}),
           height: isFloating ? "100%" : "100vh",
-          ...(isFloating ? { borderRadius: 14 } : {}),
+          ...(isFloating
+            ? {
+                borderRadius: panelOnLeft
+                  ? "14px 0 0 14px"
+                  : "0 14px 14px 0",
+              }
+            : {}),
         }}
       >
         {title && (

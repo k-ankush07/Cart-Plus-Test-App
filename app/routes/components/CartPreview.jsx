@@ -116,6 +116,11 @@ const CartPreview = memo(function CartPreview({
 
   // the Empty cart has its own Cross-sell settings
   const sideUpsells = emptyCart ? getEmptyUpsells(cartSettings) : upsellsSettings;
+  const sidePanelEnabled =
+    sideUpsells?.layout === "side" && !sideUpsells?.enabled;
+  const sidePanelOnRight =
+    sidePanelEnabled &&
+    sideUpsells?.sidePanelPosition === "right";
 
   const bodyBg = backgroundToCss(getCartItemOptions(cartSettings).sectionBackground);
   const showTopRows =!emptyCart && activeTab !== "Recommended Products";
@@ -225,9 +230,14 @@ const CartPreview = memo(function CartPreview({
         ...(designSettings.bodyBackground
           ? { background: designSettings.bodyBackground }
           : {}),
-        maxWidth: floating ? `${maxWidth - 32}px` : `${maxWidth}px`,
+        maxWidth: sidePanelEnabled
+          ? `${maxWidth - 50 - (floating ? 32 : 0)}px`
+          : `${maxWidth - (floating ? 32 : 0)}px`,
         width: "100%",
         position: "relative",
+        ...(sidePanelOnRight
+          ? { right: "190px" }
+          : {}),
         overflowY: cartSettings?.disableFixedFooter ? "auto" : "unset",
         ...(designSettings.themed
           ? {
@@ -243,11 +253,12 @@ const CartPreview = memo(function CartPreview({
         ...(floating
           ? {
               top: "16px",
-              right: "16px",
+              right: sidePanelOnRight ? "190px" : "16px",
               height: "calc(100vh - 32px)",
               borderRadius: `${designSettings.drawerRadius}px`,
-              overflowX: "hidden",
+              overflowX: sidePanelEnabled ? "visible" : "hidden",
               overflowY: "hidden",
+              ...(sidePanelEnabled ? { overflow: "visible" } : {}),
             }
           : {}),
       }}
@@ -288,7 +299,18 @@ const CartPreview = memo(function CartPreview({
 
       <div
         className="cart-app__container styles_CartPreview__card__"
-        style={{ position: "relative" }}
+        style={{
+          position: "relative",
+          ...(floating && sidePanelEnabled
+            ? {
+                height: "100%",
+                borderRadius: sidePanelOnRight
+                  ? `${designSettings.drawerRadius}px 0 0 ${designSettings.drawerRadius}px`
+                  : `0 ${designSettings.drawerRadius}px ${designSettings.drawerRadius}px 0`,
+                overflow: "hidden",
+              }
+            : {}),
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {breakdownOpen && (

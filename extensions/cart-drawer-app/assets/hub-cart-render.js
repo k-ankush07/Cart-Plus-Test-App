@@ -1497,11 +1497,16 @@ if (savedEl) {
           );
           upsellContainer.innerHTML = "";
 
-          const upLayout = window.cartPlusUpsellLayout?.(upsellSettings) || "list";
-          if (upLayout === "side") {
-            // Side panel: the cards live beside the cart, nothing inside the cart body
+          const upLayout =
+            upsellSettings.layout && upsellSettings.layout !== "row"
+              ? upsellSettings.layout
+              : upsellSettings.direction === "carousel"
+                ? "carousel"
+                : "list";
+          if (upLayout === "side" && upsellProducts.length > 0) {
+            // Side panel: nothing inside the cart, the strip sits beside it (left / right as set in the editor)
             upsellContainer.style.display = "none";
-            window.cartPlusRenderSidePanel?.(blockId, upsellProducts);
+            window.cartPlusRenderSidePanel?.(blockId, upsellProducts, upsellSettings);
           } else if (upsellProducts.length > 0) {
             window.cartPlusRemoveSidePanel?.(blockId);
             const wrapper = document.createElement("div");
@@ -1517,7 +1522,6 @@ if (savedEl) {
               ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, upsellSettings.iconColor || undefined) || ""}</span>`
               : "";
             if (upLayout === "compact") {
-              // title on the left, prev / next arrows on the right
               heading.style.display = "flex";
               heading.style.alignItems = "center";
               heading.style.justifyContent = "space-between";
@@ -1534,16 +1538,19 @@ if (savedEl) {
             wrapper.appendChild(productsDiv);
             upsellContainer.appendChild(wrapper);
             if (upLayout === "compact") {
+              window._cartPlusUpsellOverride = upsellSettings;
               productsDiv.innerHTML = window.cartPlusCompactHTML(upsellProducts);
+              window._cartPlusUpsellOverride = null;
               const track = productsDiv.querySelector(".hub-compact-track");
               if (track) setTimeout(() => window.cartPlusCompactEdges(track), 0);
-            } else
-            window.renderProducts(productsDiv, upsellProducts, {
-              layout: upLayout === "carousel" ? "carousel" : "block",
-              showReviews: upsellSettings.showReviews,
-              carouselIndicator: upsellSettings.carouselIndicator,
-              showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,
-            });
+            } else {
+              window.renderProducts(productsDiv, upsellProducts, {
+                layout: upLayout === "carousel" ? "carousel" : "block",
+                showReviews: upsellSettings.showReviews,
+                carouselIndicator: upsellSettings.carouselIndicator,
+                showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,
+              });
+            }
           } else {
             upsellContainer.style.display = "none";
           }

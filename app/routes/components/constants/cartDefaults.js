@@ -129,6 +129,7 @@ export const defaultUpsellsSettings = {
   position: "bottom",
   direction: "carousel",
   layout: "carousel", // "row" | "list" | "carousel" (row/list are the block direction)
+  sidePanelPosition: "left",
   trigger: "button", // "button" | "checkbox" | "toggle"
   carouselIndicator: "none",
   // Cross-sell offer + styles (null = the cart's own look)

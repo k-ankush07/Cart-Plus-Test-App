@@ -403,14 +403,25 @@ const CartLayout = memo(function CartLayout({
   const sideUpsells =
     previewMode === "items" ? upsellsSettings : getEmptyUpsells(cartSettings);
   const sideLayout = sideUpsells?.layout === "side";
+  const sidePanelEnabled = sideLayout && !sideUpsells?.enabled;
+  const sidePanelOnRight =
+    sidePanelEnabled && sideUpsells?.sidePanelPosition === "right";
   const isFloating = designSettings?.layout === "floating";
+  const previewWidth = designSettings?.desktopWidth === "wide" ? 500 : 440;
+  const sidePanelPreviewWidth =
+    previewWidth - (isFloating ? 32 : 0) - 50 + 190;
 
   return (
     <TemplateBackgroundContext.Provider value={templateBg}>
       <Page fullWidth>
         {/* ── Top bar ── */}
         <div
-          className={`cart-plus-header-wrapper ${isPreviewVisible ? "preview-visible" : ""} ${designSettings?.desktopWidth === "wide" ? "wide" : "normal"}`}
+          className={`cart-plus-header-wrapper ${isPreviewVisible ? "preview-visible" : ""} ${designSettings?.desktopWidth === "wide" ? "wide" : "normal"} ${sidePanelOnRight ? "side-panel-right" : ""}`}
+          style={
+            sidePanelEnabled && isPreviewVisible
+              ? { paddingRight: `${sidePanelPreviewWidth}px` }
+              : undefined
+          }
         >
           {/* Left: cart switcher + badge */}
           <InlineStack gap="200" blockAlign="center">
@@ -895,9 +906,12 @@ const CartLayout = memo(function CartLayout({
       </button>
 
       <div
-        className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"}`}
+        className={`cart-plus-cartPreviewWrapper ${designSettings?.desktopWidth === "wide" ? "cart-wide" : "cart-normal"} ${sidePanelOnRight ? "cart-side-panel-right" : ""}`}
         style={{
           width: isPreviewVisible ? undefined : "0px",
+          ...(sidePanelEnabled && isPreviewVisible
+            ? { width: `${sidePanelPreviewWidth}px` }
+            : {}),
           ...(sideLayout ? { overflow: "visible" } : {}),
           ...(designSettings?.colorMode && designSettings?.layout === "floating"
             ? { background: "#eceef0" }
