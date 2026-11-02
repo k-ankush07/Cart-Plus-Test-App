@@ -24,6 +24,157 @@ import { ANNOUNCEMENT_TEMPLATES } from "../utils/announcementTemplates";
 
 import "../../../index.css";
 
+const TEMPLATE_PREVIEWS = {
+  default: {
+    text: "Free shipping on $50  |  Free gift on $60",
+  },
+  free_shipping: {
+    mark: "↗",
+    text: "Free shipping on orders over $50",
+    close: true,
+  },
+  coupon: {
+    mark: "◇",
+    text: "10% OFF your first order",
+    action: "WELCOME",
+    close: true,
+  },
+  progress: {
+    mark: "✿",
+    text: "You're only $12 away from free shipping!",
+    progress: true,
+  },
+  vip: {
+    mark: "♛",
+    text: "VIP members get exclusive perks",
+    action: "Learn more",
+    close: true,
+  },
+  countdown: {
+    mark: "◷",
+    text: "Limited time only — up to 30% OFF",
+    timer: true,
+    close: true,
+  },
+  flash_sale: {
+    mark: "ϟ",
+    text: "Flash Sale!  |  Extra 15% OFF ends today",
+    action: "Shop now →",
+    close: true,
+  },
+  free_gift: {
+    mark: "✿",
+    text: "Free gift on orders over $60",
+    action: "View gift →",
+    close: true,
+  },
+};
+
+function AnnouncementTemplatePreview({ template, selected, onSelect }) {
+  const preview = TEMPLATE_PREVIEWS[template];
+  const settings = ANNOUNCEMENT_TEMPLATES[template];
+  const background = settings.backgroundGradient
+    ? `linear-gradient(${settings.backgroundGradient.angle}deg, ${settings.backgroundGradient.color}, ${settings.backgroundGradient.color2})`
+    : settings.background;
+
+  return (
+    <button
+      type="button"
+      aria-label={`Select ${settings.label} template`}
+      aria-pressed={selected}
+      onClick={onSelect}
+      style={{
+        width: "100%",
+        minHeight: 82,
+        padding: 8,
+        border: `2px solid ${selected ? "#303030" : "#e1e3e5"}`,
+        borderRadius: 10,
+        background: "#fff",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <span
+        style={{
+          width: "100%",
+          minHeight: 54,
+          boxSizing: "border-box",
+          padding: "10px 12px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: template === "default" ? "center" : "flex-start",
+          gap: 8,
+          borderRadius: 8,
+          background,
+          color: settings.color,
+          fontSize: 11,
+          lineHeight: 1.35,
+          textAlign: template === "default" ? "center" : "left",
+        }}
+      >
+        {preview.mark && (
+          <span aria-hidden="true" style={{ fontSize: 15, flexShrink: 0 }}>
+            {preview.mark}
+          </span>
+        )}
+        <span style={{ flex: 1, minWidth: 0 }}>{preview.text}</span>
+        {preview.progress && (
+          <span
+            aria-hidden="true"
+            style={{
+              width: 40,
+              height: 5,
+              flexShrink: 0,
+              borderRadius: 5,
+              background: `${settings.accentBg}55`,
+              overflow: "hidden",
+            }}
+          >
+            <span
+              style={{
+                display: "block",
+                width: "70%",
+                height: "100%",
+                background: settings.accentBg,
+              }}
+            />
+          </span>
+        )}
+        {preview.timer && (
+          <span
+            aria-hidden="true"
+            style={{ flexShrink: 0, fontWeight: 700, whiteSpace: "nowrap" }}
+          >
+            02 : 14 : 36
+          </span>
+        )}
+        {preview.action && (
+          <span
+            style={{
+              flexShrink: 0,
+              padding: "4px 7px",
+              borderRadius: 999,
+              background: settings.accentBg,
+              color: settings.accentText,
+              fontSize: 9,
+              fontWeight: 700,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {preview.action}
+          </span>
+        )}
+        {preview.close && (
+          <span aria-hidden="true" style={{ flexShrink: 0, opacity: 0.7 }}>
+            ×
+          </span>
+        )}
+      </span>
+    </button>
+  );
+}
+
 export default function Announcements({
   handleChange,
   announcementSettings,
@@ -85,17 +236,16 @@ export default function Announcements({
       </Box>
 
       <LegacyCard sectioned title="Template">
-        <InlineStack gap="200" wrap>
+        <InlineGrid columns={3} gap="200">
           {Object.entries(ANNOUNCEMENT_TEMPLATES).map(([key, t]) => (
-            <Button
+            <AnnouncementTemplatePreview
               key={key}
-              pressed={announcementSettings.template === key}
-              onClick={() => applyTemplate(key)}
-            >
-              {t.label}
-            </Button>
+              template={key}
+              selected={announcementSettings.template === key}
+              onSelect={() => applyTemplate(key)}
+            />
           ))}
-        </InlineStack>
+        </InlineGrid>
       </LegacyCard>
 
       {[

@@ -32,6 +32,210 @@ const quickIcons = [
   "megaphone",
 ];
 
+const TIMER_TEMPLATE_PREVIEWS = {
+  limited_offer: { icon: "ϟ", digits: ["02", "14", "36", "12"] },
+  hurry_up: { icon: "◷", digits: ["14:36"] },
+  same_day: { icon: "◷", digits: ["2h 14m 36s"] },
+  special_discount: { icon: "◆", digits: ["14", "36", "12"] },
+  flash_sale: { icon: "ϟ", digits: ["02", "14", "36", "12"] },
+  deal_bar: { icon: "⌛", digits: ["14:36"] },
+  price_expires: { icon: "◷", digits: ["14:36"] },
+  offer_progress: { icon: "◷", digits: ["14:36"] },
+};
+
+function TimerTemplatePreview({ template, selected, onSelect }) {
+  const settings = TIMER_TEMPLATES[template];
+  const preview = TIMER_TEMPLATE_PREVIEWS[template];
+  const timerPill = {
+    padding: "3px 4px",
+    borderRadius: 4,
+    background: settings.boxColor || `${settings.iconBg || "#d8cfff"}`,
+    color: settings.digitsColor || settings.textColor,
+    fontSize: 8,
+    fontWeight: 700,
+    lineHeight: 1.2,
+    textAlign: "center",
+    whiteSpace: "nowrap",
+  };
+
+  return (
+    <button
+      type="button"
+      aria-label={`Select ${settings.label} timer template`}
+      aria-pressed={selected}
+      onClick={onSelect}
+      style={{
+        width: "100%",
+        minHeight: 92,
+        padding: 8,
+        border: `2px solid ${selected ? "#303030" : "#e1e3e5"}`,
+        borderRadius: 10,
+        background: "#fff",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <span
+        style={{
+          width: "100%",
+          minHeight: 60,
+          boxSizing: "border-box",
+          padding: "8px 9px",
+          display: "flex",
+          alignItems: "center",
+          gap: 7,
+          borderRadius: 8,
+          background: settings.background,
+          color: settings.textColor,
+          fontSize: 9,
+          lineHeight: 1.3,
+          textAlign: "left",
+        }}
+      >
+        {settings.iconBg && (
+          <span
+            aria-hidden="true"
+            style={{
+              width: 23,
+              height: 23,
+              flexShrink: 0,
+              display: "grid",
+              placeItems: "center",
+              borderRadius: "50%",
+              background: settings.iconBg,
+              color: settings.iconColor || settings.textColor,
+              fontSize: 13,
+            }}
+          >
+            {preview.icon}
+          </span>
+        )}
+        <span style={{ flex: 1, minWidth: 0 }}>
+          {settings.eyebrow && (
+            <span
+              style={{
+                display: "block",
+                marginBottom: 2,
+                color: settings.iconColor || settings.textColor,
+                fontSize: 7,
+                fontWeight: 700,
+                textTransform: "uppercase",
+              }}
+            >
+              {settings.eyebrow}
+            </span>
+          )}
+          <span style={{ display: "block", fontWeight: 700 }}>
+            {settings.message.replace("{{timer}}", "14:36")}
+          </span>
+          {settings.subText && (
+            <span style={{ display: "block", opacity: 0.75, fontSize: 7 }}>
+              {settings.subText.replace("{{minutes}}", "14")}
+            </span>
+          )}
+        </span>
+        {settings.style === "boxes" && (
+          <span style={{ display: "flex", gap: 3, flexShrink: 0 }}>
+            {preview.digits.map((digit, index) => (
+              <span key={index} style={timerPill}>
+                {digit}
+              </span>
+            ))}
+          </span>
+        )}
+        {settings.style === "rings" && (
+          <span style={{ display: "flex", gap: 3, flexShrink: 0 }}>
+            {preview.digits.map((digit, index) => (
+              <span
+                key={index}
+                style={{
+                  ...timerPill,
+                  width: 24,
+                  height: 24,
+                  boxSizing: "border-box",
+                  display: "grid",
+                  placeItems: "center",
+                  borderRadius: "50%",
+                  border: `2px solid ${settings.barColor}`,
+                  background: "transparent",
+                }}
+              >
+                {digit}
+              </span>
+            ))}
+          </span>
+        )}
+        {settings.style === "clock" && (
+          <span
+            style={{
+              ...timerPill,
+              width: 29,
+              height: 29,
+              boxSizing: "border-box",
+              display: "grid",
+              placeItems: "center",
+              borderRadius: "50%",
+              border: `3px solid ${settings.barColor}`,
+              background: "transparent",
+              fontSize: 7,
+            }}
+          >
+            {preview.digits[0]}
+          </span>
+        )}
+        {(settings.style === "bar" || settings.style === "progress") && (
+          <span style={{ width: 46, flexShrink: 0 }}>
+            {settings.style === "bar" && (
+              <span
+                style={{
+                  ...timerPill,
+                  display: "block",
+                  marginBottom: 3,
+                  background: "transparent",
+                }}
+              >
+                {preview.digits[0]}
+              </span>
+            )}
+            <span
+              style={{
+                display: "block",
+                height: 5,
+                borderRadius: 5,
+                background: settings.barBackground,
+                overflow: "hidden",
+              }}
+            >
+              <span
+                style={{
+                  display: "block",
+                  width: "70%",
+                  height: "100%",
+                  borderRadius: 5,
+                  background: settings.barColor,
+                }}
+              />
+            </span>
+          </span>
+        )}
+        {["inline", "text"].includes(settings.style) && (
+          <span
+            style={{
+              ...timerPill,
+              flexShrink: 0,
+              background: "transparent",
+              fontSize: 8,
+            }}
+          >
+            {preview.digits[0]}
+          </span>
+        )}
+      </span>
+    </button>
+  );
+}
+
 export default function Timer({
   headerSettings,
   handleChange,
@@ -41,6 +245,14 @@ export default function Timer({
 }) {
   const timer = getTimer(headerSettings);
   const update = (patch) => handleChange("header", patchTimer(patch));
+  const applyTemplate = (key) => {
+    const settings = Object.fromEntries(
+      Object.entries(TIMER_TEMPLATES[key]).filter(
+        ([setting]) => setting !== "label",
+      ),
+    );
+    update({ template: key, ...settings });
+  };
 
   return (
     <div className="mainContent">
@@ -70,19 +282,16 @@ export default function Timer({
           <Text as="h3" variant="headingSm">
             Templates
           </Text>
-          <InlineStack gap="200" wrap>
-            {Object.entries(TIMER_TEMPLATES).map(
-              ([key, { label, ...settings }]) => (
-                <Button
+          <InlineGrid columns={3} gap="200">
+            {Object.entries(TIMER_TEMPLATES).map(([key]) => (
+                <TimerTemplatePreview
                   key={key}
-                  pressed={timer.template === key}
-                  onClick={() => update({ template: key, ...settings })}
-                >
-                  {label}
-                </Button>
-              ),
-            )}
-          </InlineStack>
+                  template={key}
+                  selected={timer.template === key}
+                  onSelect={() => applyTemplate(key)}
+                />
+              ))}
+          </InlineGrid>
         </BlockStack>
       </Card>
 

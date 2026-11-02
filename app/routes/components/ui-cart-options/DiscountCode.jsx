@@ -7,6 +7,7 @@ import {
   Card,
   Checkbox,
   Collapsible,
+  InlineGrid,
   InlineStack,
   Text,
   TextField,
@@ -36,6 +37,204 @@ const Field = ({ label, value, onChange, helpText }) => (
 import {
   DiscountIcon, // Discount codes
 } from "@shopify/polaris-icons";
+
+const MiniLine = ({ width = "100%", color = "#d9dce1", height = 4 }) => (
+  <span
+    aria-hidden="true"
+    style={{
+      display: "block",
+      width,
+      height,
+      borderRadius: height,
+      background: color,
+    }}
+  />
+);
+
+function DiscountTemplatePreview({ template, selected, onSelect }) {
+  const settings = template ? DISCOUNT_TEMPLATES[template] : null;
+  const accent = settings?.accent || "#16803c";
+  const borderRadius = settings?.radius ?? 8;
+
+  const previewContent = (() => {
+    if (!settings) {
+      return (
+        <div style={{ display: "grid", gap: 7 }}>
+          <div style={{ display: "flex", gap: 5 }}>
+            <MiniLine width="72%" height={14} color="#f0f2f4" />
+            <MiniLine width="28%" height={14} color={accent} />
+          </div>
+          <MiniLine width="55%" height={3} color="#8b929c" />
+        </div>
+      );
+    }
+
+    if (settings.layout === "card") {
+      return (
+        <div style={{ display: "grid", gap: 5 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ color: accent, fontSize: 10 }}>●</span>
+            <MiniLine width="52%" color={settings.textColor} />
+          </div>
+          <MiniLine width="58%" height={3} />
+          <div style={{ display: "flex", gap: 4 }}>
+            <MiniLine width="72%" height={13} color="#f1f3f5" />
+            <MiniLine width="28%" height={13} color={accent} />
+          </div>
+          <MiniLine width="45%" height={3} color={accent} />
+        </div>
+      );
+    }
+
+    if (settings.layout === "chips") {
+      return (
+        <div style={{ display: "grid", gap: 6 }}>
+          <MiniLine width="40%" color={settings.textColor} />
+          <div style={{ display: "flex", gap: 4 }}>
+            <MiniLine width="72%" height={13} color="#f1f3f5" />
+            <MiniLine width="28%" height={13} color={accent} />
+          </div>
+          <div style={{ display: "flex", gap: 3 }}>
+            {["SAVE10", "WELCOME20", "FREESHIP"].map((code) => (
+              <span
+                key={code}
+                style={{
+                  padding: "2px 4px",
+                  border: "1px solid #e4e6e9",
+                  borderRadius: 5,
+                  color: "#525866",
+                  fontSize: 5,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {code}
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (settings.layout === "underline") {
+      return (
+        <div style={{ display: "grid", gap: 7 }}>
+          <MiniLine width="40%" color={settings.textColor} />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingBottom: 4,
+              borderBottom: `1px solid ${accent}`,
+            }}
+          >
+            <MiniLine width="65%" height={3} />
+            <span style={{ color: accent, fontSize: 7 }}>Apply</span>
+          </div>
+          <MiniLine width="58%" height={3} />
+        </div>
+      );
+    }
+
+    if (settings.layout === "rows") {
+      return (
+        <div style={{ display: "grid", gap: 1 }}>
+          {["View Coupons", "More offers"].map((label) => (
+            <div
+              key={label}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "5px 2px",
+                borderBottom: "1px solid #edf0f2",
+                color: accent,
+                fontSize: 7,
+              }}
+            >
+              <span>◉ &nbsp;{label}</span>
+              <span>›</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (settings.layout === "offers") {
+      return (
+        <div style={{ display: "grid", gap: 4 }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <MiniLine width="53%" color={settings.textColor} />
+            <span
+              style={{
+                padding: "1px 4px",
+                borderRadius: 5,
+                background: "#eef8f1",
+                color: accent,
+                fontSize: 5,
+              }}
+            >
+              1 Applied
+            </span>
+          </div>
+          <MiniLine height={13} color="#eef8f1" />
+          <MiniLine height={13} color="#f1f3f5" />
+          <div style={{ display: "flex", gap: 4 }}>
+            <MiniLine width="76%" height={12} color="#f1f3f5" />
+            <MiniLine width="24%" height={12} color={accent} />
+          </div>
+          <MiniLine width="62%" height={3} color={accent} />
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: "grid", gap: 5 }}>
+        <MiniLine width="45%" color={settings.textColor} />
+        <MiniLine height={13} color="#f1f3f5" />
+        <MiniLine height={13} color={accent} />
+        <MiniLine width="58%" height={3} />
+      </div>
+    );
+  })();
+
+  return (
+    <button
+      type="button"
+      aria-label={`Select ${settings?.label || "Classic"} discount code template`}
+      aria-pressed={selected}
+      onClick={onSelect}
+      style={{
+        width: "100%",
+        minHeight: 112,
+        padding: 8,
+        border: `2px solid ${selected ? "#303030" : "#e1e3e5"}`,
+        borderRadius: 10,
+        background: "#fff",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <span
+        style={{
+          width: "100%",
+          minHeight: 78,
+          boxSizing: "border-box",
+          padding: 8,
+          display: "flex",
+          alignItems: "center",
+          border: "1px solid #eceef0",
+          borderRadius,
+          background: settings?.bg || "#fff",
+          color: settings?.textColor || "#1a1a1a",
+          textAlign: "left",
+        }}
+      >
+        <span style={{ width: "100%" }}>{previewContent}</span>
+      </span>
+    </button>
+  );
+}
 
 export default function DiscountCode({
   discountCodesSettings,
@@ -102,23 +301,20 @@ export default function DiscountCode({
             <Text as="h3" variant="headingSm">
               Template
             </Text>
-            <InlineStack gap="200" wrap>
-              <Button
-                pressed={!discountCodesSettings.template}
-                onClick={() => update("template", "")}
-              >
-                Classic
-              </Button>
-              {Object.entries(DISCOUNT_TEMPLATES).map(([key, t]) => (
-                <Button
+            <InlineGrid columns={3} gap="200">
+              <DiscountTemplatePreview
+                selected={!discountCodesSettings.template}
+                onSelect={() => update("template", "")}
+              />
+              {Object.entries(DISCOUNT_TEMPLATES).map(([key]) => (
+                <DiscountTemplatePreview
                   key={key}
-                  pressed={discountCodesSettings.template === key}
-                  onClick={() => applyTemplate(key)}
-                >
-                  {t.label}
-                </Button>
+                  template={key}
+                  selected={discountCodesSettings.template === key}
+                  onSelect={() => applyTemplate(key)}
+                />
               ))}
-            </InlineStack>
+            </InlineGrid>
           </BlockStack>
         </Card>
 

@@ -46,6 +46,243 @@ const countText = (s) => {
   return `${items.length || 0} collection(s) selected`;
 };
 
+function AgeTemplatePreview({ template, selected, onSelect }) {
+  const settings = template ? AGE_TEMPLATES[template] : CLASSIC_BASE;
+  const layout = settings.layout || "classic";
+  const background = settings.background?.color || "#ffffff";
+  const accent = settings.accent || "#111827";
+  const accentText = settings.accentText || "#ffffff";
+  const secondaryBg = settings.secondaryBg || "#f1f3f5";
+  const secondaryText = settings.secondaryText || "#1a1a1a";
+  const badgeColor = settings.badgeColor || "#e5383b";
+  const badge = (
+    <span
+      aria-hidden="true"
+      style={{
+        width: layout === "badge-stack" ? 36 : 20,
+        height: layout === "badge-stack" ? 36 : 20,
+        flexShrink: 0,
+        display: "grid",
+        placeItems: "center",
+        border: `1.5px solid ${badgeColor}`,
+        borderRadius: "50%",
+        color: badgeColor,
+        fontSize: layout === "badge-stack" ? 10 : 7,
+        fontWeight: 700,
+      }}
+    >
+      18+
+    </span>
+  );
+  const microButton = (text, primary = false, fullWidth = false) => (
+    <span
+      style={{
+        display: "block",
+        width: fullWidth ? "100%" : undefined,
+        boxSizing: "border-box",
+        padding: "4px 6px",
+        borderRadius: 4,
+        background: primary ? accent : secondaryBg,
+        color: primary ? accentText : secondaryText,
+        fontSize: 6,
+        lineHeight: 1.2,
+        textAlign: "center",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {text}
+    </span>
+  );
+  const questionStyle = {
+    flex: 1,
+    minWidth: 0,
+    color: "#222",
+    fontSize: 7,
+    lineHeight: 1.35,
+  };
+
+  const previewContent = (() => {
+    if (layout === "inline") {
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          {badge}
+          <span style={questionStyle}>Are you 18 or older?</span>
+          {microButton("Yes")}
+          {microButton("No")}
+        </div>
+      );
+    }
+
+    if (layout === "toggle") {
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <strong style={{ color: badgeColor, fontSize: 8 }}>18+</strong>
+          <span style={questionStyle}>I am 18 or older</span>
+          <span
+            aria-hidden="true"
+            style={{
+              width: 23,
+              height: 13,
+              padding: 2,
+              boxSizing: "border-box",
+              borderRadius: 99,
+              background: accent,
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <span
+              style={{
+                width: 9,
+                height: 9,
+                borderRadius: "50%",
+                background: "#fff",
+              }}
+            />
+          </span>
+        </div>
+      );
+    }
+
+    if (layout === "confirm") {
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <span
+            aria-hidden="true"
+            style={{
+              width: 9,
+              height: 9,
+              flexShrink: 0,
+              border: "1px solid #cbd0d6",
+              borderRadius: 2,
+            }}
+          />
+          <span style={questionStyle}>I confirm I am 18 years or older.</span>
+          {microButton("Continue")}
+        </div>
+      );
+    }
+
+    if (layout === "badge-row") {
+      return (
+        <div
+          style={{
+            display: "grid",
+            justifyItems: "center",
+            gap: 5,
+          }}
+        >
+          {badge}
+          <span style={{ ...questionStyle, flex: "unset", textAlign: "center" }}>
+            Are you 18 or older?
+          </span>
+          <div style={{ display: "flex", gap: 4 }}>
+            {microButton("Yes, I am 18+")}
+            {microButton("No, I am under 18+")}
+          </div>
+        </div>
+      );
+    }
+
+    if (layout === "badge-stack") {
+      return (
+        <div
+          style={{
+            display: "grid",
+            justifyItems: "center",
+            gap: 5,
+          }}
+        >
+          {badge}
+          <span style={{ ...questionStyle, flex: "unset", textAlign: "center" }}>
+            Are you 18 or older?
+          </span>
+          {microButton("Yes, I am 18+", true, true)}
+          {microButton("No, I am under 18+", false, true)}
+        </div>
+      );
+    }
+
+    if (layout === "title") {
+      return (
+        <div style={{ display: "grid", justifyItems: "center", gap: 4 }}>
+          <strong style={{ ...questionStyle, flex: "unset", fontSize: 8 }}>
+            Are you 18 or older?
+          </strong>
+          <span style={{ ...questionStyle, flex: "unset", fontSize: 6 }}>
+            You must be 18 years or older to enter this site.
+          </span>
+          {microButton("Yes, I am 18+", true, true)}
+          <span style={{ color: secondaryText, fontSize: 6, textDecoration: "underline" }}>
+            No, I am under 18+
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+        <span
+          aria-hidden="true"
+          style={{
+            width: 9,
+            height: 9,
+            flexShrink: 0,
+            marginTop: 1,
+            border: "1px solid #cbd0d6",
+            borderRadius: 2,
+          }}
+        />
+        <span style={questionStyle}>
+          I confirm I am 18 years or older.
+          <span style={{ display: "block", opacity: 0.65 }}>
+            This cart contains age-restricted items.
+          </span>
+        </span>
+      </div>
+    );
+  })();
+
+  return (
+    <button
+      type="button"
+      aria-label={`Select ${settings.label || "Classic"} age verification template`}
+      aria-pressed={selected}
+      onClick={onSelect}
+      style={{
+        width: "100%",
+        minHeight: 112,
+        padding: 8,
+        border: `2px solid ${selected ? "#303030" : "#e1e3e5"}`,
+        borderRadius: 10,
+        background: "#fff",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <span
+        style={{
+          width: "100%",
+          minHeight: 78,
+          boxSizing: "border-box",
+          padding: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: ["badge-row", "badge-stack", "title"].includes(layout)
+            ? "center"
+            : "stretch",
+          border: `1px solid ${settings.borderColor || "#e5e5e5"}`,
+          borderRadius: settings.borderRadius ?? 8,
+          background,
+        }}
+      >
+        <span style={{ width: "100%" }}>{previewContent}</span>
+      </span>
+    </button>
+  );
+}
+
 export default function AgeVerification({
   cartSettings,
   handleChange,
@@ -100,23 +337,20 @@ export default function AgeVerification({
         <Card>
           <BlockStack gap="300">
             <Text variant="headingSm">Template</Text>
-            <InlineStack gap="200" wrap>
-              <Button
-                pressed={!s.template}
-                onClick={() => update({ template: "", ...CLASSIC_BASE })}
-              >
-                Classic
-              </Button>
-              {Object.entries(AGE_TEMPLATES).map(([key, t]) => (
-                <Button
+            <InlineGrid columns={3} gap="200">
+              <AgeTemplatePreview
+                selected={!s.template}
+                onSelect={() => update({ template: "", ...CLASSIC_BASE })}
+              />
+              {Object.entries(AGE_TEMPLATES).map(([key]) => (
+                <AgeTemplatePreview
                   key={key}
-                  pressed={s.template === key}
-                  onClick={() => applyTemplate(key)}
-                >
-                  {t.label}
-                </Button>
+                  template={key}
+                  selected={s.template === key}
+                  onSelect={() => applyTemplate(key)}
+                />
               ))}
-            </InlineStack>
+            </InlineGrid>
           </BlockStack>
         </Card>
 
