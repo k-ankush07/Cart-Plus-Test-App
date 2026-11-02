@@ -14,6 +14,7 @@
   };
 
   window.__SHOPIFY_COUNTRY_CODE__ = "{{ localization.country.iso_code }}";
+  window.__SHOPIFY_MARKET_ID__ = {{ localization.market.id | default: "" | json }};
 
   window.__SHOPIFY_SHOP__ = {
     name: {{ shop.name | json }},

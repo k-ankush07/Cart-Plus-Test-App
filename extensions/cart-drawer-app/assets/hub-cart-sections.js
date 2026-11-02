@@ -112,7 +112,7 @@ window.cartPlusDarkColor = function (value, lightDefault, darkValue) {
   return !value || String(value).toLowerCase() === lightDefault ? darkValue : value;
 };
 
-// ── Cart Visibility (schedule). Markets are not matched on the storefront. ───
+// ── Cart Visibility (markets and schedule) ─────────────────────────────────
 // "YYYY-MM-DD" + "HH:MM" in an IANA timezone -> UTC ms
 function cartPlusZonedToUtc(date, time, timeZone) {
   if (!date) return null;
@@ -139,13 +139,30 @@ function cartPlusZonedToUtc(date, time, timeZone) {
 
 window.cartPlusIsVisible = function (cartSettings) {
   const v = cartSettings?.visibility;
-  if (!v || v.publishMode !== "schedule") return true;
-  const now = Date.now();
-  const start = cartPlusZonedToUtc(v.startDate, v.startTime, v.timezone);
-  if (start !== null && now < start) return false;
-  if (v.endEnabled) {
-    const end = cartPlusZonedToUtc(v.endDate, v.endTime, v.timezone);
-    if (end !== null && now >= end) return false;
+  if (!v) return true;
+
+  const selectedMarkets = Array.isArray(v.markets)
+    ? v.markets.map((marketId) => String(marketId))
+    : [];
+  if (selectedMarkets.length && (v.marketMode === "specific" || v.marketMode === "except")) {
+    const activeMarketId = window.__SHOPIFY_MARKET_ID__;
+    if (activeMarketId) {
+      const isSelectedMarket = selectedMarkets.includes(String(activeMarketId));
+      if (v.marketMode === "specific" && !isSelectedMarket) return false;
+      if (v.marketMode === "except" && isSelectedMarket) return false;
+    } else if (v.marketMode === "specific") {
+      return false;
+    }
+  }
+
+  if (v.publishMode === "schedule") {
+    const now = Date.now();
+    const start = cartPlusZonedToUtc(v.startDate, v.startTime, v.timezone);
+    if (start !== null && now < start) return false;
+    if (v.endEnabled) {
+      const end = cartPlusZonedToUtc(v.endDate, v.endTime, v.timezone);
+      if (end !== null && now >= end) return false;
+    }
   }
   return true;
 };
