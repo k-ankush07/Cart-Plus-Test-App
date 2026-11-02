@@ -360,6 +360,9 @@ bs.textContent += `
         opacity: 0 !important;
         pointer-events: none !important;
       }
+      .hub-cart-drawer.hub-cart-is-empty .hub-cart-header-hide-when-empty {
+        display: none !important;
+      }
     `;
     document.head.appendChild(s);
   }
@@ -576,12 +579,12 @@ bs.textContent += `
   const checkoutBgCss = window.cartPlusBgCss(checkoutOpts.sectionBackground);
 
   const headerRows = {
-    "Banner Image": sectionBg("Banner Image", window.cartPlusBannerHTML(headerSettings)),
+    "Banner Image": `<div class="hub-cart-header-hide-when-empty">${sectionBg("Banner Image", window.cartPlusBannerHTML(headerSettings))}</div>`,
     Announcement:
       on(annSettings) && annSettings.position !== "after"
         ? `<div id="hub-announcement-${blockId}" class="hub-announcement" style="display:none;"></div>`
         : "",
-    Timer: window.cartPlusTimerContainerHTML(blockId, headerSettings),
+    Timer: `<div class="hub-cart-header-hide-when-empty">${window.cartPlusTimerContainerHTML(blockId, headerSettings)}</div>`,
     "Progress Bar": !on(activeCart.rewardsSettings)
       ? ""
       : sectionBg(

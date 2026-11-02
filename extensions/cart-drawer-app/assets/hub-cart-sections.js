@@ -187,6 +187,25 @@ window.cartPlusTimerContainerHTML = function (blockId, headerSettings) {
     : "";
 };
 
+window.cartPlusSetEmptyHeaderVisibility = function (drawer, isEmpty) {
+  if (!drawer) return;
+  drawer.classList.toggle("hub-cart-is-empty", isEmpty);
+  drawer
+    .querySelectorAll(".hub-cart-header-hide-when-empty")
+    .forEach((section) => {
+      section.hidden = isEmpty;
+    });
+};
+
+function cartPlusTimerIconHTML(value, size, color) {
+  const defaultIcon = { type: "icon", name: "clock" };
+  return (
+    window.hubLibraryIconHTML?.(value || defaultIcon, size, color) ||
+    window.hubLibraryIconHTML?.(defaultIcon, size, color) ||
+    `<svg viewBox="0 0 20 20" width="${size}" height="${size}" fill="${color || "currentColor"}" aria-hidden="true"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 5.5V10l3 2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  );
+}
+
 // ── Timer templates: boxes / clock / inline / rings / text / progress / bar ──
 // Mirrors the editor's cart-Items/Timer.jsx. Returns { css, html } for the #cart-plus-timer-* element.
 function cartPlusTimerRing(size, value, max, color, track, inner) {
@@ -223,7 +242,7 @@ window.cartPlusTimerTemplate = function (timer, design, left, total) {
   const justify =
     timer.alignment === "right" ? "flex-end" : timer.alignment === "center" ? "center" : "flex-start";
   const icon = (size) =>
-    window.hubLibraryIconHTML?.(timer.icon || { type: "icon", name: "clock" }, size, timer.iconColor || (color === "inherit" ? undefined : color)) || "";
+    cartPlusTimerIconHTML(timer.icon, size, timer.iconColor || (color === "inherit" ? undefined : color));
 
   const wrapper = `background:${bg};color:${color};padding:14px 16px;margin:12px;border-radius:14px;font-size:14px;text-align:${timer.alignment};display:flex;align-items:center;justify-content:${justify};gap:12px;`;
 
@@ -337,7 +356,7 @@ function cartPlusTimerPaint(blockId, left, total) {
   const justify =
     timer.alignment === "left" ? "flex-start" : timer.alignment === "right" ? "flex-end" : "center";
   const icon = (size) =>
-    window.hubLibraryIconHTML?.(timer.icon, size, design.accentText || window.cartPlusDarkColor(timer.iconColor, "#000000", design.textColor)) || "";
+    cartPlusTimerIconHTML(timer.icon, size, design.accentText || window.cartPlusDarkColor(timer.iconColor, "#000000", design.textColor));
 
   const tpl = window.cartPlusTimerTemplate(timer, design, left, total);
   el.style.cssText = tpl.css;
@@ -648,7 +667,17 @@ window.cartPlusAnnouncementTemplate = function (ann, cart) {
     formatAmount(remaining),
   );
   const padding = { slim: "4px 20px", normal: "10px 20px", thick: "18px 20px" }[ann.height] || "10px 20px";
-  const bg = ann.background ? window.cartPlusBgCss(ann.background) : t.background;
+  const themedBackground =
+    ann.template === "default"
+      ? window.cartPlusTemplateBackground?.(
+          window.__HUB_ACTIVE_CART__?.designSettings,
+        )
+      : undefined;
+  const bg = themedBackground
+    ? window.cartPlusBgCss(themedBackground)
+    : ann.background
+      ? window.cartPlusBgCss(ann.background)
+      : t.background;
   const pill = `background:#fff;color:#111;border-radius:999px;padding:4px 14px;font-size:12px;font-weight:700;white-space:nowrap;line-height:1.3;box-sizing:border-box;`;
 
   const icon = ann.icon
@@ -660,7 +689,7 @@ window.cartPlusAnnouncementTemplate = function (ann, cart) {
     right = `<span style="${pill}background:${accentBg};color:${accentText};">Use code: ${ann.couponCode || t.code}</span>`;
   } else if (ann.template === "progress") {
     const pct = Math.min(100, (current / goal) * 100);
-    right = `<span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:90px;height:6px;border-radius:6px;background:${accentBg}33;overflow:hidden;"><span style="display:block;width:${pct}%;height:100%;background:${accentBg};"></span></span><small>${formatAmount(current)} / ${formatAmount(goal)}</small></span>`;
+    right = `<span style="display:inline-flex;align-items:center;gap:8px;"><span style="display:block;width:90px;height:6px;border-radius:6px;background:${accentBg}33;overflow:hidden;"><span class="cp-ann-progress-fill" style="display:block;width:${pct}%;height:100%;background:${accentBg};transition:width 450ms ease;"></span></span><small>${formatAmount(current)} / ${formatAmount(goal)}</small></span>`;
   } else if (ann.template === "vip") {
     right = `<a href="${ann.link || "#"}" style="color:${color};font-weight:700;text-decoration:underline;">${ann.linkText || t.linkText}</a>`;
   } else if (ann.template === "countdown") {
@@ -779,7 +808,7 @@ window.cartPlusRewardThemed = function (barStyle, rewards, ctx) {
   const iconBox = (content, round = true) =>
     `<div style="width:40px;height:40px;flex-shrink:0;border-radius:${round ? "50%" : "10px"};background:${t.iconBg};color:${iconColor};display:flex;align-items:center;justify-content:center;font-size:20px;">${content}</div>`;
   const simpleBar = (striped, pct) =>
-    `<div style="height:${h}px;border-radius:${h}px;background:${track};overflow:hidden;"><div style="width:${pct}%;height:100%;background:${
+    `<div style="height:${h}px;border-radius:${h}px;background:${track};overflow:hidden;"><div class="cp-reward-progress-fill" style="width:${pct}%;height:100%;background:${
       striped ? `repeating-linear-gradient(45deg, ${accent} 0 6px, ${accent}99 6px 12px)` : accent
     };transition:width .4s;"></div></div>`;
 
@@ -853,7 +882,7 @@ window.cartPlusRewardThemed = function (barStyle, rewards, ctx) {
     const c = 2 * Math.PI * r;
     const subHtml = String(t.subText || "").replace(/\{remaining\}/gi, fmt(remainingNext));
     return wrap(
-      `<div style="position:relative;width:${size}px;height:${size}px;flex-shrink:0;"><svg width="${size}" height="${size}" style="transform:rotate(-90deg);"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${track}" stroke-width="${stroke}"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${accent}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${(c * pctRound) / 100} ${c}"/></svg><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${accent};">${pctRound}%</span></div><div style="flex:1;">${msg}${remainingNext > 0 && subHtml ? sub(subHtml) : ""}</div>${nextCard}`,
+      `<div style="position:relative;width:${size}px;height:${size}px;flex-shrink:0;"><svg width="${size}" height="${size}" style="transform:rotate(-90deg);"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${track}" stroke-width="${stroke}"/><circle class="hub-reward-progress-ring-fill" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${accent}" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${(c * pctRound) / 100} ${c}"/></svg><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${accent};">${pctRound}%</span></div><div style="flex:1;">${msg}${remainingNext > 0 && subHtml ? sub(subHtml) : ""}</div>${nextCard}`,
     );
   }
 

@@ -73,7 +73,7 @@ function useCountdown(total = 0) {
 }
 
 // FIX: destructure `currency` so it's defined in this component's scope
-function TemplateAnnouncement({ s, currency }) {
+function TemplateAnnouncement({ s, currency, templateBg }) {
   const t = ANNOUNCEMENT_TEMPLATES[s.template];
   const [open, setOpen] = useState(true);
   const [h, m, sec] = useCountdown(Number(s.seconds ?? t.seconds) || 0);
@@ -221,7 +221,9 @@ function TemplateAnnouncement({ s, currency }) {
         padding: paddingMap[s.height] || paddingMap.normal,
         borderRadius: `${s.borderRadius ?? 12}px`,
         color,
-        background: s.background ? backgroundToCss(s.background) : t.background,
+        background:
+          (s.template === "default" && backgroundToCss(templateBg)) ||
+          (s.background ? backgroundToCss(s.background) : t.background),
         fontSize: `${s.fontSize || 15}px`,
         lineHeight: 1.3,
         boxSizing: "border-box",
@@ -288,7 +290,11 @@ export default function Announcements({ announcementSettings, currency }) {
     ANNOUNCEMENT_TEMPLATES[announcementSettings.template]
   ) {
     return (
-      <TemplateAnnouncement s={announcementSettings} currency={currency} />
+      <TemplateAnnouncement
+        s={announcementSettings}
+        currency={currency}
+        templateBg={templateBg}
+      />
     );
   }
 

@@ -214,6 +214,12 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     if (isCartChanged) document.dispatchEvent(new CustomEvent("cart:updated"));
 
+    if (window.cartPlusSetEmptyHeaderVisibility) {
+      window.cartPlusSetEmptyHeaderVisibility(drawer, cart.items.length === 0);
+    } else {
+      drawer.classList.toggle("hub-cart-is-empty", cart.items.length === 0);
+    }
+
     const container = drawer.querySelector(".hub-cart-items");
     if (!container) return;
 
@@ -247,11 +253,24 @@ window.hubCartRender = async function (drawer, opts = {}) {
           "cart-plus-public-announcement cart-plus-announcement upcart-announcement" +
           (isAfter ? " announcement-after" : "");
 
-        const annTpl = window.cartPlusAnnouncementTemplate?.(ann);
+        const annTpl = window.cartPlusAnnouncementTemplate?.(ann, cart);
         if (annTpl) {
           // a picked template draws its own bar (see hub-cart-sections.js)
+          const previousFill = target.querySelector(".cp-ann-progress-fill");
+          const previousWidth = previousFill?.style.width;
           target.style.cssText = annTpl.css + (isAfter ? 'margin-top:0;' : '');
           target.innerHTML = annTpl.html;
+          const nextFill = target.querySelector(".cp-ann-progress-fill");
+          if (previousWidth && nextFill) {
+            const targetWidth = nextFill.style.width;
+            nextFill.style.transition = "none";
+            nextFill.style.width = previousWidth;
+            nextFill.offsetWidth;
+            nextFill.style.transition = "width 450ms ease";
+            requestAnimationFrame(() => {
+              nextFill.style.width = targetWidth;
+            });
+          }
           window.cartPlusAnnouncementBind?.(target);
         } else {
         // same look as the editor: own background, else the Template colour / gradient (text goes white)

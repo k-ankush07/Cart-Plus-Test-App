@@ -21,6 +21,7 @@ import ColorInput from "../ui/ColorInput";
 import IconLibrary from "../ui/IconLibrary";
 import BackgroundInput from "../ui/BackgroundInput";
 import { ANNOUNCEMENT_TEMPLATES } from "../utils/announcementTemplates";
+import { backgroundToCss, templateBackground } from "../utils/background";
 
 import "../../../index.css";
 
@@ -70,12 +71,19 @@ const TEMPLATE_PREVIEWS = {
   },
 };
 
-function AnnouncementTemplatePreview({ template, selected, onSelect }) {
+function AnnouncementTemplatePreview({
+  template,
+  selected,
+  onSelect,
+  designSettings,
+}) {
   const preview = TEMPLATE_PREVIEWS[template];
   const settings = ANNOUNCEMENT_TEMPLATES[template];
-  const background = settings.backgroundGradient
+  const themedBackground =
+    template === "default" ? templateBackground(designSettings) : undefined;
+  const background = backgroundToCss(themedBackground) || (settings.backgroundGradient
     ? `linear-gradient(${settings.backgroundGradient.angle}deg, ${settings.backgroundGradient.color}, ${settings.backgroundGradient.color2})`
-    : settings.background;
+    : settings.background);
 
   return (
     <button
@@ -181,7 +189,8 @@ export default function Announcements({
   shop,
   accessToken,
   apiUrl,
-  currency
+  currency,
+  designSettings,
 }) {
   const update = (key, value) => {
     handleChange("announcement", {
@@ -192,13 +201,15 @@ export default function Announcements({
 
   const applyTemplate = (key) => {
     const t = ANNOUNCEMENT_TEMPLATES[key];
+    const themedBackground =
+      key === "default" ? templateBackground(designSettings) : undefined;
     handleChange("announcement", {
       ...announcementSettings,
       template: key,
       icon: null,
       text: t.text,
       iconColor: t.iconColor,
-      background:
+      background: themedBackground ||
         t.backgroundGradient || { type: "plain", color: t.background },
       textColor: t.color,
       accentBg: t.accentBg,
@@ -243,6 +254,7 @@ export default function Announcements({
               key={key}
               template={key}
               selected={announcementSettings.template === key}
+              designSettings={designSettings}
               onSelect={() => applyTemplate(key)}
             />
           ))}

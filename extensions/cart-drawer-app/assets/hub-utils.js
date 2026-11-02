@@ -768,6 +768,60 @@ window.hubUtils = {
     const el = document.getElementById(`hub-rewards-${blockId}`);
     if (!el) return;
 
+    const renderRewardsHTML = (html) => {
+      const previousWidths = Array.from(
+        el.querySelectorAll(".cp-reward-progress-fill, .hub-cell-fill"),
+      ).map((fill) => fill.style.width || "0%");
+      const previousRingDasharrays = Array.from(
+        el.querySelectorAll(".hub-reward-progress-ring-fill"),
+      ).map(
+        (ring) =>
+          ring.style.strokeDasharray || ring.getAttribute("stroke-dasharray") || "",
+      );
+      el.innerHTML = html;
+
+      const nextFills = el.querySelectorAll(
+        ".cp-reward-progress-fill, .hub-cell-fill",
+      );
+      nextFills.forEach((fill, index) => {
+        const targetWidth = fill.style.width || "0%";
+        fill.dataset.targetWidth = targetWidth;
+        fill.style.transition = "none";
+        fill.style.width = previousWidths[index] || "0%";
+      });
+
+      if (nextFills.length) {
+        nextFills[0].offsetWidth;
+        nextFills.forEach((fill) => {
+          const targetWidth = fill.dataset.targetWidth || fill.style.width;
+          fill.style.transition = "width 450ms ease";
+          fill.style.width = targetWidth;
+          delete fill.dataset.targetWidth;
+        });
+      }
+
+      const nextRings = el.querySelectorAll(".hub-reward-progress-ring-fill");
+      nextRings.forEach((ring, index) => {
+        const targetDasharray =
+          ring.style.strokeDasharray || ring.getAttribute("stroke-dasharray") || "";
+        const circumference = targetDasharray.split(/\s+/)[1] || "0";
+        ring.dataset.targetDasharray = targetDasharray;
+        ring.style.transition = "none";
+        ring.style.strokeDasharray =
+          previousRingDasharrays[index] || `0 ${circumference}`;
+      });
+
+      if (nextRings.length) {
+        nextRings[0].getBoundingClientRect();
+        nextRings.forEach((ring) => {
+          const targetDasharray = ring.dataset.targetDasharray || ring.style.strokeDasharray;
+          ring.style.transition = "stroke-dasharray 450ms ease";
+          ring.style.strokeDasharray = targetDasharray;
+          delete ring.dataset.targetDasharray;
+        });
+      }
+    };
+
     if (rewards?.enabled || !rewards?.tiers?.length) {
       el.style.display = "none";
       return;
@@ -895,7 +949,7 @@ window.hubUtils = {
       let html = window.cartPlusRewardThemed?.(barStyle, rewards, { sorted, cartTotal, maxAmount, getTierValue, fmt: hubFmt }) || "";
       if (html) {
         el.style.display = "block";
-        el.innerHTML = html;
+        renderRewardsHTML(html);
         return;
       }
       if (barStyle === "reward") {
@@ -938,7 +992,7 @@ window.hubUtils = {
       }
       if (html) {
         el.style.display = "block";
-        el.innerHTML = html;
+        renderRewardsHTML(html);
         return;
       }
     }

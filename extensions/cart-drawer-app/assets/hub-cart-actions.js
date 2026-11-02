@@ -300,6 +300,12 @@ async function _commitRemoval(key) {
   const updates = { [key]: 0 };
 
   if (cartWillBeEmpty) {
+    if (window.cartPlusSetEmptyHeaderVisibility) {
+      window.cartPlusSetEmptyHeaderVisibility(drawer, true);
+    } else {
+      drawer.classList.add("hub-cart-is-empty");
+    }
+
     drawer
       .querySelectorAll(
         `#hub-sp-toggle-${blockId}, #hub-addon-toggle-${blockId}`,
@@ -523,6 +529,12 @@ function _undoRemoval(key) {
   if (!p) return;
 
   clearTimeout(p.timer);
+  const drawer = getDrawer();
+  if (window.cartPlusSetEmptyHeaderVisibility) {
+    window.cartPlusSetEmptyHeaderVisibility(drawer, false);
+  } else {
+    drawer.classList.remove("hub-cart-is-empty");
+  }
 
   if (p.innerEl) {
     p.innerEl.style.opacity = "1";

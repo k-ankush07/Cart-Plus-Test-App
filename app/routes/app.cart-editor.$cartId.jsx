@@ -9,6 +9,7 @@ import { requireShopData  } from "./components/shop.server";
 import { useLoaderData, useSearchParams } from "react-router-dom";
 import { getCart, updateCart } from "../services/apiRoutes";
 import { TEMPLATE_DEFAULTS } from "./components/utils/templateTheme";
+import { templateBackground } from "./components/utils/background";
 import {
   DEFAULT_PREVIEW_PRODUCT_QUERY,
   normalizePreviewProduct,
@@ -513,6 +514,31 @@ export default function CartEditor() {
 
     setIsDirty(false);
   }, [cart?.cartId]);
+
+  useEffect(() => {
+    if (announcementSettings?.template !== "default") return;
+    const background = templateBackground(designSettings);
+    if (!background) return;
+
+    const linkedAnnouncement = isSettingsEqual(
+      announcementSettings.background,
+      background,
+    )
+      ? announcementSettings
+      : { ...announcementSettings, background };
+
+    if (linkedAnnouncement !== announcementSettings) {
+      setAnnouncementSettings(linkedAnnouncement);
+    }
+
+    setIsDirty(
+      !isSettingsEqual(initialSettingsRef.current.design, designSettings) ||
+        !isSettingsEqual(
+          initialSettingsRef.current.announcement,
+          linkedAnnouncement,
+        ),
+    );
+  }, [announcementSettings, designSettings]);
 
   const [isSaving, setIsSaving] = useState(false);
 

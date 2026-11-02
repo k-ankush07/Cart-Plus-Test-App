@@ -306,7 +306,12 @@ export default function TieredOffers({
 }) {
   const barStyle = rewardsSettings.barStyle || "icon";
 
+  // Themed styles (card, gift, ring, unlock, striped, almost) are styled
+  // through the "Customize this style" card, so the legacy color / bar /
+  // background controls only apply to the NON-themed styles.
   const isThemed = !!THEMES[barStyle];
+  const showLegacyStyling = !isThemed;
+
   const t = isThemed
     ? getTheme(barStyle, rewardsSettings.styleConfig?.[barStyle])
     : {};
@@ -342,7 +347,7 @@ export default function TieredOffers({
               </Box>
               <InlineStack gap="200">
                 <Text variant="headingMd" as="h2">
-                 Progress Bar
+                  Progress Bar
                 </Text>
               </InlineStack>
             </InlineStack>
@@ -708,6 +713,7 @@ export default function TieredOffers({
 
       <LegacyCard sectioned title="General settings">
         <LegacyStack vertical spacing="tight">
+          {/* Applies to every style */}
           <InlineStack>
             <Checkbox
               label="Show rewards on empty cart"
@@ -715,30 +721,36 @@ export default function TieredOffers({
               onChange={(val) => update("showOnEmptyCart", val)}
             />
           </InlineStack>
-          <BlockStack gap="300">
-            <ColorInput
-              label="Bar background color"
-              value={rewardsSettings.backgroundColor}
-              onChange={(val) => update("backgroundColor", val)}
-            />
 
-            <ColorInput
-              label="Bar foreground color"
-              value={rewardsSettings.textColor}
-              onChange={(val) => update("textColor", val)}
-            />
-            <ColorInput
-              label="Complete reward tier icon color"
-              value={rewardsSettings.completeIconColor}
-              onChange={(val) => update("completeIconColor", val)}
-            />
+          {/* Legacy color controls: only for non-themed styles */}
+          {showLegacyStyling && (
+            <BlockStack gap="300">
+              <ColorInput
+                label="Bar background color"
+                value={rewardsSettings.backgroundColor}
+                onChange={(val) => update("backgroundColor", val)}
+              />
 
-            <ColorInput
-              label="Incomplete reward tier icon color"
-              value={rewardsSettings.incompleteIconColor}
-              onChange={(val) => update("incompleteIconColor", val)}
-            />
-          </BlockStack>
+              <ColorInput
+                label="Bar foreground color"
+                value={rewardsSettings.textColor}
+                onChange={(val) => update("textColor", val)}
+              />
+              <ColorInput
+                label="Complete reward tier icon color"
+                value={rewardsSettings.completeIconColor}
+                onChange={(val) => update("completeIconColor", val)}
+              />
+
+              <ColorInput
+                label="Incomplete reward tier icon color"
+                value={rewardsSettings.incompleteIconColor}
+                onChange={(val) => update("incompleteIconColor", val)}
+              />
+            </BlockStack>
+          )}
+
+          {/* Success text applies to every style */}
           <BlockStack gap="100">
             <InlineStack align="space-between" blockAlign="center">
               <Text variant="bodyMd" fontWeight="medium">
@@ -754,35 +766,40 @@ export default function TieredOffers({
               onChange={(val) => update("successText", val)}
             />
           </BlockStack>
-          <InlineStack gap="200" align="start">
-            <Box width="100%">
-              <RangeSlider
-                label="Bar Length"
-                value={rewardsSettings.barLength || 2}
-                onChange={(val) => update("barLength", val)}
-                min={2}
-                max={16}
-                step={1}
-                prefix={<Text>2px</Text>}
-                suffix={<Text>16px</Text>}
-                output
-              />
-            </Box>
 
-            <Box width="100%">
-              <RangeSlider
-                label="Bar Gap"
-                value={rewardsSettings.barGap || 0}
-                onChange={(val) => update("barGap", val)}
-                min={0}
-                max={20}
-                step={1}
-                prefix={<Text>0px</Text>}
-                suffix={<Text>20px</Text>}
-                output
-              />
-            </Box>
-          </InlineStack>
+          {/* Bar length / gap: only for non-themed styles
+              (themed styles use "Bar height" in Customize this style) */}
+          {showLegacyStyling && (
+            <InlineStack gap="200" align="start">
+              <Box width="100%">
+                <RangeSlider
+                  label="Bar Length"
+                  value={rewardsSettings.barLength || 2}
+                  onChange={(val) => update("barLength", val)}
+                  min={2}
+                  max={16}
+                  step={1}
+                  prefix={<Text>2px</Text>}
+                  suffix={<Text>16px</Text>}
+                  output
+                />
+              </Box>
+
+              <Box width="100%">
+                <RangeSlider
+                  label="Bar Gap"
+                  value={rewardsSettings.barGap || 0}
+                  onChange={(val) => update("barGap", val)}
+                  min={0}
+                  max={20}
+                  step={1}
+                  prefix={<Text>0px</Text>}
+                  suffix={<Text>20px</Text>}
+                  output
+                />
+              </Box>
+            </InlineStack>
+          )}
         </LegacyStack>
       </LegacyCard>
 
@@ -792,21 +809,25 @@ export default function TieredOffers({
         currency={currency}
       />
 
-      <BackgroundInput
-        title="Bar background"
-        value={
-          rewardsSettings.barBackground || {
-            type: "plain",
-            color: rewardsSettings.backgroundColor,
-          }
-        }
-        onChange={(bg) => update("barBackground", bg)}
-      />
-      <BackgroundInput
-        title="Bar progress"
-        value={rewardsSettings.barProgress}
-        onChange={(bg) => update("barProgress", bg)}
-      />
+      {showLegacyStyling && (
+        <>
+          <BackgroundInput
+            title="Bar background"
+            value={
+              rewardsSettings.barBackground || {
+                type: "plain",
+                color: rewardsSettings.backgroundColor,
+              }
+            }
+            onChange={(bg) => update("barBackground", bg)}
+          />
+          <BackgroundInput
+            title="Bar progress"
+            value={rewardsSettings.barProgress}
+            onChange={(bg) => update("barProgress", bg)}
+          />
+        </>
+      )}
     </div>
   );
 }
