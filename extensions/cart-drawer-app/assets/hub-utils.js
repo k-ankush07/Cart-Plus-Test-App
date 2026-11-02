@@ -1,4 +1,21 @@
 window.hubUtils = {
+  cartPlusApplyOfferDiscount(offer, cents) {
+    const base = Math.max(0, Number(cents) || 0);
+    const value = Math.max(0, Number(offer?.discountValue) || 0);
+    let final = base;
+    if (offer?.discountType === "percentage") {
+      final = base * (1 - Math.min(100, value) / 100);
+    } else if (offer?.discountType === "amount") {
+      final = base - value * 100;
+    }
+    final = Math.max(0, Math.round(final));
+    const saved = base - final;
+    return {
+      final,
+      saved,
+      percent: base ? Math.round((saved / base) * 100) : 0,
+    };
+  },
   authHeaders(extra = {}) {
     const API_KEY =
       "8f4c2a91d7e3b6f5a8c1d9e2f7b4c6a9e1d3f8b5c2a7d4e9f6b1c8a3d7e5f2";
@@ -234,7 +251,7 @@ window.hubUtils = {
       .map(
         (v) => `
       <option value="${v.id}"
-        data-price="${window.cartPlusApplyOfferDiscount?.({ discountType: window.__HUB_ACTIVE_CART__?.upsellsSettings?.discountType || "none", discountValue: window.__HUB_ACTIVE_CART__?.upsellsSettings?.discountValue }, Math.round(Number(v.price) * 100)).final ?? Math.round(Number(v.price) * 100)}"
+        data-price="${hubUtils.cartPlusApplyOfferDiscount({ discountType: window.__HUB_ACTIVE_CART__?.upsellsSettings?.discountType || "none", discountValue: window.__HUB_ACTIVE_CART__?.upsellsSettings?.discountValue }, Math.round(Number(v.price) * 100)).final}"
         data-image="${v.featured_image?.src || mainImage}">
         ${v.title}
       </option>
@@ -256,10 +273,10 @@ window.hubUtils = {
     const savingsText = cartSettings.savingsText || "Save";
 
     // Discount settings of the Cross-sell: the offer price replaces the sale price, the original is struck through
-    const offer = window.cartPlusApplyOfferDiscount?.(
+    const offer = hubUtils.cartPlusApplyOfferDiscount(
       { discountType: upsellSettings?.discountType || "none", discountValue: upsellSettings?.discountValue },
       Math.round(Number(firstVariant?.price || 0) * 100),
-    ) || { saved: 0, final: 0, percent: 0 };
+    );
     const hasOffer = offer.saved > 0;
     const salePrice = hasOffer ? offer.final / 100 : Number(firstVariant?.price || 0);
     const comparePrice = hasOffer
@@ -289,6 +306,8 @@ window.hubUtils = {
     const secondary = u.secondaryTextColor || primary;
     const cardBg =
       window.cartPlusBgCss?.(u.cardBackground) || designSettings.accentColor || "";
+    const cardBorder =
+      designSettings.accentBorder || "rgba(0, 0, 0, 0.08)";
     const imageBox = [
       u.imageSize ? `width:${u.imageSize}px;` : "",
       u.radius !== null && u.radius !== undefined
@@ -307,6 +326,12 @@ window.hubUtils = {
     const btnRadius = u.buttonRadius ?? designSettings.buttonRadius ?? 0;
     const btnLabel = u.buttonText || "Add";
     const variantAttr = `data-variant="${firstVariant?.id}"`;
+    const layoutClass = {
+      list: "hub-rec-product-list",
+      carousel: "hub-rec-product-carousel",
+      compact: "hub-rec-product-compact",
+      side: "hub-rec-product-side-panel",
+    }[settings.upsellLayout || settings.layout];
 
     // Button, Checkbox or Toggle; all three go through the same ".hub-add-btn" add-to-cart handler
     let trigger;
@@ -322,7 +347,7 @@ window.hubUtils = {
     }
 
     return `
-    <div class="hub-rec-product upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" style="background:${cardBg};${u.radius !== null && u.radius !== undefined ? `border-radius:${u.radius}px;` : ""}">
+    <div class="hub-rec-product ${layoutClass || ""} upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" style="background:${cardBg};border:1px solid ${cardBorder};${u.radius !== null && u.radius !== undefined ? `border-radius:${u.radius}px;` : ""}">
       <div class="upcart-internal-component-upsell-tile__info_count cart-plus-public-component-upsell-tile">
         <div class="upcart-internal-component-upsell-tile__image-container cart-plus-public-component-upsell-tile__image-container" style="${imageBox}">
           <img class="hub-product-img cart-plus-public-component-upsell-tile__image"

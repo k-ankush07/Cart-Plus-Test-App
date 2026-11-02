@@ -17,11 +17,49 @@ const cartPlusUpsellColors = () => {
 const cartPlusFirstImage = (p) =>
   p?.images?.[0]?.src || p?.featured_image?.url || p?.featured_image || "";
 
+function cartPlusCompactPriceHTML(variant, settings) {
+  const { ds } = cartPlusUpsellColors();
+  const fmt = hubUtils.formatMoney;
+  const baseCents = Math.round(Number(variant.price) * 100) || 0;
+  const offer = hubUtils.cartPlusApplyOfferDiscount(
+    {
+      discountType: settings.discountType || "none",
+      discountValue: settings.discountValue,
+    },
+    baseCents,
+  );
+  const saleCents = offer.saved > 0 ? offer.final : baseCents;
+  const compareCents =
+    offer.saved > 0
+      ? baseCents
+      : Math.round(Number(variant.compare_at_price) * 100) || 0;
+  const hasCompare = compareCents > saleCents;
+  const savedCents = hasCompare ? compareCents - saleCents : 0;
+  const savingsText = window.__HUB_ACTIVE_CART__?.cartSettings?.savingsText || "Save";
+  const savingColor = ds.savingsColor || "#16a34a";
+  const label = String(settings.labelText || "Save {{saved_percentage}}")
+    .replace(/\{\{saved_percentage\}\}/gi, `${offer.percent}%`)
+    .replace(/\{\{saved_amount\}\}/gi, fmt(offer.saved));
+  const offerLabel =
+    offer.saved > 0 && settings.showLabel !== false
+      ? `<span class="hub-compact-label">${label}</span>`
+      : "";
+
+  return `<div class="hub-compact-price">
+    <div class="hub-compact-price-row">
+      <span class="hub-compact-sale-price">${fmt(saleCents)}</span>
+      ${hasCompare ? `<span class="hub-compact-compare-price">${fmt(compareCents)}</span><span class="hub-compact-saving" style="--hub-compact-saving-color:${savingColor};">${savingsText} ${fmt(savedCents)}</span>` : ""}
+    </div>
+    ${offerLabel}
+  </div>`;
+}
+
 // ── Compact ────────────────────────────────────────────────────────────────
 window.cartPlusCompactHTML = function (products) {
   const { u, ds, primary } = cartPlusUpsellColors();
   const fmt = hubUtils.formatMoney;
   const bg = window.cartPlusBgCss(u.cardBackground) || ds.accentColor || "";
+  const cardBorder = ds.accentBorder || "rgba(0, 0, 0, 0.08)";
   const radius = u.radius ?? 8;
   const btnBg = window.cartPlusBgCss(u.buttonBackground) || ds.buttonColor || "#000";
   const btnText = u.buttonTextColor || ds.buttonTextColor || "#fff";
@@ -40,15 +78,15 @@ window.cartPlusCompactHTML = function (products) {
           ? `<select class="hub-compact-variant" style="width:100%;min-width:0;font-size:11px;color:${primary};">${p.variants
               .map(
                 (x) =>
-                  `<option value="${x.id}" data-price="${Math.round(Number(x.price) * 100)}" data-image="${imgOf(x)}"${x.id === v.id ? " selected" : ""}>${x.title}</option>`,
+                  `<option value="${x.id}" data-price="${Number(x.price) || 0}" data-compare-price="${Number(x.compare_at_price) || 0}" data-image="${imgOf(x)}"${x.id === v.id ? " selected" : ""}>${x.title}</option>`,
               )
               .join("")}</select>`
           : "";
-      return `<div class="hub-rec-product hub-compact-tile" style="position:relative;flex:0 0 auto;scroll-snap-align:start;width:${tileW}px;background:${bg};border-radius:${radius}px;padding:8px;box-sizing:border-box;display:flex;flex-direction:column;gap:5px;">
+      return `<div class="hub-rec-product hub-rec-product-compact hub-compact-tile" style="position:relative;flex:0 0 auto;scroll-snap-align:start;width:${tileW}px;background:${bg};border:1px solid ${cardBorder};border-radius:${radius}px;padding:8px;box-sizing:border-box;display:flex;flex-direction:column;gap:5px;">
         <img class="hub-compact-img" src="${imgOf(v) || cartPlusFirstImage(p)}" alt="${p.title}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${u.radius ?? 6}px;display:block;">
         <button type="button" class="hub-compact-add" data-variant="${v.id}" aria-label="${u.buttonText || "Add"}" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;cursor:pointer;background:${btnBg};color:${btnText};font-size:14px;line-height:20px;padding:0;">+</button>
         <a href="/products/${p.handle}" class="cart-plus-internal-component-upsell-tile__title-link" style="text-decoration:none;"><h3 class="cart-plus-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title" style="color:${primary};font-size:13px;line-height:1.3;margin:0;text-decoration:none;font-weight:600; display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${p.title}</h3></a>
-        <div class="hub-compact-price" style="font-size:11px;color:${primary};">${fmt(Math.round(Number(v.price) * 100))}</div>
+        ${cartPlusCompactPriceHTML(v, u)}
         ${select}
       </div>`;
     })
@@ -111,8 +149,19 @@ if (!window._cartPlusCompactBound) {
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".hub-compact-add");
     if (!btn || btn.disabled) return;
+    const tile = btn.closest(".hub-compact-tile");
+    const originalContent = btn.innerHTML;
     btn.disabled = true;
-    window.cartPlusUpsellAdd(btn.dataset.variant, btn.closest(".hub-compact-tile"));
+    btn.setAttribute("aria-busy", "true");
+    btn.innerHTML = '<span class="hub-compact-add-spinner" aria-hidden="true"></span>';
+    tile?.classList.add("hub-compact-tile--adding");
+    window.cartPlusUpsellAdd(btn.dataset.variant, tile).finally(() => {
+      if (!btn.isConnected) return;
+      btn.disabled = false;
+      btn.removeAttribute("aria-busy");
+      btn.innerHTML = originalContent;
+      tile?.classList.remove("hub-compact-tile--adding");
+    });
   });
 }
 
@@ -127,7 +176,16 @@ if (!window._cartPlusCompactVariantBound) {
     const price = tile?.querySelector(".hub-compact-price");
     const img = tile?.querySelector(".hub-compact-img");
     if (add) add.dataset.variant = select.value;
-    if (price) price.textContent = hubUtils.formatMoney(Number(opt.dataset.price));
+    if (price) {
+      const settings = window.__HUB_ACTIVE_CART__?.upsellsSettings || {};
+      price.outerHTML = cartPlusCompactPriceHTML(
+        {
+          price: Number(opt.dataset.price),
+          compare_at_price: Number(opt.dataset.comparePrice),
+        },
+        settings,
+      );
+    }
     if (img && opt.dataset.image) img.src = opt.dataset.image;
   });
 }
@@ -150,6 +208,7 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
       hubUtils.getProductCardHTML(p, {
         ...(settings || window.__HUB_ACTIVE_CART__?.upsellsSettings || {}),
         upsellSettings: settings,
+        upsellLayout: "side",
       }),
     )
     .join("");

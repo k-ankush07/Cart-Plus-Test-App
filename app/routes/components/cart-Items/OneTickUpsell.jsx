@@ -71,6 +71,11 @@ const leaveStyle = (isLeaving, collapse = true) => ({
       }),
 });
 
+const offerCardStyle = (isLeaving, isArmed, collapse = true) => ({
+  ...leaveStyle(isLeaving, collapse),
+  ...(isArmed && !isLeaving ? { opacity: 0.72 } : {}),
+});
+
 const optionParts = (variant) => String(variant.title || "").split(" / ");
 
 export default function OneTickUpsell({
@@ -327,6 +332,8 @@ export default function OneTickUpsell({
       }
     };
     const accent = backgroundToCss(oneTick.buttonBackground) || "#303030";
+    const activeAccent =
+      designSettings?.accentSolid || designSettings?.themeColor || accent;
     if (oneTick.trigger === "checkbox") {
       return (
         <label
@@ -359,7 +366,7 @@ export default function OneTickUpsell({
               border: on
                 ? "2px solid transparent"
                 : `2px solid ${oneTick.secondaryTextColor || "#8a8a8a"}`,
-              background: on ? accent : "transparent",
+              background: on ? activeAccent : "transparent",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
@@ -388,7 +395,7 @@ export default function OneTickUpsell({
           role="switch"
           aria-checked={on}
           aria-label={oneTick.buttonLabel}
-          // pill switch: on = the Button / Checkbox colour, off = a soft tint of the theme
+          // Active controls follow the cart theme; inactive controls use its border tint.
           style={{
             position: "relative",
             width: 36,
@@ -400,7 +407,7 @@ export default function OneTickUpsell({
             borderRadius: 20,
             boxSizing: "border-box",
             background: on
-              ? accent
+              ? activeAccent
               : designSettings?.accentBorder || "#c9cccf",
             transition: "background .2s ease",
           }}
@@ -547,7 +554,7 @@ export default function OneTickUpsell({
             minWidth: 0,
             boxSizing: "border-box",
             scrollSnapAlign: "start",
-            ...leaveStyle(leaving[offer.id], false),
+            ...offerCardStyle(leaving[offer.id], armed[offer.id], false),
           }}
         >
           <img
@@ -645,7 +652,7 @@ export default function OneTickUpsell({
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
-          ...leaveStyle(leaving[offer.id]),
+          ...offerCardStyle(leaving[offer.id], armed[offer.id]),
         }}
       >
         {/* thumb stays 90px; only the image inside follows Styles > Image size */}

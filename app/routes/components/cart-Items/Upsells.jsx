@@ -9,6 +9,8 @@ import { getCartItemOptions } from "../utils/cartItemOptions";
 import { LibraryIcon } from "../ui/IconLibrary";
 import NoProductPlaceholder from "../ui/NoProductPlaceholder";
 
+const money = (value) => Number(value).toFixed(2);
+
 function hexToRGBA(hex = "#16a34a", opacity = 1) {
   if (!hex || typeof hex !== "string") {
     hex = "#16a34a";
@@ -36,7 +38,7 @@ export default function Upsells({
   designSettings,
   currency,
   cartSettings,
-  sidePanel = false, // the Side panel layout is drawn beside the cart, see CartPreview
+  sidePanel = false, 
 }) {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -85,6 +87,7 @@ export default function Upsells({
         : "list";
   const primary = primaryTextColor || designSettings.textColor || "#6b7280";
   const secondary = secondaryTextColor || primary;
+  const cardBorder = designSettings?.accentBorder || "rgba(0, 0, 0, 0.08)";
   const bodyBg = backgroundToCss(
     getCartItemOptions(cartSettings).sectionBackground,
   );
@@ -323,6 +326,7 @@ export default function Upsells({
             backgroundToCss(cardBackground) || designSettings.accentColor,
           ...(vertical ? { padding: 9 } : {}),
           ...(radius !== null ? { borderRadius: radius } : {}),
+          border: `1px solid ${cardBorder}`,
           ...(vertical
             ? {
                 display: "flex",
@@ -467,7 +471,7 @@ export default function Upsells({
               ? {
                   display: "flex",
                   flexDirection: "column",
-                  gap: 4,
+                  gap: 10,
                   width: "100%",
                   marginTop: 0,
                 }
@@ -631,8 +635,7 @@ export default function Upsells({
           flexDirection: "column",
           gap: 6,
           padding: 6,
-          // no padding on the side that touches the cart, so there is no gap or seam
-          ...(panelOnLeft ? { paddingRight: 0 } : { paddingLeft: 0 }),
+          ...(panelOnLeft ? { paddingRight: 10 } : { paddingLeft: 10 }),
           boxSizing: "border-box",
           zIndex: 5,
           background:
@@ -727,7 +730,7 @@ export default function Upsells({
 
           {/* compact: prev / next arrows, title ke right me */}
           {layout === "compact" && (
-            <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+            <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
               {[
                 {
                   dir: -1,
@@ -887,6 +890,24 @@ export default function Upsells({
           <style>{`.cp-compact-track::-webkit-scrollbar{display:none}`}</style>
           {products.map((product) => {
             const v = selectedVariants[product.id] || product.variants[0];
+            const discount = applyDiscount(
+              { discountType, discountValue },
+              Number(v?.price) || 0,
+            );
+            const hasOffer = discount.saved > 0;
+            const shownPrice = hasOffer
+              ? discount.final
+              : Number(v?.price) || 0;
+            const shownCompare = hasOffer
+              ? Number(v?.price) || 0
+              : Number(v?.compareAtPrice) || 0;
+            const hasCompare = shownCompare > shownPrice;
+            const compactLabel = String(labelText || "Save {{saved_percentage}}")
+              .replace(/\{\{saved_percentage\}\}/gi, `${discount.percent}%`)
+              .replace(
+                /\{\{saved_amount\}\}/gi,
+                `${currency}${discount.saved.toFixed(2)}`,
+              );
             return (
               <div
                 key={product.id}
@@ -900,6 +921,7 @@ export default function Upsells({
                     backgroundToCss(cardBackground) ||
                     designSettings.accentColor,
                   borderRadius: radius ?? 8,
+                  border: `1px solid ${cardBorder}`,
                   padding: 8,
                   display: "flex",
                   flexDirection: "column",
@@ -947,15 +969,86 @@ export default function Upsells({
                   className="cart-plus-internal-component-upsell-tile__title-link"
                 >
                   <h3
-                    className="cart-plus-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title"
+                    className="cart-plus-compact-heading cart-plus-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title"
                     style={{ color: primary }}
                   >
                     {product.title}
                   </h3>
                 </a>
 
-                <div style={{ fontSize: 11, color: primary }}>
-                  {currency} {v?.price}
+                <div
+                  className="cart-plus-compact-price"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 2,
+                    minWidth: 0,
+                    width: "100%",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "baseline",
+                      gap: "2px 4px",
+                      maxWidth: "100%",
+                      fontSize: 10,
+                      lineHeight: 1.25,
+                      justifyContent: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <span style={{ color: primary, fontWeight: 600, overflowWrap: "anywhere" }}>
+                      {currency} {money(shownPrice)}
+                    </span>
+                    {hasCompare && (
+                      <>
+                        <span
+                          style={{
+                            color: secondary,
+                            opacity: 0.65,
+                            fontSize: 9,
+                            textDecoration: "line-through",
+                            overflowWrap: "anywhere",
+                          }}
+                        >
+                          {currency} {money(shownCompare)}
+                        </span>
+                        <span
+                          style={{
+                            padding: "2px 4px",
+                            borderRadius: 8,
+                            background: hexToRGBA(
+                              designSettings?.savingsColor || "#16a34a",
+                              0.1,
+                            ),
+                            color: designSettings?.savingsColor || "#16a34a",
+                            fontSize: 9,
+                            fontWeight: 600,
+                            lineHeight: 1.2,
+                            overflowWrap: "anywhere",
+                          }}
+                        >
+                          {cartSettings?.savingsText || "Save"}{" "}
+                          {currency} {money(shownCompare - shownPrice)}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  {showLabel && hasOffer && (
+                    <span
+                      style={{
+                        maxWidth: "100%",
+                        color: secondary,
+                        fontSize: 10,
+                        lineHeight: 1.2,
+                        overflowWrap: "anywhere",
+                      }}
+                      dangerouslySetInnerHTML={{ __html: compactLabel }}
+                    />
+                  )}
                 </div>
 
                 {product.variants.length > 1 && (

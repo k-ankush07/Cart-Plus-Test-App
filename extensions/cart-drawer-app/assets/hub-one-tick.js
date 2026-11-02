@@ -148,18 +148,19 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
 // ── painting ───────────────────────────────────────────────────────────────
 function cartPlusOneTickTrigger(blockId, oneTick, offer, variantId) {
   const accent = window.cartPlusBgCss(oneTick.buttonBackground) || "#303030";
-  const call = (on) =>
-    `cartPlusOneTickToggle('${blockId}','${offer.id}','${variantId}',${on})`;
+  const design = window.__HUB_ACTIVE_CART__?.designSettings || {};
+  const activeColor = design.accentSolid || design.themeColor || accent;
+  const call = (on, button = "") =>
+    `cartPlusOneTickToggle('${blockId}','${offer.id}','${variantId}',${on}${button})`;
   if (oneTick.trigger === "checkbox") {
     return `<label class="cart-plus-onetick-check" aria-label="${oneTick.buttonLabel}">
-      <input type="checkbox" onchange="var c=this.checked;setTimeout(function(){${call("c")}},c?450:0)" />
-      <span class="cart-plus-onetick-check__box" style="--cp-accent:${accent};--cp-tick:${oneTick.buttonTextColor || "#fff"};--cp-border:${oneTick.secondaryTextColor || "#8a8a8a"};"></span>
+      <input type="checkbox" class="cart-plus-onetick-input" style="--cp-accent:${activeColor};--cp-tick:${oneTick.buttonTextColor || "#fff"};--cp-border:${oneTick.secondaryTextColor || "#8a8a8a"};" onchange="var c=this.checked;this.closest('.cart-plus-onetick-card')?.classList.toggle('cart-plus-onetick-card--adding',c);setTimeout(function(){${call("c")}},c?450:0)" />
     </label>`;
   }
   if (oneTick.trigger === "toggle") {
-    return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${accent};--cp-off:${window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder || "#c9cccf"};" onclick="this.setAttribute('aria-checked','true');setTimeout(function(){${call("true")}},450)"><span></span></button>`;
+    return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${activeColor};--cp-off:${design.accentBorder || "#c9cccf"};" onclick="this.setAttribute('aria-checked','true');this.closest('.cart-plus-onetick-card')?.classList.add('cart-plus-onetick-card--adding');setTimeout(function(){${call("true")}},450)"><span></span></button>`;
   }
-  return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true")}" style="width:100%; border:none;cursor:pointer;padding:8px 16px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
+  return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true", ",this")}" style="width:100%; border:none;cursor:pointer;padding:6px 8px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
 }
 
 function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
@@ -202,7 +203,7 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
   const img = variant.image || product.image;
 
   if (isCarousel) {
-    return `<div style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;flex:0 0 43%;min-width:0;box-sizing:border-box;scroll-snap-align:start;">
+    return `<div class="cart-plus-onetick-card" style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;flex:0 0 43%;min-width:0;box-sizing:border-box;scroll-snap-align:start;">
       <img src="${img}" alt="${product.title}" style="width:${oneTick.imageSize}px;max-width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${oneTick.radius}px;display:block;align-self:center;">
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0;">
         <div style="font-weight:600;font-size:13px;line-height:1.3;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
@@ -214,15 +215,15 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
 
   const savingHtml =
     offer.showLabel && saved > 0
-      ? `<div style="font-size:11px;font-weight:600;color:#1e7e34;white-space:nowrap;flex-shrink:0;">${label}</div>`
+      ? `<div style="font-size:11px;font-weight:400;color:#1e7e34;white-space:nowrap;flex-shrink:0;">${label}</div>`
       : "";
-  return `<div style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:12px;display:flex;flex-direction:row;align-items:center;gap:12px;">
+  return `<div class="cart-plus-onetick-card" style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:12px;display:flex;flex-direction:row;align-items:center;gap:12px;">
     <div class="cart-plus-drawer__xs-row-thumb" style="width:90px;height:90px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
       <img src="${img}" alt="${product.title}" style="width:${oneTick.imageSize * 0.45}px;height:${oneTick.imageSize * 0.45}px;max-width:100%;max-height:100%;display:block;object-fit:cover;border-radius:${oneTick.radius * 0.45}px;">
     </div>
     <div style="flex:1;min-width:0;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-        <div style="font-weight:600;font-size:13px;line-height:1.25;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
+        <div style="font-weight:400;font-size:13px;line-height:1.25;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
         ${savingHtml}
       </div>
       <div style="margin-top:2px;">${price}</div>
@@ -364,10 +365,20 @@ window.cartPlusOneTickToggle = async function (
   offerId,
   variantId,
   on,
+  button,
 ) {
+  if (on && button?.classList.contains("loading")) return;
+  const originalButtonHTML = button?.innerHTML;
+  if (on && button) {
+    button.classList.add("loading");
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    button.innerHTML = '<span class="loader" aria-hidden="true"></span>';
+  }
+
   try {
     if (on) {
-      await fetch("/cart/add.js", {
+      const response = await fetch("/cart/add.js", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -376,6 +387,9 @@ window.cartPlusOneTickToggle = async function (
           properties: { _cart_plus_one_tick: offerId },
         }),
       });
+      if (!response.ok) {
+        throw new Error(`One Tick add failed with status ${response.status}`);
+      }
     } else {
       const latest = await (await fetch("/cart.js")).json();
       const match = latest.items.find(
@@ -391,6 +405,13 @@ window.cartPlusOneTickToggle = async function (
     }
   } catch (e) {
     console.error("[CartPlus] One Tick Upsell failed:", e);
+  } finally {
+    if (button?.isConnected) {
+      button.classList.remove("loading");
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      button.innerHTML = originalButtonHTML;
+    }
   }
   document.dispatchEvent(new CustomEvent("cart:updated"));
 };

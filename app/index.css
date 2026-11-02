@@ -752,6 +752,10 @@ span.svg-wrapper {
     margin: 0;
 }
 
+h3.cart-plus-compact-heading {
+    text-align: center;
+}
+
 .upcart-internal-component-upsell-tile__info p {
     font-size: 13px;
     margin: 4px 0 0;
@@ -2322,4 +2326,17 @@ input.cart-plus-offers-code-input:focus {
 }
 .cart-plus-footer .cart-plus-footer-stack > :not(:first-child) .cart-plus-discount-input-btn {
   padding-top: 10px !important;
+}
+
+.cart-plus-upsells-side-panel h3.cart-plus-internal-component-upsell-tile__title.cart-plus-public-component-upsell-tile__title {
+    text-align: center;
+}
+
+.cart-plus-upsells-side-panel p.price.cart-plus-public-component-upsell-tile__price-row {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.cart-plus-upsells-side-panel button.cart-plus-internal-component__button.cart-plus-public-component__button {
+    width: 100%;
 }

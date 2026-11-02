@@ -1565,6 +1565,7 @@ if (savedEl) {
             } else {
               window.renderProducts(productsDiv, upsellProducts, {
                 layout: upLayout === "carousel" ? "carousel" : "block",
+                upsellLayout: upLayout,
                 showReviews: upsellSettings.showReviews,
                 carouselIndicator: upsellSettings.carouselIndicator,
                 showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,

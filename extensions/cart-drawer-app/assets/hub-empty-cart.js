@@ -149,6 +149,7 @@ window.cartPlusRenderEmptyUpsell = async function (blockId) {
   }
   await window.renderProducts(productsDiv, products, {
     layout: layout === "carousel" ? "carousel" : "block",
+    upsellLayout: layout,
     showReviews: s.showReviews,
     carouselIndicator: s.carouselIndicator,
     showIfAlreadyInCart: true,

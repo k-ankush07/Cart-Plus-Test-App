@@ -1397,7 +1397,7 @@ span.hub-total-arrow svg {
   flex: 1;
   min-width: 100px;
   max-width: 140px;
-  padding: 7px;
+  padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
   background: #f9f9f9;
@@ -2894,6 +2894,12 @@ select.hub-variant-option-select {
 }
 
 /* ── One Tick Upsell ── */
+.cart-plus-onetick-card {
+  transition: opacity 0.25s ease;
+}
+.cart-plus-onetick-card--adding {
+  opacity: 0.72;
+}
 .cart-plus-onetick-track {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -2902,39 +2908,52 @@ select.hub-variant-option-select {
   display: none;
 }
 .cart-plus-onetick-check {
-  position: relative;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
-}
-.cart-plus-onetick-check input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.cart-plus-onetick-check__box {
   width: 18px;
   height: 18px;
-  box-sizing: border-box;
-  border-radius: 5px;
-  border: 2px solid var(--cp-border, #8a8a8a);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s ease, border-color 0.15s ease;
 }
-.cart-plus-onetick-check input:checked + .cart-plus-onetick-check__box {
-  background: var(--cp-accent, #303030);
-  border-color: transparent;
+.hub-cart-drawer.cart-app .cart-plus-onetick-check > input.cart-plus-onetick-input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  display: block !important;
+  position: static !important;
+  opacity: 1 !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  flex: 0 0 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 2px solid var(--cp-border, #8a8a8a) !important;
+  border-radius: 5px !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
-.cart-plus-onetick-check input:checked + .cart-plus-onetick-check__box::after {
-  content: "";
-  width: 9px;
-  height: 5px;
-  border-left: 2px solid var(--cp-tick, #fff);
-  border-bottom: 2px solid var(--cp-tick, #fff);
-  transform: translateY(-1px) rotate(-45deg);
+.hub-cart-drawer.cart-app .cart-plus-onetick-check > input.cart-plus-onetick-input[type="checkbox"]:checked {
+  border-color: var(--cp-accent, #303030) !important;
+  background-color: var(--cp-accent, #303030) !important;
+  background-image: none !important;
+  position: relative !important;
+}
+.hub-cart-drawer.cart-app .cart-plus-onetick-check > input.cart-plus-onetick-input[type="checkbox"]:checked::after {
+  content: "" !important;
+  display: block !important;
+  width: 10px !important;
+  height: 6px !important;
+  margin: 3px 0 0 2px !important;
+  border-left: 2px solid var(--cp-tick, #fff) !important;
+  border-bottom: 2px solid var(--cp-tick, #fff) !important;
+  transform: rotate(-45deg) !important;
+  box-sizing: border-box !important;
+}
+.hub-cart-drawer.cart-app .cart-plus-onetick-check > input.cart-plus-onetick-input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--cp-accent, #303030);
+  outline-offset: 2px;
 }
 .cart-plus-onetick-switch {
   all: unset;
@@ -3021,6 +3040,80 @@ select.hub-variant-option-select {
 }
 
 /* ── Cross-sell Compact strip ── */
+.hub-compact-tile {
+  transition: opacity 0.25s ease;
+}
+.hub-compact-tile--adding {
+  opacity: 0.72;
+}
+.hub-compact-add-spinner {
+  display: block;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.hub-compact-add[aria-busy="true"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+}
+.hub-compact-add:disabled {
+  cursor: wait !important;
+}
+.hub-compact-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  width: 100%;
+}
+.hub-compact-price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 4px;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 10px;
+  line-height: 1.25;
+}
+.hub-compact-sale-price {
+  color: inherit;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.hub-compact-compare-price {
+  color: inherit;
+  opacity: 0.65;
+  text-decoration: line-through;
+  overflow-wrap: anywhere;
+}
+.hub-compact-saving {
+  display: inline-block;
+  max-width: 100%;
+  padding: 2px 4px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--hub-compact-saving-color, #16a34a) 10%, transparent);
+  color: var(--hub-compact-saving-color, #16a34a);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.hub-compact-label {
+  max-width: 100%;
+  color: inherit;
+  font-size: 10px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
 .hub-compact-track::-webkit-scrollbar {
   display: none;
 }
@@ -3246,11 +3339,20 @@ select.hub-compact-variant {
 /* Side panel touches the cart: no padding / seam on the side that faces it, cards never overflow */
 .hub-upsell-side-panel { overflow-x: hidden; }
 .hub-upsell-side-panel .hub-rec-product { box-sizing: border-box; max-width: 100%; }
-.hub-upsell-side-panel .hub-rec-product select { max-width: 100%; box-sizing: border-box; }
+.hub-upsell-side-panel .hub-rec-product select {
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 10px;
+    height: 31px;
+}
+.hub-upsell-side-panel button.hub-add-btn.cart-plus-public-component__button.hub-side-add {
+    width: 100%;
+}
+
 .hub-cart-right.hub-side-shifted + .hub-upsell-side-panel,
-.hub-cart-left:not(.hub-side-shifted) + .hub-upsell-side-panel { padding-left: 0; }
+.hub-cart-left:not(.hub-side-shifted) + .hub-upsell-side-panel { padding-left: 10px; }
 .hub-cart-left.hub-side-shifted + .hub-upsell-side-panel,
-.hub-cart-right:not(.hub-side-shifted) + .hub-upsell-side-panel { padding-right: 0; }
+.hub-cart-right:not(.hub-side-shifted) + .hub-upsell-side-panel { padding-right: 10px; }
 
 /* Floating + Side panel: panel and cart meet with square corners in the middle.
    Only while a panel exists (:has), so a cart without a panel keeps its round corners. */
@@ -3281,4 +3383,27 @@ select.hub-compact-variant {
 }
 .hub-cart-drawer.hub-cart-floating.hub-cart-left.hub-side-shifted + .hub-upsell-side-panel {
   border-radius: 14px 0 0 14px;
+}
+
+.hub-rec-product-compact {
+    text-align: center;
+}
+
+.hub-rec-product-compact .hub-compact-price .hub-compact-price-row {
+    justify-content: center;
+    width: 100%;
+}
+
+.hub-rec-product-side-panel .upcart-internal-component-upsell-tile__info.cart-plus-internal-component-upsell-tile__info {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.upcart-internal-component-upsell-tile__info .price {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
 }
