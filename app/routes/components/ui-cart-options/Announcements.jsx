@@ -46,7 +46,8 @@ export default function Announcements({
       icon: null,
       text: t.text,
       iconColor: t.iconColor,
-      background: { type: "plain", color: t.background },
+      background:
+        t.backgroundGradient || { type: "plain", color: t.background },
       textColor: t.color,
       accentBg: t.accentBg,
       accentText: t.accentText,

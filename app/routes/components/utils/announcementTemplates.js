@@ -1,4 +1,17 @@
 export const ANNOUNCEMENT_TEMPLATES = {
+  default: {
+    label: "Default",
+    text: "Free shipping on $50 | Free gift on $60",
+    background: "#2864df",
+    backgroundGradient: {
+      type: "gradient",
+      color: "#2864df",
+      color2: "#75a7f7",
+      angle: 90,
+    },
+    color: "#ffffff",
+    iconColor: "#ffffff",
+  },
   free_shipping: {
     label: "Free shipping",
     text: "<b>Free shipping</b> on orders over $50",

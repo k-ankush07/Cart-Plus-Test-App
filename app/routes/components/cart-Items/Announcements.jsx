@@ -83,6 +83,11 @@ function TemplateAnnouncement({ s }) {
   const accentBg = s.accentBg || t.accentBg;
   const accentText = s.accentText || t.accentText;
   const Icon = ICONS[s.template];
+  const showClose =
+    s.showClose !== false &&
+    s.template !== "progress" &&
+    s.template !== "vip" &&
+    s.template !== "default";
 
   const current = Number(s.current ?? t.current) || 0;
   const goal = Number(s.goal ?? t.goal) || t.goal || 1;
@@ -201,6 +206,7 @@ function TemplateAnnouncement({ s }) {
       style={{
         display: "flex",
         alignItems: "center",
+        justifyContent: s.template === "default" ? "center" : undefined,
         gap: 12,
         padding: paddingMap[s.height] || paddingMap.normal,
         borderRadius: `${s.borderRadius ?? 12}px`,
@@ -211,31 +217,36 @@ function TemplateAnnouncement({ s }) {
         boxSizing: "border-box",
       }}
     >
-      <span style={{ display: "inline-flex", flexShrink: 0 }}>
-        {s.icon ? (
-          <LibraryIcon value={s.icon} size={22} color={iconColor} />
-        ) : (
-          Icon(iconColor)
-        )}
-      </span>
-
-      <span
-        style={{ flex: 1, minWidth: 0 }}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      {(s.icon || Icon) && (
+        <span style={{ display: "inline-flex", flexShrink: 0 }}>
+          {s.icon ? (
+            <LibraryIcon value={s.icon} size={22} color={iconColor} />
+          ) : (
+            Icon(iconColor)
+          )}
+        </span>
+      )}
 
       <span
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          flexShrink: 0,
+          flex: s.template === "default" ? "unset" : 1,
+          minWidth: 0,
+          textAlign: s.template === "default" ? "center" : undefined,
         }}
-      >
-        {right}
-        {s.showClose !== false &&
-          s.template !== "progress" &&
-          s.template !== "vip" && (
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+
+      {(right || showClose) && (
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            flexShrink: 0,
+          }}
+        >
+          {right}
+          {showClose && (
             <button
               type="button"
               onClick={() => setOpen(false)}
@@ -253,7 +264,8 @@ function TemplateAnnouncement({ s }) {
               ×
             </button>
           )}
-      </span>
+        </span>
+      )}
     </div>
   );
 }
