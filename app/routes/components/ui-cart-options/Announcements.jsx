@@ -181,6 +181,7 @@ export default function Announcements({
   shop,
   accessToken,
   apiUrl,
+  currency
 }) {
   const update = (key, value) => {
     handleChange("announcement", {
@@ -273,7 +274,7 @@ export default function Announcements({
             {announcementSettings.template === "progress" && (
               <InlineGrid columns={2} gap="300">
                 <TextField
-                  label="Current amount ($)"
+                  label={`Current amount (${currency})`}
                   type="number"
                   autoComplete="off"
                   value={String(
@@ -283,7 +284,7 @@ export default function Announcements({
                   onChange={(v) => update("current", Number(v))}
                 />
                 <TextField
-                  label="Goal ($)"
+                  label={`Goal (${currency})`}
                   type="number"
                   autoComplete="off"
                   value={String(

@@ -137,6 +137,7 @@ const CartPreview = memo(function CartPreview({
         <Announcements
           announcementSettings={announcementSettings}
           cartSettings={cartSettings}
+          currency={currency}
         />
       ),
     Timer: !emptyCart && (
@@ -421,6 +422,7 @@ const CartPreview = memo(function CartPreview({
                         <Announcements
                           announcementSettings={announcementSettings}
                           cartSettings={cartSettings}
+                          currency={currency}
                         />
                       )}
                   </div>

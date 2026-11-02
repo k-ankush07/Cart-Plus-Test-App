@@ -72,7 +72,8 @@ function useCountdown(total = 0) {
   return [Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60];
 }
 
-function TemplateAnnouncement({ s }) {
+// FIX: destructure `currency` so it's defined in this component's scope
+function TemplateAnnouncement({ s, currency }) {
   const t = ANNOUNCEMENT_TEMPLATES[s.template];
   const [open, setOpen] = useState(true);
   const [h, m, sec] = useCountdown(Number(s.seconds ?? t.seconds) || 0);
@@ -92,7 +93,16 @@ function TemplateAnnouncement({ s }) {
   const current = Number(s.current ?? t.current) || 0;
   const goal = Number(s.goal ?? t.goal) || t.goal || 1;
   const remaining = Math.max(0, goal - current);
-  const html = (s.text || t.text).replace(/\{remaining\}/g, `$${remaining}`);
+  const currencySymbol = currency || "";
+  const formatAmount = (value) =>
+    `${currencySymbol}${Number(value).toLocaleString(undefined, {
+      maximumFractionDigits: 2,
+    })}`;
+
+  const html = (s.text || t.text).replace(
+    /\{remaining\}/g,
+    formatAmount(remaining),
+  );
 
   const pill = {
     background: "#fff",
@@ -138,7 +148,7 @@ function TemplateAnnouncement({ s }) {
           />
         </span>
         <small>
-          ${current} / ${goal}
+          {formatAmount(current)} / {formatAmount(goal)}
         </small>
       </span>
     );
@@ -185,7 +195,7 @@ function TemplateAnnouncement({ s }) {
       </span>
     );
 
- if (["flash_sale", "free_gift"].includes(s.template))
+  if (["flash_sale", "free_gift"].includes(s.template))
     right = (
       <a
         href={s.link || "#"}
@@ -270,14 +280,16 @@ function TemplateAnnouncement({ s }) {
   );
 }
 
-export default function Announcements({ announcementSettings }) {
+export default function Announcements({ announcementSettings, currency }) {
   const templateBg = useTemplateBackground();
 
   if (
     announcementSettings?.template &&
     ANNOUNCEMENT_TEMPLATES[announcementSettings.template]
   ) {
-    return <TemplateAnnouncement s={announcementSettings} />;
+    return (
+      <TemplateAnnouncement s={announcementSettings} currency={currency} />
+    );
   }
 
   const html = (announcementSettings.text || "").replace(/\s*\{timer\}/gi, "");

@@ -1787,16 +1787,17 @@ async function hubApplyOfferCode2(code, blockId, messageEl = null) {
     );
 
     if (!isValid) {
-      const errorMsg = isConflict
-        ? `${code} couldn't be used with your existing discounts.`
-        : "Enter a valid discount code";
+      const errorMsg = `${code} couldn't be used with your existing discounts.`;
       if (errorEl && isConflict) {
         errorEl.innerText = errorMsg;
         setTimeout(() => {
           errorEl.innerText = "";
         }, 4000);
       }
-      if (messageEl) showMessage(messageEl, errorMsg, "red");
+      if (messageEl) {
+        if (isConflict) showMessage(messageEl, errorMsg, "#D72C0D");
+        else window.cartPlusShowDiscountError?.(messageEl);
+      }
       if (existingCode)
         await fetch(`/discount/${existingCode.code}`, {
           credentials: "include",

@@ -10,26 +10,25 @@ window.hubUtils = {
   },
   formatMoney(cents) {
     const currency = window.__SHOPIFY_CURRENCY__;
-    const amount = (cents / 100).toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    const activeCode =
+      currency?.code ||
+      window.Shopify?.currency?.active ||
+      window.__SHOPIFY_SHOP__?.currency;
+    const locale =
+      document.documentElement.lang || window.__SHOPIFY_SHOP__?.locale;
 
-    let result;
-    if (currency?.format?.includes("{{amount}}")) {
-      result = currency.format.replace("{{amount}}", amount);
-    } else if (currency?.symbol) {
-      result = `${currency.symbol}${amount}`;
-    } else {
-      result = new Intl.NumberFormat(undefined, {
+    if (activeCode) {
+      return new Intl.NumberFormat(locale, {
         style: "currency",
-        currency: currency?.code || "USD",
+        currency: activeCode,
       }).format(cents / 100);
     }
 
-    const div = document.createElement("div");
-    div.innerHTML = result;
-    return div.textContent || div.innerText || result;
+    const amount = (cents / 100).toLocaleString(locale, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    return currency?.symbol ? `${currency.symbol}${amount}` : amount;
   },
 
   executeBeforeLoadScripts(scriptContent, scope) {
@@ -1156,6 +1155,103 @@ window.hubUtils = {
     if (!discountStatus || !inputWrap || !applyBtn) return;
 
     const hasDiscount = allDiscounts.length > 0;
+    const discountSettings =
+      window.__HUB_ACTIVE_CART__?.discountCodesSettings || {};
+    const discountStyle =
+      window.__HUB_CART_PLUS_RESOLVE_DISCOUNT_STYLE?.(discountSettings);
+
+    if (discountStyle) {
+      const escape = (value) =>
+        String(value ?? "").replace(/[&<>"']/g, (char) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[char]);
+      const amount = allDiscounts.reduce(
+        (sum, discount) =>
+          sum + (Number(discount.total_allocated_amount) || 0),
+        0,
+      );
+      const totalEl = discountStatus.parentElement?.querySelector(
+        "[data-discount-total]",
+      );
+      const bannerEl = discountStatus.parentElement?.querySelector(
+        "[data-discount-banner]",
+      );
+      const pillEl = discountStatus.parentElement?.querySelector(
+        "[data-discount-pill]",
+      );
+      const clearAllEl = discountStatus.parentElement?.querySelector(
+        "[data-discount-clear-all]",
+      );
+      const listEl = discountStatus.parentElement?.querySelector(
+        "[data-discount-list]",
+      );
+
+      if (totalEl) totalEl.textContent = hubUtils.formatMoney(amount);
+      if (bannerEl) bannerEl.style.display = hasDiscount ? "flex" : "none";
+      if (pillEl) {
+        pillEl.textContent = String(discountStyle.appliedLabel)
+          .replace(/\{n\}/g, allDiscounts.length)
+          .replace(
+            /\bDiscounts\b/,
+            allDiscounts.length === 1 ? "Discount" : "Discounts",
+          );
+      }
+      if (clearAllEl) {
+        clearAllEl.textContent = discountStyle.clearAllText;
+        clearAllEl.disabled = false;
+        clearAllEl.classList.remove("loading");
+      }
+
+      if (listEl) {
+        if (discountStyle.layout === "compact") {
+          listEl.innerHTML = allDiscounts
+            .map((discount) => {
+              const isManual = manualCodes.has(
+                String(discount.title || "").toLowerCase(),
+              );
+              const discountAmount =
+                Number(discount.total_allocated_amount) || 0;
+              return `<div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid ${discountStyle.rowDivider};">
+                <svg viewBox="0 0 20 20" width="18" height="18" style="fill:${discountStyle.rowIconColor};flex-shrink:0;" aria-hidden="true"><path fill-rule="evenodd" d="M8.575 4.649a3.75 3.75 0 0 1 2.7-1.149h1.975a3.25 3.25 0 0 1 3.25 3.25v2.187a3.25 3.25 0 0 1-.996 2.34l-4.747 4.572a2.5 2.5 0 0 1-3.502-.033l-2.898-2.898a2.75 2.75 0 0 1-.036-3.852l4.254-4.417Zm4.425 3.351a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+                <b style="flex:1;font-size:13px;color:${discountStyle.rowColor};">${escape(discount.title)}</b>
+                <b style="font-size:13px;color:${discountStyle.rowAmountColor};">-${hubUtils.formatMoney(discountAmount)}</b>
+                ${isManual ? `<button type="button" onclick="removeDiscountCode(this,'${blockId}')" aria-label="Remove discount ${escape(discount.title)}" style="background:none;border:0;cursor:pointer;color:${discountStyle.removeColor};padding:2px;display:inline-flex;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>` : ""}
+              </div>`;
+            })
+            .join("");
+        } else {
+          listEl.innerHTML = allDiscounts
+            .map((discount) => {
+              const isManual = manualCodes.has(
+                String(discount.title || "").toLowerCase(),
+              );
+              return `<span style="display:inline-flex;align-items:center;gap:6px;background:${discountStyle.chipBg};color:${discountStyle.chipColor};border-radius:${discountStyle.chipRadius}px;padding:8px 10px;font-size:13px;font-weight:700;">
+                <svg viewBox="0 0 20 20" width="16" height="16" style="fill:${discountStyle.chipColor};flex-shrink:0;" aria-hidden="true"><path fill-rule="evenodd" d="M8.575 4.649a3.75 3.75 0 0 1 2.7-1.149h1.975a3.25 3.25 0 0 1 3.25 3.25v2.187a3.25 3.25 0 0 1-.996 2.34l-4.747 4.572a2.5 2.5 0 0 1-3.502-.033l-2.898-2.898a2.75 2.75 0 0 1-.036-3.852l4.254-4.417Zm4.425 3.351a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+                ${escape(discount.title)}
+                ${isManual ? `<button type="button" onclick="removeDiscountCode(this,'${blockId}')" aria-label="Remove discount ${escape(discount.title)}" style="background:none;border:0;cursor:pointer;color:${discountStyle.chipColor};padding:0;display:inline-flex;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>` : ""}
+              </span>`;
+            })
+            .join("");
+        }
+      }
+
+      const enterInput = inputWrap.dataset.cartPlusOpen === "true";
+      inputWrap.dataset.hasDiscount = String(hasDiscount);
+      inputWrap.style.display =
+        discountStyle.layout === "compact" &&
+        discountStyle.showEnterLink &&
+        hasDiscount &&
+        !enterInput
+          ? "none"
+          : "flex";
+      applyBtn.textContent = discountSettings.buttonText || "Apply";
+      applyBtn.disabled = false;
+      return;
+    }
 
     if (!hasDiscount) {
       discountStatus.innerHTML = "";

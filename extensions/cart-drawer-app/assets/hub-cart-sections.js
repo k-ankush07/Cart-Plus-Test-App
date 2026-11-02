@@ -625,17 +625,28 @@ const CART_PLUS_ANN_ICONS = {
 };
 
 // { css, html } for the announcement bar, or null when no template is picked
-window.cartPlusAnnouncementTemplate = function (ann) {
+window.cartPlusAnnouncementTemplate = function (ann, cart) {
   const t = CART_PLUS_ANN_TEMPLATES[ann?.template];
   if (!t) return null;
   const color = ann.textColor || t.color;
   const iconColor = ann.iconColor || t.iconColor;
   const accentBg = ann.accentBg || t.accentBg;
   const accentText = ann.accentText || t.accentText;
-  const current = Number(ann.current ?? t.current) || 0;
+  const current = Number(
+    ann.template === "progress"
+      ? (cart?.total_price || 0) / 100
+      : (ann.current ?? t.current),
+  ) || 0;
   const goal = Number(ann.goal ?? t.goal) || t.goal || 1;
   const remaining = Math.max(0, goal - current);
-  const text = (ann.text || t.text).replace(/\{remaining\}/g, `$${remaining}`);
+  const formatAmount = (amount) =>
+    window.hubUtils?.formatMoney
+      ? window.hubUtils.formatMoney(amount * 100)
+      : Number(amount).toLocaleString();
+  const text = (ann.text || t.text).replace(
+    /\{remaining\}/g,
+    formatAmount(remaining),
+  );
   const padding = { slim: "4px 20px", normal: "10px 20px", thick: "18px 20px" }[ann.height] || "10px 20px";
   const bg = ann.background ? window.cartPlusBgCss(ann.background) : t.background;
   const pill = `background:#fff;color:#111;border-radius:999px;padding:4px 14px;font-size:12px;font-weight:700;white-space:nowrap;line-height:1.3;box-sizing:border-box;`;
@@ -649,7 +660,7 @@ window.cartPlusAnnouncementTemplate = function (ann) {
     right = `<span style="${pill}background:${accentBg};color:${accentText};">Use code: ${ann.couponCode || t.code}</span>`;
   } else if (ann.template === "progress") {
     const pct = Math.min(100, (current / goal) * 100);
-    right = `<span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:90px;height:6px;border-radius:6px;background:${accentBg}33;overflow:hidden;"><span style="display:block;width:${pct}%;height:100%;background:${accentBg};"></span></span><small>$${current} / $${goal}</small></span>`;
+    right = `<span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:90px;height:6px;border-radius:6px;background:${accentBg}33;overflow:hidden;"><span style="display:block;width:${pct}%;height:100%;background:${accentBg};"></span></span><small>${formatAmount(current)} / ${formatAmount(goal)}</small></span>`;
   } else if (ann.template === "vip") {
     right = `<a href="${ann.link || "#"}" style="color:${color};font-weight:700;text-decoration:underline;">${ann.linkText || t.linkText}</a>`;
   } else if (ann.template === "countdown") {
@@ -876,10 +887,260 @@ const CART_PLUS_DISCOUNT_LAYOUTS = {
   simple: { layout: "stacked", icon: "discount" },
 };
 
+const CART_PLUS_DISCOUNT_TEMPLATE_DEFAULTS = {
+  compact_card: {
+    layout: "compact",
+    heading: "You're Saving",
+    textColor: "#1a1a1a",
+    accent: "#16803c",
+    badgeRadius: 22,
+    showDashedBox: false,
+    showMoreOffers: true,
+    icon: { type: "icon", name: "gift" },
+  },
+  chip_badges: {
+    layout: "chipbadges",
+    heading: "Total Savings",
+    textColor: "#2b1a5c",
+    accent: "#6d4bc3",
+    badgeRadius: 12,
+    showDashedBox: true,
+    showMoreOffers: false,
+    icon: { type: "icon", name: "discount" },
+  },
+};
+
+const CART_PLUS_DISCOUNT_TOKEN_DEFAULTS = {
+  bg: "#ffffff",
+  textColor: "#1a1a1a",
+  accent: "#16803c",
+  radius: 16,
+  padding: 16,
+  shadow: true,
+  showBanner: true,
+  heading: "You're Saving",
+  headingColor: "",
+  amountColor: "",
+  amountSize: 22,
+  bannerBg: "",
+  bannerRadius: 12,
+  badgeBg: "",
+  badgeColor: "#ffffff",
+  badgeRadius: 22,
+  badgeText: "%",
+  appliedLabel: "{n} Discounts Applied",
+  clearAllText: "Remove All",
+  pillBg: "#ffffff",
+  pillColor: "",
+  pillBorder: "",
+  showList: true,
+  rowColor: "",
+  rowIconColor: "",
+  rowAmountColor: "",
+  rowDivider: "#eceef0",
+  removeColor: "",
+  chipBg: "",
+  chipColor: "",
+  chipRadius: 10,
+  showMoreOffers: true,
+  moreOffersText: "more offers",
+  moreOffersColor: "",
+  showEnterLink: true,
+  linkText: "Enter a coupon code",
+  linkColor: "",
+  icon: { type: "icon", name: "gift" },
+  iconColor: "",
+  inputBg: "#ffffff",
+  inputColor: "",
+  inputBorder: "#dcdcdc",
+  inputRadius: 8,
+  buttonBg: "",
+  buttonColor: "#ffffff",
+  buttonRadius: 8,
+  showDashedBox: false,
+  dashedColor: "",
+  dashedRadius: 12,
+  invalidColor: "#D72C0D",
+};
+
+function cartPlusGetDiscountTemplateStyle(settings = {}) {
+  const template = CART_PLUS_DISCOUNT_TEMPLATE_DEFAULTS[settings.template];
+  if (!template) return null;
+  const defaults = { ...CART_PLUS_DISCOUNT_TOKEN_DEFAULTS, ...template };
+  const style = { layout: defaults.layout };
+
+  Object.keys(defaults).forEach((key) => {
+    if (key === "layout" || key === "label") return;
+    const value = settings[key];
+    style[key] =
+      value !== undefined && value !== null && value !== ""
+        ? value
+        : defaults[key];
+  });
+
+  const chip = style.layout === "chipbadges";
+  style.headingColor ||= chip ? style.accent : style.textColor;
+  style.amountColor ||= chip ? style.accent : style.textColor;
+  style.badgeBg ||= style.accent;
+  style.pillColor ||= style.accent;
+  style.pillBorder ||= `${style.accent}55`;
+  style.rowColor ||= style.textColor;
+  style.rowIconColor ||= style.textColor;
+  style.rowAmountColor ||= style.textColor;
+  style.removeColor ||= style.textColor;
+  style.chipBg ||= `${style.accent}1a`;
+  style.chipColor ||= style.accent;
+  style.moreOffersColor ||= style.accent;
+  style.linkColor ||= style.textColor;
+  style.iconColor ||= style.accent;
+  style.inputColor ||= style.textColor;
+  style.buttonBg ||= style.accent;
+  style.dashedColor ||= `${style.accent}55`;
+  style.bannerBg ||= `linear-gradient(90deg, ${style.accent}1f, ${style.accent}0d)`;
+  return style;
+}
+
+window.__HUB_CART_PLUS_RESOLVE_DISCOUNT_STYLE =
+  cartPlusGetDiscountTemplateStyle;
+
+window.cartPlusShowDiscountError = function (element, textOverride) {
+  if (!element) return;
+  const settings = window.__HUB_ACTIVE_CART__?.discountCodesSettings || {};
+  const style = cartPlusGetDiscountTemplateStyle(settings);
+  const message =
+    textOverride ??
+    settings.invalidCodeMessage ??
+    "This discount code isn't valid. Please check the code and try again.";
+  if (!String(message).replace(/<[^>]*>|&nbsp;/g, "").trim()) {
+    element.innerHTML = "";
+    return;
+  }
+
+  const source = new DOMParser().parseFromString(String(message), "text/html").body;
+  const allowedTags = new Set([
+    "B",
+    "BR",
+    "DIV",
+    "EM",
+    "I",
+    "P",
+    "SPAN",
+    "STRONG",
+    "U",
+  ]);
+  const copyNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return document.createTextNode(node.textContent || "");
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return document.createDocumentFragment();
+
+    const fragment = document.createDocumentFragment();
+    const tag = node.tagName.toUpperCase();
+    if (!allowedTags.has(tag)) {
+      node.childNodes.forEach((child) => fragment.appendChild(copyNode(child)));
+      return fragment;
+    }
+
+    const safeElement = document.createElement(tag.toLowerCase());
+    const color = node.style?.color || "";
+    if (/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|[a-z]+)$/i.test(color)) {
+      safeElement.style.color = color;
+    }
+    const fontSize = node.style?.fontSize || "";
+    if (/^\d{1,2}(px|em|rem|%)$/i.test(fontSize)) {
+      safeElement.style.fontSize = fontSize;
+    }
+    const fontWeight = node.style?.fontWeight || "";
+    if (/^(normal|bold|[1-9]00)$/i.test(fontWeight)) {
+      safeElement.style.fontWeight = fontWeight;
+    }
+    if (/^(normal|italic|oblique)$/i.test(node.style?.fontStyle || "")) {
+      safeElement.style.fontStyle = node.style.fontStyle;
+    }
+    if (/^(none|underline|line-through)$/i.test(node.style?.textDecoration || "")) {
+      safeElement.style.textDecoration = node.style.textDecoration;
+    }
+    node.childNodes.forEach((child) => safeElement.appendChild(copyNode(child)));
+    return safeElement;
+  };
+
+  const content = document.createDocumentFragment();
+  source.childNodes.forEach((node) => content.appendChild(copyNode(node)));
+  element.innerHTML = "";
+  element.appendChild(content);
+  element.style.color =
+    style?.invalidColor || settings.invalidColor || "#D72C0D";
+  clearTimeout(element._cartPlusMessageTimer);
+  element._cartPlusMessageTimer = setTimeout(() => {
+    element.innerHTML = "";
+  }, 4000);
+};
+
+window.cartPlusToggleDiscountInput = function (blockId) {
+  const input = document.getElementById(`hub-discount-input-wrap-${blockId}`);
+  if (!input) return;
+  if (input.dataset.hasDiscount !== "true") {
+    input.style.display = "flex";
+    return;
+  }
+  input.dataset.cartPlusOpen =
+    input.dataset.cartPlusOpen === "true" ? "false" : "true";
+  input.style.display =
+    input.dataset.cartPlusOpen === "true" ? "flex" : "none";
+};
+
+function renderDiscountTemplateHTMLInternal(blockId, settings, style) {
+  const escape = (value) =>
+    String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    })[char]);
+  const color = style.textColor;
+  const placeholder = escape(settings.placeholder || "Discount code");
+  const buttonText = settings.buttonText || "Apply";
+  const icon = style.icon || { type: "icon", name: "discount" };
+  const iconHtml =
+    window.hubLibraryIconHTML?.(icon, 18, style.iconColor) || "";
+  const shell = `background:${style.bg};color:${color};border-radius:${style.radius}px;padding:${style.padding}px;margin:12px;box-shadow:${style.shadow ? "0 1px 3px rgba(0,0,0,.08)" : "none"};flex:1 1 auto;min-width:0;box-sizing:border-box;`;
+  const pairStyle = `display:flex;gap:8px;align-items:center;margin-top:12px;padding:${style.showDashedBox ? "6px" : "0"};border-radius:${style.dashedRadius}px;border:${style.showDashedBox ? `1.5px dashed ${style.dashedColor}` : "none"};`;
+  const input = `<input type="text" id="discount-code-input-${blockId}" placeholder="${placeholder}" class="hub-discount-input cart-plus-discount-code-text cart-plus-discount-code-input" style="flex:1;min-width:0;padding:10px 12px;font-size:13px;color:${style.inputColor};background:${style.inputBg};border:1px solid ${style.inputBorder};border-radius:${style.inputRadius}px;outline:none;box-shadow:none;${style.showDashedBox ? "border:0;background:transparent;" : ""}">`;
+  const button = `<button type="button" onclick="applyDiscountCode(this)" class="hub-discount-apply-btn cart-plus-public-discount-code__button cart-plus-discount-code-button" style="background:${style.buttonBg};color:${style.buttonColor};border:0;border-radius:${style.buttonRadius}px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">${buttonText}</button>`;
+  const message = `<div class="error-discount"><p id="discount-message" class="hub-discount-message"></p></div>`;
+  const status = `<div id="hub-discount-status-${blockId}" class="hub-discount-status-code" data-layout="${style.layout}"></div>`;
+  const arrow = `<svg viewBox="0 0 20 20" width="16" height="16" style="fill:currentColor;flex-shrink:0;"><path fill-rule="evenodd" d="M7.72 14.53a.75.75 0 0 1 0-1.06l3.47-3.47-3.47-3.47a.75.75 0 0 1 1.06-1.06l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 0 1-1.06 0Z"/></svg>`;
+  const compactEnterLink = `<button type="button" onclick="cartPlusToggleDiscountInput('${blockId}')" style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:4px;background:none;border:0;padding:0;color:${style.linkColor};font-size:13px;cursor:pointer;">${escape(style.linkText)} ${arrow}</button>`;
+  const chipEnterLink = `<button type="button" onclick="hubOpenOffersPanel('${blockId}')" style="display:flex;align-items:center;gap:4px;background:none;border:0;padding:0;color:${style.linkColor};font-size:12px;cursor:pointer;">${escape(style.linkText)} ${arrow}</button>`;
+  const inputWrap = `<div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}" style="${pairStyle}">${input}${button}</div>`;
+  const banner = `<div data-discount-banner style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:${style.bannerRadius}px;background:${style.bannerBg};">
+    <span style="width:44px;height:44px;border-radius:${style.badgeRadius}px;background:${style.badgeBg};color:${style.badgeColor};display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;">${escape(style.badgeText)}</span>
+    <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:${style.headingColor};">${escape(style.heading)}</div><div data-discount-total style="font-size:${style.amountSize}px;font-weight:800;color:${style.amountColor};">${hubUtils.formatMoney(0)}</div></div>
+    ${
+      style.layout === "compact"
+        ? `<span data-discount-pill style="border:1px solid ${style.pillBorder};color:${style.pillColor};background:${style.pillBg};border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;"></span>`
+        : `<button type="button" data-discount-clear-all onclick="removeDiscountCode(this,'${blockId}')" style="border:1px solid ${style.pillBorder};background:${style.pillBg};color:${style.pillColor};border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">${escape(style.clearAllText)}</button>`
+    }
+  </div>`;
+  const list = `<div data-discount-list style="${style.layout === "chipbadges" ? "display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;" : "margin-top:4px;"}"></div>`;
+  const moreOffers = style.showMoreOffers
+    ? `<button type="button" onclick="hubOpenOffersPanel('${blockId}')" style="flex:1;display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;color:${style.moreOffersColor};font-size:13px;font-weight:700;cursor:pointer;">${iconHtml}+1 ${escape(style.moreOffersText)}</button>`
+    : "";
+  const shellContent =
+    style.layout === "compact"
+      ? `${style.showBanner ? banner : ""}${style.showList ? list : ""}${(style.showMoreOffers || style.showEnterLink) ? `<div style="display:flex;align-items:center;margin-top:10px;">${style.showMoreOffers ? moreOffers : ""}${style.showMoreOffers && style.showEnterLink ? `<span style="width:1px;align-self:stretch;background:#e1e3e5;margin:0 12px;"></span>` : ""}${style.showEnterLink ? compactEnterLink : ""}</div>` : ""}${inputWrap}${message}`
+      : `${style.showBanner ? banner : ""}${style.showList ? list : ""}${inputWrap}${message}${style.showEnterLink ? `<div style="margin-top:10px;">${chipEnterLink}</div>` : ""}`;
+  return `<div class="hub-discount-input-row-items cart-plus-discount-code-row cart-plus-public-discount-code" id="hub-discount-row-${blockId}" style="padding:0;"><div class="cart-plus-discount-tpl" style="${shell}">${status}${shellContent}</div></div>`;
+}
+
 // html for the Discount code row when a template is picked, "" for the classic row.
 // Keeps the ids / classes the apply + status code relies on (.hub-discount-input, .hub-discount-apply-btn,
 // .hub-discount-input-btn, #hub-discount-status-*, #discount-message).
 window.cartPlusDiscountTemplateHTML = function (blockId, s) {
+  const style = window.__HUB_CART_PLUS_RESOLVE_DISCOUNT_STYLE?.(s);
+  if (style) return renderDiscountTemplateHTMLInternal(blockId, s, style);
+
   const meta = CART_PLUS_DISCOUNT_LAYOUTS[s?.template];
   if (!meta) return "";
   const layout = meta.layout;

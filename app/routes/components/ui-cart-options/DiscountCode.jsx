@@ -23,6 +23,7 @@ import {
   resolveDiscountStyle,
 } from "../utils/discountTemplates";
 
+// a labelled rich-text field
 const Field = ({ label, value, onChange, helpText }) => (
   <BlockStack gap="100">
     <Text variant="bodyMd" fontWeight="medium">
@@ -508,7 +509,12 @@ export default function DiscountCode({
         {/* ───────── Classic-only parts ───────── */}
         {isClassic && (
           <Section title="Classic layout">
-            {toggle("showTitle", "Show Discount Code Title")}
+            <Checkbox
+              label="Show Discount Code Title"
+              checked={s.showTitle ?? false}
+              onChange={(v) => update("showTitle", v)}
+            />
+
             {s.showTitle && (
               <>
                 <Field

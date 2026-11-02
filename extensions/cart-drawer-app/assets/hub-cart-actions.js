@@ -671,7 +671,7 @@ window.applyDiscountCode = async function (btn) {
         desc: "Your discount has been applied to the cart total.",
       });
     } else {
-      showMessage(newMessage, "Enter a valid discount code", "red");
+      window.cartPlusShowDiscountError?.(newMessage);
     }
 
     if (input) {

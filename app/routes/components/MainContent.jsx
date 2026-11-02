@@ -75,6 +75,7 @@ const MainContent = memo(function MainContent({ activeTab, designSettings, heade
             shop={shop}
             accessToken={accessToken}
             apiUrl={apiUrl}
+            currency={currency}
         />,
         "Progress Bar": (
             <TieredOffers
