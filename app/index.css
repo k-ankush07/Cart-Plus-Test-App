@@ -1710,7 +1710,7 @@ span.cart-plus-offers-title {
     gap: 8px;
     flex-shrink: 0;
     background: white;
-    padding: 15px;
+    padding: 10px;
     border-radius: 5px;
     flex-wrap: wrap;
     border: 1px solid var(--cp-accent-border, #E8E8E8);

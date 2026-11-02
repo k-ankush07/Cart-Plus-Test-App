@@ -1308,7 +1308,7 @@ window.hubUtils = {
               const isManual = manualCodes.has(
                 String(discount.title || "").toLowerCase(),
               );
-              return `<span style="display:inline-flex;align-items:center;gap:6px;background:${discountStyle.chipBg};color:${discountStyle.chipColor};border-radius:${discountStyle.chipRadius}px;padding:8px 10px;font-size:13px;font-weight:700;">
+              return `<span style="display:inline-flex;align-items:center;gap:6px;background:${discountStyle.chipBg};color:${discountStyle.chipColor};border-radius:${discountStyle.chipRadius}px;padding:5px 5px;font-size:13px;font-weight:700;">
                 <svg viewBox="0 0 20 20" width="16" height="16" style="fill:${discountStyle.chipColor};flex-shrink:0;" aria-hidden="true"><path fill-rule="evenodd" d="M8.575 4.649a3.75 3.75 0 0 1 2.7-1.149h1.975a3.25 3.25 0 0 1 3.25 3.25v2.187a3.25 3.25 0 0 1-.996 2.34l-4.747 4.572a2.5 2.5 0 0 1-3.502-.033l-2.898-2.898a2.75 2.75 0 0 1-.036-3.852l4.254-4.417Zm4.425 3.351a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
                 ${escape(discount.title)}
                 ${isManual ? `<button type="button" onclick="removeDiscountCode(this,'${blockId}')" aria-label="Remove discount ${escape(discount.title)}" style="background:none;border:0;cursor:pointer;color:${discountStyle.chipColor};padding:0;display:inline-flex;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>` : ""}

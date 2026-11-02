@@ -19,7 +19,7 @@ export const TOKEN_DEFAULTS = {
   heading: "You're Saving",
   headingColor: "",
   amountColor: "",
-  amountSize: 22,
+  amountSize: 18,
   bannerBg: "", // "" = soft gradient from accent
   bannerRadius: 12,
   badgeBg: "",

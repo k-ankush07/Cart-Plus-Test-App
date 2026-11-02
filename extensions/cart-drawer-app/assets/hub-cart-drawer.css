@@ -411,7 +411,7 @@ input.hub-qty-input:hover {
   border: 0;
   padding: 0;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 12px;
   background-color: transparent;
   line-height: 1;
 }
@@ -2371,8 +2371,8 @@ span.hub-rating-count {
     display: flex;
     background: white;
     align-items: center;
-    margin-bottom: 15px;
-    padding: 15px 15px 0;
+    margin-bottom: 10px;
+    padding: 10px 15px 0;
     border-radius: 5px;
 
 }
@@ -2423,7 +2423,7 @@ span.hub-rating-count {
 .hub-discount-row {
   display: flex;
   justify-content: space-between;
-  padding: 20px;
+  padding: 10px;
   border-top: 1px solid #E8E8E8;
   align-items: center;
 }
@@ -2473,7 +2473,7 @@ button.remove-btn {
 .hub-discount-right {
   color: #10812F;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .hub-discount-image {

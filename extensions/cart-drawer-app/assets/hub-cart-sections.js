@@ -503,7 +503,7 @@ window.cartPlusAgeHTML = function (blockId, cartSettings) {
 
   // Classic: the original checkbox box
  if (!layout) {
-  return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:8px 16px;${hidden}">
+  return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:5px 5px;${hidden}">
   <div class="cart-plus-age-box" style="padding:12px;border-radius:${s.borderRadius}px;border:1px solid ${s.borderColor};--cp-age-edge:${s.borderColor};background:${window.cartPlusBgCss(s.background)};">
     <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:0;padding:0;min-height:0;">
       <input type="checkbox" id="cart-plus-age-check-${blockId}" class="cart-plus-age-check" onchange="cartPlusAgeChanged('${blockId}')" style="--cp-age-toggle:${s.toggleColor};--cp-age-border:${s.borderColor};margin:2px 0 0;padding:0;flex:0 0 auto;width:18px;height:18px;">
@@ -526,7 +526,7 @@ window.cartPlusAgeHTML = function (blockId, cartSettings) {
   const badgeLabel = `${s.minimumAge}+`;
   const set = (on) => `cartPlusAgeSet('${blockId}',${on})`;
   const btnBase =
-    "border:none;cursor:pointer;font-size:12px;font-weight:600;padding:8px 14px;border-radius:6px;white-space:nowrap;";
+    "border:none;cursor:pointer;font-size:10px;font-weight:600;padding:8px 14px;border-radius:6px;white-space:nowrap;";
 
   const question = (size = 14, center = false, weight = 500) =>
     `<div style="font-size:${size}px;font-weight:${weight};text-align:${center ? "center" : "left"};">${f(s.checkboxText)}</div>`;
@@ -584,7 +584,7 @@ window.cartPlusAgeHTML = function (blockId, cartSettings) {
     content = column(`${question(18, true, 700)}${sub(true)}${yesBtn("width:100%;")}${noLink()}`, 8);
   }
 
-  return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:8px 16px;${hidden}">
+  return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:5px 5px;${hidden}">
     <div class="cart-plus-age-box" style="padding:14px;border-radius:${s.borderRadius}px;border:1px solid ${s.borderColor};--cp-age-edge:${s.borderColor};background:${window.cartPlusBgCss(s.background)};">
       ${content}${input}
       ${errorHtml}
@@ -1157,22 +1157,22 @@ function renderDiscountTemplateHTMLInternal(blockId, settings, style) {
   const iconHtml =
     window.hubLibraryIconHTML?.(icon, 18, style.iconColor) || "";
   const shell = `background:${style.bg};color:${color};border-radius:${style.radius}px;padding:${style.padding}px;margin:12px;box-shadow:${style.shadow ? "0 1px 3px rgba(0,0,0,.08)" : "none"};flex:1 1 auto;min-width:0;box-sizing:border-box;`;
-  const pairStyle = `display:flex;gap:8px;align-items:center;margin-top:12px;padding:${style.showDashedBox ? "6px" : "0"};border-radius:${style.dashedRadius}px;border:${style.showDashedBox ? `1.5px dashed ${style.dashedColor}` : "none"};`;
-  const input = `<input type="text" id="discount-code-input-${blockId}" placeholder="${placeholder}" class="hub-discount-input cart-plus-discount-code-text cart-plus-discount-code-input" style="flex:1;min-width:0;padding:10px 12px;font-size:13px;color:${style.inputColor};background:${style.inputBg};border:1px solid ${style.inputBorder};border-radius:${style.inputRadius}px;outline:none;box-shadow:none;${style.showDashedBox ? "border:0;background:transparent;" : ""}">`;
-  const button = `<button type="button" onclick="applyDiscountCode(this)" class="hub-discount-apply-btn cart-plus-public-discount-code__button cart-plus-discount-code-button" style="background:${style.buttonBg};color:${style.buttonColor};border:0;border-radius:${style.buttonRadius}px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">${buttonText}</button>`;
+  const pairStyle = `display:flex;gap:8px;align-items:center;margin-top:12px;padding:${style.showDashedBox ? "4px" : "0"};border-radius:${style.dashedRadius}px;border:${style.showDashedBox ? `1.5px dashed ${style.dashedColor}` : "none"};`;
+  const input = `<input type="text" id="discount-code-input-${blockId}" placeholder="${placeholder}" class="hub-discount-input cart-plus-discount-code-text cart-plus-discount-code-input" style="flex:1;min-width:0;padding:5px 12px;font-size:13px;color:${style.inputColor};background:${style.inputBg};border:1px solid ${style.inputBorder};border-radius:${style.inputRadius}px;outline:none;box-shadow:none;${style.showDashedBox ? "border:0;background:transparent;" : ""}">`;
+  const button = `<button type="button" onclick="applyDiscountCode(this)" class="hub-discount-apply-btn cart-plus-public-discount-code__button cart-plus-discount-code-button" style="background:${style.buttonBg};color:${style.buttonColor};border:0;border-radius:${style.buttonRadius}px;padding:8px 18px;font-size:10px;font-weight:700;cursor:pointer;">${buttonText}</button>`;
   const message = `<div class="error-discount"><p id="discount-message" class="hub-discount-message"></p></div>`;
   const status = `<div id="hub-discount-status-${blockId}" class="hub-discount-status-code" data-layout="${style.layout}"></div>`;
   const arrow = `<svg viewBox="0 0 20 20" width="16" height="16" style="fill:currentColor;flex-shrink:0;"><path fill-rule="evenodd" d="M7.72 14.53a.75.75 0 0 1 0-1.06l3.47-3.47-3.47-3.47a.75.75 0 0 1 1.06-1.06l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 0 1-1.06 0Z"/></svg>`;
   const compactEnterLink = `<button type="button" onclick="cartPlusToggleDiscountInput('${blockId}')" style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:4px;background:none;border:0;padding:0;color:${style.linkColor};font-size:13px;cursor:pointer;">${escape(style.linkText)} ${arrow}</button>`;
   const chipEnterLink = `<button type="button" onclick="hubOpenOffersPanel('${blockId}')" style="display:flex;align-items:center;gap:4px;background:none;border:0;padding:0;color:${style.linkColor};font-size:12px;cursor:pointer;">${escape(style.linkText)} ${arrow}</button>`;
   const inputWrap = `<div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}" style="${pairStyle}">${input}${button}</div>`;
-  const banner = `<div data-discount-banner style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:${style.bannerRadius}px;background:${style.bannerBg};">
-    <span style="width:44px;height:44px;border-radius:${style.badgeRadius}px;background:${style.badgeBg};color:${style.badgeColor};display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;">${escape(style.badgeText)}</span>
-    <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:${style.headingColor};">${escape(style.heading)}</div><div data-discount-total style="font-size:${style.amountSize}px;font-weight:800;color:${style.amountColor};">${hubUtils.formatMoney(0)}</div></div>
+  const banner = `<div data-discount-banner style="display:flex;align-items:center;gap:12px;padding:6px;border-radius:${style.bannerRadius}px;background:${style.bannerBg};">
+    <span style="width:35px;height:35px;border-radius:${style.badgeRadius}px;background:${style.badgeBg};color:${style.badgeColor};display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;">${escape(style.badgeText)}</span>
+    <div style="flex:1;"><div style="font-size:10px;font-weight:600;color:${style.headingColor};">${escape(style.heading)}</div><div data-discount-total style="font-size:${style.amountSize}px;font-weight:800;color:${style.amountColor};">${hubUtils.formatMoney(0)}</div></div>
     ${
       style.layout === "compact"
-        ? `<span data-discount-pill style="border:1px solid ${style.pillBorder};color:${style.pillColor};background:${style.pillBg};border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;"></span>`
-        : `<button type="button" data-discount-clear-all onclick="removeDiscountCode(this,'${blockId}')" style="border:1px solid ${style.pillBorder};background:${style.pillBg};color:${style.pillColor};border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">${escape(style.clearAllText)}</button>`
+        ? `<span data-discount-pill style="border:1px solid ${style.pillBorder};color:${style.pillColor};background:${style.pillBg};border-radius:999px;padding:6px 12px;font-size:10px;font-weight:600;"></span>`
+        : `<button type="button" data-discount-clear-all onclick="removeDiscountCode(this,'${blockId}')" style="border:1px solid ${style.pillBorder};background:${style.pillBg};color:${style.pillColor};border-radius:999px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;">${escape(style.clearAllText)}</button>`
     }
   </div>`;
   const list = `<div data-discount-list style="${style.layout === "chipbadges" ? "display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;" : "margin-top:4px;"}"></div>`;
@@ -1220,7 +1220,7 @@ window.cartPlusDiscountTemplateHTML = function (blockId, s) {
   const input = (extra = "") =>
     `<input type="text" id="discount-code-input-${blockId}" placeholder="${placeholder}" class="hub-discount-input cart-plus-discount-code-text cart-plus-discount-code-input" style="flex:1;min-width:0;padding:10px 12px;font-size:13px;color:${color};background:#fff;border:1px solid #dcdcdc;border-radius:8px;outline:none;box-shadow:none;${extra}">`;
   const button = (extra = "") =>
-    `<button type="button" onclick="applyDiscountCode(this)" class="hub-discount-apply-btn cart-plus-public-discount-code__button cart-plus-discount-code-button" style="background:${accent};color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;${extra}">${buttonText}</button>`;
+    `<button type="button" onclick="applyDiscountCode(this)" class="hub-discount-apply-btn cart-plus-public-discount-code__button cart-plus-discount-code-button" style="background:${accent};color:#fff;border:0;border-radius:8px;padding:8px 18px;font-size:10px;font-weight:700;cursor:pointer;${extra}">${buttonText}</button>`;
   // input + button row; carries .hub-discount-input-btn so the applied-state code can find it
   const pair = (inner, extra = "display:flex;gap:8px;") =>
     `<div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}" style="padding:0;margin:0;background:transparent;border-radius:0;width:100%;${extra}">${inner}</div>`;
@@ -1235,7 +1235,7 @@ window.cartPlusDiscountTemplateHTML = function (blockId, s) {
   if (layout === "card") {
     return wrap(`<div class="cart-plus-discount-tpl" style="${shell}">
       ${status}
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">${iconBubble}<div><div style="font-size:12px;font-weight:700;">${heading}</div><div style="font-size:11px;opacity:.65;">${subtitle}</div></div></div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">${iconBubble}<div><div style="font-size:10px;font-weight:700;">${heading}</div><div style="font-size:11px;opacity:.65;">${subtitle}</div></div></div>
       ${pair(`${input()}${button()}`)}
       ${message}
       ${showAll ? `<div style="margin-top:12px;">${linkBtn("text-decoration:underline;")}</div>` : ""}
@@ -1344,7 +1344,7 @@ window.cartPlusPaymentBadgesHTML = function (cartSettings) {
   const justify =
     s.alignment === "left" ? "flex-start" : s.alignment === "right" ? "flex-end" : "center";
   const icons = window.cartPlusTrustIcons || {};
-  return `<div class="cart-plus-payment-badges" style="display:flex;flex-direction:column;gap:8px;padding:8px 16px;background:${window.cartPlusBgCss(s.background)};">
+  return `<div class="cart-plus-payment-badges" style="display:flex;flex-direction:column;gap:8px;padding:5px 5px;background:${window.cartPlusBgCss(s.background)};">
     ${
       badges.length
         ? `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:${justify};">${badges.map((b) => cartPlusBadgeHTML(b, s.size || 28)).join("")}</div>`

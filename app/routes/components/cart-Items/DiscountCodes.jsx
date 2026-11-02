@@ -71,7 +71,7 @@ const discountAmount = (d, total = 0) => {
 
 const num = (v) => (v === "" || v == null ? undefined : Number(v));
 
-const PercentBadge = ({ bg, fg = "#fff", text = "%", size = 44, radius = 22 }) => (
+const PercentBadge = ({ bg, fg = "#fff", text = "%", size = 35, radius = 22 }) => (
   <span
     style={{
       width: size,
@@ -386,8 +386,8 @@ export default function DiscountCode({
         color: T.buttonColor,
         border: 0,
         borderRadius: T.buttonRadius,
-        padding: "10px 18px",
-        fontSize: 13,
+        padding: "8px 18px",
+        fontSize: 10,
         fontWeight: 700,
         cursor: "pointer",
         ...extra,
@@ -430,7 +430,7 @@ export default function DiscountCode({
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: 12,
+        padding: 6,
         borderRadius: T.bannerRadius,
         background: T.bannerBg,
       }}
@@ -442,7 +442,7 @@ export default function DiscountCode({
         radius={T.badgeRadius}
       />
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: T.headingColor }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: T.headingColor }}>
           {T.heading}
         </div>
         <div
@@ -465,7 +465,7 @@ export default function DiscountCode({
             color: T.pillColor,
             borderRadius: 999,
             padding: "6px 12px",
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: 700,
             cursor: "pointer",
           }}
@@ -479,8 +479,8 @@ export default function DiscountCode({
             color: T.pillColor,
             background: T.pillBg,
             borderRadius: 999,
-            padding: "6px 12px",
-            fontSize: 12,
+            padding: "2px 8px",
+            fontSize: 10,
             fontWeight: 600,
           }}
         >
@@ -539,7 +539,7 @@ export default function DiscountCode({
                   padding: 0,
                   cursor: "pointer",
                   color: T.moreOffersColor,
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: 700,
                 }}
               >
@@ -610,8 +610,8 @@ export default function DiscountCode({
                   background: T.chipBg,
                   color: T.chipColor,
                   borderRadius: T.chipRadius,
-                  padding: "8px 10px",
-                  fontSize: 13,
+                  padding: "5px 5px",
+                  fontSize: 12,
                   fontWeight: 700,
                 }}
               >
@@ -628,7 +628,7 @@ export default function DiscountCode({
             gap: 8,
             alignItems: "center",
             marginTop: 12,
-            padding: T.showDashedBox ? 6 : 0,
+            padding: T.showDashedBox ? 4 : 0,
             borderRadius: T.dashedRadius,
             border: T.showDashedBox ? `1.5px dashed ${T.dashedColor}` : "none",
           }}
