@@ -200,14 +200,7 @@ export default function CartFooter({
     >
       <div className="cart-plus-footer-stack" ref={stackRef}>
         {footerOrder.map((key) => (
-          <div
-            key={key}
-            className={
-              key === "Age Verification" || key === "Checkout Button"
-                ? "cp-sec cp-keep-pad"
-                : "cp-sec"
-            }
-          >
+          <div key={key} className="cp-sec">
             {footerBlocks[key]}
           </div>
         ))}

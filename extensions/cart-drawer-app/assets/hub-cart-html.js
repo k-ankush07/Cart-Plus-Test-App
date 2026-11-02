@@ -411,8 +411,7 @@ bs.textContent += `
       .map((key) => {
         const html = key in rows ? rows[key] : blockRows[key] || "";
         if (!html || !String(html).trim()) return "";
-        const keep = key === "Age Verification" || key === "Checkout Button";
-        return `<div class="cp-sec${keep ? " cp-keep-pad" : ""}">${html}</div>`;
+        return `<div class="cp-sec">${html}</div>`;
       })
       .join("");
 

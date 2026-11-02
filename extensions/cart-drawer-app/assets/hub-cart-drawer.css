@@ -1693,7 +1693,7 @@ display: flex;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 15px 20px 3px;
+  padding: 15px 20px 12px;
   text-align: left;
 }
 
@@ -3278,11 +3278,29 @@ select.hub-compact-variant {
   border-top-color: var(--cp-age-edge, #dbe4f5) !important;
 }
 
-.cart-plus-footer-stack > .cp-sec:not([data-cp-first]):not(.cp-keep-pad),
-.cart-plus-footer-stack > .cp-sec:not([data-cp-first]):not(.cp-keep-pad) > :first-child,
-.cart-plus-age-verification {
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-discount-tpl {
+  margin-top: 0 !important;
+}
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) {
   padding-top: 0 !important;
-  border-top: none !important;
+  margin-top: 0 !important;
+}
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) > :first-child:not(.cart-plus-discount-tpl),
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-additional-notes,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-addon-tile,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-addon-shipping-protection,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-addon-product,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-summary,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-discount-row,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-age-verification,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-login-message,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-checkout-button-container-row,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-payment-badges {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-cart-checkout-btn {
+  margin-top: 0 !important;
 }
 /* Cross-sell "Side panel": a strip of cards beside the cart (left or right, set in the editor) */
 .hub-upsell-side-panel {

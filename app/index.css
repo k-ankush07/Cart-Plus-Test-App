@@ -2318,8 +2318,24 @@ input.cart-plus-offers-code-input:focus {
 .cart-plus-footer .cart-plus-footer-stack > :not(:first-child) .cart-plus-discount-input-row {
   border-top: 1px solid var(--cp-accent-border, #E8E8E8) !important;
 }
-.cart-plus-footer .cart-plus-footer-stack > :not(:first-child) .cart-plus-discount-input-btn {
-  padding-top: 10px !important;
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-discount-tpl {
+  margin-top: 0 !important;
+}
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) > :first-child:not(.cart-plus-discount-tpl),
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-additional-notes,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-addon-tile,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-summary,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-discount-row,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-age-verification,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-login-message,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-checkout-button-container-row,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-payment-badges {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
 }
 
 .cart-plus-upsells-side-panel h3.cart-plus-internal-component-upsell-tile__title.cart-plus-public-component-upsell-tile__title {
