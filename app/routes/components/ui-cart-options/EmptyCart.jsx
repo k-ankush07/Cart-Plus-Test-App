@@ -16,7 +16,11 @@ import RichTextEditor from "../ui/RichTextEditor";
 import IconLibrary from "../ui/IconLibrary";
 import ColorInput from "../ui/ColorInput";
 import BackgroundInput from "../ui/BackgroundInput";
-import { getEmptyCart, patchEmptyCart } from "../utils/emptyCart";
+import {
+  getEmptyCart,
+  getEmptyCartIconColor,
+  patchEmptyCart,
+} from "../utils/emptyCart";
 import "../../../index.css";
 
 const CardTitle = ({ icon, children }) => (
@@ -57,7 +61,7 @@ export default function EmptyCart({ cartSettings, designSettings, handleChange, 
               <div style={{ width: 120 }}>
                 <ColorInput
                   label="Icon color"
-                  value={s.iconColor}
+                  value={getEmptyCartIconColor(s.iconColor, designSettings)}
                   onChange={(val) => update({ iconColor: val })}
                 />
               </div>

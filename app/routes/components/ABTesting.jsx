@@ -341,6 +341,7 @@ function VariantTab({ id, active, canRemove, onSelect, onRemove }) {
  */
 export default function ABTesting({
   defaultValue = DEFAULT_VALUE,
+  openOnMount = false,
   onChange,
   onActiveVariantChange,
   onVariantAdd,
@@ -349,7 +350,7 @@ export default function ABTesting({
   onStopTest,
 }) {
   const [state, setState] = useState({ ...DEFAULT_VALUE, ...defaultValue })
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(openOnMount)
 
   const { enabled, variants, activeVariant } = state
   const canAdd = variants.length < MAX_VARIANTS

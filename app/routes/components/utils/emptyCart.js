@@ -3,7 +3,7 @@
 export const EMPTY_DEFAULTS = {
   message: null, // rich text; null = Preferences "Empty cart message"
   icon: { type: "icon", name: "product" }, // { type: "icon", name } | { type: "image", url }
-  iconColor: "#1553d8",
+  iconColor: null,
   showButton: true,
   buttonText: "Continue Shopping",
   buttonUrl: "/",
@@ -18,6 +18,19 @@ export const getEmptyCart = (cartSettings) => ({
   ...EMPTY_DEFAULTS,
   ...(cartSettings?.emptyCart || {}),
 });
+
+export const getEmptyCartIconColor = (iconColor, designSettings) => {
+  if (iconColor && iconColor.toLowerCase() !== "#1553d8") return iconColor;
+
+  return (
+    designSettings?.accentSolid ||
+    (designSettings?.colorMode === "gradient"
+      ? designSettings?.gradientStart
+      : designSettings?.themeColor) ||
+    designSettings?.accentColor ||
+    "#1553d8"
+  );
+};
 
 // functional updater for handleChange("cartSettings", ...)
 // Back at all defaults -> the `emptyCart` key is dropped, so the save bar goes away.

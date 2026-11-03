@@ -1,6 +1,6 @@
 import { LibraryIcon } from "../ui/IconLibrary";
 import { backgroundToCss } from "../utils/background";
-import { getEmptyCart } from "../utils/emptyCart";
+import { getEmptyCart, getEmptyCartIconColor } from "../utils/emptyCart";
 
 // What the cart shows when it has no items: icon, message and a "Continue shopping" button.
 // The chosen Background fills the whole area; `children` (the Login message) sit between the message and the button.
@@ -31,7 +31,11 @@ export default function EmptyCart({ cartSettings, designSettings, children, foot
           textAlign: "center",
         }}
       >
-        <LibraryIcon value={s.icon} size={56} color={s.iconColor} />
+        <LibraryIcon
+          value={s.icon}
+          size={56}
+          color={getEmptyCartIconColor(s.iconColor, designSettings)}
+        />
 
         <div style={{ fontSize: 16 }} dangerouslySetInnerHTML={{ __html: message }} />
 

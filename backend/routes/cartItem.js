@@ -1119,7 +1119,7 @@ router.get("/cart-stats", async (req, res) => {
     };
 
     const publishedCart = await cartModels
-      .findOne({ shop: cleanShop, isPublished: true })
+      .findOne({ shop: cleanShop, status: "published" })
       .lean();
     const activeAbTest = publishedCart?.cartSettings?.abTest;
     const activeVariantIds =

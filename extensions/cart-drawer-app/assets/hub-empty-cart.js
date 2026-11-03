@@ -4,7 +4,7 @@
 const CART_PLUS_EMPTY_DEFAULTS = {
   message: null, // rich text; null = Preferences "Empty cart message"
   icon: { type: "icon", name: "product" },
-  iconColor: "#1553d8",
+  iconColor: null,
   showButton: true,
   buttonText: "Continue Shopping",
   buttonUrl: "/",
@@ -47,6 +47,13 @@ window.cartPlusEmptyCartHTML = function (blockId) {
   const s = window.cartPlusGetEmptyCart(cartSettings);
   const message = s.message ?? cartSettings.emptyCartMessage ?? "Your cart is empty";
   const customHtml = cartSettings.customHtmlBlocks?.empty_cart || "";
+  const iconColor =
+    s.iconColor && s.iconColor.toLowerCase() !== "#1553d8"
+      ? s.iconColor
+      : ds.accentSolid ||
+        (ds.colorMode === "gradient" ? ds.gradientStart : ds.themeColor) ||
+        ds.accentColor ||
+        "#1553d8";
   const btnBg = window.cartPlusBgCss(s.buttonBackground) || ds.buttonColor || "#000000";
   const btnText = s.buttonTextColor || ds.buttonTextColor || "#ffffff";
   const login = window.cartPlusLoginHTML?.(cartSettings, "emptyLogin") || "";
@@ -54,7 +61,7 @@ window.cartPlusEmptyCartHTML = function (blockId) {
   return `<div class="hub-cart-empty cart-plus-empty-cart" style="display:flex;flex-direction:column;flex:1 1 auto;width:100%;min-width:0;max-width:100%;box-sizing:border-box;background:${window.cartPlusBgCss(s.background)};">
     <div style="flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 16px;text-align:center;">
       <div>${customHtml}</div>
-      ${window.hubLibraryIconHTML?.(s.icon, 56, s.iconColor) || ""}
+      ${window.hubLibraryIconHTML?.(s.icon, 56, iconColor) || ""}
       <div class="hub-empty-title" style="font-size:16px;">${message}</div>
       ${login}
       ${

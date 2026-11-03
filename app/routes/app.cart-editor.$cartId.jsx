@@ -153,7 +153,15 @@ export default function CartEditor() {
   const { shop, apiUrl, cart, accessToken, currency, initialPreviewProduct } =
     useLoaderData();
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openAbTestOnLoad = searchParams.get("tab") === "ab-test";
+
+  useEffect(() => {
+    if (!openAbTestOnLoad) return;
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.delete("tab");
+    setSearchParams(nextSearchParams, { replace: true });
+  }, [openAbTestOnLoad, searchParams, setSearchParams]);
 
   const MODULE_TAB_MAP = {
     recommendations: "Cross-sell",
@@ -384,6 +392,7 @@ export default function CartEditor() {
 
   const abTesting = {
     resetKey: abKey,
+    openOnMount: openAbTestOnLoad,
     defaultValue: cartSettings?.abTest
       ? {
           ...cartSettings.abTest,
@@ -404,6 +413,13 @@ export default function CartEditor() {
       config.controlId = config.variants[0];
       config.archived = false;
       config.winnerId = null;
+      if (isNewTest) {
+        const startingSnapshot = takeSnapshot();
+        abStoreRef.current = Object.fromEntries(
+          config.variants.map((id) => [id, cloneJson(startingSnapshot)]),
+        );
+        abActiveRef.current = config.variants[0];
+      }
       config.variantIds = Object.fromEntries(
         config.variants.map((id) => [
           id,
