@@ -19,6 +19,7 @@ import { PlusCircleIcon, SettingsIcon, XSmallIcon } from '@shopify/polaris-icons
 const ALL_IDS = ['A', 'B', 'C', 'D', 'E']
 const MIN_VARIANTS = 2
 const MAX_VARIANTS = ALL_IDS.length
+const MIN_WEIGHT = 10
 
 // Polaris design tokens, so the colors follow your theme.
 const SEGMENT_COLORS = [
@@ -39,7 +40,7 @@ function evenWeights(ids) {
   return Object.fromEntries(ids.map((id) => [id, base + (rem-- > 0 ? 1 : 0)]))
 }
 
-/** Scale weights so they total exactly 100. */
+/** Scale weights so they total exactly 100, every variant >= MIN_WEIGHT. */
 function normalize(weights, ids) {
   const total = sum(weights, ids)
   if (total === 0) return evenWeights(ids)
@@ -50,29 +51,58 @@ function normalize(weights, ids) {
     assigned += out[id]
   })
   out[ids[0]] += 100 - assigned
+
+  // Enforce the minimum: lift low ones, take the deficit from the largest others
+  ids.forEach((id) => {
+    while (out[id] < MIN_WEIGHT) {
+      const donor = ids
+        .filter((i) => i !== id && out[i] > MIN_WEIGHT)
+        .sort((a, b) => out[b] - out[a])[0]
+      if (!donor) break
+      const take = Math.min(out[donor] - MIN_WEIGHT, MIN_WEIGHT - out[id])
+      out[donor] -= take
+      out[id] += take
+    }
+  })
   return out
 }
 
-/** Set one variant's share; the others absorb the change proportionally. */
+/**
+ * Set one variant's share. Only the NEXT variants absorb the change
+ * (the last variant takes from the previous ones). Every variant stays >= MIN_WEIGHT.
+ */
 function setWeight(weights, ids, id, raw) {
-  const others = ids.filter((i) => i !== id)
-  if (!others.length) return { [id]: 100 }
-  const value = Math.min(100, Math.max(0, Math.round(raw)))
-  const rest = 100 - value
-  const othersTotal = sum(weights, others)
-  const out = { [id]: value }
-  let assigned = 0
-  others.forEach((o, idx) => {
-    if (idx === others.length - 1) {
-      out[o] = rest - assigned
-    } else {
-      const share = Math.floor(
-        othersTotal > 0 ? ((weights[o] || 0) / othersTotal) * rest : rest / others.length
-      )
-      out[o] = share
-      assigned += share
+  if (ids.length === 1) return { [id]: 100 }
+
+  const idx = ids.indexOf(id)
+  const before = ids.slice(0, idx)
+  const after = ids.slice(idx + 1)
+  const out = {}
+  ids.forEach((i) => (out[i] = weights[i] || 0))
+
+  const isLast = after.length === 0
+  const donors = isLast ? [...before].reverse() : after // who absorbs the change, in order
+  const lockedTotal = isLast ? 0 : sum(out, before)
+  const max = isLast
+    ? 100 - MIN_WEIGHT * before.length
+    : 100 - lockedTotal - MIN_WEIGHT * after.length
+
+  const value = Math.min(max, Math.max(MIN_WEIGHT, Math.round(raw)))
+  let diff = value - out[id] // positive = take from donors, negative = give to first donor
+  out[id] = value
+
+  if (diff < 0) {
+    out[donors[0]] += -diff
+    return out
+  }
+  for (let k = 0; k < donors.length && diff > 0; k++) {
+    const d = donors[k]
+    const take = Math.min(out[d] - MIN_WEIGHT, diff)
+    if (take > 0) {
+      out[d] -= take
+      diff -= take
     }
-  })
+  }
   return out
 }
 
@@ -214,7 +244,7 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
                     <RangeSlider
                       label={`Traffic for variant ${id}`}
                       labelHidden
-                      min={0}
+                      min={MIN_WEIGHT}
                       max={100}
                       step={1}
                       value={shown[id]}
