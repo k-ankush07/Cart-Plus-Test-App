@@ -122,6 +122,8 @@ function trackCartImpressionUnique() {
       cartId,
       sessionId: getSessionId(),
       userAgent: navigator.userAgent,
+      variantId: window.__HUB_ACTIVE_CART__?.abTestAssignment?.variantId || null,
+      variantKey: window.__HUB_ACTIVE_CART__?.abTestAssignment?.variantKey || null,
     }),
   })
     .then((res) => res.json())
@@ -860,6 +862,212 @@ window.startAnnTimer = function (blockId, timeStr) {
     } catch (_) {}
   }
 
+  function getAbVariantWeights(abTest) {
+    const variants = abTest?.variants;
+    const configuredWeights =
+      abTest.allocation === "custom"
+        ? abTest.weights || {}
+        : Object.fromEntries(variants.map((id) => [id, 100 / variants.length]));
+    const weights = Object.fromEntries(
+      variants.map((id) => {
+        const weight = Number(configuredWeights[id]);
+        return [id, Number.isFinite(weight) ? Math.max(0, weight) : 0];
+      }),
+    );
+    const totalWeight = Object.values(weights).reduce(
+      (total, weight) => total + weight,
+      0,
+    );
+    return totalWeight > 0
+      ? weights
+      : Object.fromEntries(variants.map((id) => [id, 1]));
+  }
+
+  function chooseAbVariant(abTest, weights) {
+    const variants = abTest?.variants;
+    if (!abTest?.enabled || !Array.isArray(variants) || variants.length < 2) {
+      return null;
+    }
+
+    const totalWeight = variants.reduce((total, id) => total + weights[id], 0);
+    let target = Math.random() * totalWeight;
+    for (const id of variants) {
+      target -= weights[id];
+      if (target < 0) return id;
+    }
+    return variants.find((id) => weights[id] > 0) || variants[0];
+  }
+
+  function getAbAllocationSignature(abTest, weights, variantIds) {
+    const totalWeight = Object.values(weights).reduce(
+      (total, weight) => total + weight,
+      0,
+    );
+    return JSON.stringify(
+      abTest.variants.map((id) => [
+        id,
+        String(variantIds[id] || id),
+        Number((weights[id] / totalWeight).toFixed(6)),
+      ]),
+    );
+  }
+
+  function assignAbVariant(cart, shop) {
+    const abTest = cart?.cartSettings?.abTest;
+    const variants = abTest?.variants;
+    if (!abTest?.enabled || !Array.isArray(variants) || variants.length < 2) {
+      return cart;
+    }
+
+    const variantIds = abTest.variantIds || {};
+    const weights = getAbVariantWeights(abTest);
+    const allocationSignature = getAbAllocationSignature(
+      abTest,
+      weights,
+      variantIds,
+    );
+    const storageKey = `hub_ab_variant_${shop}_${cart.cartId}`;
+    let storedAssignment = null;
+    try {
+      const storedValue = localStorage.getItem(storageKey);
+      if (storedValue) {
+        try {
+          storedAssignment = JSON.parse(storedValue);
+        } catch (error) {
+          storedAssignment = { variantId: storedValue, legacy: true };
+        }
+      }
+    } catch (error) {
+      console.error("[HUB] Could not read saved A/B variant assignment:", error);
+    }
+    const storedId =
+      typeof storedAssignment === "string"
+        ? storedAssignment
+        : storedAssignment?.variantId;
+    const storedVariantKey = variants.find(
+      (id) => String(variantIds[id] || id) === storedId,
+    );
+    let variantKey =
+      storedVariantKey &&
+      (storedAssignment?.legacy ||
+        storedAssignment?.allocationSignature === allocationSignature)
+        ? storedVariantKey
+        : null;
+
+    if (!variantKey) {
+      variantKey = chooseAbVariant(abTest, weights);
+    }
+
+    const variantId = String(variantIds[variantKey] || variantKey);
+    if (
+      variantKey !== storedVariantKey ||
+      storedAssignment?.allocationSignature !== allocationSignature
+    ) {
+      try {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({ variantId, allocationSignature }),
+        );
+      } catch (error) {
+        console.error("[HUB] Could not persist A/B variant assignment:", error);
+      }
+    }
+
+    const snapshot =
+      variantKey === (abTest.controlId || variants[0])
+        ? null
+        : abTest.data?.[variantKey];
+    const activeCart = snapshot
+      ? {
+          ...cart,
+          designSettings: snapshot.design ?? cart.designSettings,
+          headerSettings: snapshot.header ?? cart.headerSettings,
+          announcementSettings:
+            snapshot.announcement ?? cart.announcementSettings,
+          rewardsSettings: snapshot.rewardsSettings ?? cart.rewardsSettings,
+          recommendationsSettings:
+            snapshot.recommendationsSettings ?? cart.recommendationsSettings,
+          subscriptionUpgradesSettings:
+            snapshot.subscriptionUpgradesSettings ??
+            cart.subscriptionUpgradesSettings,
+          upsellsSettings: snapshot.upsellsSettings ?? cart.upsellsSettings,
+          additionalNotesSettings:
+            snapshot.additionalNotesSettings ?? cart.additionalNotesSettings,
+          addonsSettings: snapshot.addonsSettings ?? cart.addonsSettings,
+          discountCodesSettings:
+            snapshot.discountCodesSettings ?? cart.discountCodesSettings,
+          expressPaymentsSettings:
+            snapshot.expressPaymentsSettings ?? cart.expressPaymentsSettings,
+          trustBadgesSettings:
+            snapshot.trustBadgesSettings ?? cart.trustBadgesSettings,
+          cartSettings: snapshot.cartSettings
+            ? {
+                ...snapshot.cartSettings,
+                abTest: cart.cartSettings.abTest,
+              }
+            : cart.cartSettings,
+        }
+      : { ...cart };
+
+    activeCart.abTestAssignment = { variantKey, variantId };
+    activeCart.cartSettings = {
+      ...activeCart.cartSettings,
+      abTest: {
+        ...abTest,
+        activeVariant: variantKey,
+        activeVariantId: variantId,
+      },
+    };
+
+    return activeCart;
+  }
+
+  function syncAbVariantToCart(cart, assignment, shop) {
+    const syncKey = `${shop}:${cart.cartId}:${assignment?.variantId}`;
+    if (!assignment || window._hubAbCartSyncKey === syncKey) {
+      return;
+    }
+    window._hubAbCartSyncKey = syncKey;
+
+    fetch("/cart.js")
+      .then((response) => {
+        if (!response.ok) throw new Error(`Cart fetch failed: ${response.status}`);
+        return response.json();
+      })
+      .then((currentCart) => {
+        const attributes = currentCart.attributes || {};
+        if (
+          attributes["Cart Plus A/B Variant ID"] === assignment.variantId &&
+          attributes["Cart Plus A/B Variant"] === assignment.variantKey &&
+          attributes["Cart Plus Cart ID"] === String(cart.cartId)
+        ) {
+          return null;
+        }
+
+        return fetch("/cart/update.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            attributes: {
+              ...attributes,
+              "Cart Plus A/B Variant ID": assignment.variantId,
+              "Cart Plus A/B Variant": assignment.variantKey,
+              "Cart Plus Cart ID": String(cart.cartId),
+            },
+          }),
+        }).then((response) => {
+          if (!response.ok) {
+            throw new Error(`Cart attribute update failed: ${response.status}`);
+          }
+          return response.json();
+        });
+      })
+      .catch((error) => {
+        window._hubAbCartSyncKey = null;
+        console.error("[HUB] Could not attach A/B variant to cart:", error);
+      });
+  }
+
   // Cart Plus is active only when the shop is entitled and has a published
   // cart; otherwise the theme's own cart drawer and cart page stay untouched.
   function setHubCartActive(isActive) {
@@ -868,7 +1076,7 @@ window.startAnnTimer = function (blockId, timeStr) {
     else window.__hubStopThemeDrawerSuppression?.();
   }
 
-  function applyCartData({ cartResult, stickyResult }) {
+  function applyCartData({ cartResult, stickyResult }, shop) {
     if (_hubApplyingCartData) return;
     _hubApplyingCartData = true;
 
@@ -903,18 +1111,24 @@ window.startAnnTimer = function (blockId, timeStr) {
           document.getElementById(`hub-cart-bg-${window.HUB_CART_BLOCK_ID}`)?.remove();
           window.__HUB_ACTIVE_CART__ = null;
         } else if (publishedCart) {
-          // Template tab (colours, tints, radii) -> the values the drawer renders with
+          const activeCart = assignAbVariant(publishedCart, shop);
+          // Resolve the selected variant's template settings before rendering.
           if (window.cartPlusApplyTemplateTheme) {
-            publishedCart.designSettings = window.cartPlusApplyTemplateTheme(
-              publishedCart.designSettings,
+            activeCart.designSettings = window.cartPlusApplyTemplateTheme(
+              activeCart.designSettings,
             );
           }
-          window.__HUB_ACTIVE_CART__ = publishedCart;
+          window.__HUB_ACTIVE_CART__ = activeCart;
+          syncAbVariantToCart(
+            activeCart,
+            activeCart.abTestAssignment,
+            shop,
+          );
           hasPublishedCart = true;
           setHubCartActive(true);
           initCartDrawerAfterData();
           window._hubRecPrefetch = window._hubFetchRecProducts?.(
-            publishedCart.recommendationsSettings,
+            activeCart.recommendationsSettings,
           );
 
           window._upsellCache = window._upsellCache || {};
@@ -925,7 +1139,7 @@ window.startAnnTimer = function (blockId, timeStr) {
               if (!cart.items?.length) return null;
               const productId = cart.items[0].product_id;
               const products = await window.getUpsellProducts(
-                publishedCart.upsellsSettings,
+                activeCart.upsellsSettings,
                 productId,
               );
               window._upsellCache[productId] = products;
@@ -987,7 +1201,7 @@ window.startAnnTimer = function (blockId, timeStr) {
 
     const cached = readCache(shop);
     if (cached) {
-      applyCartData(cached);
+      applyCartData(cached, shop);
     }
 
     try {
@@ -1020,7 +1234,7 @@ window.startAnnTimer = function (blockId, timeStr) {
         prevSticky !== nextSticky ||
         entitlementChanged
       ) {
-        applyCartData(freshData);
+        applyCartData(freshData, shop);
       } else {
       }
     } catch (err) {

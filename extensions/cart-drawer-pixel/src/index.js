@@ -32,6 +32,10 @@ export default function register({ analytics, browser }) {
 
     const totalRevenue =
       upsellRevenue + addonRevenue + subscriptionRevenue + baseRevenue;
+    const checkoutAttributes = (checkout.attributes || []).reduce((acc, attr) => {
+      acc[attr.key] = attr.value;
+      return acc;
+    }, {});
 
     browser.sendBeacon(
       "https://" + shopDomain + "/apps/hub-track",
@@ -45,6 +49,9 @@ export default function register({ analytics, browser }) {
         addonRevenue,
         subscriptionRevenue,
         baseRevenue,
+        variantId: checkoutAttributes["Cart Plus A/B Variant ID"] || null,
+        variantKey: checkoutAttributes["Cart Plus A/B Variant"] || null,
+        attributedCartId: checkoutAttributes["Cart Plus Cart ID"] || null,
       }),
     );
   });

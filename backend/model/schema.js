@@ -162,6 +162,8 @@ const orderRevenueSchema = new mongoose.Schema({
   upsellRevenue: { type: Number, default: 0 },
   addonRevenue: { type: Number, default: 0 },
   subscriptionRevenue: { type: Number, default: 0 },
+  variantId: { type: String, default: null },
+  variantKey: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -169,6 +171,7 @@ const orderRevenueSchema = new mongoose.Schema({
 // revenue-stats. Only orderId was indexed before, forcing full scans.
 orderRevenueSchema.index({ shop: 1, createdAt: 1 });
 orderRevenueSchema.index({ shop: 1, cartId: 1, createdAt: 1 });
+orderRevenueSchema.index({ shop: 1, cartId: 1, variantKey: 1, createdAt: 1 });
 
 const cartOrderCountSchema = new mongoose.Schema({
   shop: { type: String, required: true },

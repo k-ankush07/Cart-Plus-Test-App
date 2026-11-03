@@ -591,6 +591,8 @@ export const loader = async ({ request }) => {
     addonRevenue: 0,
     upsellRevenue: 0,
     subscriptionRevenue: 0,
+    baseRevenue: 0,
+    totalRevenue: 0,
   };
 
   const dataPromise = getCarts(apiUrl, shop.myshopifyDomain).then(
@@ -930,6 +932,8 @@ function DashboardInner({
       addonRevenue: 0,
       upsellRevenue: 0,
       subscriptionRevenue: 0,
+      baseRevenue: 0,
+      totalRevenue: 0,
     },
   );
   const [range, setRange] = useState(getDefaultRange);
@@ -1055,6 +1059,8 @@ function DashboardInner({
               addonRevenue: 0,
               upsellRevenue: 0,
               subscriptionRevenue: 0,
+              baseRevenue: 0,
+              totalRevenue: 0,
             },
           );
         }
@@ -1079,6 +1085,12 @@ function DashboardInner({
     (val) => ((val ?? 0) > 0 ? "spike" : "flat"),
     [],
   );
+  const totalStoreRevenue =
+    shopRevenue.totalRevenue ??
+    (shopRevenue.addonRevenue ?? 0) +
+      (shopRevenue.upsellRevenue ?? 0) +
+      (shopRevenue.subscriptionRevenue ?? 0) +
+      (shopRevenue.baseRevenue ?? 0);
 
   const featureCart = liveCarts[0];
   const cartIdForFeatures = featureCart?.cartId;
@@ -1209,22 +1221,9 @@ function DashboardInner({
                 borderLeft
                 loading={statsLoading}
                 label="Total revenue"
-                value={fmt(
-                  (shopRevenue.addonRevenue ?? 0) +
-                    (shopRevenue.upsellRevenue ?? 0) +
-                    (shopRevenue.subscriptionRevenue ?? 0),
-                  currency,
-                )}
-                rawValue={
-                  (shopRevenue.addonRevenue ?? 0) +
-                  (shopRevenue.upsellRevenue ?? 0) +
-                  (shopRevenue.subscriptionRevenue ?? 0)
-                }
-                sparklineType={sparkType(
-                  (shopRevenue.addonRevenue ?? 0) +
-                    (shopRevenue.upsellRevenue ?? 0) +
-                    (shopRevenue.subscriptionRevenue ?? 0),
-                )}
+                value={fmt(totalStoreRevenue, currency)}
+                rawValue={totalStoreRevenue}
+                sparklineType={sparkType(totalStoreRevenue)}
                 onClick={() => navigate("/app/analytics")}
               />
             </InlineGrid>
@@ -1899,7 +1898,7 @@ function DashboardInner({
                   <Avatar
                     size="xl"
                     name="Sujil"
-                    source="https://cdn.shopify.com/s/files/1/0281/5682/1583/files/sujil.jpg"
+                    source="https://cartplus.io/cartplus-img/Ankush%207.png"
                   />
                   <span
                     style={{

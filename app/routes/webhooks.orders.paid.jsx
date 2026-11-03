@@ -137,6 +137,7 @@ export const action = async ({ request }) => {
     }
 
     let lineItems = payload.line_items || [];
+    let orderAttributes = payload.note_attributes || [];
 
     // The webhook payload sometimes omits selling_plan_allocation. Fetch the
     // order via Admin REST to get authoritative selling_plan_id per line.
@@ -144,7 +145,7 @@ export const action = async ({ request }) => {
       const accessToken = session?.accessToken;
       if (accessToken) {
         const orderRes = await fetch(
-          `https://${shop}/admin/api/2025-10/orders/${payload.id}.json?fields=line_items`,
+          `https://${shop}/admin/api/2025-10/orders/${payload.id}.json?fields=line_items,note_attributes`,
           {
             headers: {
               "X-Shopify-Access-Token": accessToken,
@@ -155,6 +156,10 @@ export const action = async ({ request }) => {
         if (orderRes.ok) {
           const orderData = await orderRes.json();
           const adminItems = orderData?.order?.line_items || [];
+          orderAttributes =
+            orderAttributes.length > 0
+              ? orderAttributes
+              : orderData?.order?.note_attributes || [];
           const planById = new Map(
             adminItems.map((li) => [String(li.id), li.selling_plan_allocation || (li.selling_plan_id ? { selling_plan: { id: li.selling_plan_id } } : null)]),
           );
@@ -203,6 +208,9 @@ export const action = async ({ request }) => {
     }
 
     const totalRevenue = upsellRevenue + addonRevenue + subscriptionRevenue;
+    const abAttributes = Object.fromEntries(
+      orderAttributes.map(({ name, value }) => [name, value]),
+    );
 
     const res = await fetch(`${apiUrl}/api/order-revenue`, {
       method: "POST",
@@ -218,6 +226,9 @@ export const action = async ({ request }) => {
         addonRevenue,
         subscriptionRevenue,
         baseRevenue,
+        variantId: abAttributes["Cart Plus A/B Variant ID"] || null,
+        variantKey: abAttributes["Cart Plus A/B Variant"] || null,
+        attributedCartId: abAttributes["Cart Plus Cart ID"] || null,
       }),
     });
 

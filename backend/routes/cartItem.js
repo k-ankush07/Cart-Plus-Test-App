@@ -616,7 +616,8 @@ router.delete("/shop-plan", async (req, res) => {
 
 router.post("/cart-impression", async (req, res) => {
   try {
-    const { shop, cartId, sessionId, userAgent } = req.body;
+    const { shop, cartId, sessionId, userAgent, variantId, variantKey } =
+      req.body;
 
     if (!shop || !sessionId) {
       return res.status(400).json({
@@ -643,7 +644,7 @@ router.post("/cart-impression", async (req, res) => {
       userAgent,
       eventType: "cart_impression",
       createdAt: new Date(),
-      meta: { source: "cart_drawer" },
+      meta: { source: "cart_drawer", variantId, variantKey },
     });
 
     res.json({ success: true });
@@ -703,6 +704,9 @@ router.post("/order-revenue", async (req, res) => {
       addonRevenue,
       subscriptionRevenue,
       baseRevenue,
+      variantId,
+      variantKey,
+      attributedCartId,
     } = req.body;
 
     if (!shop || !cartToken) {
@@ -720,6 +724,12 @@ router.post("/order-revenue", async (req, res) => {
         .status(403)
         .json({ success: false, message: "No active cart for shop" });
     }
+    const activeAbTest = publishedCart.cartSettings?.abTest;
+    const validVariantAssignment =
+      attributedCartId === publishedCart.cartId &&
+      activeAbTest?.enabled === true &&
+      activeAbTest.variants?.includes(variantKey) &&
+      String(activeAbTest.variantIds?.[variantKey] || "") === String(variantId || "");
 
     // ─── Plan limit check ────────────────────────────────────────────────────
     const shopPlan = await shopPlanModel.findOne({ shop });
@@ -796,30 +806,27 @@ router.post("/order-revenue", async (req, res) => {
     }
     // ────────────────────────────────────────────────────────────────────────
 
-    const hasHubRevenue =
-      Number(upsellRevenue) > 0 ||
-      Number(addonRevenue) > 0 ||
-      Number(subscriptionRevenue) > 0;
-
-    if (!hasHubRevenue) {
-      return res.json({ success: true, counted: true, revenueSaved: false });
-    }
+    const revenueRecord = {
+      shop,
+      cartId:
+        attributedCartId === publishedCart.cartId
+          ? attributedCartId
+          : publishedCart.cartId,
+      orderId: cartToken,
+      sessionId: sessionId || "",
+      currency: currency || "USD",
+      totalRevenue: totalRevenue || 0,
+      upsellRevenue: upsellRevenue || 0,
+      addonRevenue: addonRevenue || 0,
+      subscriptionRevenue: subscriptionRevenue || 0,
+      baseRevenue: baseRevenue || 0,
+      createdAt: new Date(),
+      ...(validVariantAssignment ? { variantId, variantKey } : {}),
+    };
 
     await orderRevenueModel.findOneAndUpdate(
       { orderId: cartToken },
-      {
-        shop,
-        cartId: publishedCart.cartId,
-        orderId: cartToken,
-        sessionId: sessionId || "",
-        currency: currency || "USD",
-        totalRevenue: totalRevenue || 0,
-        upsellRevenue: upsellRevenue || 0,
-        addonRevenue: addonRevenue || 0,
-        subscriptionRevenue: subscriptionRevenue || 0,
-        baseRevenue: baseRevenue || 0,
-        createdAt: new Date(),
-      },
+      revenueRecord,
       { upsert: true, new: true },
     );
 
@@ -903,10 +910,24 @@ router.get("/cart-stats", async (req, res) => {
       ordersByCartByDate,
       impressionsByCartByDate,
       revenueByCartByDate,
+      revenueByVariant,
+      impressionsByVariant,
     ] = await Promise.all([
       orderRevenueModel.aggregate([
         { $match: revenueMatch },
-        { $group: { _id: "$cartId", totalRevenue: { $sum: "$totalRevenue" } } },
+        {
+          $group: {
+            _id: "$cartId",
+            totalRevenue: {
+              $sum: {
+                $add: [
+                  { $ifNull: ["$totalRevenue", 0] },
+                  { $ifNull: ["$baseRevenue", 0] },
+                ],
+              },
+            },
+          },
+        },
       ]),
       analyticsModel.aggregate([
         { $match: analyticsMatch },
@@ -930,6 +951,15 @@ router.get("/cart-stats", async (req, res) => {
             addonRevenue: { $sum: "$addonRevenue" },
             upsellRevenue: { $sum: "$upsellRevenue" },
             subscriptionRevenue: { $sum: "$subscriptionRevenue" },
+            baseRevenue: { $sum: "$baseRevenue" },
+            totalRevenue: {
+              $sum: {
+                $add: [
+                  { $ifNull: ["$totalRevenue", 0] },
+                  { $ifNull: ["$baseRevenue", 0] },
+                ],
+              },
+            },
           },
         },
       ]),
@@ -968,10 +998,56 @@ router.get("/cart-stats", async (req, res) => {
                 $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
               },
             },
-            totalRevenue: { $sum: "$totalRevenue" },
+            totalRevenue: {
+              $sum: {
+                $add: [
+                  { $ifNull: ["$totalRevenue", 0] },
+                  { $ifNull: ["$baseRevenue", 0] },
+                ],
+              },
+            },
           },
         },
         { $sort: { "_id.date": 1 } },
+      ]),
+      orderRevenueModel.aggregate([
+        {
+          $match: {
+            ...revenueMatch,
+            variantKey: { $exists: true, $nin: [null, ""] },
+          },
+        },
+        {
+          $group: {
+            _id: { cartId: "$cartId", variantKey: "$variantKey" },
+            variantId: { $first: "$variantId" },
+            revenue: {
+              $sum: {
+                $add: [
+                  { $ifNull: ["$totalRevenue", 0] },
+                  { $ifNull: ["$baseRevenue", 0] },
+                ],
+              },
+            },
+            completedOrders: { $sum: 1 },
+          },
+        },
+      ]),
+      analyticsModel.aggregate([
+        {
+          $match: {
+            ...analyticsMatch,
+            eventType: "cart_impression",
+            "meta.variantKey": { $exists: true, $nin: [null, ""] },
+          },
+        },
+        {
+          $group: {
+            _id: { cartId: "$cartId", variantKey: "$meta.variantKey" },
+            variantId: { $first: "$meta.variantId" },
+            impressions: { $sum: 1 },
+          },
+        },
       ]),
     ]);
 
@@ -1015,6 +1091,50 @@ router.get("/cart-stats", async (req, res) => {
       if (!stats[cartId]) stats[cartId] = emptyStat();
       stats[cartId].revenueByDate[date] =
         (stats[cartId].revenueByDate[date] || 0) + totalRevenue;
+    });
+
+    revenueByVariant.forEach(
+      ({ _id: { cartId, variantKey }, variantId, revenue, completedOrders }) => {
+        if (!stats[cartId]) stats[cartId] = emptyStat();
+        if (!stats[cartId].variants) stats[cartId].variants = {};
+        stats[cartId].variants[variantKey] = {
+          variantId,
+          revenue,
+          completedOrders,
+          impressions: 0,
+          conversionRate: 0,
+        };
+      },
+    );
+
+    impressionsByVariant.forEach(
+      ({ _id: { cartId, variantKey }, variantId, impressions }) => {
+        if (!stats[cartId]) stats[cartId] = emptyStat();
+        if (!stats[cartId].variants) stats[cartId].variants = {};
+        if (!stats[cartId].variants[variantKey]) {
+          stats[cartId].variants[variantKey] = {
+            variantId,
+            revenue: 0,
+            completedOrders: 0,
+            impressions: 0,
+            conversionRate: 0,
+          };
+        }
+        stats[cartId].variants[variantKey].variantId ||= variantId;
+        stats[cartId].variants[variantKey].impressions = impressions;
+      },
+    );
+
+    Object.values(stats).forEach((cartStats) => {
+      Object.values(cartStats.variants || {}).forEach((variantStats) => {
+        variantStats.conversionRate =
+          variantStats.impressions > 0
+            ? Math.min(
+                (variantStats.completedOrders / variantStats.impressions) * 100,
+                100,
+              )
+            : 0;
+      });
     });
 
     if (publishedCart?.cartId) {
@@ -1066,6 +1186,8 @@ router.get("/cart-stats", async (req, res) => {
       addonRevenue: 0,
       upsellRevenue: 0,
       subscriptionRevenue: 0,
+      baseRevenue: 0,
+      totalRevenue: 0,
     };
 
     return res.json({
@@ -1075,6 +1197,8 @@ router.get("/cart-stats", async (req, res) => {
         addonRevenue: breakdown.addonRevenue || 0,
         upsellRevenue: breakdown.upsellRevenue || 0,
         subscriptionRevenue: breakdown.subscriptionRevenue || 0,
+        baseRevenue: breakdown.baseRevenue || 0,
+        totalRevenue: breakdown.totalRevenue || 0,
       },
     });
   } catch (error) {
@@ -1120,7 +1244,14 @@ router.get("/revenue-stats", async (req, res) => {
         $group: {
           _id: null,
           currency: { $first: "$currency" },
-          totalRevenue: { $sum: "$totalRevenue" },
+          totalRevenue: {
+            $sum: {
+              $add: [
+                { $ifNull: ["$totalRevenue", 0] },
+                { $ifNull: ["$baseRevenue", 0] },
+              ],
+            },
+          },
           upsellRevenue: { $sum: "$upsellRevenue" },
           addonRevenue: { $sum: "$addonRevenue" },
           subscriptionRevenue: { $sum: "$subscriptionRevenue" },
@@ -1140,7 +1271,14 @@ router.get("/revenue-stats", async (req, res) => {
           addonRevenue: { $sum: "$addonRevenue" },
           subscriptionRevenue: { $sum: "$subscriptionRevenue" },
           baseRevenue: { $sum: "$baseRevenue" },
-          total: { $sum: "$totalRevenue" },
+          total: {
+            $sum: {
+              $add: [
+                { $ifNull: ["$totalRevenue", 0] },
+                { $ifNull: ["$baseRevenue", 0] },
+              ],
+            },
+          },
         },
       },
       { $sort: { _id: 1 } },
