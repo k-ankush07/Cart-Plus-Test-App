@@ -20,18 +20,43 @@ import {
     defaultCartSettings,
     defaultTriggeredRewardsSettings,
 } from "../routes/components/constants/cartDefaults";
+import {
+    DEFAULT_PREVIEW_PRODUCT_QUERY,
+    normalizePreviewProduct,
+    pickDefaultPreviewProduct,
+} from "./components/utils/previewProduct";
+import { getCurrencySymbol } from "./components/utils/currency";
 
 export const loader = async ({ request }) => {
-    const { shop, apiUrl } = await requireShopData(request);
-    return { shop, apiUrl };
+    const shopPromise = requireShopData(request);
+    const previewProductPromise = shopPromise
+        .then(async ({ admin }) => {
+            const response = await admin.graphql(DEFAULT_PREVIEW_PRODUCT_QUERY);
+            const data = await response.json();
+            const products = (data?.data?.products?.edges || []).map((edge) =>
+                normalizePreviewProduct(edge.node),
+            );
+            return pickDefaultPreviewProduct(products);
+        })
+        .catch((error) => {
+            console.error("DESIGN CART PREVIEW PRODUCT ERROR:", error);
+            return null;
+        });
+
+    const [{ shop, apiUrl }, defaultPreviewProduct] = await Promise.all([
+        shopPromise,
+        previewProductPromise,
+    ]);
+
+    return { shop, apiUrl, defaultPreviewProduct };
 };
 
 const TEMPLATE_SETTINGS = {
-    live: { backgroundColor: "#ffffff", textColor: "rgb(18,18,18)", buttonColor: "rgb(18,18,18)", buttonTextColor: "#ffffff", accentColor: "rgba(18,18,18,0.05)", buttonRadius: "2", announcementBg: "rgb(18,18,18)" },
-    default: { backgroundColor: "#ffffff", textColor: "rgb(17,17,17)", buttonColor: "rgb(48,48,48)", buttonTextColor: "#ffffff", accentColor: "rgb(245,245,245)", buttonRadius: "0", announcementBg: "rgb(240,240,240)" },
-    ivory: { backgroundColor: "rgb(245,243,240)", textColor: "rgb(36,21,16)", buttonColor: "rgb(36,21,16)", buttonTextColor: "rgb(245,243,240)", accentColor: "rgb(233,229,228)", buttonRadius: "0", announcementBg: "rgb(233,229,228)", savingsColor: "#A29B99" },
-    electric: { backgroundColor: "#ffffff", textColor: "rgb(0,26,100)", buttonColor: "rgb(0,58,221)", buttonTextColor: "rgb(222,242,64)", accentColor: "rgb(240,242,255)", buttonRadius: "0", announcementBg: "rgb(222,242,64)", savingsColor: "#003ADD" },
-    natural: { backgroundColor: "rgb(255,253,247)", textColor: "rgb(27,51,5)", buttonColor: "rgb(27,51,5)", buttonTextColor: "rgb(255,253,247)", accentColor: "rgb(245,242,233)", buttonRadius: "0", announcementBg: "rgb(242,168,85)", savingsColor: "#E8881C", buttonHoverColor:"rgb(242,168,85)" },
+    live: { colorMode: "plain", themeColor: "#303030", backgroundColor: "#ffffff", textColor: "rgb(18,18,18)", buttonColor: "rgb(18,18,18)", buttonTextColor: "#ffffff", accentColor: "rgba(18,18,18,0.05)", buttonRadius: "2", announcementBg: "rgb(18,18,18)" },
+    default: { colorMode: "gradient", gradientStart: "#2563EB", gradientEnd: "#06B6D4", backgroundColor: "#ffffff", textColor: "rgb(17,17,17)", buttonColor: "rgb(48,48,48)", buttonTextColor: "#ffffff", accentColor: "rgb(245,245,245)", buttonRadius: "0", announcementBg: "rgb(240,240,240)" },
+    ivory: { colorMode: "gradient", gradientStart: "#A8938F", gradientEnd: "#F3D9B1", backgroundColor: "rgb(245,243,240)", textColor: "rgb(36,21,16)", buttonColor: "rgb(36,21,16)", buttonTextColor: "rgb(245,243,240)", accentColor: "rgb(233,229,228)", buttonRadius: "0", announcementBg: "rgb(233,229,228)", savingsColor: "#A29B99" },
+    electric: { colorMode: "gradient", gradientStart: "#003ADD", gradientEnd: "#22D3EE", backgroundColor: "#ffffff", textColor: "rgb(0,26,100)", buttonColor: "rgb(0,58,221)", buttonTextColor: "rgb(222,242,64)", accentColor: "rgb(240,242,255)", buttonRadius: "0", announcementBg: "rgb(222,242,64)", savingsColor: "#003ADD" },
+    natural: { colorMode: "gradient", gradientStart: "#39521D", gradientEnd: "#F2A855", backgroundColor: "rgb(255,253,247)", textColor: "rgb(27,51,5)", buttonColor: "rgb(27,51,5)", buttonTextColor: "rgb(255,253,247)", accentColor: "rgb(245,242,233)", buttonRadius: "0", announcementBg: "rgb(242,168,85)", savingsColor: "#E8881C", buttonHoverColor:"rgb(242,168,85)" },
 };
 
 // ─── Template Definitions ──────────────────────────────────────────────────────
@@ -43,6 +68,7 @@ const TEMPLATES = [
         cartName: "Live Theme Cart",
         font: "Inter",
         bg: "#ffffff",
+        surface: "#ffffff",
         announcementBg: "rgb(18,18,18)",
         colors: { text: "rgb(18,18,18)", header: "rgb(18,18,18)", progress: "#ffffff", button: "rgb(18,18,18)", buttonText: "rgba(255,255,255,0.733)", body: "rgba(18,18,18,0.05)" },
         swatches: ["#ffffff", "rgb(18,18,18)", "rgb(18,18,18)", "#ffffff"],
@@ -52,40 +78,44 @@ const TEMPLATES = [
         name: "Default",
         cartName: "Default Cart",
         font: "Inherits from theme",
-        bg: "#ffffff",
+        bg: "linear-gradient(135deg, #eff6ff 0%, #ecfeff 100%)",
+        surface: "linear-gradient(160deg, #ffffff 0%, #f5fbff 100%)",
         announcementBg: "rgb(240,240,240)",
-        colors: { text: "rgb(17,17,17)", header: "rgb(240,240,240)", progress: "rgb(48,48,48)", button: "rgb(48,48,48)", buttonText: "rgba(255,255,255,0.733)", body: "rgb(245,245,245)" },
-        swatches: ["#ffffff", "rgb(48,48,48)", "rgb(46,168,24)", "rgb(238,238,238)"],
+        colors: { text: "rgb(17,17,17)", header: "linear-gradient(90deg, #bfdbfe, #a5f3fc)", progress: "#2563EB", button: "linear-gradient(90deg, #2563EB, #06B6D4)", buttonText: "rgba(255,255,255,0.9)", body: "linear-gradient(180deg, #eff6ff, #ecfeff)" },
+        swatches: ["linear-gradient(135deg, #2563EB, #06B6D4)", "rgb(48,48,48)", "rgb(46,168,24)", "rgb(238,238,238)"],
     },
     {
         id: "ivory",
         name: "Ivory",
         cartName: "Ivory Cart",
         font: "Inherits from theme",
-        bg: "rgb(245,243,240)",
+        bg: "linear-gradient(135deg, #f5f3f0 0%, #fdf2e3 100%)",
+        surface: "linear-gradient(160deg, #fffdfa 0%, #f5f0e9 100%)",
         announcementBg: "rgb(233,229,228)",
-        colors: { text: "rgb(36,21,16)", header: "rgb(233,229,228)", progress: "rgb(36,21,16)", button: "rgb(36,21,16)", buttonText: "rgba(245,243,240,0.733)", body: "rgb(245,243,240)" },
-        swatches: ["rgb(245,243,240)", "rgb(36,21,16)", "rgb(162,155,153)", "rgb(233,229,228)"],
+        colors: { text: "rgb(36,21,16)", header: "linear-gradient(90deg, #e7d8d1, #f3d9b1)", progress: "#A8938F", button: "linear-gradient(90deg, #A8938F, #D6A36B)", buttonText: "rgba(255,255,255,0.9)", body: "linear-gradient(180deg, #f5f3f0, #fdf2e3)" },
+        swatches: ["linear-gradient(135deg, #A8938F, #F3D9B1)", "rgb(36,21,16)", "rgb(162,155,153)", "rgb(233,229,228)"],
     },
     {
         id: "electric",
         name: "Electric",
         cartName: "Electric Cart",
         font: "Inherits from theme",
-        bg: "#ffffff",
+        bg: "linear-gradient(135deg, #eff6ff 0%, #eef2ff 55%, #ecfeff 100%)",
+        surface: "linear-gradient(160deg, #ffffff 0%, #f2f5ff 100%)",
         announcementBg: "rgb(222,242,64)",
-        colors: { text: "rgb(0,26,100)", header: "rgb(222,242,64)", progress: "rgb(0,58,221)", button: "rgb(0,58,221)", buttonText: "rgba(222,242,64,0.733)", body: "#ffffff", rewardsBg: "rgb(240,242,255)" },
-        swatches: ["#ffffff", "rgb(0,58,221)", "rgb(222,242,64)", "rgb(0,26,100)"],
+        colors: { text: "rgb(0,26,100)", header: "linear-gradient(90deg, #def264, #a5f3fc)", progress: "#003ADD", button: "linear-gradient(90deg, #003ADD, #2563EB, #22D3EE)", buttonText: "rgba(255,255,255,0.95)", body: "linear-gradient(180deg, #f0f2ff, #effcff)", rewardsBg: "rgb(240,242,255)" },
+        swatches: ["linear-gradient(135deg, #003ADD, #22D3EE)", "rgb(0,58,221)", "rgb(222,242,64)", "rgb(0,26,100)"],
     },
     {
         id: "natural",
         name: "Natural",
         cartName: "Natural Cart",
         font: "Inherits from theme",
-        bg: "rgb(255,253,247)",
+        bg: "linear-gradient(135deg, #f7f9ef 0%, #fff7ed 100%)",
+        surface: "linear-gradient(160deg, #fffdf7 0%, #f4f2e9 100%)",
         announcementBg: "rgb(242,168,85)",
-        colors: { text: "rgb(27,51,5)", header: "rgb(242,168,85)", progress: "rgb(57,82,29)", button: "rgb(27,51,5)", buttonText: "rgba(255,253,247,0.733)", body: "rgb(245,242,233)" },
-        swatches: ["rgb(255,253,247)", "rgb(27,51,5)", "rgb(242,168,85)", "rgb(232,136,28)"],
+        colors: { text: "rgb(27,51,5)", header: "linear-gradient(90deg, #f2a855, #f6c889)", progress: "#39521D", button: "linear-gradient(90deg, #39521D, #7d8e3c)", buttonText: "rgba(255,255,255,0.9)", body: "linear-gradient(180deg, #f7f9ef, #fff7ed)" },
+        swatches: ["linear-gradient(135deg, #39521D, #F2A855)", "rgb(27,51,5)", "rgb(242,168,85)", "rgb(232,136,28)"],
     },
 ];
 
@@ -172,7 +202,7 @@ function WireframePreview({ template }) {
 
     return (
         <div style={{
-            width: 110, height: 200, background: bg,
+            width: 110, height: 200, background: template.surface || bg,
             fontFamily: "system-ui, sans-serif", overflow: "hidden",
             display: "flex", flexDirection: "column", borderRadius: 4,
         }}>
@@ -283,7 +313,7 @@ function TemplateCard({ template, isActive, onSelect }) {
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function Designcart() {
-    const { shop, apiUrl } = useLoaderData();
+    const { shop, apiUrl, defaultPreviewProduct } = useLoaderData();
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [saving, setSaving] = useState(false);
@@ -334,6 +364,10 @@ export default function Designcart() {
     const mergedUpsellsSettings = {
         ...defaultUpsellsSettings,
         enabled: activeModules.has("upsells"),
+    };
+    const previewUpsellsSettings = {
+        ...mergedUpsellsSettings,
+        useAiRecommended: true,
     };
 
     const mergedAddonsSettings = {
@@ -522,7 +556,7 @@ export default function Designcart() {
                     rewardsSettings={mergedRewardsSettings}
                     recommendationsSettings={mergedRecommendationsSettings}
                     subscriptionUpgradesSettings={mergedSubscriptionUpgradesSettings}
-                    upsellsSettings={mergedUpsellsSettings}
+                    upsellsSettings={previewUpsellsSettings}
                     additionalNotesSettings={defaultAdditionalNotesSettings}
                     addonsSettings={mergedAddonsSettings}
                     discountCodesSettings={defaultDiscountCodesSettings}
@@ -531,6 +565,9 @@ export default function Designcart() {
                     cartSettings={defaultCartSettings}
                     triggeredRewardsSettings={defaultTriggeredRewardsSettings}
                     shop={shop}
+                    currency={getCurrencySymbol(shop?.currencyCode)}
+                    previewMode="cart"
+                    previewProducts={defaultPreviewProduct ? [defaultPreviewProduct] : []}
                 />
             </div>
         </div>
