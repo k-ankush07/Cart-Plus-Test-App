@@ -156,20 +156,22 @@ export default function CartEditor() {
   const [searchParams] = useSearchParams();
 
   const MODULE_TAB_MAP = {
-    recommendations: "Recommended Products",
-    rewards: "Tiered Offers",
+    recommendations: "Cross-sell",
+    rewards: "Progress Bar",
     "triggered-rewards": "Triggered Rewards",
-    upsells: "Upsells",
-    addons: "Extras",
-    announcements: "Notices",
-    "subscription-upgrades": "Subscription Options",
-    "additional-notes": "Order Notes",
-    "discount-codes": "Promo Codes",
-    "express-payments": "Quick Checkout",
-    "trust-badges": "Security Badges",
-    header: "Top Section",
+    upsells: "Cross-sell",
+    "one-tick-upsell": "One Tick Upsell",
+    addons: "Shipping Protection & Add-ons",
+    announcements: "Announcement",
+    "subscription-upgrades": "Subscription Upgrade",
+    "additional-notes": "Order notes",
+    "discount-codes": "Discount code",
+    "express-payments": "Checkout Button",
+    "trust-badges": "Payment Badges",
+    summary: "Summary",
+    header: "Header",
     design: "Template",
-    settings: "Preferences",
+    settings: "Settings",
   };
 
   const [activeTab, setActiveTab] = useState(

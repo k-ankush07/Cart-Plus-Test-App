@@ -16,19 +16,44 @@ import {
   Card,
   SkeletonBodyText,
   SkeletonDisplayText,
+  Avatar,
+  ButtonGroup,
 } from "@shopify/polaris";
 import {
   ChevronDownIcon,
+  ChevronRightIcon,
   HeartIcon,
   ExternalIcon,
   CheckIcon,
+  RefreshIcon,
+  MegaphoneIcon,
+  TargetIcon,
+  CartIcon,
+  DiscountIcon,
+  PlusCircleIcon,
+  ReceiptIcon,
+  ChatIcon,
+  PhoneIcon,
 } from "@shopify/polaris-icons";
 
 import { getCarts, getCartStats } from "../services/apiRoutes";
 import { requireShopData } from "./components/shop.server";
 import DateRangePicker from "./components/ui/DateRangePicker";
-import { Suspense, useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Await, useLoaderData, useNavigate, Link } from "react-router-dom";
+import {
+  Suspense,
+  Fragment,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
+import {
+  Await,
+  useLoaderData,
+  useNavigate,
+  useRevalidator,
+} from "react-router-dom";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import LiveDot from "./components/ui/LiveDot";
 
@@ -54,6 +79,15 @@ function SkeletonCell({ width = 64 }) {
     />
   );
 }
+
+const getAbTest = (cart) => {
+  const abTest = cart?.cartSettings?.abTest;
+  return abTest?.enabled &&
+    Array.isArray(abTest.variants) &&
+    abTest.variants.length > 1
+    ? abTest
+    : null;
+};
 
 // ─── CheckItem (setup guide checklist row) ──────────────────────────────────────
 
@@ -103,7 +137,6 @@ function SetupStepCard({
   onToggle,
   disabled,
 }) {
-
   const isCollapsible = !!previewImage;
   const isCircleComplete = completed || (index === 3 && cartCount >= 1);
 
@@ -124,7 +157,11 @@ function SetupStepCard({
           color: isCircleComplete ? "#fff" : "#616161",
         }}
       >
-        {isCircleComplete ? <Icon source={CheckIcon} tone="text-inverse" /> : index}
+        {isCircleComplete ? (
+          <Icon source={CheckIcon} tone="text-inverse" />
+        ) : (
+          index
+        )}
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -136,13 +173,12 @@ function SetupStepCard({
         </Text>
       </div>
 
-      {index !== 3 && (
-        completed ? (
+      {index !== 3 &&
+        (completed ? (
           <Badge tone="success">Completed</Badge>
         ) : (
           <Badge>Pending</Badge>
-        )
-      )}
+        ))}
       {isCollapsible && (
         <div
           style={{
@@ -161,9 +197,7 @@ function SetupStepCard({
   const content = (
     <div
       style={{
-        padding: previewImage
-          ? "20px 20px 24px 20px"
-          : "5px 20px 24px 20px",
+        padding: previewImage ? "20px 20px 24px 20px" : "5px 20px 24px 20px",
         borderTop: previewImage ? "1px solid #f1f2f3" : "none",
       }}
     >
@@ -288,10 +322,16 @@ function SetupTask({
 }) {
   return (
     <Box padding="500">
-      <InlineGrid columns={{ xs: 1, sm: ["twoThirds", "oneThird"] }} gap="300" alignItems="center">
+      <InlineGrid
+        columns={{ xs: 1, sm: ["twoThirds", "oneThird"] }}
+        gap="300"
+        alignItems="center"
+      >
         <BlockStack gap="150">
           <InlineStack gap="200" blockAlign="center">
-            <Text variant="bodyMd" fontWeight="semibold">{title}</Text>
+            <Text variant="bodyMd" fontWeight="semibold">
+              {title}
+            </Text>
             {completed ? (
               <Badge tone="success">Completed</Badge>
             ) : isEmbedStarted ? (
@@ -300,10 +340,14 @@ function SetupTask({
               <Badge tone="info">Recommended</Badge>
             )}
           </InlineStack>
-          <Text variant="bodySm" tone="subdued">{description}</Text>
+          <Text variant="bodySm" tone="subdued">
+            {description}
+          </Text>
         </BlockStack>
         <InlineStack align="end">
-          <Button size="slim" onClick={onAction}>{actionLabel}</Button>
+          <Button size="slim" onClick={onAction}>
+            {actionLabel}
+          </Button>
         </InlineStack>
       </InlineGrid>
     </Box>
@@ -315,8 +359,16 @@ function SetupTask({
 //  1) buildPrimarySetupTasks  → rich accordion (checklist + preview image)
 //  2) buildSecondarySetupTasks → flat list (title, description, button)
 
-function buildPrimarySetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled) {
-  const storeHandle = shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
+function buildPrimarySetupTasks(
+  liveCart,
+  navigate,
+  shop,
+  appEmbedId,
+  mainThemeId,
+  appEmbedInstalled,
+) {
+  const storeHandle =
+    shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
   const cartEditorPath = liveCart?.cartId
     ? `/app/cart-editor/${liveCart.cartId}?from=home`
@@ -342,7 +394,8 @@ function buildPrimarySetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeI
     },
     {
       title: "Integrate Cart Plus with your theme",
-      description: "Enable the embed app in shopify's theme editor to make the cart drawer visible on your store",
+      description:
+        "Enable the embed app in shopify's theme editor to make the cart drawer visible on your store",
       actionLabel: "Integrate Now",
       completed: appEmbedInstalled,
       onAction: () =>
@@ -352,7 +405,8 @@ function buildPrimarySetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeI
     },
     {
       title: "Manage Your Carts",
-      description: "View and organize all the carts you've created for your store.",
+      description:
+        "View and organize all the carts you've created for your store.",
       actionLabel: "View Existing Cart",
       completed: !!liveCart,
       disabled: !liveCart,
@@ -362,37 +416,53 @@ function buildPrimarySetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeI
   ];
 }
 
-function buildSecondarySetupTasks(liveCart, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled, appEmbedStarted) {
+function buildSecondarySetupTasks(
+  liveCart,
+  navigate,
+  shop,
+  appEmbedId,
+  mainThemeId,
+  appEmbedInstalled,
+  appEmbedStarted,
+) {
   const cartId = liveCart?.cartId;
-  const goTo = (module) => () => cartId && navigate(`/app/cart-editor/${cartId}?from=home&module=${module}`);
-  const storeHandle = shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
+  const goTo = (module) => () =>
+    cartId && navigate(`/app/cart-editor/${cartId}?from=home&module=${module}`);
+  const storeHandle =
+    shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
 
   return [
     {
       title: "Add upsells",
-      description: "Show relevant product recommendations and upsell offers in your cart drawer to increase order value.",
+      description:
+        "Show relevant product recommendations and upsell offers in your cart drawer to increase order value.",
       actionLabel: "Add upsells",
       completed: liveCart?.upsellsSettings?.enabled === false,
       onAction: goTo("upsells"),
     },
     {
       title: "Add rewards",
-      description: "Turn users into buyers by offering free shipping, free gift, or create custom rewards.",
+      description:
+        "Turn users into buyers by offering free shipping, free gift, or create custom rewards.",
       actionLabel: "Add rewards",
       completed: liveCart?.rewardsSettings?.enabled === false,
       onAction: goTo("rewards"),
     },
     {
       title: "Add triggered rewards",
-      description: "Rewards customers with discounts when they meet specific criteria based on cart value, products, collections, subscriptions, and more.",
+      description:
+        "Rewards customers with discounts when they meet specific criteria based on cart value, products, collections, subscriptions, and more.",
       actionLabel: "Add triggered rewards",
-      completed: Array.isArray(liveCart?.triggeredRewardsSettings?.rewards) && liveCart.triggeredRewardsSettings.rewards.length > 0,
+      completed:
+        Array.isArray(liveCart?.triggeredRewardsSettings?.rewards) &&
+        liveCart.triggeredRewardsSettings.rewards.length > 0,
       onAction: goTo("triggered-rewards"),
     },
     {
       title: "Cart Plus App Embed Installation",
-      description: "Set up the Cart Plus app embed in your Shopify theme before enabling it to start using its features.",
+      description:
+        "Set up the Cart Plus app embed in your Shopify theme before enabling it to start using its features.",
       actionLabel: "Install Cart Plus app embed",
       completed: appEmbedInstalled,
       isEmbedStarted: false,
@@ -400,12 +470,13 @@ function buildSecondarySetupTasks(liveCart, navigate, shop, appEmbedId, mainThem
       onAction: () =>
         window.open(
           `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
-          "_top"
+          "_top",
         ),
     },
     {
       title: "Activate Cart Plus",
-      description: "Open the cart editor and set the Cart Plus status to 'Active'.",
+      description:
+        "Open the cart editor and set the Cart Plus status to 'Active'.",
       actionLabel: "Activate Cart Plus",
       completed: !!liveCart,
       onAction: () => navigate("/app/carts"),
@@ -424,7 +495,7 @@ async function checkAppEmbed(shopDomain, accessToken, themeId) {
           "X-Shopify-Access-Token": accessToken,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
     const assetData = await assetRes.json();
     const settings = JSON.parse(assetData.asset.value);
@@ -435,9 +506,8 @@ async function checkAppEmbed(shopDomain, accessToken, themeId) {
       if (block?.type?.includes("shopify://apps/cart-plus-testing/")) {
         return { started: true, installed: !block?.disabled };
       }
-
     }
-  } catch (_) { }
+  } catch (_) {}
   return { started: false, installed: false };
 }
 
@@ -450,7 +520,7 @@ async function getMainThemeId(shopDomain, accessToken) {
           "X-Shopify-Access-Token": accessToken,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
     const data = await res.json();
     const mainTheme = data.themes?.find((t) => t.role === "main");
@@ -507,9 +577,9 @@ async function getMainThemeId(shopDomain, accessToken) {
 //   return { shop, apiUrl, currency, appEmbedId, mainThemeId, dataPromise };
 // };
 
-
 export const loader = async ({ request }) => {
-  const { shop, apiUrl, accessToken, currency, mainThemeId } = await requireShopData(request);
+  const { shop, apiUrl, accessToken, currency, mainThemeId } =
+    await requireShopData(request);
 
   const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 
@@ -523,24 +593,47 @@ export const loader = async ({ request }) => {
     subscriptionRevenue: 0,
   };
 
-  const dataPromise = getCarts(apiUrl, shop.myshopifyDomain).then((cartsRes) => {
-    const allCarts = cartsRes?.data || [];
-    const publishedCartIds = allCarts
-      .filter((c) => c.status === "published")
-      .map((c) => c.cartId);
+  const dataPromise = getCarts(apiUrl, shop.myshopifyDomain).then(
+    (cartsRes) => {
+      const allCarts = cartsRes?.data || [];
+      const publishedCartIds = allCarts
+        .filter((c) => c.status === "published")
+        .map((c) => c.cartId);
 
-    return Promise.allSettled([
-      Promise.resolve(cartsRes),
-      getCartStats(apiUrl, shop.myshopifyDomain, defaultStart.toISOString(), today.toISOString(), publishedCartIds),
-      checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
-    ]).then(([cartsResult, statsResult, embedResult]) => ({
-      carts: cartsResult.status === "fulfilled" ? cartsResult.value?.data || [] : [],
-      cartStats: statsResult.status === "fulfilled" ? statsResult.value?.data || {} : {},
-      shopRevenue: statsResult.status === "fulfilled" ? statsResult.value?.shopRevenue || fallbackRevenue : fallbackRevenue,
-      appEmbedInstalled: embedResult.status === "fulfilled" ? embedResult.value.installed : false,
-      appEmbedStarted: embedResult.status === "fulfilled" ? embedResult.value.started : false,
-    }));
-  });
+      return Promise.allSettled([
+        Promise.resolve(cartsRes),
+        getCartStats(
+          apiUrl,
+          shop.myshopifyDomain,
+          defaultStart.toISOString(),
+          today.toISOString(),
+          publishedCartIds,
+        ),
+        checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
+      ]).then(([cartsResult, statsResult, embedResult]) => ({
+        carts:
+          cartsResult.status === "fulfilled"
+            ? cartsResult.value?.data || []
+            : [],
+        cartStats:
+          statsResult.status === "fulfilled"
+            ? statsResult.value?.data || {}
+            : {},
+        shopRevenue:
+          statsResult.status === "fulfilled"
+            ? statsResult.value?.shopRevenue || fallbackRevenue
+            : fallbackRevenue,
+        appEmbedInstalled:
+          embedResult.status === "fulfilled"
+            ? embedResult.value.installed
+            : false,
+        appEmbedStarted:
+          embedResult.status === "fulfilled"
+            ? embedResult.value.started
+            : false,
+      }));
+    },
+  );
 
   return { shop, apiUrl, currency, appEmbedId, mainThemeId, dataPromise };
 };
@@ -605,14 +698,16 @@ function Sparkline({ type = "flat", value = 0 }) {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        line.style.transition = "stroke-dashoffset 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
+        line.style.transition =
+          "stroke-dashoffset 0.7s cubic-bezier(0.4, 0, 0.2, 1)";
         line.style.strokeDashoffset = "0";
         setTimeout(() => {
           area.style.transition = "opacity 0.4s ease";
           area.style.opacity = "1";
         }, 300);
         setTimeout(() => {
-          dot.style.transition = "opacity 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)";
+          dot.style.transition =
+            "opacity 0.2s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)";
           dot.style.opacity = "1";
           dot.style.transform = "scale(1)";
         }, 650);
@@ -639,7 +734,15 @@ function Sparkline({ type = "flat", value = 0 }) {
 
 // ─── StatTile ──────────────────────────────────────────────────────────────────
 
-function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft, loading }) {
+function StatTile({
+  label,
+  value,
+  sparklineType,
+  rawValue,
+  onClick,
+  borderLeft,
+  loading,
+}) {
   return (
     <div
       onClick={onClick}
@@ -657,13 +760,25 @@ function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft, 
     >
       <InlineStack align="space-between" blockAlign="center" wrap={false}>
         <BlockStack gap="100">
-          <Text variant="bodyMd" fontWeight="semibold" truncate>{label}</Text>
+          <Text variant="bodyMd" fontWeight="semibold" truncate>
+            {label}
+          </Text>
           <InlineStack gap="300" align="left" blockAlign="center">
             {loading ? (
-              <div style={{ width: 80, height: 20, background: "#e1e3e5", borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+              <div
+                style={{
+                  width: 80,
+                  height: 20,
+                  background: "#e1e3e5",
+                  borderRadius: 4,
+                  animation: "pulse 1.5s ease-in-out infinite",
+                }}
+              />
             ) : (
               <>
-                <Text variant="bodyMd" fontWeight="semibold">{value}</Text>
+                <Text variant="bodyMd" fontWeight="semibold">
+                  {value}
+                </Text>
                 <Badge>—</Badge>
               </>
             )}
@@ -671,7 +786,15 @@ function StatTile({ label, value, sparklineType, rawValue, onClick, borderLeft, 
         </BlockStack>
         <div style={{ flexShrink: 0, paddingInlineStart: "8px" }}>
           {loading ? (
-            <div style={{ width: 72, height: 36, background: "#e1e3e5", borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
+            <div
+              style={{
+                width: 72,
+                height: 36,
+                background: "#e1e3e5",
+                borderRadius: 4,
+                animation: "pulse 1.5s ease-in-out infinite",
+              }}
+            />
           ) : (
             <Sparkline type={sparklineType} value={rawValue} />
           )}
@@ -736,7 +859,12 @@ function AppEmbedLink({ shop, mainThemeId, appEmbedId }) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          style={{ display: "inline-flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            textDecoration: "none",
+          }}
         >
           <Badge tone="warning">App embed off</Badge>
           <span className="embed-icon" style={{ opacity: 0.9 }}>
@@ -782,14 +910,27 @@ function DashboardInner({
   currency,
 }) {
   const navigate = useNavigate();
-  const authHeaders = useMemo(() => ({
-    "x-api-key": import.meta.env.VITE_API_SECRET_KEY || "",
-  }), []);
+  const revalidator = useRevalidator();
+
+  const authHeaders = useMemo(
+    () => ({
+      "x-api-key": import.meta.env.VITE_API_SECRET_KEY || "",
+    }),
+    [],
+  );
 
   const [carts, setCarts] = useState(initialCarts || []);
   const [cartStats, setCartStats] = useState(initialCartStats || {});
+  const [expandedCarts, setExpandedCarts] = useState({});
+  const toggleCartExpanded = useCallback((cartId) => {
+    setExpandedCarts((prev) => ({ ...prev, [cartId]: !prev[cartId] }));
+  }, []);
   const [shopRevenue, setShopRevenue] = useState(
-    initialShopRevenue || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 }
+    initialShopRevenue || {
+      addonRevenue: 0,
+      upsellRevenue: 0,
+      subscriptionRevenue: 0,
+    },
   );
   const [range, setRange] = useState(getDefaultRange);
 
@@ -814,7 +955,8 @@ function DashboardInner({
   // Skip the very first effect run (mount); only refetch when the range changes.
   const isFirstRangeRender = useRef(true);
 
-  const storeHandle = shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
+  const storeHandle =
+    shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
 
   const liveCarts = useMemo(() => {
@@ -823,33 +965,61 @@ function DashboardInner({
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [carts]);
 
-  const primaryTasks = useMemo(() => buildPrimarySetupTasks(
-    liveCarts[0] || null,
-    navigate,
-    shop,
-    appEmbedId,
-    mainThemeId,
-    appEmbedInstalled
-  ), [liveCarts, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled]);
+  const primaryTasks = useMemo(
+    () =>
+      buildPrimarySetupTasks(
+        liveCarts[0] || null,
+        navigate,
+        shop,
+        appEmbedId,
+        mainThemeId,
+        appEmbedInstalled,
+      ),
+    [liveCarts, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled],
+  );
 
-  const secondaryTasks = useMemo(() => buildSecondarySetupTasks(
-    liveCarts[0] || null,
-    navigate,
-    shop,
-    appEmbedId,
-    mainThemeId,
-    appEmbedInstalled,
-    appEmbedStarted
-  ), [liveCarts, navigate, shop, appEmbedId, mainThemeId, appEmbedInstalled, appEmbedStarted]);
+  const secondaryTasks = useMemo(
+    () =>
+      buildSecondarySetupTasks(
+        liveCarts[0] || null,
+        navigate,
+        shop,
+        appEmbedId,
+        mainThemeId,
+        appEmbedInstalled,
+        appEmbedStarted,
+      ),
+    [
+      liveCarts,
+      navigate,
+      shop,
+      appEmbedId,
+      mainThemeId,
+      appEmbedInstalled,
+      appEmbedStarted,
+    ],
+  );
 
-  const handlePrimarySetupToggle = useCallback(() => setPrimarySetupOpen((v) => !v), []);
-  const handleSecondarySetupToggle = useCallback(() => setSecondarySetupOpen((v) => !v), []);
+  const handlePrimarySetupToggle = useCallback(
+    () => setPrimarySetupOpen((v) => !v),
+    [],
+  );
+  const handleSecondarySetupToggle = useCallback(
+    () => setSecondarySetupOpen((v) => !v),
+    [],
+  );
 
   const primaryCompletedCount = primaryTasks.filter((t) => t.completed).length;
-  const primaryProgressPercent = Math.round((primaryCompletedCount / primaryTasks.length) * 100);
+  const primaryProgressPercent = Math.round(
+    (primaryCompletedCount / primaryTasks.length) * 100,
+  );
 
-  const secondaryCompletedCount = secondaryTasks.filter((t) => t.completed).length;
-  const secondaryProgressPercent = Math.round((secondaryCompletedCount / secondaryTasks.length) * 100);
+  const secondaryCompletedCount = secondaryTasks.filter(
+    (t) => t.completed,
+  ).length;
+  const secondaryProgressPercent = Math.round(
+    (secondaryCompletedCount / secondaryTasks.length) * 100,
+  );
 
   useEffect(() => {
     setCarts(initialCarts);
@@ -881,7 +1051,11 @@ function DashboardInner({
         if (data.success) {
           setCartStats(data.data || {});
           setShopRevenue(
-            data.shopRevenue || { addonRevenue: 0, upsellRevenue: 0, subscriptionRevenue: 0 }
+            data.shopRevenue || {
+              addonRevenue: 0,
+              upsellRevenue: 0,
+              subscriptionRevenue: 0,
+            },
           );
         }
       } catch (err) {
@@ -892,24 +1066,102 @@ function DashboardInner({
     };
 
     fetchStats();
-  }, [range.start, range.end, liveCarts, apiUrl, shop?.myshopifyDomain, authHeaders]);
+  }, [
+    range.start,
+    range.end,
+    liveCarts,
+    apiUrl,
+    shop?.myshopifyDomain,
+    authHeaders,
+  ]);
 
-  const sparkType = useCallback((val) => (val ?? 0) > 0 ? "spike" : "flat", []);
+  const sparkType = useCallback(
+    (val) => ((val ?? 0) > 0 ? "spike" : "flat"),
+    [],
+  );
+
+  const featureCart = liveCarts[0];
+  const cartIdForFeatures = featureCart?.cartId;
+
+  const appFeatures = [
+    {
+      title: "Announcements",
+      subtitle: "Show messages in your cart",
+      icon: MegaphoneIcon,
+      module: "announcements",
+      isActive: featureCart?.announcementSettings?.enabled === false,
+    },
+    {
+      title: "Progress Bar",
+      subtitle: "Free shipping & reward goals",
+      icon: TargetIcon,
+      module: "rewards",
+      isActive: featureCart?.rewardsSettings?.enabled === false,
+    },
+    {
+      title: "One Click Upsell",
+      subtitle: "Add products in a single tap",
+      icon: CartIcon,
+      module: "one-tick-upsell",
+      isActive: !!featureCart?.cartSettings?.oneTick?.enabled,
+    },
+    {
+      title: "Discount Code",
+      subtitle: "Apply discounts in cart",
+      icon: DiscountIcon,
+      module: "discount-codes",
+      isActive: featureCart?.discountCodesSettings?.enabled === false,
+    },
+    {
+      title: "Add-ons",
+      subtitle: "Gift wrap, insurance & more",
+      icon: PlusCircleIcon,
+      module: "addons",
+      isActive: featureCart?.addonsSettings?.enabled === false,
+    },
+    {
+      title: "Summary",
+      subtitle: "Order summary in your cart",
+      icon: ReceiptIcon,
+      module: "summary",
+      isActive: !!featureCart?.cartSettings?.summary?.enabled,
+    },
+  ];
 
   return (
     <Page
-      title="Welcome to Cart Plus 🎉"
+      title={
+        <InlineStack gap="300" blockAlign="center" wrap={false}>
+          <img
+            src="https://cartplus.io/cartplus-img/Cart%20Plus.svg"
+            alt="Cart Plus"
+            style={{
+              height: 48,
+              width: 48,
+              objectFit: "contain",
+              borderRadius: 8,
+            }}
+          />
+          <BlockStack gap="050">
+            <Text as="span" variant="bodySm" tone="subdued">
+              Welcome to
+            </Text>
+            <Text as="span" variant="headingLg" fontWeight="semibold">
+              Cart Plus
+            </Text>
+          </BlockStack>
+        </InlineStack>
+      }
       primaryAction={
         <InlineStack align="end" gap="300">
           <DateRangePicker value={range} onChange={setRange} />
           <Button variant="primary" onClick={() => navigate("/app/carts")}>
-            Manage all carts
+            Your Carts
           </Button>
         </InlineStack>
       }
     >
       <BlockStack gap="400">
-
         {/* ── Live carts ── */}
         <BlockStack gap="200">
           <InlineStack gap="200" blockAlign="center">
@@ -959,9 +1211,9 @@ function DashboardInner({
                 label="Total revenue"
                 value={fmt(
                   (shopRevenue.addonRevenue ?? 0) +
-                  (shopRevenue.upsellRevenue ?? 0) +
-                  (shopRevenue.subscriptionRevenue ?? 0),
-                  currency
+                    (shopRevenue.upsellRevenue ?? 0) +
+                    (shopRevenue.subscriptionRevenue ?? 0),
+                  currency,
                 )}
                 rawValue={
                   (shopRevenue.addonRevenue ?? 0) +
@@ -970,14 +1222,71 @@ function DashboardInner({
                 }
                 sparklineType={sparkType(
                   (shopRevenue.addonRevenue ?? 0) +
-                  (shopRevenue.upsellRevenue ?? 0) +
-                  (shopRevenue.subscriptionRevenue ?? 0)
+                    (shopRevenue.upsellRevenue ?? 0) +
+                    (shopRevenue.subscriptionRevenue ?? 0),
                 )}
                 onClick={() => navigate("/app/analytics")}
               />
             </InlineGrid>
           </div>
         </BlockStack>
+
+        {/* ── App embed status ── */}
+        <Card padding="400">
+          <InlineStack
+            align="space-between"
+            blockAlign="center"
+            gap="400"
+            wrap={false}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Text variant="headingSm" as="span">
+                  App embed status :
+                </Text>
+                <Badge tone={appEmbedInstalled ? "success" : "attention"}>
+                  {appEmbedInstalled ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+              <Text variant="bodyMd" tone="subdued" as="p">
+                You have{" "}
+                <a
+                  href={`https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps`}
+                  target="_top"
+                  style={{ color: "inherit", textDecoration: "underline" }}
+                >
+                  {appEmbedInstalled ? 1 : 0} active app blocks
+                </a>{" "}
+                in your store
+              </Text>
+            </div>
+
+            {!appEmbedInstalled && (
+              <InlineStack gap="300" blockAlign="center" wrap={false}>
+                <Tooltip content="Refresh status">
+                  <Button
+                    variant="tertiary"
+                    icon={RefreshIcon}
+                    loading={revalidator.state === "loading"}
+                    onClick={() => revalidator.revalidate()}
+                    accessibilityLabel="Refresh app embed status"
+                  />
+                </Tooltip>
+                <Button
+                  variant="primary"
+                  onClick={() =>
+                    window.open(
+                      `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
+                      "_top",
+                    )
+                  }
+                >
+                  Activate app embed
+                </Button>
+              </InlineStack>
+            )}
+          </InlineStack>
+        </Card>
 
         {/* ── Cart table ── */}
         <BlockStack>
@@ -1005,40 +1314,93 @@ function DashboardInner({
                   {
                     id: "impressions",
                     title: (
-                      <Tooltip hasUnderline activatorWrapper="span" content={
-                        <BlockStack gap="200">
-                          <Text as="p" fontWeight="bold">Impressions</Text>
-                          <Text as="p" variant="bodyMd">Number of times this cart was shown to a shopper.</Text>
-                          <Text as="p" variant="bodyMd">Values shown are for the date range selected at the top of the page.</Text>
-                        </BlockStack>
-                      }>
-                        <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium"> Impressions</Text>
+                      <Tooltip
+                        hasUnderline
+                        activatorWrapper="span"
+                        content={
+                          <BlockStack gap="200">
+                            <Text as="p" fontWeight="bold">
+                              Impressions
+                            </Text>
+                            <Text as="p" variant="bodyMd">
+                              Number of times this cart was shown to a shopper.
+                            </Text>
+                            <Text as="p" variant="bodyMd">
+                              Values shown are for the date range selected at
+                              the top of the page.
+                            </Text>
+                          </BlockStack>
+                        }
+                      >
+                        <Text
+                          variant="bodySm"
+                          tone="subdued"
+                          as="span"
+                          fontWeight="medium"
+                        >
+                          {" "}
+                          Impressions
+                        </Text>
                       </Tooltip>
                     ),
                   },
                   {
                     id: "conversion-rate",
                     title: (
-                      <Tooltip hasUnderline activatorWrapper="span" content={
-                        <BlockStack gap="200">
-                          <Text as="p" fontWeight="bold">Cart conversion rate (%)</Text>
-                          <Text as="p" variant="bodySm">The percentage of cart impressions that resulted in a completed purchase.</Text>
-                        </BlockStack>
-                      }>
-                        <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium">  Cart conversion rate (%)</Text>
+                      <Tooltip
+                        hasUnderline
+                        activatorWrapper="span"
+                        content={
+                          <BlockStack gap="200">
+                            <Text as="p" fontWeight="bold">
+                              Cart conversion rate (%)
+                            </Text>
+                            <Text as="p" variant="bodySm">
+                              The percentage of cart impressions that resulted
+                              in a completed purchase.
+                            </Text>
+                          </BlockStack>
+                        }
+                      >
+                        <Text
+                          variant="bodySm"
+                          tone="subdued"
+                          as="span"
+                          fontWeight="medium"
+                        >
+                          {" "}
+                          Cart conversion rate (%)
+                        </Text>
                       </Tooltip>
                     ),
                   },
                   {
                     id: "added-revenue",
                     title: (
-                      <Tooltip hasUnderline activatorWrapper="span" content={
-                        <BlockStack gap="200">
-                          <Text as="p" fontWeight="bold">Added revenue</Text>
-                          <Text as="p" variant="bodySm">The percentage of cart impressions that resulted in a completed purchase.</Text>
-                        </BlockStack>
-                      }>
-                        <Text variant="bodySm" tone="subdued" as="span" fontWeight="medium">  Added revenue</Text>
+                      <Tooltip
+                        hasUnderline
+                        activatorWrapper="span"
+                        content={
+                          <BlockStack gap="200">
+                            <Text as="p" fontWeight="bold">
+                              Added revenue
+                            </Text>
+                            <Text as="p" variant="bodySm">
+                              The percentage of cart impressions that resulted
+                              in a completed purchase.
+                            </Text>
+                          </BlockStack>
+                        }
+                      >
+                        <Text
+                          variant="bodySm"
+                          tone="subdued"
+                          as="span"
+                          fontWeight="medium"
+                        >
+                          {" "}
+                          Added revenue
+                        </Text>
                       </Tooltip>
                     ),
                   },
@@ -1048,36 +1410,84 @@ function DashboardInner({
               >
                 {liveCarts.map((cart, i) => {
                   const safeId =
-                    (cart.cartId && cart.cartId.trim() !== "" && cart.cartId.trim()) ||
-                    (cart._id && cart._id.toString().trim() !== "" && cart._id.toString().trim()) ||
+                    (cart.cartId &&
+                      cart.cartId.trim() !== "" &&
+                      cart.cartId.trim()) ||
+                    (cart._id &&
+                      cart._id.toString().trim() !== "" &&
+                      cart._id.toString().trim()) ||
                     `row-${i}`;
 
                   const cartEditorPath = `/app/cart-editor/${cart.cartId}?from=home`;
+                  const abTest = getAbTest(cart);
+                  const isExpanded = !!expandedCarts[cart.cartId];
 
                   return (
-                    <IndexTable.Row
-                      key={safeId}
-                      id={safeId}
-                      position={i}
-                      onClick={() => navigate(cartEditorPath)}
-                    >
+                    <Fragment key={safeId}>
+                      <IndexTable.Row
+                        id={safeId}
+                        position={i}
+                        onClick={() => navigate(cartEditorPath)}
+                      >
                       <IndexTable.Cell>
-                        <Link
-                          to={cartEditorPath}
-                          prefetch="intent"
-                          style={{ position: "absolute", inset: 0, zIndex: 0 }}
-                          aria-label={`Edit cart ${cart.cartName || "Untitled cart"}`}
-                        />
                         <CartHoverCard cart={cart}>
-                          <div style={{ maxWidth: "150px", cursor: "pointer", position: "relative", zIndex: 1 }}>
-                            <Text truncate as="span">{cart.cartName || "Untitled cart"}</Text>
-                            <Text as="span" tone="subdued" variant="bodySm">
-                              {cart.updatedAt
-                                ? `Last edited: ${new Date(cart.updatedAt)
-                                  .toLocaleDateString("en-GB")
-                                  .replace(/\//g, "-")}`
-                                : ""}
-                            </Text>
+                          <div
+                            style={{
+                              maxWidth: "150px",
+                              cursor: "pointer",
+                              position: "relative",
+                              zIndex: 1,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            {abTest && (
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                aria-expanded={isExpanded}
+                                aria-label={
+                                  isExpanded ? "Hide variants" : "Show variants"
+                                }
+                                style={{
+                                  display: "inline-flex",
+                                  flexShrink: 0,
+                                  cursor: "pointer",
+                                }}
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  toggleCartExpanded(cart.cartId);
+                                }}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    toggleCartExpanded(cart.cartId);
+                                  }
+                                }}
+                              >
+                                <Icon
+                                  source={
+                                    isExpanded ? ChevronDownIcon : ChevronRightIcon
+                                  }
+                                  tone="subdued"
+                                />
+                              </span>
+                            )}
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                minWidth: 0,
+                              }}
+                            >
+                              <Text truncate as="span">
+                                {cart.cartName || "Untitled cart"}
+                              </Text>
+                            </div>
+                            {abTest && <Badge tone="success">A/B test</Badge>}
                           </div>
                         </CartHoverCard>
                       </IndexTable.Cell>
@@ -1104,7 +1514,9 @@ function DashboardInner({
                           <SkeletonCell width={48} />
                         ) : cartStats?.[cart.cartId]?.impressions != null ? (
                           cartStats[cart.cartId].impressions.toLocaleString()
-                        ) : "—"}
+                        ) : (
+                          "—"
+                        )}
                       </IndexTable.Cell>
 
                       {/* Conversion rate */}
@@ -1113,7 +1525,9 @@ function DashboardInner({
                           <SkeletonCell width={56} />
                         ) : cartStats?.[cart.cartId]?.conversionRate != null ? (
                           cartStats[cart.cartId].conversionRate.toFixed(2) + "%"
-                        ) : "—"}
+                        ) : (
+                          "—"
+                        )}
                       </IndexTable.Cell>
 
                       {/* Revenue */}
@@ -1122,26 +1536,109 @@ function DashboardInner({
                           <SkeletonCell width={72} />
                         ) : cartStats?.[cart.cartId]?.revenue != null ? (
                           fmt(cartStats[cart.cartId].revenue, currency)
-                        ) : "—"}
+                        ) : (
+                          "—"
+                        )}
                       </IndexTable.Cell>
 
                       <IndexTable.Cell>
-                        <InlineStack gap="200" align="end" style={{ position: "relative", zIndex: 1 }}>
-                          <Link to={cartEditorPath} prefetch="intent" style={{ textDecoration: "none" }}>
-                            <Button size="slim">Edit cart</Button>
-                          </Link>
+                        <InlineStack
+                          gap="200"
+                          align="end"
+                          style={{ position: "relative", zIndex: 1 }}
+                        >
                           <Button
                             size="slim"
                             onClick={(e) => {
                               e.stopPropagation();
-                              window.open(`https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`, "_blank");
+                              navigate(cartEditorPath);
+                            }}
+                          >
+                            Edit cart
+                          </Button>
+                          <Button
+                            size="slim"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(
+                                `https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`,
+                                "_blank",
+                              );
                             }}
                           >
                             Preview
                           </Button>
                         </InlineStack>
                       </IndexTable.Cell>
-                    </IndexTable.Row>
+                      </IndexTable.Row>
+                      {abTest &&
+                        isExpanded &&
+                        abTest.variants.map((variantId, variantIndex) => {
+                          const percentage =
+                            abTest.weights?.[variantId] ??
+                            Math.round(100 / abTest.variants.length);
+                          const variantStats =
+                            cartStats?.[cart.cartId]?.variants?.[variantId];
+                          const variantEditorPath = `${cartEditorPath}&variant=${variantId}`;
+
+                          return (
+                            <IndexTable.Row
+                              key={`${safeId}-${variantId}`}
+                              id={`${safeId}-${variantId}`}
+                              position={1000 + i * 10 + variantIndex}
+                              onClick={() => navigate(variantEditorPath)}
+                            >
+                              <IndexTable.Cell>
+                                <div
+                                  style={{
+                                    paddingLeft: 28,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                  }}
+                                >
+                                  <Text as="span">Variant {variantId}</Text>
+                                  <Text as="span" variant="bodySm" tone="subdued">
+                                    {percentage}% of traffic
+                                  </Text>
+                                  {variantId === abTest.controlId && (
+                                    <Badge>Control</Badge>
+                                  )}
+                                </div>
+                              </IndexTable.Cell>
+                              <IndexTable.Cell />
+                              <IndexTable.Cell>
+                                {statsLoading ? (
+                                  <SkeletonCell width={48} />
+                                ) : variantStats?.impressions != null ? (
+                                  variantStats.impressions.toLocaleString()
+                                ) : (
+                                  "—"
+                                )}
+                              </IndexTable.Cell>
+                              <IndexTable.Cell>
+                                {statsLoading ? (
+                                  <SkeletonCell width={56} />
+                                ) : variantStats?.conversionRate != null ? (
+                                  `${variantStats.conversionRate.toFixed(2)}%`
+                                ) : (
+                                  "—"
+                                )}
+                              </IndexTable.Cell>
+                              <IndexTable.Cell>
+                                {statsLoading ? (
+                                  <SkeletonCell width={72} />
+                                ) : variantStats?.revenue != null ? (
+                                  fmt(variantStats.revenue, currency)
+                                ) : (
+                                  "—"
+                                )}
+                              </IndexTable.Cell>
+                              <IndexTable.Cell />
+                            </IndexTable.Row>
+                          );
+                        })}
+                    </Fragment>
                   );
                 })}
               </IndexTable>
@@ -1150,13 +1647,17 @@ function DashboardInner({
             <EmptyState
               title="No live carts configured"
               subtitle="Publish your cart to see it live, and start earning with your cart."
-              tag={!appEmbedInstalled ? { label: "App embed off", tone: "warning" } : null}
+              tag={
+                !appEmbedInstalled
+                  ? { label: "App embed off", tone: "warning" }
+                  : null
+              }
               primaryAction={{
                 label: "Enable app embed",
                 onAction: () =>
                   window.open(
                     `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
-                    "_blank"
+                    "_blank",
                   ),
               }}
               secondaryAction={{
@@ -1168,9 +1669,76 @@ function DashboardInner({
         </BlockStack>
       </BlockStack>
 
+      {/* ── App Features ── */}
       <Box paddingBlockStart="400">
         <BlockStack gap="300">
-          {/* Card 1 — rich guide: Create Your Cart / Integrate / Manage Your Carts */}
+          <Text variant="headingMd" as="h3">
+            App Features
+          </Text>
+
+          <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
+            {appFeatures.map((f) => (
+              <Card key={f.title} padding="400">
+                <BlockStack gap="300">
+                  <InlineStack gap="300" wrap={false}>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 8,
+                        background: "#f1f2f3",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon source={f.icon} />
+                    </div>
+
+                    <div
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                      }}
+                    >
+                      <Text variant="bodyMd" as="p">
+                        {f.title}
+                      </Text>
+                      <Text variant="headingSm" as="p">
+                        {f.subtitle}
+                      </Text>
+                    </div>
+
+                    {f.isActive && (
+                      <div style={{ flexShrink: 0 }}>
+                        <Badge tone="success">Active</Badge>
+                      </div>
+                    )}
+                  </InlineStack>
+
+                  <Button
+                    fullWidth
+                    disabled={!cartIdForFeatures}
+                    onClick={() =>
+                      navigate(
+                        `/app/cart-editor/${cartIdForFeatures}?from=home&module=${f.module}`,
+                      )
+                    }
+                  >
+                    Configure
+                  </Button>
+                </BlockStack>
+              </Card>
+            ))}
+          </InlineGrid>
+        </BlockStack>
+      </Box>
+      {/* <Box paddingBlockStart="400">
+        <BlockStack gap="300">
           <div
             style={{
               background: "#fff",
@@ -1200,12 +1768,18 @@ function DashboardInner({
               </Text>
               <div style={{ flex: 1 }} />
               <div style={{ width: 200 }}>
-                <ProgressBar progress={primaryProgressPercent} size="small" tone="primary" />
+                <ProgressBar
+                  progress={primaryProgressPercent}
+                  size="small"
+                  tone="primary"
+                />
               </div>
               <div
                 style={{
                   transition: "transform 0.2s",
-                  transform: primarySetupOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  transform: primarySetupOpen
+                    ? "rotate(180deg)"
+                    : "rotate(0deg)",
                   display: "flex",
                 }}
               >
@@ -1238,7 +1812,6 @@ function DashboardInner({
             </Collapsible>
           </div>
 
-          {/* Card 2 — flat guide: Add upsells / rewards / triggered rewards / embed / activate */}
 
           <div
             style={{
@@ -1265,16 +1838,23 @@ function DashboardInner({
             >
               <Text variant="headingMd">Recommendations </Text>
               <Text tone="subdued">
-                {secondaryCompletedCount} of {secondaryTasks.length} tasks complete
+                {secondaryCompletedCount} of {secondaryTasks.length} tasks
+                complete
               </Text>
               <div style={{ flex: 1 }} />
               <div style={{ width: 200 }}>
-                <ProgressBar progress={secondaryProgressPercent} size="small" tone="primary" />
+                <ProgressBar
+                  progress={secondaryProgressPercent}
+                  size="small"
+                  tone="primary"
+                />
               </div>
               <div
                 style={{
                   transition: "transform 0.2s",
-                  transform: secondarySetupOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  transform: secondarySetupOpen
+                    ? "rotate(180deg)"
+                    : "rotate(0deg)",
                   display: "flex",
                 }}
               >
@@ -1294,25 +1874,77 @@ function DashboardInner({
             </Collapsible>
           </div>
         </BlockStack>
-      </Box>
+      </Box> */}
 
       {/* ── Help cards ── */}
       <Box paddingBlockStart="400">
         <InlineGrid columns={{ xs: 1, sm: 1 }} gap="300">
+          {/* ── Customer success specialist ── */}
           <Card padding="400">
-            <InlineStack align="space-between" blockAlign="center" gap="400" wrap={false}>
-              <InlineStack gap="300" blockAlign="start" wrap={false}>
-                <div style={{ width: 44, height: 44, background: "#EDEDEE", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid #C5C5C5" }}>
-                  <Icon source={HeartIcon} />
+            <InlineStack
+              align="space-between"
+              blockAlign="center"
+              gap="400"
+              wrap={false}
+            >
+              <InlineStack gap="300" blockAlign="center" wrap={false}>
+                {/* Avatar + green online dot */}
+                <div
+                  style={{
+                    position: "relative",
+                    display: "inline-flex",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Avatar
+                    size="xl"
+                    name="Sujil"
+                    source="https://cdn.shopify.com/s/files/1/0281/5682/1583/files/sujil.jpg"
+                  />
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      background: "#22c55e",
+                      border: "2px solid #fff",
+                      boxSizing: "border-box",
+                      animation: "pulse 1.5s ease-in-out infinite",
+                    }}
+                  />
                 </div>
-                <BlockStack gap="050">
-                  <Text variant="headingXs">Questions or need help? </Text>
-                  <Text variant="bodySm" tone="subdued">Chat with our support team.</Text>
-                </BlockStack>
+
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 2 }}
+                >
+                  <Text variant="bodySm" tone="subdued" as="p">
+                    Hi! I’m your customer success specialist
+                  </Text>
+                  <Text variant="headingSm" as="p">
+                    Ankush Kumar
+                  </Text>
+                </div>
               </InlineStack>
-              <Button onClick={() => navigate("/app/support")}>
-                Chat with us
-              </Button>
+
+              <ButtonGroup>
+                <Button
+                  icon={ChatIcon}
+                  onClick={() => navigate("/app/support")}
+                >
+                  Chat Now
+                </Button>
+                <Button
+                  icon={PhoneIcon}
+                  onClick={() =>
+                    window.open("https://your-calendly-link.com", "_blank")
+                  }
+                >
+                  Schedule strategy call
+                </Button>
+              </ButtonGroup>
             </InlineStack>
           </Card>
 
@@ -1338,7 +1970,13 @@ function DashboardInner({
 
 // ─── EmptyState ────────────────────────────────────────────────────────────────
 
-const EmptyState = ({ title, subtitle, tag, primaryAction, secondaryAction }) => (
+const EmptyState = ({
+  title,
+  subtitle,
+  tag,
+  primaryAction,
+  secondaryAction,
+}) => (
   <Box paddingBlockStart="300">
     <Box
       borderStyle="dashed"
@@ -1355,14 +1993,26 @@ const EmptyState = ({ title, subtitle, tag, primaryAction, secondaryAction }) =>
           <img
             src="https://hubsyntax.com/cart-images/Clip%20path%20group.png"
             alt={title}
-            style={{ width: "127px", height: "82px", objectFit: "contain", flexShrink: 0, display: "block" }}
+            style={{
+              width: "127px",
+              height: "82px",
+              objectFit: "contain",
+              flexShrink: 0,
+              display: "block",
+            }}
           />
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <Text variant="headingMd" as="h4">{title}</Text>
-              {tag?.label && <Badge tone={tag.tone || "warning"}>{tag.label}</Badge>}
+              <Text variant="headingMd" as="h4">
+                {title}
+              </Text>
+              {tag?.label && (
+                <Badge tone={tag.tone || "warning"}>{tag.label}</Badge>
+              )}
             </div>
-            <Text variant="bodySm" tone="subdued" as="p">{subtitle}</Text>
+            <Text variant="bodySm" tone="subdued" as="p">
+              {subtitle}
+            </Text>
           </div>
         </InlineStack>
 
@@ -1374,7 +2024,9 @@ const EmptyState = ({ title, subtitle, tag, primaryAction, secondaryAction }) =>
               </Button>
             )}
             {secondaryAction && (
-              <Button onClick={secondaryAction.onAction}>{secondaryAction.label}</Button>
+              <Button onClick={secondaryAction.onAction}>
+                {secondaryAction.label}
+              </Button>
             )}
           </InlineStack>
         </div>
