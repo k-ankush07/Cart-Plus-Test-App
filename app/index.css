@@ -144,7 +144,6 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
 
 .cart-app__container {
   position: relative;
-  overflow: hidden;
 }
 
 .cart-plus-offers-backdrop {
@@ -184,8 +183,17 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
     flex-direction: column;
     scrollbar-width: none;
     flex-grow: 1;
-    overflow-y: auto;
+    /* overflow-y: auto; */
     position: relative;
+}
+
+.cart-plus-body-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: none;
+    forced-color-adjust: none;
 }
 
 .cart-app__bottom-group {

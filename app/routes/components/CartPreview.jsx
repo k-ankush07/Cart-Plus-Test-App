@@ -6,13 +6,11 @@ import Announcements from "./cart-Items/Announcements";
 import TieredReward from "./cart-Items/TieredRewards";
 import CartHeading from "./cart-Items/CartHeading";
 import CartFooter from "./cart-Items/CartFooter";
-import Recommendation from "./cart-Items/Recommendation";
 import EmptyCart from "./cart-Items/EmptyCart";
 import LoginMessage from "./cart-Items/LoginMessage";
 import { getEmptyUpsells } from "./utils/emptyUpsells";
 import Subscription from "./cart-Items/Subscription";
 import Upsells from "./cart-Items/Upsells";
-import AdditionalNotes from "./cart-Items/AdditionalNotes";
 import TrustBadges from "./cart-Items/TrustBadges";
 import CustomHtml from "./cart-Items/CustomHtml";
 import { getCustomBlocks, placedBlockIds } from "./utils/customBlocks";
@@ -115,15 +113,18 @@ const CartPreview = memo(function CartPreview({
   const [offerOpen, setOfferOpen] = useState(false);
 
   // the Empty cart has its own Cross-sell settings
-  const sideUpsells = emptyCart ? getEmptyUpsells(cartSettings) : upsellsSettings;
+  const sideUpsells = emptyCart
+    ? getEmptyUpsells(cartSettings)
+    : upsellsSettings;
   const sidePanelEnabled =
     sideUpsells?.layout === "side" && !sideUpsells?.enabled;
   const sidePanelOnRight =
-    sidePanelEnabled &&
-    sideUpsells?.sidePanelPosition === "right";
+    sidePanelEnabled && sideUpsells?.sidePanelPosition === "right";
 
-  const bodyBg = backgroundToCss(getCartItemOptions(cartSettings).sectionBackground);
-  const showTopRows =!emptyCart && activeTab !== "Recommended Products";
+  const bodyBg = backgroundToCss(
+    getCartItemOptions(cartSettings).sectionBackground,
+  );
+  const showTopRows = !emptyCart && activeTab !== "Recommended Products";
   const headerBlocks = {
     ...blockNodes,
     "Banner Image": (
@@ -202,17 +203,16 @@ const CartPreview = memo(function CartPreview({
         <CustomHtml cartSettings={cartSettings} position="between_line_items" />
       </>
     ),
-    "Cross-sell":
-      !upsellsSettings.enabled && (
-        <SectionBg id="Upsells" cartSettings={cartSettings}>
-          <Upsells
-            upsellsSettings={upsellsSettings}
-            designSettings={designSettings}
-            currency={currency}
-            cartSettings={cartSettings}
-          />
-        </SectionBg>
-      ),
+    "Cross-sell": !upsellsSettings.enabled && (
+      <SectionBg id="Upsells" cartSettings={cartSettings}>
+        <Upsells
+          upsellsSettings={upsellsSettings}
+          designSettings={designSettings}
+          currency={currency}
+          cartSettings={cartSettings}
+        />
+      </SectionBg>
+    ),
   };
   const defaultBodyOrder =
     upsellsSettings?.position === "top"
@@ -236,9 +236,7 @@ const CartPreview = memo(function CartPreview({
           : `${maxWidth - (floating ? 32 : 0)}px`,
         width: "100%",
         position: "relative",
-        ...(sidePanelOnRight
-          ? { right: "190px" }
-          : {}),
+        ...(sidePanelOnRight ? { right: "190px" } : {}),
         overflowY: cartSettings?.disableFixedFooter ? "auto" : "unset",
         ...(designSettings.themed
           ? {
@@ -247,7 +245,9 @@ const CartPreview = memo(function CartPreview({
               "--cp-card-radius": `${designSettings.cardRadius}px`,
               "--cp-field-radius": `${designSettings.fieldRadius}px`,
               "--cp-image-radius": `${designSettings.imageRadius}px`,
-              ...(designSettings.accentBorder ? { "--cp-accent-border": designSettings.accentBorder } : {}),
+              ...(designSettings.accentBorder
+                ? { "--cp-accent-border": designSettings.accentBorder }
+                : {}),
               color: designSettings.textColor,
             }
           : {}),
@@ -265,16 +265,15 @@ const CartPreview = memo(function CartPreview({
       }}
     >
       {/* Cross-sell "Side panel" layout: a strip of products beside the cart */}
-      {!sideUpsells.enabled &&
-        sideUpsells.layout === "side" && (
-          <Upsells
-            sidePanel
-            upsellsSettings={sideUpsells}
-            designSettings={designSettings}
-            currency={currency}
-            cartSettings={cartSettings}
-          />
-        )}
+      {!sideUpsells.enabled && sideUpsells.layout === "side" && (
+        <Upsells
+          sidePanel
+          upsellsSettings={sideUpsells}
+          designSettings={designSettings}
+          currency={currency}
+          cartSettings={cartSettings}
+        />
+      )}
 
       {offerOpen && (
         <div
@@ -294,7 +293,9 @@ const CartPreview = memo(function CartPreview({
 
       {(cartSettings?.customCss || blocksCss) && (
         <style
-          dangerouslySetInnerHTML={{ __html: scopedCustomCss + "\n" + blocksCss }}
+          dangerouslySetInnerHTML={{
+            __html: scopedCustomCss + "\n" + blocksCss,
+          }}
         />
       )}
 
@@ -345,69 +346,78 @@ const CartPreview = memo(function CartPreview({
           )}
         </div>
 
-        {/* Header-section rows, in the order set by dragging them in the sidebar */}
-        {headerOrder.map((key) => (
-          <Fragment key={key}>{headerBlocks[key]}</Fragment>
-        ))}
+        <div className="cart-plus-body-wrapper"  style={{
+              overflowY: cartSettings?.disableFixedFooter ? "unset" : "",
+            }}>
+          {headerOrder.map((key) => (
+            <Fragment key={key}>{headerBlocks[key]}</Fragment>
+          ))}
 
-        {/* below_header */}
-        <CustomHtml cartSettings={cartSettings} position="below_header" />
+          {/* below_header */}
+          <CustomHtml cartSettings={cartSettings} position="below_header" />
 
-        <div
-          className="cart-app__body cart-plus-body"
-          style={{
-            overflowY: cartSettings?.disableFixedFooter ? "unset" : "auto",
-            ...(bodyBg ? { background: bodyBg } : {}),
-          }}
-        >
-          {emptyCart ? (
-            <>
-              <EmptyCart
-                cartSettings={cartSettings}
-                designSettings={designSettings}
-                footer={
-                  !getEmptyUpsells(cartSettings).enabled && (
-                    <SectionBg id="Upsells" cartSettings={cartSettings}>
-                      <Upsells
-                        upsellsSettings={getEmptyUpsells(cartSettings)}
-                        designSettings={designSettings}
-                        currency={currency}
-                        cartSettings={cartSettings}
-                      />
-                    </SectionBg>
-                  )
-                }
-              >
-                <LoginMessage cartSettings={cartSettings} settingsKey="emptyLogin" />
-              </EmptyCart>
-            </>
-          ) : (
-            <>
-              {!emptyCart && activeTab !== "Recommended Products" && (
-                <>
-                  <CustomHtml
+          <div
+            className="cart-app__body cart-plus-body"
+            style={{
+              ...(bodyBg ? { background: bodyBg } : {}),
+            }}
+          >
+            {emptyCart ? (
+              <>
+                <EmptyCart
+                  cartSettings={cartSettings}
+                  designSettings={designSettings}
+                  footer={
+                    !getEmptyUpsells(cartSettings).enabled && (
+                      <SectionBg id="Upsells" cartSettings={cartSettings}>
+                        <Upsells
+                          upsellsSettings={getEmptyUpsells(cartSettings)}
+                          designSettings={designSettings}
+                          currency={currency}
+                          cartSettings={cartSettings}
+                        />
+                      </SectionBg>
+                    )
+                  }
+                >
+                  <LoginMessage
                     cartSettings={cartSettings}
-                    position="above_announcements"
+                    settingsKey="emptyLogin"
                   />
-
-                  {trustBadgesSettings?.position === "top" && (
-                    <SectionBg id="Security Badges" cartSettings={cartSettings}>
-                      <TrustBadges trustBadgesSettings={trustBadgesSettings} />
-                    </SectionBg>
-                  )}
-
-                  {/* Body rows, in the order set by dragging them in the sidebar */}
-                  {bodyOrder.map((key) => (
-                    <Fragment key={key}>{bodyBlocks[key]}</Fragment>
-                  ))}
-
-                  <div className="cart-app__bottom-group">
+                </EmptyCart>
+              </>
+            ) : (
+              <>
+                {!emptyCart && activeTab !== "Recommended Products" && (
+                  <>
                     <CustomHtml
                       cartSettings={cartSettings}
-                      position="below_cart_items"
+                      position="above_announcements"
                     />
 
-                    {/* {!additionalNotesSettings.enabled &&
+                    {trustBadgesSettings?.position === "top" && (
+                      <SectionBg
+                        id="Security Badges"
+                        cartSettings={cartSettings}
+                      >
+                        <TrustBadges
+                          trustBadgesSettings={trustBadgesSettings}
+                        />
+                      </SectionBg>
+                    )}
+
+                    {/* Body rows, in the order set by dragging them in the sidebar */}
+                    {bodyOrder.map((key) => (
+                      <Fragment key={key}>{bodyBlocks[key]}</Fragment>
+                    ))}
+
+                    <div className="cart-app__bottom-group">
+                      <CustomHtml
+                        cartSettings={cartSettings}
+                        position="below_cart_items"
+                      />
+
+                      {/* {!additionalNotesSettings.enabled &&
                       additionalNotesSettings.placement === "below_items" && (
                         <SectionBg id="Add Notes" cartSettings={cartSettings}>
                           <AdditionalNotes
@@ -417,22 +427,21 @@ const CartPreview = memo(function CartPreview({
                         </SectionBg>
                       )} */}
 
-                    {!announcementSettings.enabled &&
-                      announcementSettings.position === "after" && (
-                        <Announcements
-                          announcementSettings={announcementSettings}
-                          cartSettings={cartSettings}
-                          currency={currency}
-                        />
-                      )}
-                  </div>
-                </>
-              )}
-
-            </>
-          )}
+                      {!announcementSettings.enabled &&
+                        announcementSettings.position === "after" && (
+                          <Announcements
+                            announcementSettings={announcementSettings}
+                            cartSettings={cartSettings}
+                            currency={currency}
+                          />
+                        )}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
         </div>
-
         {/* above_footer */}
         {!emptyCart && activeTab !== "Recommended Products" && (
           <CustomHtml cartSettings={cartSettings} position="above_footer" />
