@@ -327,7 +327,7 @@ function modernItemHTML(ctx) {
     effectiveUnitPrice,
     effectiveCompare,
     unitSave,
-    saveHtml,
+    showSavings,
     discountColor,
     iconColor,
   } = ctx;
@@ -345,9 +345,9 @@ function modernItemHTML(ctx) {
         ${hubUtils.formatMoney(lineTotal)}
       </span>
       ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price" style="color:${colorItems};">${hubUtils.formatMoney(compareTotal)}</span>` : ""}
-      ${hasCompare && showStrikethrough && !isReward ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(totalSave)}</span>` : ""}
+      ${hasCompare && showStrikethrough && showSavings && !isReward ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(totalSave)}</span>` : ""}
     </div>
-    ${isReward ? "" : saveHtml}`;
+    `;
 
   const inner = `
     <div class="hub-cart-item hub-cart-item--modern cart-plus-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">

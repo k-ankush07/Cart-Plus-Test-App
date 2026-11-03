@@ -85,7 +85,8 @@ const stickyCartSchema = new mongoose.Schema({
   // Button
   bgColor: { type: String, default: "#000000" }, // template colour
   buttonSize: { type: Number, min: 40, max: 100, default: 60 }, // was 56–120, default 82
- 
+  barRadius: { type: Number, min: 0, max: 50, default: 50 }, 
+
   // Count badge
   enableCount: { type: Boolean, default: true }, // NEW
   qBgColor: { type: String, default: "#6d3bff" },

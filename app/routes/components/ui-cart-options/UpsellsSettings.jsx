@@ -13,7 +13,6 @@ import {
   Text,
   TextField,
   Modal,
-  Badge,
   Box,
   Icon,
   Pagination,
@@ -27,44 +26,197 @@ import ColorInput from "../ui/ColorInput";
 import IconLibrary from "../ui/IconLibrary";
 import BackgroundInput from "../ui/BackgroundInput";
 import ProductItemCollections from "../ui/ProductItem-Collections";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
+/* ---------- mini previews ---------- */
+const P_GRAY = "#d9d9d9";
+const P_BLUE = "#6b7cff";
+
+const PBar = ({ w = "100%", h = 3, color = P_GRAY, style }) => (
+  <div
+    style={{
+      width: w,
+      height: h,
+      borderRadius: h,
+      background: color,
+      flexShrink: 0,
+      ...style,
+    }}
+  />
+);
+
+const PBlock = ({
+  w = "100%",
+  h = 20,
+  color = P_GRAY,
+  radius = 3,
+  children,
+}) => (
+  <div
+    style={{
+      position: "relative",
+      width: w,
+      height: h,
+      borderRadius: radius,
+      background: color,
+      flexShrink: 0,
+    }}
+  >
+    {children}
+  </div>
+);
+
+const ListPreview = () => (
+  <div style={{ display: "grid", gap: 6, width: "100%" }}>
+    {[0, 1, 2].map((i) => (
+      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <PBlock w={10} h={10} />
+        <div style={{ flex: 1, display: "grid", gap: 3 }}>
+          <PBar h={2} />
+          <PBar h={2} w="80%" />
+        </div>
+        <PBar w={10} h={4} color={P_BLUE} />
+      </div>
+    ))}
+  </div>
+);
+
+const CarouselPreview = () => (
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 6,
+      width: "100%",
+    }}
+  >
+    {[0, 1].map((i) => (
+      <div key={i} style={{ display: "grid", gap: 3 }}>
+        <PBlock h={22} />
+        <PBar h={2} />
+        <PBar h={3} color={P_BLUE} />
+      </div>
+    ))}
+  </div>
+);
+
+const CompactPreview = () => (
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: 6,
+      width: "100%",
+    }}
+  >
+    {[0, 1, 2].map((i) => (
+      <PBlock key={i} h={26}>
+        <span
+          style={{
+            position: "absolute",
+            top: 3,
+            right: 3,
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: P_BLUE,
+          }}
+        />
+      </PBlock>
+    ))}
+  </div>
+);
+
+const SidePreview = () => (
+  <div style={{ display: "flex", gap: 8, width: "100%", minHeight: 40 }}>
+    <div
+      style={{ width: "36%", display: "grid", gap: 4, alignContent: "start" }}
+    >
+      {[0, 1].map((i) => (
+        <div key={i} style={{ display: "grid", gap: 2 }}>
+          <PBlock h={12} />
+          <PBar h={2} color={P_BLUE} />
+        </div>
+      ))}
+    </div>
+    <div style={{ width: 1, background: "#e1e3e5", flexShrink: 0 }} />
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        gap: 6,
+      }}
+    >
+      <div style={{ display: "grid", gap: 3 }}>
+        <PBar h={2} />
+        <PBar h={2} w="70%" />
+      </div>
+      <PBar h={3} color={P_BLUE} />
+    </div>
+  </div>
+);
 
 const UPSELL_LAYOUTS = [
-  { value: "list", label: "List" },
-  { value: "carousel", label: "Carousel" },
-  { value: "compact", label: "Compact" },
-  { value: "side", label: "Side panel" },
+  { value: "list", label: "List", preview: <ListPreview /> },
+  { value: "carousel", label: "Carousel", preview: <CarouselPreview /> },
+  { value: "compact", label: "Compact", preview: <CompactPreview /> },
+  { value: "side", label: "Side panel", preview: <SidePreview /> },
 ];
 
-// selectable cards, same look as the other style pickers
+// selectable cards; options with a `preview` show a mini wireframe + label,
+// options without one stay as plain text cards
 const OptionCards = ({ label, options, value, onChange, columns = 3 }) => (
   <BlockStack gap="100">
-    <Text as="p" variant="bodyMd">
+    <Text as="p" variant="bodyMd" fontWeight="medium">
       {label}
     </Text>
     <InlineGrid columns={columns} gap="200">
-      {options.map((o) => (
-        <div
-          key={o.value}
-          role="button"
-          tabIndex={0}
-          onClick={() => onChange(o.value)}
-          onKeyDown={(e) => e.key === "Enter" && onChange(o.value)}
-          style={{
-            cursor: "pointer",
-            borderRadius: 10,
-            padding: "14px 12px",
-            textAlign: "center",
-            background: "#fff",
-            border:
-              value === o.value ? "2px solid #303030" : "1px solid #e1e3e5",
-          }}
-        >
-          <Text as="span" variant="bodySm" fontWeight="medium">
-            {o.label}
-          </Text>
-        </div>
-      ))}
+      {options.map((o) => {
+        const selected = value === o.value;
+        return (
+          <div
+            key={o.value}
+            role="button"
+            tabIndex={0}
+            aria-label={`${label}: ${o.label}`}
+            aria-pressed={selected}
+            onClick={() => onChange(o.value)}
+            onKeyDown={(e) => e.key === "Enter" && onChange(o.value)}
+            style={{
+              cursor: "pointer",
+              borderRadius: 10,
+              padding: o.preview ? 12 : "14px 12px",
+              minHeight: o.preview ? 112 : undefined,
+              boxSizing: "border-box",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: o.preview ? "space-between" : "center",
+              gap: 8,
+              textAlign: "center",
+              background: !o.preview || selected ? "#fff" : "#f6f6f7",
+              border: selected ? "2px solid #303030" : "1px solid #e1e3e5",
+            }}
+          >
+            {o.preview && (
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  pointerEvents: "none",
+                }}
+              >
+                {o.preview}
+              </div>
+            )}
+            <Text as="span" variant="bodySm" fontWeight="medium">
+              {o.label}
+            </Text>
+          </div>
+        );
+      })}
     </InlineGrid>
   </BlockStack>
 );
@@ -120,7 +272,7 @@ export default function UpsellsSettings({
               </Box>
               <InlineStack gap="200">
                 <Text variant="headingMd" as="h2">
-                 Cross-sell
+                  Cross-sell
                 </Text>
               </InlineStack>
             </InlineStack>
@@ -140,6 +292,38 @@ export default function UpsellsSettings({
         </BlockStack>
       </Box>
 
+      <Box paddingBlockEnd="400">
+        <Card>
+          <BlockStack gap="400">
+            <OptionCards
+              label="Layout"
+              columns={2}
+              options={UPSELL_LAYOUTS}
+              value={layout}
+              onChange={(val) =>
+                handleChange("upsellsSettings", (prev) => ({
+                  ...prev,
+                  layout: val,
+                  direction: val === "carousel" ? "carousel" : "block",
+                }))
+              }
+            />
+
+            {layout === "side" && (
+              <OptionCards
+                label="Side panel position"
+                columns={2}
+                options={[
+                  { value: "left", label: "Left of cart" },
+                  { value: "right", label: "Right of cart" },
+                ]}
+                value={upsellsSettings.sidePanelPosition || "left"}
+                onChange={(val) => update("sidePanelPosition", val)}
+              />
+            )}
+          </BlockStack>
+        </Card>
+      </Box>
       {/* SELECT PRODUCT */}
       <Card>
         <BlockStack gap="300">
@@ -197,7 +381,9 @@ export default function UpsellsSettings({
                 max={200}
                 output
                 value={upsellsSettings.imageSize ?? 72}
-                suffix={<Text as="span">{upsellsSettings.imageSize ?? 72} px</Text>}
+                suffix={
+                  <Text as="span">{upsellsSettings.imageSize ?? 72} px</Text>
+                }
                 onChange={(val) => update("imageSize", val)}
               />
               <RangeSlider
@@ -263,7 +449,12 @@ export default function UpsellsSettings({
       <Box paddingBlockStart="300">
         <BackgroundInput
           title="Card color"
-          value={upsellsSettings.cardBackground || { type: "plain", color: "#ffffff" }}
+          value={
+            upsellsSettings.cardBackground || {
+              type: "plain",
+              color: "#ffffff",
+            }
+          }
           onChange={(val) => update("cardBackground", val)}
         />
       </Box>
@@ -371,9 +562,22 @@ export default function UpsellsSettings({
               onChange={(val) => update("title", val)}
             />
             <IconLibrary
-              value={upsellsSettings.icon === undefined ? { type: "icon", name: "star" } : upsellsSettings.icon}
+              value={
+                upsellsSettings.icon === undefined
+                  ? { type: "icon", name: "star" }
+                  : upsellsSettings.icon
+              }
               onChange={(icon) => update("icon", icon)}
-              quickIcons={["star", "heart", "right", "gift", "discount", "cart", "megaphone", "delivery"]}
+              quickIcons={[
+                "star",
+                "heart",
+                "right",
+                "gift",
+                "discount",
+                "cart",
+                "megaphone",
+                "delivery",
+              ]}
               shop={shop}
               accessToken={accessToken}
               apiUrl={apiUrl}
@@ -399,41 +603,6 @@ export default function UpsellsSettings({
               value={upsellsSettings.position}
               onChange={(val) => update("position", val)}
             />
-
-            <OptionCards
-              label="Layout"
-              columns={2}
-              options={UPSELL_LAYOUTS}
-              value={layout}
-              onChange={(val) =>
-                handleChange("upsellsSettings", (prev) => ({
-                  ...prev,
-                  layout: val,
-                  direction: val === "carousel" ? "carousel" : "block",
-                }))
-              }
-            />
-
-            {layout === "side" && (
-              <OptionCards
-                label="Side panel position"
-                columns={2}
-                options={[
-                  { value: "left", label: "Left of cart" },
-                  { value: "right", label: "Right of cart" },
-                ]}
-                value={upsellsSettings.sidePanelPosition || "left"}
-                onChange={(val) => update("sidePanelPosition", val)}
-              />
-            )}
-
-            {/* <OptionCards
-              label="Trigger"
-              options={UPSELL_TRIGGERS}
-              value={upsellsSettings.trigger || "button"}
-              onChange={(val) => update("trigger", val)}
-            /> */}
-
             <InlineGrid columns={2} gap="300">
               <Select
                 label="Discount"
@@ -464,12 +633,15 @@ export default function UpsellsSettings({
             {(upsellsSettings.showLabel ?? true) && (
               <>
                 <RichTextEditor
-                  value={upsellsSettings.labelText ?? "Save {{saved_percentage}}"}
+                  value={
+                    upsellsSettings.labelText ?? "Save {{saved_percentage}}"
+                  }
                   onChange={(val) => update("labelText", val)}
                 />
                 <Text variant="bodySm" tone="subdued">
-                  Use {"{{saved_percentage}}"} or {"{{saved_amount}}"}. The discount is shown on
-                  the products only when a discount is set above.
+                  Use {"{{saved_percentage}}"} or {"{{saved_amount}}"}. The
+                  discount is shown on the products only when a discount is set
+                  above.
                 </Text>
               </>
             )}
@@ -514,7 +686,7 @@ export default function UpsellsSettings({
                     upsellsSettings.reviewCountText ||
                     "({{review_count}} reviews)"
                   }
-                  onChange={(val) => update("upsellsSettings", val)}
+                  onChange={(val) => update("reviewCountText", val)}
                   helpText="Use {{review_count}} for the number of reviews"
                   autoComplete="off"
                   disabled={!upsellsSettings.showReviews}

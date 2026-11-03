@@ -363,6 +363,7 @@ const STICKY_CART_FIELDS = [
   "iconSize",
   "bgColor",
   "buttonSize",
+  "barRadius",
   "enableCount",
   "qBgColor",
   "qTextColor",

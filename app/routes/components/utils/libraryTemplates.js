@@ -27,9 +27,9 @@ export const LIBRARY_TEMPLATES = [
 </style>
 <div class="containerAb7xF3">
   <div class="avatarsWrapper9JuY2">
-    <img src="https://cart.tryrapi.com/library/avatars/female-08.jpg" alt="Customer 1" class="avatarImgS3k8Ly">
-    <img src="https://cart.tryrapi.com/library/avatars/male-06.jpg" alt="Customer 2" class="avatarImgS3k8Ly">
-    <img src="https://cart.tryrapi.com/library/avatars/female-09.jpg" alt="Customer 3" class="avatarImgS3k8Ly">
+    <img src="https://cartplus.io/cartplus-img/female-09.jpg" alt="Customer 1" class="avatarImgS3k8Ly">
+    <img src="https://cartplus.io/cartplus-img/male-06.jpg" alt="Customer 2" class="avatarImgS3k8Ly">
+    <img src="https://cartplus.io/cartplus-img/female-09.jpg" alt="Customer 3" class="avatarImgS3k8Ly">
   </div>
   <span>1,000,000+ HAPPY CUSTOMERS</span>
 </div>`,
@@ -60,6 +60,7 @@ export const LIBRARY_TEMPLATES = [
       color: #0d0d0d;
       margin-bottom: 15px;
       text-align: center;
+      margin-top: 15px;
     }
 
     .unique-title-Yp8T4 span {
@@ -138,45 +139,45 @@ export const LIBRARY_TEMPLATES = [
   <!-- Row 1 -->
   <div class="unique-slider-Rc9G7h">
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-01.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-01.jpg" alt="User Image">
       <p>The perfect fall slippers!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/male-02.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/male-02.jpg" alt="User Image">
       <p>My new favorite pair of shoes!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-03.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-03.jpg" alt="User Image">
       <p>A MUST buy for fall!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/male-03.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/male-03.jpg" alt="User Image">
       <p>10/10 Worth every penny</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-04.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-04.jpg" alt="User Image">
       <p>I absolutely am in love with the slippers! I wear them everywhere!</p>
     </div>
 
     <!-- Duplicate Row 1 for Smooth Loop -->
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-01.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-01.jpg" alt="User Image">
       <p>The perfect fall slippers!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/male-02.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/male-02.jpg" alt="User Image">
       <p>My new favorite pair of shoes!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-03.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-03.jpg" alt="User Image">
       <p>A MUST buy for fall!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/male-03.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/male-03.jpg" alt="User Image">
       <p>10/10 Worth every penny</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-04.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-04.jpg" alt="User Image">
       <p>I absolutely am in love with the slippers! I wear them everywhere!</p>
     </div>
   </div>
@@ -184,295 +185,50 @@ export const LIBRARY_TEMPLATES = [
   <!-- Row 2 (Opposite Direction) -->
   <div class="unique-slider-Rc9G7h">
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-05.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-05.jpg" alt="User Image">
       <p>Comfy. Can't think of a better autumn shoe!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/male-04.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/male-04.jpg" alt="User Image">
       <p>OMG! Best autumn shoe!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-06.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-06.jpg" alt="User Image">
       <p>Perfect for chilly days!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/male-05.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/male-05.jpg" alt="User Image">
       <p>Amazing quality and comfort!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-07.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-07.jpg" alt="User Image">
       <p>Stylish and super comfy!</p>
     </div>
 
     <!-- Duplicate Row 2 for Smooth Loop -->
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-05.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-05.jpg" alt="User Image">
       <p>Comfy. Can't think of a better autumn shoe!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/male-04.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/male-04.jpg" alt="User Image">
       <p>OMG! Best autumn shoe!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-06.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-06.jpg" alt="User Image">
       <p>Perfect for chilly days!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/male-05.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/male-05.jpg" alt="User Image">
       <p>Amazing quality and comfort!</p>
     </div>
     <div class="unique-card-Lj6Z8k">
-      <img class="unique-image-Ys3Kv9" src="https://cart.tryrapi.com/library/avatars/female-07.jpg" alt="User Image">
+      <img class="unique-image-Ys3Kv9" src="https://cartplus.io/cartplus-img/female-07.jpg" alt="User Image">
       <p>Stylish and super comfy!</p>
     </div>
   </div>
 </div>
 `,
-  },
-  {
-    id: "Trustpilot Comments",
-    title: "Trustpilot Comments",
-    category: "reviews",
-    type: "html",
-    code: `
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body.FgVdQeK8P7 {
-            font-family: Arial, sans-serif;
-            background-color: #f5fdf5;
-            margin: 0;
-            padding: 0;
-        }
-
-        h1.d3FsH6IqT4 {
-            margin-top: 30px;
-            font-size: 26px;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-        }
-
-        h1 .AaB2Y5Gp9f {
-            background: linear-gradient(to bottom, #28a745 0%, #d3f9d8 100%);
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-
-        p.RwV2N5Lt0I {
-            margin-top: 5px;
-            font-size: 16px;
-            color: #555;
-            text-align: center;
-        }
-
-        .LaVtZ1Q0xK {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            color: #333;
-            margin-top: 10px;
-        }
-
-        .KsF9M8H2Ej {
-            display: flex;
-            align-items: center;
-            margin-right: 10px;
-        }
-
-        .KsF9M8H2Ej svg {
-            width: 18px;
-            height: 18px;
-            fill: #28a745;
-            margin: 0 1px;
-        }
-
-        .jX4N5P7Dr6 {
-            font-weight: normal;
-        }
-
-        .Yk4V8N6Vf1 {
-            font-weight: bold;
-        }
-
-        .zT8B3S1VgD {
-            font-weight: normal;
-            margin-left: 5px;
-        }
-
-        .F0rW6K8yEz {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 20px;
-            overflow-x: scroll;
-            padding: 20px;
-            margin: 20px auto;
-            width: 90%;
-            box-sizing: border-box;
-        }
-
-        .nQ0V3S1vD7 {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: left;
-            position: relative;
-            border-left: 4px solid #28a745;
-            width: 400px;
-            flex-shrink: 0;
-        }
-
-        .nQ0V3S1vD7 .Fb0W9T8TjZ {
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .nQ0V3S1vD7 .rT9B3G2MdF {
-            font-size: 12px;
-            color: #777;
-            margin-bottom: 15px;
-        }
-
-        .nQ0V3S1vD7 .gP9Z3A2Kn7 {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-
-        .nQ0V3S1vD7 .Vh3J2R4Nw1 {
-            font-size: 12px;
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .nQ0V3S1vD7 .Bz5W3F7Wz2 {
-            margin-top: 10px;
-        }
-
-        .Bz5W3F7Wz2 svg {
-            width: 16px;
-            height: 16px;
-            fill: #28a745;
-        }
-
-        .iX7Q3H6Fv4 {
-            font-size: 14px;
-            margin-top: 20px;
-            color: #555;
-            text-align: center;
-        }
-
-        .iX7Q3H6Fv4 span {
-            background-color: #28a745;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-
-        /* Scrollbar styling for horizontal scrolling */
-        .F0rW6K8yEz::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .F0rW6K8yEz::-webkit-scrollbar-thumb {
-            background-color: #28a745;
-            border-radius: 10px;
-        }
-
-        .F0rW6K8yEz::-webkit-scrollbar-track {
-            background-color: #f5fdf5;
-        }
-
-        /* Green gradient at the bottom with fading upwards */
-        .iX7Q3H6Fv4 {
-            background: linear-gradient(to top, #d3f9d8 0%, #e1f7e0 60%, #f5fdf5 100%);
-            padding: 20px;
-            text-align: center;
-        }
-    </style>
-    <h1 class="d3FsH6IqT4">Your <span class="AaB2Y5Gp9f">satisfaction</span> is our success</h1>
-    <p class="RwV2N5Lt0I">We value your feedback</p>
-
-    <div class="LaVtZ1Q0xK">
-        <div class="KsF9M8H2Ej" aria-label="5 out of 5 stars">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-        </div>
-        <div class="jX4N5P7Dr6">
-            Trustscore <span class="Yk4V8N6Vf1">4.9 | 14,500+</span> reviews
-        </div>
-    </div>
-
-    <div class="F0rW6K8yEz">
-        <div class="nQ0V3S1vD7">
-            <div class="Fb0W9T8TjZ">Julia M.</div>
-            <div class="rT9B3G2MdF">Just now</div>
-            <div class="gP9Z3A2Kn7">"Before, I struggled to balance work and workouts. With this reformer, I can quickly exercise at home after work. In just a few weeks, my core strength and posture improved dramatically."</div>
-            <div class="Vh3J2R4Nw1">✔ Verified Review</div>
-            <div class="Bz5W3F7Wz2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-            </div>
-        </div>
-
-        <div class="nQ0V3S1vD7">
-            <div class="Fb0W9T8TjZ">Michaela R.</div>
-            <div class="rT9B3G2MdF">2 hours ago</div>
-            <div class="gP9Z3A2Kn7">"Thanks to the reformer, I can work out while my baby sleeps. In just 10 days, I lost 3 kg and feel stronger and more energetic thanks to regular training."</div>
-            <div class="Vh3J2R4Nw1">✔ Verified Review</div>
-            <div class="Bz5W3F7Wz2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-            </div>
-        </div>
-
-        <div class="nQ0V3S1vD7">
-            <div class="Fb0W9T8TjZ">Anissa T.</div>
-            <div class="rT9B3G2MdF">1 week ago</div>
-            <div class="gP9Z3A2Kn7">"Before getting the mobile Pilates reformer in early 2024, my workouts were irregular. Now, I can train at home anytime and have seen improvements in strength, flexibility, and muscle tone within a few weeks."</div>
-            <div class="Vh3J2R4Nw1">✔ Verified Review</div>
-            <div class="Bz5W3F7Wz2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-            </div>
-        </div>
-
-        <!-- New review cards -->
-        <div class="nQ0V3S1vD7">
-            <div class="Fb0W9T8TjZ">Sophia A.</div>
-            <div class="rT9B3G2MdF">3 hours ago</div>
-            <div class="gP9Z3A2Kn7">"Previously, I spent a fortune on Pilates classes, some costing up to 100 euros. The new FitCore reformer cost less than one class and gives me the freedom to plan my workouts from home."</div>
-            <div class="Vh3J2R4Nw1">✔ Verified Review</div>
-            <div class="Bz5W3F7Wz2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431L24 9.748l-6 5.832 1.42 8.271L12 18.896l-7.42 4.955L6 15.58l-6-5.832 8.332-1.73z"/></svg>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="iX7Q3H6Fv4">Based on <span>76,900</span> verified reviews</div>`,
   },
   {
     id: "heart-review-icons",
@@ -615,9 +371,9 @@ export const LIBRARY_TEMPLATES = [
 </style>
 <div class="rating-widget-123">
     <div class="profile-images-123">
-        <img src="https://cart.tryrapi.com/library/avatars/male-01.jpg" alt="Profile 1">
-        <img src="https://cart.tryrapi.com/library/avatars/female-01.jpg" alt="Profile 2">
-        <img src="https://cart.tryrapi.com/library/avatars/male-02.jpg" alt="Profile 3">
+        <img src="https://cartplus.io/cartplus-img/female-01.jpg" alt="Profile 1">
+        <img src="https://cartplus.io/cartplus-img/male-02.jpg" alt="Profile 2">
+        <img src="https://cartplus.io/cartplus-img/female-03.jpg" alt="Profile 3">
     </div>
     <div class="rating-123">
         <span class="rating-text-123">Rated <span class="highlight-123">4.5/5</span> based on <span class="highlight-123">+50 Reviews</span></span>

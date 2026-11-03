@@ -1192,6 +1192,7 @@ if (savedEl) {
           sellingPlanHtml,
           customHtmlBlocks,
           showSavingsBelowPrices,
+          showSavings,
           discountColor,
           iconColor,
           singleItemPrice: itemOpts.singleItemPrice,

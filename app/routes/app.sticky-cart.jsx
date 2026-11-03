@@ -21,13 +21,21 @@ import {
   TextField,
   Tooltip,
 } from "@shopify/polaris";
-import { DesktopIcon, MobileIcon, PlusCircleIcon } from "@shopify/polaris-icons";
+import {
+  DesktopIcon,
+  MobileIcon,
+  PlusCircleIcon,
+} from "@shopify/polaris-icons";
 import "../index.css";
 import "@shopify/polaris/build/esm/styles.css";
 import ColorInput from "./components/ui/ColorInput";
 import { requireShopData } from "./components/shop.server";
 import { useLoaderData, useNavigate } from "react-router";
-import { createStickyCart, getStickyCart, uploadImage } from "../services/apiRoutes";
+import {
+  createStickyCart,
+  getStickyCart,
+  uploadImage,
+} from "../services/apiRoutes";
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Constants                                                                  */
@@ -39,6 +47,9 @@ const ICON_SIZE_DEFAULT = 24;
 const BUTTON_SIZE_MIN = 40;
 const BUTTON_SIZE_MAX = 100;
 const BUTTON_SIZE_DEFAULT = 60;
+const BAR_RADIUS_MIN = 0;
+const BAR_RADIUS_MAX = 50;
+const BAR_RADIUS_DEFAULT = 50;
 
 // Only PNG / SVG are accepted for a custom cart icon
 const ALLOWED_ICON_TYPES = ["image/png", "image/svg+xml"];
@@ -57,8 +68,16 @@ const TEMPLATES = [
 const TEMPLATE_IDS = TEMPLATES.map((t) => t.id);
 
 const PRESET_COLORS = [
-  "#000000", "#6d3bff", "#64748b", "#0a74ff", "#28a745",
-  "#ee0000", "#ff7ac8", "#ff9500", "#ffc400", "#7be06b",
+  "#000000",
+  "#6d3bff",
+  "#64748b",
+  "#0a74ff",
+  "#28a745",
+  "#ee0000",
+  "#ff7ac8",
+  "#ff9500",
+  "#ffc400",
+  "#7be06b",
 ];
 
 const FLOAT_POSITIONS = [
@@ -76,7 +95,11 @@ const TAB_POSITIONS = [
 const BAR_POSITIONS = [{ label: "Bottom", value: "bottom" }];
 
 const positionOptionsFor = (template) =>
-  template === "tab" ? TAB_POSITIONS : template === "bar" ? BAR_POSITIONS : FLOAT_POSITIONS;
+  template === "tab"
+    ? TAB_POSITIONS
+    : template === "bar"
+      ? BAR_POSITIONS
+      : FLOAT_POSITIONS;
 
 /** Keep a saved position valid when the template changes (e.g. bottom-right → right for the tab). */
 function coercePosition(template, pos) {
@@ -184,7 +207,12 @@ function renderGlyph(selectedIcon, customIconUrl, color, size) {
       <img
         src={customIconUrl}
         alt=""
-        style={{ width: size, height: size, objectFit: "contain", display: "block" }}
+        style={{
+          width: size,
+          height: size,
+          objectFit: "contain",
+          display: "block",
+        }}
       />
     );
   }
@@ -203,7 +231,9 @@ function stableStringify(obj) {
 
 const clamp = (n, min, max, fallback) => {
   const v = Number(n);
-  return Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback;
+  return Number.isFinite(v)
+    ? Math.min(max, Math.max(min, Math.round(v)))
+    : fallback;
 };
 
 /** Scope custom CSS to the preview and force it to win over inline styles. */
@@ -227,27 +257,38 @@ function scopeCss(css, scope) {
         const withSemi = !body || body.endsWith(";") ? body : `${body};`;
         const important = withSemi.replace(
           /([\w-]+\s*:\s*)([^;!{}]+?)(\s*;)/g,
-          (_m, prop, val, semi) => `${prop}${val.trim()} !important${semi}`
+          (_m, prop, val, semi) => `${prop}${val.trim()} !important${semi}`,
         );
 
         return `${scoped} { ${important} }`;
-      }
+      },
     );
 }
 
 function buildSettings(data) {
-  const template = TEMPLATE_IDS.includes(data?.template) ? data.template : "bubble";
+  const template = TEMPLATE_IDS.includes(data?.template)
+    ? data.template
+    : "bubble";
   const customIconUrl = data?.customIconUrl ?? null;
   const rawIcon = data?.selectedIcon ?? "bag";
   const selectedIcon =
-    rawIcon === "custom" ? (customIconUrl ? "custom" : "bag") : ICON_DEFS[rawIcon] ? rawIcon : "bag";
+    rawIcon === "custom"
+      ? customIconUrl
+        ? "custom"
+        : "bag"
+      : ICON_DEFS[rawIcon]
+        ? rawIcon
+        : "bag";
 
   // Older records only had `device` ("all" | "mobile" | "desktop")
   const displayOnMobile =
     data?.displayOnMobile ?? (data?.device ? data.device !== "desktop" : true);
 
   const position = coercePosition(template, data?.position ?? "bottom-right");
-  const mobilePosition = coercePosition(template, data?.mobilePosition ?? position);
+  const mobilePosition = coercePosition(
+    template,
+    data?.mobilePosition ?? position,
+  );
 
   return {
     enabled: data?.enabled ?? false,
@@ -256,8 +297,24 @@ function buildSettings(data) {
     customIconUrl,
     bgColor: data?.bgColor ?? "#000000",
     iconColor: data?.iconColor ?? "#ffffff",
-    iconSize: clamp(data?.iconSize, ICON_SIZE_MIN, ICON_SIZE_MAX, ICON_SIZE_DEFAULT),
-    buttonSize: clamp(data?.buttonSize, BUTTON_SIZE_MIN, BUTTON_SIZE_MAX, BUTTON_SIZE_DEFAULT),
+    iconSize: clamp(
+      data?.iconSize,
+      ICON_SIZE_MIN,
+      ICON_SIZE_MAX,
+      ICON_SIZE_DEFAULT,
+    ),
+    buttonSize: clamp(
+      data?.buttonSize,
+      BUTTON_SIZE_MIN,
+      BUTTON_SIZE_MAX,
+      BUTTON_SIZE_DEFAULT,
+    ),
+    barRadius: clamp(
+      data?.barRadius,
+      BAR_RADIUS_MIN,
+      BAR_RADIUS_MAX,
+      BAR_RADIUS_DEFAULT,
+    ),
     qBgColor: data?.qBgColor ?? "#6d3bff",
     qTextColor: data?.qTextColor ?? "#ffffff",
     enableCount: data?.enableCount ?? true,
@@ -275,7 +332,8 @@ function buildSettings(data) {
 
 export const loader = async ({ request }) => {
   try {
-    const { shop, apiUrl, accessToken, currency } = await requireShopData(request);
+    const { shop, apiUrl, accessToken, currency } =
+      await requireShopData(request);
 
     let stickyCart = null;
     try {
@@ -349,7 +407,12 @@ function ToggleRow({ checked, onChange, title }) {
 
 function Panel({ children }) {
   return (
-    <Box padding="300" borderWidth="025" borderColor="border" borderRadius="200">
+    <Box
+      padding="300"
+      borderWidth="025"
+      borderColor="border"
+      borderRadius="200"
+    >
       <BlockStack gap="300">{children}</BlockStack>
     </Box>
   );
@@ -375,7 +438,11 @@ function IconTile({ selected, onClick, children, label, dashed, disabled }) {
         color: "#303030",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        border: selected ? "2px solid #1a1a1a" : dashed ? "1px dashed #c9cccf" : "1px solid #e3e3e3",
+        border: selected
+          ? "2px solid #1a1a1a"
+          : dashed
+            ? "1px dashed #c9cccf"
+            : "1px solid #e3e3e3",
       }}
     >
       {children}
@@ -391,8 +458,27 @@ function MiniWidget({ id }) {
 
   if (id === "bubble")
     return (
-      <span style={{ ...base, right: 8, bottom: 8, width: 16, height: 16, borderRadius: "50%" }}>
-        <span style={{ position: "absolute", right: -2, bottom: -2, width: 6, height: 6, borderRadius: "50%", background: accent }} />
+      <span
+        style={{
+          ...base,
+          right: 8,
+          bottom: 8,
+          width: 16,
+          height: 16,
+          borderRadius: "50%",
+        }}
+      >
+        <span
+          style={{
+            position: "absolute",
+            right: -2,
+            bottom: -2,
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: accent,
+          }}
+        />
       </span>
     );
   if (id === "pill")
@@ -418,17 +504,65 @@ function MiniWidget({ id }) {
     );
   if (id === "ring")
     return (
-      <span style={{ ...base, right: 8, bottom: 8, width: 18, height: 18, borderRadius: "50%", boxShadow: `0 0 0 2px ${accent}` }} />
+      <span
+        style={{
+          ...base,
+          right: 8,
+          bottom: 8,
+          width: 18,
+          height: 18,
+          borderRadius: "50%",
+          boxShadow: `0 0 0 2px ${accent}`,
+        }}
+      />
     );
   if (id === "tab")
     return (
-      <span style={{ ...base, right: 0, bottom: 10, width: 10, height: 20, borderRadius: "4px 0 0 4px" }}>
-        <span style={{ position: "absolute", left: 2, bottom: 2, width: 5, height: 5, borderRadius: "50%", background: accent }} />
+      <span
+        style={{
+          ...base,
+          right: 0,
+          bottom: 10,
+          width: 10,
+          height: 20,
+          borderRadius: "4px 0 0 4px",
+        }}
+      >
+        <span
+          style={{
+            position: "absolute",
+            left: 2,
+            bottom: 2,
+            width: 5,
+            height: 5,
+            borderRadius: "50%",
+            background: accent,
+          }}
+        />
       </span>
     );
   return (
-    <span style={{ ...base, left: 6, right: 6, bottom: 6, height: 12, borderRadius: 6 }}>
-      <span style={{ position: "absolute", right: 2, top: 2, width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />
+    <span
+      style={{
+        ...base,
+        left: 6,
+        right: 6,
+        bottom: 6,
+        height: 12,
+        borderRadius: 6,
+      }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          right: 2,
+          top: 2,
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: "#fff",
+        }}
+      />
     </span>
   );
 }
@@ -453,9 +587,32 @@ function TemplateTile({ id, label, selected, onSelect }) {
           border: selected ? "2px solid #1a1a1a" : "1px solid #e3e3e3",
         }}
       >
-        <span style={{ position: "absolute", top: 8, left: 8, right: 8, display: "flex", gap: 4 }}>
-          <span style={{ flex: 1, height: 12, borderRadius: 3, background: "#dcdcdc" }} />
-          <span style={{ flex: 1, height: 12, borderRadius: 3, background: "#dcdcdc" }} />
+        <span
+          style={{
+            position: "absolute",
+            top: 8,
+            left: 8,
+            right: 8,
+            display: "flex",
+            gap: 4,
+          }}
+        >
+          <span
+            style={{
+              flex: 1,
+              height: 12,
+              borderRadius: 3,
+              background: "#dcdcdc",
+            }}
+          />
+          <span
+            style={{
+              flex: 1,
+              height: 12,
+              borderRadius: 3,
+              background: "#dcdcdc",
+            }}
+          />
         </span>
         <MiniWidget id={id} />
       </button>
@@ -473,8 +630,22 @@ function StoreBackdrop({ mobile }) {
   const bar = { height: 8, borderRadius: 4, background: "#e5e5e5" };
   return (
     <div style={{ padding: mobile ? 16 : 24, color: "#1a1a1a" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-        <span style={{ width: 22, height: 22, borderRadius: 6, background: "#ececec" }} />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 24,
+        }}
+      >
+        <span
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: 6,
+            background: "#ececec",
+          }}
+        />
         {!mobile && (
           <span style={{ display: "flex", gap: 24 }}>
             {[44, 44, 44].map((w, i) => (
@@ -482,12 +653,33 @@ function StoreBackdrop({ mobile }) {
             ))}
           </span>
         )}
-        <span style={{ width: 22, height: 22, borderRadius: 6, background: "#ececec" }} />
+        <span
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: 6,
+            background: "#ececec",
+          }}
+        />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 24, alignItems: "center" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: mobile ? "1fr" : "1fr 1fr",
+          gap: 24,
+          alignItems: "center",
+        }}
+      >
         <div>
-          <div style={{ fontSize: mobile ? 26 : 34, fontWeight: 800, lineHeight: 1.1, letterSpacing: "-0.02em" }}>
+          <div
+            style={{
+              fontSize: mobile ? 26 : 34,
+              fontWeight: 800,
+              lineHeight: 1.1,
+              letterSpacing: "-0.02em",
+            }}
+          >
             Everyday objects,
             <br />
             made well.
@@ -520,7 +712,14 @@ function StoreBackdrop({ mobile }) {
               justifyContent: "center",
             }}
           >
-            <span style={{ width: 140, height: 140, borderRadius: "50%", background: "#d9dadc" }} />
+            <span
+              style={{
+                width: 140,
+                height: 140,
+                borderRadius: "50%",
+                background: "#d9dadc",
+              }}
+            />
           </div>
         )}
       </div>
@@ -534,7 +733,14 @@ function StoreBackdrop({ mobile }) {
         }}
       >
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} style={{ height: mobile ? 120 : 170, borderRadius: 10, background: "#ececed" }} />
+          <div
+            key={i}
+            style={{
+              height: mobile ? 120 : 170,
+              borderRadius: 10,
+              background: "#ececed",
+            }}
+          />
         ))}
       </div>
     </div>
@@ -544,10 +750,19 @@ function StoreBackdrop({ mobile }) {
 function StickyWidget({ s, count, position }) {
   const pos = POSITION_STYLES[position] ?? POSITION_STYLES["bottom-right"];
   const btn = s.buttonSize;
-  const glyph = renderGlyph(s.selectedIcon, s.customIconUrl, s.iconColor, s.iconSize);
+  const glyph = renderGlyph(
+    s.selectedIcon,
+    s.customIconUrl,
+    s.iconColor,
+    s.iconSize,
+  );
   const showBadge = s.enableCount && count > 0;
 
-  const glyphWrap = { display: "flex", alignItems: "center", justifyContent: "center" };
+  const glyphWrap = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
   const badgeStyle = (absolute) => ({
     ...(absolute ? { position: "absolute", top: -4, right: -4 } : {}),
     minWidth: 20,
@@ -610,7 +825,9 @@ function StickyWidget({ s, count, position }) {
           transition: "all .2s",
         }}
       >
-        <span className="cart-plus__glyph" style={glyphWrap}>{glyph}</span>
+        <span className="cart-plus__glyph" style={glyphWrap}>
+          {glyph}
+        </span>
         <span>{`Cart${showBadge ? ` • ${count}` : ""}`}</span>
       </div>
     );
@@ -627,10 +844,23 @@ function StickyWidget({ s, count, position }) {
           width={size}
           height={size}
           viewBox={`0 0 ${size} ${size}`}
-          style={{ position: "absolute", top: -6, left: -6, transform: "rotate(-90deg)", pointerEvents: "none" }}
+          style={{
+            position: "absolute",
+            top: -6,
+            left: -6,
+            transform: "rotate(-90deg)",
+            pointerEvents: "none",
+          }}
           aria-hidden="true"
         >
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="4" />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke="rgba(0,0,0,0.12)"
+            strokeWidth="4"
+          />
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -642,7 +872,9 @@ function StickyWidget({ s, count, position }) {
             strokeDasharray={`${circ * 0.65} ${circ}`}
           />
         </svg>
-        <span className="cart-plus__glyph" style={glyphWrap}>{glyph}</span>
+        <span className="cart-plus__glyph" style={glyphWrap}>
+          {glyph}
+        </span>
         {badge(true)}
       </div>
     );
@@ -672,7 +904,9 @@ function StickyWidget({ s, count, position }) {
           cursor: "pointer",
         }}
       >
-        <span className="cart-plus__glyph" style={glyphWrap}>{glyph}</span>
+        <span className="cart-plus__glyph" style={glyphWrap}>
+          {glyph}
+        </span>
         {badge(false)}
       </div>
     );
@@ -691,7 +925,7 @@ function StickyWidget({ s, count, position }) {
           ...pos,
           height: h,
           padding: `0 ${Math.round(h * 0.18)}px 0 ${Math.round(h * 0.22)}px`,
-          borderRadius: h / 2,
+          borderRadius: s.barRadius,
           background: s.bgColor,
           color: s.iconColor,
           boxShadow: SHADOW,
@@ -718,7 +952,14 @@ function StickyWidget({ s, count, position }) {
             />
           ))}
         </span>
-        <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, flex: 1 }}>
+        <span
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            lineHeight: 1.2,
+            flex: 1,
+          }}
+        >
           <strong style={{ fontSize: 18 }}>$54.95</strong>
           {showBadge && (
             <span style={{ fontSize: 12, opacity: 0.85 }}>
@@ -737,7 +978,17 @@ function StickyWidget({ s, count, position }) {
             justifyContent: "center",
           }}
         >
-          <svg width={chevron} height={chevron} viewBox="0 0 24 24" fill="none" stroke={s.bgColor} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width={chevron}
+            height={chevron}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={s.bgColor}
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="m9 6 6 6-6 6" />
           </svg>
         </span>
@@ -748,7 +999,9 @@ function StickyWidget({ s, count, position }) {
   // bubble (default)
   return (
     <div id="cart-plus" style={round}>
-      <span className="cart-plus__glyph" style={glyphWrap}>{glyph}</span>
+      <span className="cart-plus__glyph" style={glyphWrap}>
+        {glyph}
+      </span>
       {badge(true)}
     </div>
   );
@@ -764,39 +1017,98 @@ function StickyPreview({ s }) {
 
   let hiddenReason = null;
   if (mobile && !s.displayOnMobile) hiddenReason = "Hidden on mobile";
-  else if (cartEmpty && s.hideOnEmptyCart) hiddenReason = "Hidden while the cart is empty";
+  else if (cartEmpty && s.hideOnEmptyCart)
+    hiddenReason = "Hidden while the cart is empty";
 
-  const css = useMemo(() => scopeCss(s.customCss, ".rapi-preview-viewport"), [s.customCss]);
+  const css = useMemo(
+    () => scopeCss(s.customCss, ".rapi-preview-viewport"),
+    [s.customCss],
+  );
 
   return (
     <Card padding="0">
       <Box padding="300" borderBlockEndWidth="025" borderColor="border">
         <InlineStack align="space-between" blockAlign="center" gap="300">
-          <Text as="h3" variant="headingSm">Preview</Text>
+          <Text as="h3" variant="headingSm">
+            Preview
+          </Text>
           <InlineStack gap="300">
             <ButtonGroup variant="segmented">
-              <Button size="slim" icon={DesktopIcon} pressed={!mobile} onClick={() => setDevice("desktop")} accessibilityLabel="Desktop preview" />
-              <Button size="slim" icon={MobileIcon} pressed={mobile} onClick={() => setDevice("mobile")} accessibilityLabel="Mobile preview" />
+              <Button
+                size="slim"
+                icon={DesktopIcon}
+                pressed={!mobile}
+                onClick={() => setDevice("desktop")}
+                accessibilityLabel="Desktop preview"
+              />
+              <Button
+                size="slim"
+                icon={MobileIcon}
+                pressed={mobile}
+                onClick={() => setDevice("mobile")}
+                accessibilityLabel="Mobile preview"
+              />
             </ButtonGroup>
             <ButtonGroup variant="segmented">
-              <Button size="slim" pressed={!cartEmpty} onClick={() => setCartEmpty(false)}>With items</Button>
-              <Button size="slim" pressed={cartEmpty} onClick={() => setCartEmpty(true)}>Empty cart</Button>
+              <Button
+                size="slim"
+                pressed={!cartEmpty}
+                onClick={() => setCartEmpty(false)}
+              >
+                With items
+              </Button>
+              <Button
+                size="slim"
+                pressed={cartEmpty}
+                onClick={() => setCartEmpty(true)}
+              >
+                Empty cart
+              </Button>
             </ButtonGroup>
           </InlineStack>
         </InlineStack>
       </Box>
 
       {/* browser chrome */}
-      <Box padding="300" borderBlockEndWidth="025" borderColor="border" background="bg-surface-secondary">
+      <Box
+        padding="300"
+        borderBlockEndWidth="025"
+        borderColor="border"
+        background="bg-surface-secondary"
+      >
         <InlineStack gap="150" blockAlign="center" wrap={false}>
           {["#ef4444", "#f59e0b", "#22c55e"].map((c) => (
-            <span key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c, display: "block" }} />
+            <span
+              key={c}
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: c,
+                display: "block",
+              }}
+            />
           ))}
-          <span style={{ flex: 1, height: 10, borderRadius: 4, background: "#e5e7eb", marginLeft: 6, display: "block" }} />
+          <span
+            style={{
+              flex: 1,
+              height: 10,
+              borderRadius: 4,
+              background: "#e5e7eb",
+              marginLeft: 6,
+              display: "block",
+            }}
+          />
         </InlineStack>
       </Box>
 
-      <div style={{ background: "#e9e9ea", display: "flex", justifyContent: "center" }}>
+      <div
+        style={{
+          background: "#e9e9ea",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
         <div
           className="rapi-preview-viewport"
           style={{
@@ -812,7 +1124,15 @@ function StickyPreview({ s }) {
           <StoreBackdrop mobile={mobile} />
 
           {hiddenReason ? (
-            <div style={{ position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 6 }}>
+            <div
+              style={{
+                position: "absolute",
+                top: 12,
+                left: "50%",
+                transform: "translateX(-50%)",
+                zIndex: 6,
+              }}
+            >
               <Badge>{hiddenReason}</Badge>
             </div>
           ) : (
@@ -854,7 +1174,7 @@ export default function StickyCart() {
 
   const isDirty = useMemo(
     () => stableStringify(settings) !== stableStringify(baseline),
-    [settings, baseline]
+    [settings, baseline],
   );
 
   // Re-sync when the loader data changes (e.g. navigating back to this page)
@@ -931,7 +1251,6 @@ export default function StickyCart() {
         createStickyCart(apiUrl, toPayload(settings)),
         new Promise((resolve) => setTimeout(resolve, 600)),
       ]);
-
       if (res?.success) {
         setBaseline(settings);
         toast("Sticky cart saved");
@@ -977,7 +1296,8 @@ export default function StickyCart() {
 
   /* ── derived UI state ── */
   const hasIconPicker = s.template !== "bar";
-  const countColorsDisabled = !s.enableCount || s.template === "pill" || s.template === "bar";
+  const countColorsDisabled =
+    !s.enableCount || s.template === "pill" || s.template === "bar";
   const positionOptions = positionOptionsFor(s.template);
   const savedEnabled = baseline.enabled;
 
@@ -990,10 +1310,15 @@ export default function StickyCart() {
         <button onClick={handleDiscard}>Discard</button>
       </ui-save-bar>
 
-      <Page fullWidth
+      <Page
+        fullWidth
         title="Customize Your Sticky Cart"
         titleMetadata={
-          savedEnabled ? <Badge tone="success">Live</Badge> : <Badge tone="info">Draft</Badge>
+          savedEnabled ? (
+            <Badge tone="success">Live</Badge>
+          ) : (
+            <Badge tone="info">Draft</Badge>
+          )
         }
         backAction={{ content: "Back", onAction: () => navigate("/app") }}
         secondaryActions={[
@@ -1020,13 +1345,23 @@ export default function StickyCart() {
                   <ToggleRow
                     checked={s.enabled}
                     onChange={(v) => set({ enabled: v })}
-                    title={s.enabled ? "Sticky cart is enabled" : "Sticky cart is disabled"}
+                    title={
+                      s.enabled
+                        ? "Sticky cart is enabled"
+                        : "Sticky cart is disabled"
+                    }
                   />
 
                   {/* Template */}
                   <BlockStack gap="300">
-                    <InlineStack align="space-between" blockAlign="center" gap="200">
-                      <Text as="h3" variant="headingSm">Template</Text>
+                    <InlineStack
+                      align="space-between"
+                      blockAlign="center"
+                      gap="200"
+                    >
+                      <Text as="h3" variant="headingSm">
+                        Template
+                      </Text>
                       <InlineStack gap="200" blockAlign="center">
                         <Popover
                           active={swatchOpen}
@@ -1052,7 +1387,13 @@ export default function StickyCart() {
                           }
                         >
                           <Box padding="300">
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 22px)", gap: 10 }}>
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(5, 22px)",
+                                gap: 10,
+                              }}
+                            >
                               {PRESET_COLORS.map((c) => {
                                 const selected = s.bgColor.toLowerCase() === c;
                                 return (
@@ -1073,7 +1414,9 @@ export default function StickyCart() {
                                       borderRadius: "50%",
                                       background: c,
                                       cursor: "pointer",
-                                      boxShadow: selected ? "0 0 0 2px #fff, 0 0 0 4px #1a1a1a" : "none",
+                                      boxShadow: selected
+                                        ? "0 0 0 2px #fff, 0 0 0 4px #1a1a1a"
+                                        : "none",
                                     }}
                                   />
                                 );
@@ -1092,7 +1435,10 @@ export default function StickyCart() {
                       </InlineStack>
                     </InlineStack>
 
-                    <Collapsible open={customColorOpen} id="custom-template-color">
+                    <Collapsible
+                      open={customColorOpen}
+                      id="custom-template-color"
+                    >
                       <Box paddingBlockEnd="100">
                         <ColorInput
                           label="Custom color"
@@ -1113,11 +1459,27 @@ export default function StickyCart() {
                         />
                       ))}
                     </InlineGrid>
+                    {s.template === "bar" && (
+                      <RangeSlider
+                        label="Border radius"
+                        min={BAR_RADIUS_MIN}
+                        max={BAR_RADIUS_MAX}
+                        step={1}
+                        value={s.barRadius}
+                        onChange={(v) => set({ barRadius: Number(v) })}
+                        suffix={
+                          <Text as="span" variant="bodySm" tone="subdued">
+                            {s.barRadius}px
+                          </Text>
+                        }
+                      />
+                    )}
 
                     {s.template === "ring" && (
                       <Banner tone="info">
-                        The ring mirrors your cart's progress-bar status, so it only works on
-                        carts that have the Progress Bar feature enabled.
+                        The ring mirrors your cart's progress-bar status, so it
+                        only works on carts that have the Progress Bar feature
+                        enabled.
                       </Banner>
                     )}
                   </BlockStack>
@@ -1125,7 +1487,9 @@ export default function StickyCart() {
                   {/* Icon */}
                   {hasIconPicker && (
                     <BlockStack gap="200">
-                      <Text as="h3" variant="headingSm">Icon</Text>
+                      <Text as="h3" variant="headingSm">
+                        Icon
+                      </Text>
                       <InlineStack gap="200" blockAlign="center">
                         {ICON_IDS.map((id) => (
                           <IconTile
@@ -1147,7 +1511,12 @@ export default function StickyCart() {
                             <img
                               src={s.customIconUrl}
                               alt=""
-                              style={{ width: 28, height: 28, objectFit: "contain", display: "block" }}
+                              style={{
+                                width: 28,
+                                height: 28,
+                                objectFit: "contain",
+                                display: "block",
+                              }}
                             />
                           </IconTile>
                         )}
@@ -1167,11 +1536,14 @@ export default function StickyCart() {
                                   borderRadius: "50%",
                                   border: "2px solid #d1d5db",
                                   borderTopColor: "#6b7280",
-                                  animation: "stickyCartIconSpin 0.7s linear infinite",
+                                  animation:
+                                    "stickyCartIconSpin 0.7s linear infinite",
                                 }}
                               />
                             ) : (
-                              <span style={{ fontSize: 22, color: "#6b7280" }}>+</span>
+                              <span style={{ fontSize: 22, color: "#6b7280" }}>
+                                +
+                              </span>
                             )}
                           </IconTile>
                         </Tooltip>
@@ -1186,16 +1558,22 @@ export default function StickyCart() {
                       </InlineStack>
 
                       {iconUploadError && (
-                        <Text variant="bodySm" tone="critical" as="p">{iconUploadError}</Text>
+                        <Text variant="bodySm" tone="critical" as="p">
+                          {iconUploadError}
+                        </Text>
                       )}
 
                       {s.selectedIcon === "custom" && s.customIconUrl && (
                         <InlineStack gap="200" blockAlign="center">
-                          <Text variant="bodySm" tone="subdued" as="span">Using custom icon</Text>
+                          <Text variant="bodySm" tone="subdued" as="span">
+                            Using custom icon
+                          </Text>
                           <Button
                             variant="plain"
                             tone="critical"
-                            onClick={() => set({ customIconUrl: null, selectedIcon: "bag" })}
+                            onClick={() =>
+                              set({ customIconUrl: null, selectedIcon: "bag" })
+                            }
                           >
                             Remove
                           </Button>
@@ -1219,7 +1597,11 @@ export default function StickyCart() {
                       step={1}
                       value={s.buttonSize}
                       onChange={(v) => set({ buttonSize: Number(v) })}
-                      suffix={<Text as="span" variant="bodySm" tone="subdued">{s.buttonSize}px</Text>}
+                      suffix={
+                        <Text as="span" variant="bodySm" tone="subdued">
+                          {s.buttonSize}px
+                        </Text>
+                      }
                     />
                     <RangeSlider
                       label="Icon size"
@@ -1228,7 +1610,11 @@ export default function StickyCart() {
                       step={1}
                       value={s.iconSize}
                       onChange={(v) => set({ iconSize: Number(v) })}
-                      suffix={<Text as="span" variant="bodySm" tone="subdued">{s.iconSize}px</Text>}
+                      suffix={
+                        <Text as="span" variant="bodySm" tone="subdued">
+                          {s.iconSize}px
+                        </Text>
+                      }
                     />
                   </InlineGrid>
 
@@ -1247,7 +1633,9 @@ export default function StickyCart() {
                       title="Enable count"
                     />
                     <BlockStack gap="200">
-                      <Text as="h4" variant="bodyMd" fontWeight="semibold">Colors</Text>
+                      <Text as="h4" variant="bodyMd" fontWeight="semibold">
+                        Colors
+                      </Text>
                       <fieldset
                         disabled={countColorsDisabled}
                         style={{
@@ -1274,12 +1662,14 @@ export default function StickyCart() {
                       </fieldset>
                       {(s.template === "pill" || s.template === "bar") && (
                         <Text as="p" variant="bodySm" tone="subdued">
-                          This template shows the count inside its label, so badge colors don't apply.
+                          This template shows the count inside its label, so
+                          badge colors don't apply.
                         </Text>
                       )}
                       {s.template === "ring" && (
                         <Text as="p" variant="bodySm" tone="subdued">
-                          The background color is also used for the progress ring.
+                          The background color is also used for the progress
+                          ring.
                         </Text>
                       )}
                     </BlockStack>
@@ -1334,8 +1724,14 @@ export default function StickyCart() {
 
                   {isDirty && (
                     <InlineStack align="end" gap="200">
-                      <Button onClick={handleDiscard} disabled={saving}>Discard changes</Button>
-                      <Button variant="primary" onClick={handleSave} loading={saving}>
+                      <Button onClick={handleDiscard} disabled={saving}>
+                        Discard changes
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={handleSave}
+                        loading={saving}
+                      >
                         Save
                       </Button>
                     </InlineStack>
@@ -1364,14 +1760,18 @@ export default function StickyCart() {
           onAction: handleResetToDefault,
         }}
         secondaryActions={[
-          { content: "Cancel", disabled: isResetting, onAction: () => setResetModal(false) },
+          {
+            content: "Cancel",
+            disabled: isResetting,
+            onAction: () => setResetModal(false),
+          },
         ]}
       >
         <Modal.Section>
           <Text as="p" tone="subdued">
-            This restores the sticky cart button to its default template, colors, sizes and
-            positioning, and saves immediately. Your current customizations will be lost and
-            this can't be undone.
+            This restores the sticky cart button to its default template,
+            colors, sizes and positioning, and saves immediately. Your current
+            customizations will be lost and this can't be undone.
           </Text>
         </Modal.Section>
       </Modal>

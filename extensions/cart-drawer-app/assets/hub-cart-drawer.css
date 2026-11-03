@@ -2675,7 +2675,7 @@ select.hub-variant-option-select {
 }
 /* Custom HTML / CSS blocks added in the editor sidebar */
 .cart-custom-html {
-  padding: 12px 16px;
+  padding: 0px 16px;
 }
 
 /* ── Cart summary (editor: Footer > Summary) ── */
