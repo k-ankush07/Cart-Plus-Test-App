@@ -51,6 +51,16 @@ export const updateCart = async (apiUrl, cartId, data) => {
     body: JSON.stringify(data),
   });
 };
+
+export const archiveAbTest = async (apiUrl, cartId, winnerId) => {
+  const res = await fetch(`${apiUrl}/api/archive-ab-test/${cartId}`, {
+    method: "POST",
+    credentials: "include",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(winnerId ? { winnerId } : {}),
+  });
+  return res.json();
+};
   
 export const getCarts = async (apiUrl, shop) => {
   const res = await fetch(`${apiUrl}/api/get-carts?shop=${shop}`, {

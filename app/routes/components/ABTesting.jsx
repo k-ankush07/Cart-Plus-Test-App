@@ -377,10 +377,15 @@ export default function ABTesting({
     if (nextActive !== activeVariant) onActiveVariantChange?.(nextActive)
   }
 
-  const stopTest = () => {
+  const stopTest = async () => {
     setSettingsOpen(false)
-    update({ ...DEFAULT_VALUE })
-    onStopTest?.()
+    try {
+      await onStopTest?.()
+      update({ ...DEFAULT_VALUE })
+    } catch (error) {
+      console.error("Could not stop A/B test:", error)
+      setSettingsOpen(true)
+    }
   }
 
   const selectVariant = (id) => {

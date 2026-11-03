@@ -7,7 +7,7 @@ import MainContent from "./components/MainContent";
 import CartLayout from "./components/CartLayout";
 import { requireShopData  } from "./components/shop.server";
 import { useLoaderData, useSearchParams } from "react-router-dom";
-import { getCart, updateCart } from "../services/apiRoutes";
+import { archiveAbTest, getCart, updateCart } from "../services/apiRoutes";
 import { TEMPLATE_DEFAULTS } from "./components/utils/templateTheme";
 import { templateBackground } from "./components/utils/background";
 import {
@@ -347,18 +347,39 @@ export default function CartEditor() {
     setBaselineFor(base.snaps[to] || snap, base.config);
   };
 
-  const stopAbTest = () => {
-    const control = (liveRef.current.cartSettings?.abTest?.variants || [])[0] || "A";
-    // keep the control variant, drop the rest
-    if (abActiveRef.current !== control && abStoreRef.current[control]) {
-      loadSnapshot(abStoreRef.current[control]);
+  const stopAbTest = async () => {
+    const ab = liveRef.current.cartSettings?.abTest;
+    if (!ab?.enabled) return;
+
+    try {
+      const result = await archiveAbTest(apiUrl, cart?.cartId);
+      if (!result.success) {
+        throw new Error(result.message || "Could not archive the A/B test");
+      }
+
+      const winnerId = result.data.archiveRecord?.winnerId || ab.variants?.[0] || "A";
+      const winnerSnapshot = cartToSnapshot(result.data.cart);
+      const archivedAbTest = result.data.abTest;
+
+      loadSnapshot(winnerSnapshot, archivedAbTest);
+      abStoreRef.current = {};
+      abActiveRef.current = winnerId;
+      setBaselineFor(winnerSnapshot, archivedAbTest);
+      abBaselineRef.current = {
+        active: winnerId,
+        config: archivedAbTest,
+        snaps: { [winnerId]: cloneJson(winnerSnapshot) },
+      };
+      setAbTick((tick) => tick + 1);
+      window.shopify?.toast?.show(result.message);
+    } catch (error) {
+      console.error("ARCHIVE A/B TEST ERROR:", error);
+      window.shopify?.toast?.show(
+        error.message || "Could not archive the A/B test",
+        { isError: true },
+      );
+      throw error;
     }
-    abStoreRef.current = {};
-    abActiveRef.current = "A";
-    handleChange("cartSettings", (prev) => {
-      const { abTest: _ab, ...rest } = prev || {};
-      return rest;
-    });
   };
 
   const abTesting = {
@@ -378,17 +399,27 @@ export default function CartEditor() {
         weights: state.weights,
       };
       const current = liveRef.current.cartSettings?.abTest;
+      const isNewTest = current?.enabled !== true;
+      const now = new Date().toISOString();
+      config.controlId = config.variants[0];
+      config.archived = false;
+      config.winnerId = null;
       config.variantIds = Object.fromEntries(
         config.variants.map((id) => [
           id,
-          current?.variantIds?.[id] || createVariantId(),
+          !isNewTest && current?.variantIds?.[id]
+            ? current.variantIds[id]
+            : createVariantId(),
         ]),
       );
-      if (!current) {
-        // the test is being created: A, B (and any others) all start now
-        const now = new Date().toISOString();
-        config.variantMeta = Object.fromEntries(config.variants.map((id) => [id, now]));
-      }
+      config.variantMeta = Object.fromEntries(
+        config.variants.map((id) => [
+          id,
+          !isNewTest && current?.variantMeta?.[id]
+            ? current.variantMeta[id]
+            : now,
+        ]),
+      );
       const same =
         current &&
         Object.keys(config).every((k) => isSettingsEqual(current[k], config[k]));

@@ -1141,602 +1141,679 @@ function DashboardInner({
   ];
 
   return (
-    <Page
-      title={
-        <InlineStack gap="300" blockAlign="center" wrap={false}>
-          <img
-            src="https://cartplus.io/cartplus-img/Cart%20Plus.svg"
-            alt="Cart Plus"
-            style={{
-              height: 45,
-              width: 45,
-              objectFit: "contain",
-              borderRadius: 8,
-            }}
-          />
-          <BlockStack gap="050">
-            <Text as="span" variant="bodySm" tone="subdued">
-              Welcome to
-            </Text>
-            <Text as="span" variant="headingLg" fontWeight="semibold">
-              Cart Plus
-            </Text>
-          </BlockStack>
-        </InlineStack>
-      }
-      primaryAction={
-        <InlineStack align="end" gap="300">
-          <DateRangePicker value={range} onChange={setRange} />
-          <Button variant="primary" onClick={() => navigate("/app/carts")}>
-            Your Carts
-          </Button>
-        </InlineStack>
-      }
-    >
-      <BlockStack gap="400">
-        {/* ── Live carts ── */}
-        <BlockStack gap="200">
-          <InlineStack gap="200" blockAlign="center">
-            <LiveDot />
-            <Text variant="headingMd">Live carts</Text>
-          </InlineStack>
-
-          {/* Revenue tiles */}
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #e1e3e5",
-              borderRadius: 12,
-              overflow: "hidden",
-            }}
-          >
-            <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }}>
-              <StatTile
-                loading={statsLoading}
-                label="Add-ons revenue"
-                value={fmt(shopRevenue.addonRevenue ?? 0, currency)}
-                rawValue={shopRevenue.addonRevenue ?? 0}
-                sparklineType={sparkType(shopRevenue.addonRevenue)}
-                onClick={() => navigate("/app/analytics")}
-              />
-              <StatTile
-                borderLeft
-                loading={statsLoading}
-                label="Upsell revenue"
-                value={fmt(shopRevenue.upsellRevenue ?? 0, currency)}
-                rawValue={shopRevenue.upsellRevenue ?? 0}
-                sparklineType={sparkType(shopRevenue.upsellRevenue)}
-                onClick={() => navigate("/app/analytics")}
-              />
-              <StatTile
-                borderLeft
-                loading={statsLoading}
-                label="Subscriptions revenue"
-                value={fmt(shopRevenue.subscriptionRevenue ?? 0, currency)}
-                rawValue={shopRevenue.subscriptionRevenue ?? 0}
-                sparklineType={sparkType(shopRevenue.subscriptionRevenue)}
-                onClick={() => navigate("/app/analytics")}
-              />
-              <StatTile
-                borderLeft
-                loading={statsLoading}
-                label="Total revenue"
-                value={fmt(totalStoreRevenue, currency)}
-                rawValue={totalStoreRevenue}
-                sparklineType={sparkType(totalStoreRevenue)}
-                onClick={() => navigate("/app/analytics")}
-              />
-            </InlineGrid>
-          </div>
-        </BlockStack>
-
-        {/* ── App embed status ── */}
-        <Card padding="400">
-          <InlineStack
-            align="space-between"
-            blockAlign="center"
-            gap="400"
-            wrap={false}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Text variant="headingSm" as="span">
-                  App embed status :
-                </Text>
-                <Badge tone={appEmbedInstalled ? "success" : "attention"}>
-                  {appEmbedInstalled ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-              <Text variant="bodyMd" tone="subdued" as="p">
-                You have{" "}
-                <a
-                  href={`https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps`}
-                  target="_top"
-                  style={{ color: "inherit", textDecoration: "underline" }}
-                >
-                  {appEmbedInstalled ? 1 : 0} active app blocks
-                </a>{" "}
-                in your store
-              </Text>
-            </div>
-
-            {!appEmbedInstalled && (
-              <InlineStack gap="300" blockAlign="center" wrap={false}>
-                <Tooltip content="Refresh status">
-                  <Button
-                    variant="tertiary"
-                    icon={RefreshIcon}
-                    loading={revalidator.state === "loading"}
-                    onClick={() => revalidator.revalidate()}
-                    accessibilityLabel="Refresh app embed status"
-                  />
-                </Tooltip>
-                <Button
-                  variant="primary"
-                  onClick={() =>
-                    window.open(
-                      `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
-                      "_top",
-                    )
-                  }
-                >
-                  Activate app embed
-                </Button>
-              </InlineStack>
-            )}
-          </InlineStack>
-        </Card>
-
-        {/* ── Cart table ── */}
-        <BlockStack>
-          <Box paddingBlockEnd="200">
-            <InlineStack gap="200" blockAlign="center">
-              <Text variant="headingMd">Cart logs</Text>
-            </InlineStack>
-          </Box>
-
-          {liveCarts.length > 0 ? (
-            <div
-              className="compact-cart-table"
+    <div className="_page_yc9hy_1">
+      <Page
+       fullWidth
+        title={
+          <InlineStack gap="300" blockAlign="center" wrap={false}>
+            <img
+              src="https://cartplus.io/cartplus-img/Cart%20Plus.svg"
+              alt="Cart Plus"
               style={{
-                borderRadius: "12px",
-                overflow: "hidden",
-                border: "1px solid var(--p-color-border)",
-              }}
-            >
-              <IndexTable
-                resourceName={{ singular: "cart", plural: "carts" }}
-                itemCount={liveCarts.length}
-                headings={[
-                  { title: "Cart name", id: "cart-name" },
-                  { title: "Status", id: "status" },
-                  {
-                    id: "impressions",
-                    title: (
-                      <Tooltip
-                        hasUnderline
-                        activatorWrapper="span"
-                        content={
-                          <BlockStack gap="200">
-                            <Text as="p" fontWeight="bold">
-                              Impressions
-                            </Text>
-                            <Text as="p" variant="bodyMd">
-                              Number of times this cart was shown to a shopper.
-                            </Text>
-                            <Text as="p" variant="bodyMd">
-                              Values shown are for the date range selected at
-                              the top of the page.
-                            </Text>
-                          </BlockStack>
-                        }
-                      >
-                        <Text
-                          variant="bodySm"
-                          tone="subdued"
-                          as="span"
-                          fontWeight="medium"
-                        >
-                          {" "}
-                          Impressions
-                        </Text>
-                      </Tooltip>
-                    ),
-                  },
-                  {
-                    id: "conversion-rate",
-                    title: (
-                      <Tooltip
-                        hasUnderline
-                        activatorWrapper="span"
-                        content={
-                          <BlockStack gap="200">
-                            <Text as="p" fontWeight="bold">
-                              Cart conversion rate (%)
-                            </Text>
-                            <Text as="p" variant="bodySm">
-                              The percentage of cart impressions that resulted
-                              in a completed purchase.
-                            </Text>
-                          </BlockStack>
-                        }
-                      >
-                        <Text
-                          variant="bodySm"
-                          tone="subdued"
-                          as="span"
-                          fontWeight="medium"
-                        >
-                          {" "}
-                          Cart conversion rate (%)
-                        </Text>
-                      </Tooltip>
-                    ),
-                  },
-                  {
-                    id: "added-revenue",
-                    title: (
-                      <Tooltip
-                        hasUnderline
-                        activatorWrapper="span"
-                        content={
-                          <BlockStack gap="200">
-                            <Text as="p" fontWeight="bold">
-                              Added revenue
-                            </Text>
-                            <Text as="p" variant="bodySm">
-                              The percentage of cart impressions that resulted
-                              in a completed purchase.
-                            </Text>
-                          </BlockStack>
-                        }
-                      >
-                        <Text
-                          variant="bodySm"
-                          tone="subdued"
-                          as="span"
-                          fontWeight="medium"
-                        >
-                          {" "}
-                          Added revenue
-                        </Text>
-                      </Tooltip>
-                    ),
-                  },
-                  { title: "", id: "actions" },
-                ]}
-                selectable={false}
-              >
-                {liveCarts.map((cart, i) => {
-                  const safeId =
-                    (cart.cartId &&
-                      cart.cartId.trim() !== "" &&
-                      cart.cartId.trim()) ||
-                    (cart._id &&
-                      cart._id.toString().trim() !== "" &&
-                      cart._id.toString().trim()) ||
-                    `row-${i}`;
-
-                  const cartEditorPath = `/app/cart-editor/${cart.cartId}?from=home`;
-                  const abTest = getAbTest(cart);
-                  const isExpanded = !!expandedCarts[cart.cartId];
-
-                  return (
-                    <Fragment key={safeId}>
-                      <IndexTable.Row
-                        id={safeId}
-                        position={i}
-                        onClick={() => navigate(cartEditorPath)}
-                      >
-                      <IndexTable.Cell>
-                        <CartHoverCard cart={cart}>
-                          <div
-                            style={{
-                              maxWidth: "150px",
-                              cursor: "pointer",
-                              position: "relative",
-                              zIndex: 1,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                            }}
-                          >
-                            {abTest && (
-                              <span
-                                role="button"
-                                tabIndex={0}
-                                aria-expanded={isExpanded}
-                                aria-label={
-                                  isExpanded ? "Hide variants" : "Show variants"
-                                }
-                                style={{
-                                  display: "inline-flex",
-                                  flexShrink: 0,
-                                  cursor: "pointer",
-                                }}
-                                onClick={(event) => {
-                                  event.preventDefault();
-                                  event.stopPropagation();
-                                  toggleCartExpanded(cart.cartId);
-                                }}
-                                onKeyDown={(event) => {
-                                  if (event.key === "Enter" || event.key === " ") {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    toggleCartExpanded(cart.cartId);
-                                  }
-                                }}
-                              >
-                                <Icon
-                                  source={
-                                    isExpanded ? ChevronDownIcon : ChevronRightIcon
-                                  }
-                                  tone="subdued"
-                                />
-                              </span>
-                            )}
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                minWidth: 0,
-                              }}
-                            >
-                              <Text truncate as="span">
-                                {cart.cartName || "Untitled cart"}
-                              </Text>
-                            </div>
-                            {abTest && <Badge tone="success">A/B test</Badge>}
-                          </div>
-                        </CartHoverCard>
-                      </IndexTable.Cell>
-
-                      <IndexTable.Cell>
-                        <InlineStack gap="200" blockAlign="center">
-                          {appEmbedInstalled ? (
-                            <Badge tone="success">Live</Badge>
-                          ) : (
-                            <span style={{ position: "relative", zIndex: 1 }}>
-                              <AppEmbedLink
-                                shop={shop}
-                                mainThemeId={mainThemeId}
-                                appEmbedId={appEmbedId}
-                              />
-                            </span>
-                          )}
-                        </InlineStack>
-                      </IndexTable.Cell>
-
-                      {/* Impressions */}
-                      <IndexTable.Cell>
-                        {statsLoading ? (
-                          <SkeletonCell width={48} />
-                        ) : cartStats?.[cart.cartId]?.impressions != null ? (
-                          cartStats[cart.cartId].impressions.toLocaleString()
-                        ) : (
-                          "—"
-                        )}
-                      </IndexTable.Cell>
-
-                      {/* Conversion rate */}
-                      <IndexTable.Cell>
-                        {statsLoading ? (
-                          <SkeletonCell width={56} />
-                        ) : cartStats?.[cart.cartId]?.conversionRate != null ? (
-                          cartStats[cart.cartId].conversionRate.toFixed(2) + "%"
-                        ) : (
-                          "—"
-                        )}
-                      </IndexTable.Cell>
-
-                      {/* Revenue */}
-                      <IndexTable.Cell>
-                        {statsLoading ? (
-                          <SkeletonCell width={72} />
-                        ) : cartStats?.[cart.cartId]?.revenue != null ? (
-                          fmt(cartStats[cart.cartId].revenue, currency)
-                        ) : (
-                          "—"
-                        )}
-                      </IndexTable.Cell>
-
-                      <IndexTable.Cell>
-                        <InlineStack
-                          gap="200"
-                          align="end"
-                          style={{ position: "relative", zIndex: 1 }}
-                        >
-                          <Button
-                            size="slim"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(cartEditorPath);
-                            }}
-                          >
-                            Edit cart
-                          </Button>
-                          <Button
-                            size="slim"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(
-                                `https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`,
-                                "_blank",
-                              );
-                            }}
-                          >
-                            Preview
-                          </Button>
-                        </InlineStack>
-                      </IndexTable.Cell>
-                      </IndexTable.Row>
-                      {abTest &&
-                        isExpanded &&
-                        abTest.variants.map((variantId, variantIndex) => {
-                          const percentage =
-                            abTest.weights?.[variantId] ??
-                            Math.round(100 / abTest.variants.length);
-                          const variantStats =
-                            cartStats?.[cart.cartId]?.variants?.[variantId];
-                          const variantEditorPath = `${cartEditorPath}&variant=${variantId}`;
-
-                          return (
-                            <IndexTable.Row
-                              key={`${safeId}-${variantId}`}
-                              id={`${safeId}-${variantId}`}
-                              position={1000 + i * 10 + variantIndex}
-                              onClick={() => navigate(variantEditorPath)}
-                            >
-                              <IndexTable.Cell>
-                                <div
-                                  style={{
-                                    paddingLeft: 28,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                  }}
-                                >
-                                  <Text as="span">Variant {variantId}</Text>
-                                  <Text as="span" variant="bodySm" tone="subdued">
-                                    {percentage}% of traffic
-                                  </Text>
-                                  {variantId === abTest.controlId && (
-                                    <Badge>Control</Badge>
-                                  )}
-                                </div>
-                              </IndexTable.Cell>
-                              <IndexTable.Cell />
-                              <IndexTable.Cell>
-                                {statsLoading ? (
-                                  <SkeletonCell width={48} />
-                                ) : variantStats?.impressions != null ? (
-                                  variantStats.impressions.toLocaleString()
-                                ) : (
-                                  "—"
-                                )}
-                              </IndexTable.Cell>
-                              <IndexTable.Cell>
-                                {statsLoading ? (
-                                  <SkeletonCell width={56} />
-                                ) : variantStats?.conversionRate != null ? (
-                                  `${variantStats.conversionRate.toFixed(2)}%`
-                                ) : (
-                                  "—"
-                                )}
-                              </IndexTable.Cell>
-                              <IndexTable.Cell>
-                                {statsLoading ? (
-                                  <SkeletonCell width={72} />
-                                ) : variantStats?.revenue != null ? (
-                                  fmt(variantStats.revenue, currency)
-                                ) : (
-                                  "—"
-                                )}
-                              </IndexTable.Cell>
-                              <IndexTable.Cell />
-                            </IndexTable.Row>
-                          );
-                        })}
-                    </Fragment>
-                  );
-                })}
-              </IndexTable>
-            </div>
-          ) : (
-            <EmptyState
-              title="No live carts configured"
-              subtitle="Publish your cart to see it live, and start earning with your cart."
-              tag={
-                !appEmbedInstalled
-                  ? { label: "App embed off", tone: "warning" }
-                  : null
-              }
-              primaryAction={{
-                label: "Enable app embed",
-                onAction: () =>
-                  window.open(
-                    `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
-                    "_blank",
-                  ),
-              }}
-              secondaryAction={{
-                label: "Manage carts",
-                onAction: () => navigate("/app/carts"),
+                height: 45,
+                width: 45,
+                objectFit: "contain",
+                borderRadius: 8,
               }}
             />
-          )}
-        </BlockStack>
-      </BlockStack>
+            <BlockStack gap="050">
+              <Text as="span" variant="bodySm" tone="subdued">
+                Welcome to
+              </Text>
+              <Text as="span" variant="headingLg" fontWeight="semibold">
+                Cart Plus
+              </Text>
+            </BlockStack>
+          </InlineStack>
+        }
+        primaryAction={
+          <InlineStack align="end" gap="300">
+            <DateRangePicker value={range} onChange={setRange} />
+            <Button variant="primary" onClick={() => navigate("/app/carts")}>
+              Your Carts
+            </Button>
+          </InlineStack>
+        }
+      >
+        <BlockStack gap="400">
+          {/* ── Live carts ── */}
+          <BlockStack gap="200">
+            <InlineStack gap="200" blockAlign="center">
+              <LiveDot />
+              <Text variant="headingMd">Live carts</Text>
+            </InlineStack>
 
-      {/* ── App Features ── */}
-      <Box paddingBlockStart="400">
-        <BlockStack gap="300">
-          <Text variant="headingMd" as="h3">
-            App Features
-          </Text>
+            {/* Revenue tiles */}
+            <div
+              style={{
+                background: "#fff",
+                border: "1px solid #e1e3e5",
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }}>
+                <StatTile
+                  loading={statsLoading}
+                  label="Add-ons revenue"
+                  value={fmt(shopRevenue.addonRevenue ?? 0, currency)}
+                  rawValue={shopRevenue.addonRevenue ?? 0}
+                  sparklineType={sparkType(shopRevenue.addonRevenue)}
+                  onClick={() => navigate("/app/analytics")}
+                />
+                <StatTile
+                  borderLeft
+                  loading={statsLoading}
+                  label="Upsell revenue"
+                  value={fmt(shopRevenue.upsellRevenue ?? 0, currency)}
+                  rawValue={shopRevenue.upsellRevenue ?? 0}
+                  sparklineType={sparkType(shopRevenue.upsellRevenue)}
+                  onClick={() => navigate("/app/analytics")}
+                />
+                <StatTile
+                  borderLeft
+                  loading={statsLoading}
+                  label="Subscriptions revenue"
+                  value={fmt(shopRevenue.subscriptionRevenue ?? 0, currency)}
+                  rawValue={shopRevenue.subscriptionRevenue ?? 0}
+                  sparklineType={sparkType(shopRevenue.subscriptionRevenue)}
+                  onClick={() => navigate("/app/analytics")}
+                />
+                <StatTile
+                  borderLeft
+                  loading={statsLoading}
+                  label="Total revenue"
+                  value={fmt(totalStoreRevenue, currency)}
+                  rawValue={totalStoreRevenue}
+                  sparklineType={sparkType(totalStoreRevenue)}
+                  onClick={() => navigate("/app/analytics")}
+                />
+              </InlineGrid>
+            </div>
+          </BlockStack>
 
-          <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
-            {appFeatures.map((f) => (
-              <Card key={f.title} padding="400">
-                <BlockStack gap="300">
-                  <InlineStack gap="300" wrap={false}>
-                    <div
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 8,
-                        background: "#f1f2f3",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Icon source={f.icon} />
-                    </div>
+          {/* ── App embed status ── */}
+          <Card padding="400">
+            <InlineStack
+              align="space-between"
+              blockAlign="center"
+              gap="400"
+              wrap={false}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Text variant="headingSm" as="span">
+                    App embed status :
+                  </Text>
+                  <Badge tone={appEmbedInstalled ? "success" : "attention"}>
+                    {appEmbedInstalled ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
+                <Text variant="bodyMd" tone="subdued" as="p">
+                  You have{" "}
+                  <a
+                    href={`https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps`}
+                    target="_top"
+                    style={{ color: "inherit", textDecoration: "underline" }}
+                  >
+                    {appEmbedInstalled ? 1 : 0} active app blocks
+                  </a>{" "}
+                  in your store
+                </Text>
+              </div>
 
-                    <div
-                      style={{
-                        flex: 1,
-                        minWidth: 0,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 2,
-                      }}
-                    >
-                      <Text variant="bodyMd" as="p">
-                        {f.title}
-                      </Text>
-                      <Text variant="headingSm" as="p">
-                        {f.subtitle}
-                      </Text>
-                    </div>
-
-                    {f.isActive && (
-                      <div style={{ flexShrink: 0 }}>
-                        <Badge tone="success">Active</Badge>
-                      </div>
-                    )}
-                  </InlineStack>
-
+              {!appEmbedInstalled && (
+                <InlineStack gap="300" blockAlign="center" wrap={false}>
+                  <Tooltip content="Refresh status">
+                    <Button
+                      variant="tertiary"
+                      icon={RefreshIcon}
+                      loading={revalidator.state === "loading"}
+                      onClick={() => revalidator.revalidate()}
+                      accessibilityLabel="Refresh app embed status"
+                    />
+                  </Tooltip>
                   <Button
-                    fullWidth
-                    disabled={!cartIdForFeatures}
+                    variant="primary"
                     onClick={() =>
-                      navigate(
-                        `/app/cart-editor/${cartIdForFeatures}?from=home&module=${f.module}`,
+                      window.open(
+                        `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
+                        "_top",
                       )
                     }
                   >
-                    Configure
+                    Activate app embed
                   </Button>
-                </BlockStack>
-              </Card>
-            ))}
-          </InlineGrid>
+                </InlineStack>
+              )}
+            </InlineStack>
+          </Card>
+
+          {/* ── Cart table ── */}
+          <BlockStack>
+            <Box paddingBlockEnd="200">
+              <InlineStack gap="200" blockAlign="center">
+                <Text variant="headingMd">Cart logs</Text>
+              </InlineStack>
+            </Box>
+
+            {liveCarts.length > 0 ? (
+              <div
+                className="compact-cart-table"
+                style={{
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  border: "1px solid var(--p-color-border)",
+                }}
+              >
+                <IndexTable
+                  resourceName={{ singular: "cart", plural: "carts" }}
+                  itemCount={liveCarts.length}
+                  headings={[
+                    { title: "Cart name", id: "cart-name" },
+                    { title: "Status", id: "status" },
+                    {
+                      id: "impressions",
+                      title: (
+                        <Tooltip
+                          hasUnderline
+                          activatorWrapper="span"
+                          content={
+                            <BlockStack gap="200">
+                              <Text as="p" fontWeight="bold">
+                                Impressions
+                              </Text>
+                              <Text as="p" variant="bodyMd">
+                                Number of times this cart was shown to a
+                                shopper.
+                              </Text>
+                              <Text as="p" variant="bodyMd">
+                                Values shown are for the date range selected at
+                                the top of the page.
+                              </Text>
+                            </BlockStack>
+                          }
+                        >
+                          <Text
+                            variant="bodySm"
+                            tone="subdued"
+                            as="span"
+                            fontWeight="medium"
+                          >
+                            {" "}
+                            Impressions
+                          </Text>
+                        </Tooltip>
+                      ),
+                    },
+                    {
+                      id: "conversion-rate",
+                      title: (
+                        <Tooltip
+                          hasUnderline
+                          activatorWrapper="span"
+                          content={
+                            <BlockStack gap="200">
+                              <Text as="p" fontWeight="bold">
+                                Cart conversion rate (%)
+                              </Text>
+                              <Text as="p" variant="bodySm">
+                                The percentage of cart impressions that resulted
+                                in a completed purchase.
+                              </Text>
+                            </BlockStack>
+                          }
+                        >
+                          <Text
+                            variant="bodySm"
+                            tone="subdued"
+                            as="span"
+                            fontWeight="medium"
+                          >
+                            {" "}
+                            Cart conversion rate (%)
+                          </Text>
+                        </Tooltip>
+                      ),
+                    },
+                    {
+                      id: "added-revenue",
+                      title: (
+                        <Tooltip
+                          hasUnderline
+                          activatorWrapper="span"
+                          content={
+                            <BlockStack gap="200">
+                              <Text as="p" fontWeight="bold">
+                                Added revenue
+                              </Text>
+                              <Text as="p" variant="bodySm">
+                                The percentage of cart impressions that resulted
+                                in a completed purchase.
+                              </Text>
+                            </BlockStack>
+                          }
+                        >
+                          <Text
+                            variant="bodySm"
+                            tone="subdued"
+                            as="span"
+                            fontWeight="medium"
+                          >
+                            {" "}
+                            Added revenue
+                          </Text>
+                        </Tooltip>
+                      ),
+                    },
+                    { title: "Rev per visitor", id: "revenue-per-visitor" },
+                    { title: "AOV", id: "aov" },
+                    { title: "", id: "actions" },
+                  ]}
+                  selectable={false}
+                >
+                  {liveCarts.map((cart, i) => {
+                    const safeId =
+                      (cart.cartId &&
+                        cart.cartId.trim() !== "" &&
+                        cart.cartId.trim()) ||
+                      (cart._id &&
+                        cart._id.toString().trim() !== "" &&
+                        cart._id.toString().trim()) ||
+                      `row-${i}`;
+
+                    const cartEditorPath = `/app/cart-editor/${cart.cartId}?from=home`;
+                    const abTest = getAbTest(cart);
+                    const isExpanded = !!expandedCarts[cart.cartId];
+
+                    return (
+                      <Fragment key={safeId}>
+                        <IndexTable.Row
+                          id={safeId}
+                          position={i}
+                          onClick={() => navigate(cartEditorPath)}
+                        >
+                          <IndexTable.Cell>
+                            <CartHoverCard cart={cart}>
+                              <div
+                                style={{
+                                  maxWidth: "150px",
+                                  cursor: "pointer",
+                                  position: "relative",
+                                  zIndex: 1,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                }}
+                              >
+                                {abTest && (
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-expanded={isExpanded}
+                                    aria-label={
+                                      isExpanded
+                                        ? "Hide variants"
+                                        : "Show variants"
+                                    }
+                                    style={{
+                                      display: "inline-flex",
+                                      flexShrink: 0,
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={(event) => {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      toggleCartExpanded(cart.cartId);
+                                    }}
+                                    onKeyDown={(event) => {
+                                      if (
+                                        event.key === "Enter" ||
+                                        event.key === " "
+                                      ) {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        toggleCartExpanded(cart.cartId);
+                                      }
+                                    }}
+                                  >
+                                    <Icon
+                                      source={
+                                        isExpanded
+                                          ? ChevronDownIcon
+                                          : ChevronRightIcon
+                                      }
+                                      tone="subdued"
+                                    />
+                                  </span>
+                                )}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    minWidth: 0,
+                                  }}
+                                >
+                                  <Text truncate as="span">
+                                    {cart.cartName || "Untitled cart"}
+                                  </Text>
+                                </div>
+                                {abTest && (
+                                  <Badge tone="success">A/B test</Badge>
+                                )}
+                              </div>
+                            </CartHoverCard>
+                          </IndexTable.Cell>
+
+                          <IndexTable.Cell>
+                            <InlineStack gap="200" blockAlign="center">
+                              {appEmbedInstalled ? (
+                                <Badge tone="success">Live</Badge>
+                              ) : (
+                                <span
+                                  style={{ position: "relative", zIndex: 1 }}
+                                >
+                                  <AppEmbedLink
+                                    shop={shop}
+                                    mainThemeId={mainThemeId}
+                                    appEmbedId={appEmbedId}
+                                  />
+                                </span>
+                              )}
+                            </InlineStack>
+                          </IndexTable.Cell>
+
+                          {/* Impressions */}
+                          <IndexTable.Cell>
+                            {statsLoading ? (
+                              <SkeletonCell width={48} />
+                            ) : cartStats?.[cart.cartId]?.impressions !=
+                              null ? (
+                              cartStats[
+                                cart.cartId
+                              ].impressions.toLocaleString()
+                            ) : (
+                              "—"
+                            )}
+                          </IndexTable.Cell>
+
+                          {/* Conversion rate */}
+                          <IndexTable.Cell>
+                            {statsLoading ? (
+                              <SkeletonCell width={56} />
+                            ) : cartStats?.[cart.cartId]?.conversionRate !=
+                              null ? (
+                              cartStats[cart.cartId].conversionRate.toFixed(2) +
+                              "%"
+                            ) : (
+                              "—"
+                            )}
+                          </IndexTable.Cell>
+
+                          {/* Revenue */}
+                          <IndexTable.Cell>
+                            {statsLoading ? (
+                              <SkeletonCell width={72} />
+                            ) : cartStats?.[cart.cartId]?.revenue != null ? (
+                              fmt(cartStats[cart.cartId].revenue, currency)
+                            ) : (
+                              "—"
+                            )}
+                          </IndexTable.Cell>
+
+                          <IndexTable.Cell>
+                            {statsLoading ? (
+                              <SkeletonCell width={72} />
+                            ) : cartStats?.[cart.cartId]?.impressions > 0 ? (
+                              fmt(
+                                cartStats[cart.cartId].revenue /
+                                  cartStats[cart.cartId].impressions,
+                                currency,
+                              )
+                            ) : (
+                              fmt(0, currency)
+                            )}
+                          </IndexTable.Cell>
+
+                          <IndexTable.Cell>
+                            {statsLoading ? (
+                              <SkeletonCell width={72} />
+                            ) : cartStats?.[cart.cartId]?.aov != null ? (
+                              fmt(cartStats[cart.cartId].aov, currency)
+                            ) : (
+                              fmt(0, currency)
+                            )}
+                          </IndexTable.Cell>
+
+                          <IndexTable.Cell>
+                            <InlineStack
+                              gap="200"
+                              align="end"
+                              style={{ position: "relative", zIndex: 1 }}
+                            >
+                              <Button
+                                size="slim"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(cartEditorPath);
+                                }}
+                              >
+                                Edit cart
+                              </Button>
+                              <Button
+                                size="slim"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(
+                                    `https://${shop.myshopifyDomain}?preview_theme_id=${mainThemeId}`,
+                                    "_blank",
+                                  );
+                                }}
+                              >
+                                Preview
+                              </Button>
+                            </InlineStack>
+                          </IndexTable.Cell>
+                        </IndexTable.Row>
+                        {abTest &&
+                          isExpanded &&
+                          abTest.variants.map((variantId, variantIndex) => {
+                            const percentage =
+                              abTest.weights?.[variantId] ??
+                              Math.round(100 / abTest.variants.length);
+                            const variantStats =
+                              cartStats?.[cart.cartId]?.variants?.[variantId];
+                            const variantEditorPath = `${cartEditorPath}&variant=${variantId}`;
+
+                            return (
+                              <IndexTable.Row
+                                key={`${safeId}-${variantId}`}
+                                id={`${safeId}-${variantId}`}
+                                position={1000 + i * 10 + variantIndex}
+                                onClick={() => navigate(variantEditorPath)}
+                              >
+                                <IndexTable.Cell>
+                                  <div
+                                    style={{
+                                      paddingLeft: 28,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 8,
+                                    }}
+                                  >
+                                    <Text as="span">Variant {variantId}</Text>
+                                    <Text
+                                      as="span"
+                                      variant="bodySm"
+                                      tone="subdued"
+                                    >
+                                      {percentage}% of traffic
+                                    </Text>
+                                    {variantId === abTest.controlId && (
+                                      <Badge>Control</Badge>
+                                    )}
+                                  </div>
+                                </IndexTable.Cell>
+                                <IndexTable.Cell />
+                                <IndexTable.Cell>
+                                  {statsLoading ? (
+                                    <SkeletonCell width={48} />
+                                  ) : variantStats?.impressions != null ? (
+                                    variantStats.impressions.toLocaleString()
+                                  ) : (
+                                    "—"
+                                  )}
+                                </IndexTable.Cell>
+                                <IndexTable.Cell>
+                                  {statsLoading ? (
+                                    <SkeletonCell width={56} />
+                                  ) : variantStats?.conversionRate != null ? (
+                                    `${variantStats.conversionRate.toFixed(2)}%`
+                                  ) : (
+                                    "—"
+                                  )}
+                                </IndexTable.Cell>
+                                <IndexTable.Cell>
+                                  {statsLoading ? (
+                                    <SkeletonCell width={72} />
+                                  ) : variantStats?.revenue != null ? (
+                                    fmt(variantStats.revenue, currency)
+                                  ) : (
+                                    "—"
+                                  )}
+                                </IndexTable.Cell>
+                                <IndexTable.Cell>
+                                  {statsLoading ? (
+                                    <SkeletonCell width={72} />
+                                  ) : (
+                                    fmt(
+                                      variantStats?.revenuePerVisitor ??
+                                        (variantStats?.impressions > 0
+                                          ? variantStats.revenue /
+                                            variantStats.impressions
+                                          : 0),
+                                      currency,
+                                    )
+                                  )}
+                                </IndexTable.Cell>
+                                <IndexTable.Cell>
+                                  {statsLoading ? (
+                                    <SkeletonCell width={72} />
+                                  ) : (
+                                    fmt(
+                                      variantStats?.aov ??
+                                        (variantStats?.completedOrders > 0
+                                          ? variantStats.revenue /
+                                            variantStats.completedOrders
+                                          : 0),
+                                      currency,
+                                    )
+                                  )}
+                                </IndexTable.Cell>
+                                <IndexTable.Cell />
+                              </IndexTable.Row>
+                            );
+                          })}
+                      </Fragment>
+                    );
+                  })}
+                </IndexTable>
+              </div>
+            ) : (
+              <EmptyState
+                title="No live carts configured"
+                subtitle="Publish your cart to see it live, and start earning with your cart."
+                tag={
+                  !appEmbedInstalled
+                    ? { label: "App embed off", tone: "warning" }
+                    : null
+                }
+                primaryAction={{
+                  label: "Enable app embed",
+                  onAction: () =>
+                    window.open(
+                      `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
+                      "_blank",
+                    ),
+                }}
+                secondaryAction={{
+                  label: "Manage carts",
+                  onAction: () => navigate("/app/carts"),
+                }}
+              />
+            )}
+          </BlockStack>
         </BlockStack>
-      </Box>
-      {/* <Box paddingBlockStart="400">
+
+        {/* ── App Features ── */}
+        <Box paddingBlockStart="400">
+          <BlockStack gap="300">
+            <Text variant="headingMd" as="h3">
+              App Features
+            </Text>
+
+            <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
+              {appFeatures.map((f) => (
+                <Card key={f.title} padding="400">
+                  <BlockStack gap="300">
+                    <InlineStack gap="300" wrap={false}>
+                      <div
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 8,
+                          background: "#f1f2f3",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Icon source={f.icon} />
+                      </div>
+
+                      <div
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 2,
+                        }}
+                      >
+                        <Text variant="bodyMd" as="p">
+                          {f.title}
+                        </Text>
+                        <Text variant="headingSm" as="p">
+                          {f.subtitle}
+                        </Text>
+                      </div>
+
+                      {f.isActive && (
+                        <div style={{ flexShrink: 0 }}>
+                          <Badge tone="success">Active</Badge>
+                        </div>
+                      )}
+                    </InlineStack>
+
+                    <Button
+                      fullWidth
+                      disabled={!cartIdForFeatures}
+                      onClick={() =>
+                        navigate(
+                          `/app/cart-editor/${cartIdForFeatures}?from=home&module=${f.module}`,
+                        )
+                      }
+                    >
+                      Configure
+                    </Button>
+                  </BlockStack>
+                </Card>
+              ))}
+            </InlineGrid>
+          </BlockStack>
+        </Box>
+        {/* <Box paddingBlockStart="400">
         <BlockStack gap="300">
           <div
             style={{
@@ -1875,79 +1952,79 @@ function DashboardInner({
         </BlockStack>
       </Box> */}
 
-      {/* ── Help cards ── */}
-      <Box paddingBlockStart="400">
-        <InlineGrid columns={{ xs: 1, sm: 1 }} gap="300">
-          {/* ── Customer success specialist ── */}
-          <Card padding="400">
-            <InlineStack
-              align="space-between"
-              blockAlign="center"
-              gap="400"
-              wrap={false}
-            >
-              <InlineStack gap="300" blockAlign="center" wrap={false}>
-                {/* Avatar + green online dot */}
-                <div
-                  style={{
-                    position: "relative",
-                    display: "inline-flex",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Avatar
-                    size="xl"
-                    name="Sujil"
-                    source="https://cartplus.io/cartplus-img/Ankush%207.png"
-                  />
-                  <span
+        {/* ── Help cards ── */}
+        <Box paddingBlockStart="400">
+          <InlineGrid columns={{ xs: 1, sm: 1 }} gap="300">
+            {/* ── Customer success specialist ── */}
+            <Card padding="400">
+              <InlineStack
+                align="space-between"
+                blockAlign="center"
+                gap="400"
+                wrap={false}
+              >
+                <InlineStack gap="300" blockAlign="center" wrap={false}>
+                  {/* Avatar + green online dot */}
+                  <div
                     style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      background: "#22c55e",
-                      border: "2px solid #fff",
-                      boxSizing: "border-box",
-                      animation: "pulse 1.5s ease-in-out infinite",
+                      position: "relative",
+                      display: "inline-flex",
+                      flexShrink: 0,
                     }}
-                  />
-                </div>
+                  >
+                    <Avatar
+                      size="xl"
+                      name="Sujil"
+                      source="https://cartplus.io/cartplus-img/Ankush%207.png"
+                    />
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: 12,
+                        height: 12,
+                        borderRadius: "50%",
+                        background: "#22c55e",
+                        border: "2px solid #fff",
+                        boxSizing: "border-box",
+                        animation: "pulse 1.5s ease-in-out infinite",
+                      }}
+                    />
+                  </div>
 
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 2 }}
-                >
-                  <Text variant="bodySm" tone="subdued" as="p">
-                    Hi! I’m your customer success specialist
-                  </Text>
-                  <Text variant="headingSm" as="p">
-                    Ankush Kumar
-                  </Text>
-                </div>
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 2 }}
+                  >
+                    <Text variant="bodySm" tone="subdued" as="p">
+                      Hi! I’m your customer success specialist
+                    </Text>
+                    <Text variant="headingSm" as="p">
+                      Ankush Kumar
+                    </Text>
+                  </div>
+                </InlineStack>
+
+                <ButtonGroup>
+                  <Button
+                    icon={ChatIcon}
+                    onClick={() => navigate("/app/support")}
+                  >
+                    Chat Now
+                  </Button>
+                  <Button
+                    icon={PhoneIcon}
+                    onClick={() =>
+                      window.open("https://your-calendly-link.com", "_blank")
+                    }
+                  >
+                    Schedule strategy call
+                  </Button>
+                </ButtonGroup>
               </InlineStack>
+            </Card>
 
-              <ButtonGroup>
-                <Button
-                  icon={ChatIcon}
-                  onClick={() => navigate("/app/support")}
-                >
-                  Chat Now
-                </Button>
-                <Button
-                  icon={PhoneIcon}
-                  onClick={() =>
-                    window.open("https://your-calendly-link.com", "_blank")
-                  }
-                >
-                  Schedule strategy call
-                </Button>
-              </ButtonGroup>
-            </InlineStack>
-          </Card>
-
-          {/* <Card padding="400">
+            {/* <Card padding="400">
             <InlineStack align="space-between" blockAlign="center" gap="400" wrap={false}>
               <InlineStack gap="300" blockAlign="start" wrap={false}>
                 <div style={{ width: 44, height: 44, background: "#EDEDEE", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid #C5C5C5" }}>
@@ -1961,9 +2038,10 @@ function DashboardInner({
               <Button>View docs</Button>
             </InlineStack>
           </Card> */}
-        </InlineGrid>
-      </Box>
-    </Page>
+          </InlineGrid>
+        </Box>
+      </Page>
+    </div>
   );
 }
 

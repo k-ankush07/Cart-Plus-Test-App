@@ -250,6 +250,221 @@ router.put("/update-cart/:cartId", async (req, res) => {
   }
 });
 
+router.post("/archive-ab-test/:cartId", async (req, res) => {
+  try {
+    const { cartId } = req.params;
+    const { winnerId: requestedWinnerId } = req.body || {};
+    const cart = await cartModels.findOne({ cartId });
+    const abTest = cart?.cartSettings?.abTest;
+
+    if (!cart) {
+      return res.status(404).json({ success: false, message: "Cart not found" });
+    }
+    if (!abTest?.enabled || !Array.isArray(abTest.variants)) {
+      return res.status(400).json({
+        success: false,
+        message: "No active A/B test found for this cart",
+      });
+    }
+    if (requestedWinnerId && !abTest.variants.includes(requestedWinnerId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Selected winner is not part of this A/B test",
+      });
+    }
+
+    const variantKeys = abTest.variants;
+    const startedAtValues = Object.values(abTest.variantMeta || {})
+      .map((value) => new Date(value))
+      .filter((date) => !Number.isNaN(date.getTime()));
+    const startedAt = startedAtValues.length
+      ? new Date(Math.min(...startedAtValues.map((date) => date.getTime())))
+      : cart.updatedAt || cart.createdAt || new Date(0);
+    const endedAt = new Date();
+    const variantIdToKey = Object.fromEntries(
+      variantKeys
+        .map((variantKey) => [
+          String(abTest.variantIds?.[variantKey] || ""),
+          variantKey,
+        ])
+        .filter(([variantId]) => variantId),
+    );
+    const activeVariantIds = Object.keys(variantIdToKey);
+    const [revenueByVariant, impressionsByVariant] = await Promise.all([
+      orderRevenueModel.aggregate([
+        {
+          $match: {
+            shop: cart.shop,
+            cartId,
+            variantId: { $in: activeVariantIds },
+            createdAt: { $gte: startedAt, $lte: endedAt },
+          },
+        },
+        {
+          $group: {
+            _id: "$variantId",
+            revenue: {
+              $sum: {
+                $add: [
+                  { $ifNull: ["$totalRevenue", 0] },
+                  { $ifNull: ["$baseRevenue", 0] },
+                ],
+              },
+            },
+            completedOrders: { $sum: 1 },
+          },
+        },
+      ]),
+      analyticsModel.aggregate([
+        {
+          $match: {
+            shop: cart.shop,
+            cartId,
+            eventType: "cart_impression",
+            createdAt: { $gte: startedAt, $lte: endedAt },
+            "meta.variantId": { $in: activeVariantIds },
+          },
+        },
+        {
+          $group: {
+            _id: "$meta.variantId",
+            impressions: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    const revenueByKey = Object.fromEntries(
+      revenueByVariant.map(({ _id, revenue, completedOrders }) => {
+        const variantKey = variantIdToKey[String(_id)];
+        return [variantKey, { revenue, completedOrders }];
+      }),
+    );
+    const impressionsByKey = Object.fromEntries(
+      impressionsByVariant.map(({ _id, impressions }) => [
+        variantIdToKey[String(_id)],
+        impressions,
+      ]),
+    );
+    const variantStats = Object.fromEntries(
+      variantKeys.map((variantKey) => {
+        const { revenue = 0, completedOrders = 0 } =
+          revenueByKey[variantKey] || {};
+        const impressions = impressionsByKey[variantKey] || 0;
+        return [
+          variantKey,
+          {
+            revenue,
+            completedOrders,
+            impressions,
+            conversionRate:
+              impressions > 0
+                ? Math.min((completedOrders / impressions) * 100, 100)
+                : 0,
+            revenuePerVisitor: impressions > 0 ? revenue / impressions : 0,
+            aov: completedOrders > 0 ? revenue / completedOrders : 0,
+          },
+        ];
+      }),
+    );
+
+    const winnerId =
+      requestedWinnerId ||
+      variantKeys.reduce(
+        (winner, variantKey) =>
+          variantStats[variantKey].revenue >
+          (winner ? variantStats[winner].revenue : 0)
+            ? variantKey
+            : winner,
+        variantKeys[0],
+      );
+    const archiveRecord = {
+      id: crypto.randomUUID(),
+      startedAt,
+      endedAt,
+      variants: variantKeys,
+      weights: abTest.weights || {},
+      controlId: abTest.controlId || variantKeys[0],
+      variantIds: abTest.variantIds || {},
+      winnerId,
+      variantStats,
+    };
+    const archivedAbTest = {
+      ...abTest,
+      enabled: false,
+      archived: true,
+      winnerId,
+      archive: [...(abTest.archive || []), archiveRecord],
+    };
+
+    const controlId = abTest.controlId || variantKeys[0];
+    const winnerSnapshot =
+      winnerId === controlId
+        ? {
+            design: cart.designSettings,
+            header: cart.headerSettings,
+            announcement: cart.announcementSettings,
+            rewardsSettings: cart.rewardsSettings,
+            recommendationsSettings: cart.recommendationsSettings,
+            subscriptionUpgradesSettings: cart.subscriptionUpgradesSettings,
+            upsellsSettings: cart.upsellsSettings,
+            additionalNotesSettings: cart.additionalNotesSettings,
+            addonsSettings: cart.addonsSettings,
+            discountCodesSettings: cart.discountCodesSettings,
+            expressPaymentsSettings: cart.expressPaymentsSettings,
+            trustBadgesSettings: cart.trustBadgesSettings,
+            cartSettings: cart.cartSettings,
+          }
+        : abTest.data?.[winnerId];
+
+    if (!winnerSnapshot) {
+      return res.status(400).json({
+        success: false,
+        message: `Settings for winning variant ${winnerId} were not found`,
+      });
+    }
+
+    const snapshotFields = {
+      design: "designSettings",
+      header: "headerSettings",
+      announcement: "announcementSettings",
+      rewardsSettings: "rewardsSettings",
+      recommendationsSettings: "recommendationsSettings",
+      subscriptionUpgradesSettings: "subscriptionUpgradesSettings",
+      upsellsSettings: "upsellsSettings",
+      additionalNotesSettings: "additionalNotesSettings",
+      addonsSettings: "addonsSettings",
+      discountCodesSettings: "discountCodesSettings",
+      expressPaymentsSettings: "expressPaymentsSettings",
+      trustBadgesSettings: "trustBadgesSettings",
+    };
+    Object.entries(snapshotFields).forEach(([snapshotKey, cartKey]) => {
+      if (winnerSnapshot[snapshotKey] !== undefined) {
+        cart[cartKey] = winnerSnapshot[snapshotKey];
+      }
+    });
+
+    const { abTest: _activeAbTest, ...winnerCartSettings } =
+      winnerSnapshot.cartSettings || {};
+    cart.cartSettings = {
+      ...winnerCartSettings,
+      abTest: archivedAbTest,
+    };
+    await cart.save();
+
+    return res.json({
+      success: true,
+      message: winnerId
+        ? `A/B test archived. Variant ${winnerId} had the highest revenue.`
+        : "A/B test archived. No winner yet because no variant has recorded revenue.",
+      data: { cart, archiveRecord, abTest: archivedAbTest },
+    });
+  } catch (error) {
+    console.error("ARCHIVE A/B TEST ERROR:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 router.delete("/delete-cart", async (req, res) => {
   try {
     const { cartId } = req.body;
@@ -626,12 +841,14 @@ router.post("/cart-impression", async (req, res) => {
       });
     }
 
-    const exists = await analyticsModel.findOne({
+    const impressionQuery = {
       shop,
       sessionId,
       cartId,
       eventType: "cart_impression",
-    });
+      ...(variantId ? { "meta.variantId": variantId } : {}),
+    };
+    const exists = await analyticsModel.findOne(impressionQuery);
 
     if (exists) {
       return res.json({ success: true, duplicate: true });
@@ -901,11 +1118,19 @@ router.get("/cart-stats", async (req, res) => {
       ...(cartIdFilter ? { cartId: { $in: cartIdFilter } } : {}),
     };
 
+    const publishedCart = await cartModels
+      .findOne({ shop: cleanShop, isPublished: true })
+      .lean();
+    const activeAbTest = publishedCart?.cartSettings?.abTest;
+    const activeVariantIds =
+      activeAbTest?.enabled && activeAbTest.variantIds
+        ? Object.values(activeAbTest.variantIds).filter(Boolean)
+        : [];
+
     const [
       revenueByCart,
       analyticsByCart,
       shopAnalytics,
-      publishedCart,
       shopRevenueBreakdown,
       ordersByCartByDate,
       impressionsByCartByDate,
@@ -942,7 +1167,6 @@ router.get("/cart-stats", async (req, res) => {
         { $match: shopAnalyticsMatch },
         { $group: { _id: "$eventType", count: { $sum: 1 } } },
       ]),
-      cartModels.findOne({ shop: cleanShop, isPublished: true }).lean(),
       orderRevenueModel.aggregate([
         { $match: shopRevenueMatch },
         {
@@ -1014,6 +1238,8 @@ router.get("/cart-stats", async (req, res) => {
         {
           $match: {
             ...revenueMatch,
+            cartId: publishedCart?.cartId,
+            variantId: { $in: activeVariantIds },
             variantKey: { $exists: true, $nin: [null, ""] },
           },
         },
@@ -1037,7 +1263,9 @@ router.get("/cart-stats", async (req, res) => {
         {
           $match: {
             ...analyticsMatch,
+            cartId: publishedCart?.cartId,
             eventType: "cart_impression",
+            "meta.variantId": { $in: activeVariantIds },
             "meta.variantKey": { $exists: true, $nin: [null, ""] },
           },
         },
@@ -1157,7 +1385,7 @@ router.get("/cart-stats", async (req, res) => {
 
     const result = {};
     Object.entries(stats).forEach(
-      ([cartId, { revenue, impressions, checkouts, completedOrders, ordersByDate, impressionsByDate, revenueByDate }]) => {
+      ([cartId, { revenue, impressions, checkouts, completedOrders, ordersByDate, impressionsByDate, revenueByDate, variants }]) => {
         const numerator = completedOrders > 0 ? completedOrders : checkouts;
         const ordersByDateArr = Object.entries(ordersByDate)
           .map(([date, count]) => ({ date, totalOrders: count }))
@@ -1177,6 +1405,23 @@ router.get("/cart-stats", async (req, res) => {
               ? Math.min((numerator / impressions) * 100, 100)
               : 0,
           completedOrders,
+          aov: completedOrders > 0 ? revenue / completedOrders : 0,
+          variants: Object.fromEntries(
+            Object.entries(variants || {}).map(([variantKey, variantStats]) => [
+              variantKey,
+              {
+                ...variantStats,
+                revenuePerVisitor:
+                  variantStats.impressions > 0
+                    ? variantStats.revenue / variantStats.impressions
+                    : 0,
+                aov:
+                  variantStats.completedOrders > 0
+                    ? variantStats.revenue / variantStats.completedOrders
+                    : 0,
+              },
+            ]),
+          ),
           ordersByDate: ordersByDateArr,
         };
       }

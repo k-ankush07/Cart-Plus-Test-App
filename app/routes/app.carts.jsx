@@ -74,6 +74,7 @@ import {
     togglePublishCart,
     duplicateCart,
     syncDiscountStatus,
+    archiveAbTest,
 } from "../services/apiRoutes";
 import "../index.css";
 
@@ -338,6 +339,8 @@ function AppCartsInner({
     const [cartToUnpublish, setCartToUnpublish] = useState(null);
     const [duplicatingCartId, setDuplicatingCartId] = useState(null);
     const [popoverActive, setPopoverActive] = useState(false);
+    const [cartToEndAbTest, setCartToEndAbTest] = useState(null);
+    const [endingAbTest, setEndingAbTest] = useState(false);
 
     // Table UI state
     const [selectedTab, setSelectedTab] = useState(0);
@@ -509,6 +512,43 @@ function AppCartsInner({
         setDuplicatingCartId(null);
     };
 
+    const confirmEndAbTest = async (winnerId) => {
+        if (!cartToEndAbTest || endingAbTest) return;
+        setEndingAbTest(true);
+        try {
+            const result = await archiveAbTest(
+                apiUrl,
+                cartToEndAbTest.cartId,
+                winnerId,
+            );
+            if (!result.success || !result.data?.cart) {
+                throw new Error(result.message || "Could not end the A/B test");
+            }
+
+            setCarts((prev) =>
+                prev.map((cart) =>
+                    cart.cartId === cartToEndAbTest.cartId
+                        ? result.data.cart
+                        : cart,
+                ),
+            );
+            setExpandedCarts((prev) => ({
+                ...prev,
+                [cartToEndAbTest.cartId]: true,
+            }));
+            setSelectedTab(3);
+            shopify.toast.show(result.message || `Variant ${winnerId} is now the main cart`);
+            setCartToEndAbTest(null);
+        } catch (error) {
+            console.error("END A/B TEST ERROR:", error);
+            shopify.toast.show(error.message || "Could not end the A/B test", {
+                isError: true,
+            });
+        } finally {
+            setEndingAbTest(false);
+        }
+    };
+
     // ─── Derived data ──────────────────────────────────────────────────────────
 
     const fmt = (n) =>
@@ -522,8 +562,10 @@ function AppCartsInner({
         .filter((c) => {
             if (selectedTab === 1) return c.status === "published";
             if (selectedTab === 2) return c.status !== "published";
-            // apne archive flag ke hisaab se change karna
-            if (selectedTab === 3) return !!c.cartSettings?.abTest?.archived;
+            if (selectedTab === 3) {
+                const abTest = c.cartSettings?.abTest;
+                return Boolean(abTest?.archived || abTest?.archive?.length);
+            }
             return true;
         })
         .filter((c) =>
@@ -610,6 +652,14 @@ function AppCartsInner({
     const renderCartRow = (cart, i) => {
         const cartEditorPath = `/app/cart-editor/${cart.cartId}?from=carts`;
         const abTest = getAbTest(cart);
+        const archivedAbTest = cart.cartSettings?.abTest;
+        const archivedTests = archivedAbTest?.archive?.length
+            ? [...archivedAbTest.archive].sort(
+                (a, b) => new Date(b.endedAt || 0) - new Date(a.endedAt || 0),
+            )
+            : archivedAbTest?.archived
+                ? [archivedAbTest]
+                : [];
         const isExpanded = !!expandedCarts[cart.cartId];
         const isLive = cart.status === "published";
         const s = cartStats?.[cart.cartId];
@@ -625,7 +675,7 @@ function AppCartsInner({
                     <IndexTable.Cell>
                         <CartHoverCard cart={cart}>
                             <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-                                {abTest && (
+                                {(abTest || (selectedTab === 3 && archivedTests.length > 0)) && (
                                     <span
                                         role="button"
                                         tabIndex={0}
@@ -663,7 +713,13 @@ function AppCartsInner({
                                     }}
                                 />
                                 <Text as="span">{name}</Text>
-                                {abTest && <Badge tone="success">A/B test</Badge>}
+                                {selectedTab === 3 && archivedTests.length > 0 ? (
+                                    <Badge tone="success">
+                                        {archivedTests.length} {archivedTests.length === 1 ? "test" : "tests"}
+                                    </Badge>
+                                ) : abTest ? (
+                                    <Badge tone="success">A/B test</Badge>
+                                ) : null}
                                 <span
                                     style={{ display: "inline-flex", cursor: "pointer" }}
                                     onClick={(e) => {
@@ -683,15 +739,18 @@ function AppCartsInner({
 
                     <IndexTable.Cell>
                         <InlineStack gap="200" align="end" blockAlign="center" wrap={false}>
-                            <Button
-                                size="slim"
-                                onClick={() => {
-                                    // apna actual A/B start/end flow yahan lagana
-                                    navigate(`${cartEditorPath}&tab=ab-test`);
-                                }}
-                            >
-                                {abTest ? "End A/B test" : "Run A/B test"}
-                            </Button>
+                            {selectedTab !== 3 && (
+                                <Button
+                                    size="slim"
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        if (abTest) setCartToEndAbTest(cart);
+                                        else navigate(`${cartEditorPath}&tab=ab-test`);
+                                    }}
+                                >
+                                    {abTest ? "End A/B test" : "Run A/B test"}
+                                </Button>
+                            )}
 
                             <Tooltip
                                 content={
@@ -780,8 +839,89 @@ function AppCartsInner({
                     </IndexTable.Cell>
                 </IndexTable.Row>
 
+                {selectedTab === 3 &&
+                    isExpanded &&
+                    archivedTests.flatMap((test, testIndex) => {
+                        const testId = test.id || `${cart.cartId}-archive-${testIndex}`;
+                        const testVariants = test.variants || [];
+                        const startDate = test.startedAt
+                            ? new Date(test.startedAt).toLocaleDateString()
+                            : "";
+                        const endDate = test.endedAt
+                            ? new Date(test.endedAt).toLocaleDateString()
+                            : "";
+
+                        return [
+                            <IndexTable.Row
+                                key={`${testId}-summary`}
+                                id={`${testId}-summary`}
+                                position={1000 + i * 100 + testIndex * 10}
+                            >
+                                <IndexTable.Cell>
+                                    <div style={{ paddingLeft: 28 }}>
+                                        <Text as="span" fontWeight="semibold">
+                                            Test {testIndex + 1}
+                                        </Text>
+                                        <Text as="span" variant="bodySm" tone="subdued">
+                                            {" "}
+                                            {startDate}
+                                            {endDate ? ` – ${endDate}` : ""}
+                                        </Text>
+                                    </div>
+                                </IndexTable.Cell>
+                                {shownMetrics.map((metric) => (
+                                    <IndexTable.Cell key={`${testId}-${metric.id}`} />
+                                ))}
+                                <IndexTable.Cell />
+                            </IndexTable.Row>,
+                            ...testVariants.map((variantId, variantIndex) => {
+                                const variantStats = test.variantStats?.[variantId] || {};
+                                const variantCart = {
+                                    ...cart,
+                                    createdAt: test.startedAt || cart.createdAt,
+                                };
+                                return (
+                                    <IndexTable.Row
+                                        key={`${testId}-${variantId}`}
+                                        id={`${testId}-${variantId}`}
+                                        position={1001 + i * 100 + testIndex * 10 + variantIndex}
+                                    >
+                                        <IndexTable.Cell>
+                                            <div
+                                                style={{
+                                                    paddingLeft: 52,
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 8,
+                                                }}
+                                            >
+                                                <Text as="span">Variant {variantId}</Text>
+                                                {test.weights?.[variantId] != null && (
+                                                    <Text as="span" variant="bodySm" tone="subdued">
+                                                        {test.weights[variantId]}% of traffic
+                                                    </Text>
+                                                )}
+                                                {variantId === test.winnerId && (
+                                                    <Badge tone="success">Winner</Badge>
+                                                )}
+                                                {variantId === test.controlId && <Badge>Control</Badge>}
+                                            </div>
+                                        </IndexTable.Cell>
+                                        {shownMetrics.map((metric) => (
+                                            <IndexTable.Cell key={`${testId}-${variantId}-${metric.id}`}>
+                                                {metricValue(metric.id, variantCart, variantStats)}
+                                            </IndexTable.Cell>
+                                        ))}
+                                        <IndexTable.Cell />
+                                    </IndexTable.Row>
+                                );
+                            }),
+                        ];
+                    })}
+
                 {/* ── A/B test variant rows (shown when the chevron is expanded) ── */}
-                {abTest &&
+                {selectedTab !== 3 &&
+                    abTest &&
                     isExpanded &&
                     abTest.variants.map((vid, vi) => {
                         const pct =
@@ -1076,6 +1216,95 @@ function AppCartsInner({
                     </BlockStack>
                 </Layout.Section>
             </Layout>
+
+            <Modal
+                open={Boolean(cartToEndAbTest)}
+                onClose={() => {
+                    if (!endingAbTest) setCartToEndAbTest(null);
+                }}
+                title="End A/B test"
+                size="large"
+            >
+                <Modal.Section>
+                    <BlockStack gap="400">
+                        <Text as="p" variant="bodyMd">
+                            Choose which variant will be your main cart. Its settings will be applied,
+                            and the other variants will be archived.
+                        </Text>
+                        <div style={{ overflowX: "auto" }}>
+                            <table
+                                style={{
+                                    width: "100%",
+                                    minWidth: 760,
+                                    borderCollapse: "collapse",
+                                    textAlign: "left",
+                                }}
+                            >
+                                <thead>
+                                    <tr>
+                                        {["Variant", "Visitors", "Total revenue", "Orders", "AOV", "Conversion rate", "Revenue per visitor", "Actions"].map((heading) => (
+                                            <th
+                                                key={heading}
+                                                style={{
+                                                    padding: "10px 8px",
+                                                    borderBottom: "1px solid #e1e3e5",
+                                                    color: "#616161",
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    whiteSpace: "nowrap",
+                                                }}
+                                            >
+                                                {heading}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(cartToEndAbTest?.cartSettings?.abTest?.variants || []).map((variantId) => {
+                                        const variantStats =
+                                            cartStats?.[cartToEndAbTest.cartId]?.variants?.[variantId] || {};
+                                        const visitorCount = variantStats.impressions || 0;
+                                        const revenue = variantStats.revenue || 0;
+                                        const orders = variantStats.completedOrders || 0;
+                                        const aov = variantStats.aov ?? (orders ? revenue / orders : 0);
+                                        const conversionRate = variantStats.conversionRate || 0;
+                                        const revenuePerVisitor =
+                                            variantStats.revenuePerVisitor ??
+                                            (visitorCount ? revenue / visitorCount : 0);
+
+                                        return (
+                                            <tr key={variantId}>
+                                                <td style={{ padding: "12px 8px", borderBottom: "1px solid #e1e3e5", whiteSpace: "nowrap" }}>
+                                                    <Text as="span" fontWeight="semibold">Variant {variantId}</Text>
+                                                </td>
+                                                <td style={{ padding: "12px 8px", borderBottom: "1px solid #e1e3e5" }}>{visitorCount.toLocaleString()}</td>
+                                                <td style={{ padding: "12px 8px", borderBottom: "1px solid #e1e3e5", whiteSpace: "nowrap" }}>{fmt(revenue)}</td>
+                                                <td style={{ padding: "12px 8px", borderBottom: "1px solid #e1e3e5" }}>{orders.toLocaleString()}</td>
+                                                <td style={{ padding: "12px 8px", borderBottom: "1px solid #e1e3e5", whiteSpace: "nowrap" }}>{fmt(aov)}</td>
+                                                <td style={{ padding: "12px 8px", borderBottom: "1px solid #e1e3e5", whiteSpace: "nowrap" }}>{conversionRate.toFixed(0)}%</td>
+                                                <td style={{ padding: "12px 8px", borderBottom: "1px solid #e1e3e5", whiteSpace: "nowrap" }}>{fmt(revenuePerVisitor)}</td>
+                                                <td style={{ padding: "12px 8px", borderBottom: "1px solid #e1e3e5" }}>
+                                                    <Button
+                                                        size="slim"
+                                                        loading={endingAbTest}
+                                                        disabled={endingAbTest}
+                                                        onClick={() => confirmEndAbTest(variantId)}
+                                                    >
+                                                        Choose {variantId}
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                        <Banner tone="info">
+                            The chosen variant becomes the main cart. The test results will be saved in the A/B test archive.
+                        </Banner>
+                    </BlockStack>
+                </Modal.Section>
+            </Modal>
 
             {/* Publish Modal */}
             <Modal

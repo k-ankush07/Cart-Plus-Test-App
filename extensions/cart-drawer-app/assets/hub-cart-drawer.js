@@ -103,7 +103,9 @@ window._hubSyncCartPageIfOnCartPage = function () {
 
 function trackCartImpressionUnique() {
   const cartId = window.__HUB_ACTIVE_CART__?.cartId || null;
-  const key = `hub_cart_impression_tracked_${cartId}`;
+  const variantId =
+    window.__HUB_ACTIVE_CART__?.abTestAssignment?.variantId || null;
+  const key = `hub_cart_impression_tracked_${cartId}_${variantId || "default"}`;
 
   if (localStorage.getItem(key)) {
     return;
@@ -122,7 +124,7 @@ function trackCartImpressionUnique() {
       cartId,
       sessionId: getSessionId(),
       userAgent: navigator.userAgent,
-      variantId: window.__HUB_ACTIVE_CART__?.abTestAssignment?.variantId || null,
+      variantId,
       variantKey: window.__HUB_ACTIVE_CART__?.abTestAssignment?.variantKey || null,
     }),
   })
