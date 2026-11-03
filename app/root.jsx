@@ -14,7 +14,7 @@ export default function App() {
   const { apiKey } = useLoaderData();
   const location = useLocation();
 
-  const noPaddingRoutes = ["/app/design-cart"];
+  const noPaddingRoutes = ["/app/design-cart", "/app"];
   const isNoPaddingRoute = noPaddingRoutes.some((path) =>
     location.pathname.startsWith(path)
   );

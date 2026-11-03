@@ -182,6 +182,8 @@ export const action = async ({ request }) => {
     let addonRevenue = 0;
     let subscriptionRevenue = 0;
     let baseRevenue = 0;
+    // App-attributed lines (upsell / add-on / subscription) for product analytics
+    const trackedItems = [];
 
     for (const item of lineItems) {
       const lineTotal = parseFloat(item.price || 0) * (item.quantity || 1);
@@ -194,12 +196,25 @@ export const action = async ({ request }) => {
       const isSubscription =
         !!item.selling_plan_allocation || !!props._hub_subscription;
 
+      const track = (module) =>
+        trackedItems.push({
+          title: item.title || item.name || "Unknown product",
+          productId: item.product_id ? String(item.product_id) : null,
+          variantId: item.variant_id ? String(item.variant_id) : null,
+          quantity: item.quantity || 1,
+          revenue: lineTotal,
+          module,
+        });
+
       if (props._hub_addon || props.__upcartAddon) {
         addonRevenue += lineTotal;
+        track("Add-ons");
       } else if (props.__upcartRecommendation) {
         upsellRevenue += lineTotal;
+        track("Upsell");
       } else if (isSubscription) {
         subscriptionRevenue += lineTotal;
+        track("Subscriptions");
       } else if (props._hub_reward || props._triggered_reward) {
         // tracked but contributes no revenue
       } else {
@@ -226,6 +241,7 @@ export const action = async ({ request }) => {
         addonRevenue,
         subscriptionRevenue,
         baseRevenue,
+        items: trackedItems,
         variantId: abAttributes["Cart Plus A/B Variant ID"] || null,
         variantKey: abAttributes["Cart Plus A/B Variant"] || null,
         attributedCartId: abAttributes["Cart Plus Cart ID"] || null,

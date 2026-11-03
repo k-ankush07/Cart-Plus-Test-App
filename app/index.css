@@ -145,11 +145,16 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding: 16px 24px 32px;
+    padding: 16px 24px 0px;
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    width: 100%;
     box-sizing: border-box;
+}
+
+._page_yc9hy_1 .Polaris-Page.Polaris-Page--fullWidth {
+    padding-bottom: 0;
+    width: 100%;
 }
 
 .cart-app__container {

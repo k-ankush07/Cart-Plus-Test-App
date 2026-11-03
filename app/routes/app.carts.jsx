@@ -152,7 +152,6 @@ function Switch({ checked, disabled, onChange }) {
 const PLAN_ORDER_LIMITS = {
   free: 100,
   starter: 200,
-  growth: 500,
   advance: Infinity,
   unlimited: Infinity,
 };

@@ -162,6 +162,20 @@ const orderRevenueSchema = new mongoose.Schema({
   upsellRevenue: { type: Number, default: 0 },
   addonRevenue: { type: Number, default: 0 },
   subscriptionRevenue: { type: Number, default: 0 },
+  items: {
+    type: [
+      {
+        _id: false,
+        title: String,
+        productId: { type: String, default: null },
+        variantId: { type: String, default: null },
+        quantity: { type: Number, default: 1 },
+        revenue: { type: Number, default: 0 },
+        module: String, // Upsell | Add-ons | Subscriptions
+      },
+    ],
+    default: [],
+  },
   variantId: { type: String, default: null },
   variantKey: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },

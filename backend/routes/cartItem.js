@@ -24,7 +24,6 @@ const router = express.Router();
 const PLAN_ORDER_LIMITS = {
   free: 50,
   starter: 200,
-  growth: 500,
   advance: 1000,
   unlimited: Infinity,
 };
@@ -924,6 +923,8 @@ router.post("/order-revenue", async (req, res) => {
       variantId,
       variantKey,
       attributedCartId,
+      orderNumber,
+      items,
     } = req.body;
 
     if (!shop || !cartToken) {
@@ -1037,6 +1038,8 @@ router.post("/order-revenue", async (req, res) => {
       addonRevenue: addonRevenue || 0,
       subscriptionRevenue: subscriptionRevenue || 0,
       baseRevenue: baseRevenue || 0,
+      ...(orderNumber ? { orderNumber } : {}),
+      items: Array.isArray(items) ? items.slice(0, 100) : [],
       createdAt: new Date(),
       ...(validVariantAssignment ? { variantId, variantKey } : {}),
     };
@@ -1502,9 +1505,62 @@ router.get("/revenue-stats", async (req, res) => {
           subscriptionRevenue: { $sum: "$subscriptionRevenue" },
           baseRevenue: { $sum: "$baseRevenue" },
           orderCount: { $sum: 1 },
+          upsellOrderCount: {
+            $sum: { $cond: [{ $gt: [{ $ifNull: ["$upsellRevenue", 0] }, 0] }, 1, 0] },
+          },
         },
       },
     ]);
+
+    // ───── Unique sessions per event (for Total Carts / Abandoned Carts) ─────
+    const uniqueSessionStats = await analyticsModel.aggregate([
+      { $match: { shop: cleanShop, createdAt: dateFilter } },
+      { $group: { _id: { eventType: "$eventType", sessionId: "$sessionId" } } },
+      { $group: { _id: "$_id.eventType", count: { $sum: 1 } } },
+    ]);
+    const uniqueSessions = {};
+    uniqueSessionStats.forEach((item) => {
+      uniqueSessions[item._id] = item.count;
+    });
+
+    // ───── Best-performing products (app-attributed lines, by revenue) ─────
+    const topProductsRaw = await orderRevenueModel.aggregate([
+      { $match: { shop: cleanShop, createdAt: dateFilter } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: { title: "$items.title", module: "$items.module" },
+          quantity: { $sum: "$items.quantity" },
+          revenue: { $sum: "$items.revenue" },
+        },
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 10 },
+    ]);
+    const topProducts = topProductsRaw.map((p) => ({
+      name: p._id.title,
+      module: p._id.module,
+      quantity: p.quantity,
+      revenue: p.revenue,
+    }));
+
+    // ───── Most recent orders (scoped to date range) ─────
+    const recentOrdersRaw = await orderRevenueModel
+      .find({ shop: cleanShop, createdAt: dateFilter })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+    const recentOrders = recentOrdersRaw.map((o) => ({
+      orderNumber: o.orderNumber ?? null,
+      orderId: o.orderId,
+      currency: o.currency || "USD",
+      createdAt: o.createdAt,
+      upsellRevenue: o.upsellRevenue || 0,
+      addonRevenue: o.addonRevenue || 0,
+      subscriptionRevenue: o.subscriptionRevenue || 0,
+      totalRevenue: (o.totalRevenue || 0) + (o.baseRevenue || 0),
+      itemCount: (o.items || []).reduce((n, i) => n + (i.quantity || 1), 0),
+    }));
 
     // ───── Daily revenue (scoped to date range) ─────
     const dailyRevenue = await orderRevenueModel.aggregate([
@@ -1599,11 +1655,14 @@ router.get("/revenue-stats", async (req, res) => {
         revenue: {
           totals: totals || {
             totalRevenue: 0, upsellRevenue: 0, addonRevenue: 0,
-            subscriptionRevenue: 0, baseRevenue: 0, orderCount: 0,
+            subscriptionRevenue: 0, baseRevenue: 0, orderCount: 0, upsellOrderCount: 0,
           },
           daily: dailyRevenue,
         },
         analytics: analyticsFormatted,
+        uniqueSessions,
+        topProducts,
+        recentOrders,
         dailyAnalytics: dailyAnalyticsMap,
         checkoutsCompleted,
         checkoutsByDate,
