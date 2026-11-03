@@ -411,7 +411,7 @@ export default function Designcart() {
             .then((data) => {
                 if (data?.success) {
                     shopify.toast.show("Cart saved as draft");
-                    navigate(`/app/cart-editor/${tempCartId}?from=design-cart`, { replace: true });
+                    navigate(`/app/carts/editor/${tempCartId}?from=design-cart`, { replace: true });
                 } else {
                     setSaving(false);
                 }

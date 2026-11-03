@@ -371,7 +371,7 @@ function buildPrimarySetupTasks(
     shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
   const cartEditorPath = liveCart?.cartId
-    ? `/app/cart-editor/${liveCart.cartId}?from=home`
+    ? `/app/carts/editor/${liveCart.cartId}?from=home`
     : "/app/carts";
 
   return [
@@ -427,7 +427,7 @@ function buildSecondarySetupTasks(
 ) {
   const cartId = liveCart?.cartId;
   const goTo = (module) => () =>
-    cartId && navigate(`/app/cart-editor/${cartId}?from=home&module=${module}`);
+    cartId && navigate(`/app/carts/editor/${cartId}?from=home&module=${module}`);
   const storeHandle =
     shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
@@ -1422,7 +1422,7 @@ function DashboardInner({
                         cart._id.toString().trim()) ||
                       `row-${i}`;
 
-                    const cartEditorPath = `/app/cart-editor/${cart.cartId}?from=home`;
+                    const cartEditorPath = `/app/carts/editor/${cart.cartId}?from=home`;
                     const abTest = getAbTest(cart);
                     const isExpanded = !!expandedCarts[cart.cartId];
 
@@ -1801,7 +1801,7 @@ function DashboardInner({
                       disabled={!cartIdForFeatures}
                       onClick={() =>
                         navigate(
-                          `/app/cart-editor/${cartIdForFeatures}?from=home&module=${f.module}`,
+                          `/app/carts/editor/${cartIdForFeatures}?from=home&module=${f.module}`,
                         )
                       }
                     >
