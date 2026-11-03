@@ -161,7 +161,6 @@ const ALL_METRICS = [
     { id: "created", title: "Created" },
     { id: "visitors", title: "Total visitors" },
     { id: "revenue", title: "Total Revenue" },
-    { id: "extra", title: "Extra Revenue" },
     { id: "conv", title: "Conv Rate (%)" },
     { id: "rpv", title: "Rev per visitor" },
     { id: "aov", title: "AOV" },
