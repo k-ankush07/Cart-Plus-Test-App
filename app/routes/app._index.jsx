@@ -1136,8 +1136,8 @@ function DashboardInner({
             src="https://cartplus.io/cartplus-img/Cart%20Plus.svg"
             alt="Cart Plus"
             style={{
-              height: 48,
-              width: 48,
+              height: 45,
+              width: 45,
               objectFit: "contain",
               borderRadius: 8,
             }}
