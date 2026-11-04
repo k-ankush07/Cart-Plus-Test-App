@@ -1000,16 +1000,22 @@ router.post("/order-revenue", async (req, res) => {
     }
     // ────────────────────────────────────────────────────────────────────────
 
+    // Shopify can deliver orders/paid more than once for the same order.
+    // Only count the order the first time its revenue record is created.
+    const alreadyCounted = await orderRevenueModel.exists({ orderId: cartToken });
+
     const today = new Date().toISOString().slice(0, 10);
-    await cartOrderCountModel.findOneAndUpdate(
-      { shop, cartId: publishedCart.cartId, date: today },
-      {
-        $inc: { totalOrders: 1 },
-        $set: { updatedAt: new Date() },
-        $setOnInsert: { createdAt: new Date() },
-      },
-      { upsert: true, new: true },
-    );
+    if (!alreadyCounted) {
+      await cartOrderCountModel.findOneAndUpdate(
+        { shop, cartId: publishedCart.cartId, date: today },
+        {
+          $inc: { totalOrders: 1 },
+          $set: { updatedAt: new Date() },
+          $setOnInsert: { createdAt: new Date() },
+        },
+        { upsert: true, new: true },
+      );
+    }
 
     // ─── Re-check after incrementing ────────────────────────────────────────
     const newMonthlyCount = monthlyOrderCount + 1;
@@ -1535,7 +1541,7 @@ router.get("/revenue-stats", async (req, res) => {
         },
       },
       { $sort: { revenue: -1 } },
-      { $limit: 10 },
+      { $limit: 5 },
     ]);
     const topProducts = topProductsRaw.map((p) => ({
       name: p._id.title,
@@ -1548,7 +1554,7 @@ router.get("/revenue-stats", async (req, res) => {
     const recentOrdersRaw = await orderRevenueModel
       .find({ shop: cleanShop, createdAt: dateFilter })
       .sort({ createdAt: -1 })
-      .limit(10)
+      .limit(5)
       .lean();
     const recentOrders = recentOrdersRaw.map((o) => ({
       orderNumber: o.orderNumber ?? null,

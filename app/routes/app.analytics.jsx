@@ -618,11 +618,24 @@ export default function Analytics() {
   };
 
 
-  const tableRows = (stats?.topProducts ?? []).map((p) => [
+  const tableRows = (stats?.topProducts ?? []).slice(0, 5).map((p) => [
     p.name,
     p.quantity,
     fmt(p.revenue, resolvedCurrency),
     p.module,
+  ]);
+
+  const recentOrderRows = (stats?.recentOrders ?? []).slice(0, 5).map((o) => [
+    o.orderNumber ? `#${o.orderNumber}` : `…${String(o.orderId).slice(-6)}`,
+    new Date(o.createdAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+    fmt(o.upsellRevenue, o.currency),
+    fmt(o.addonRevenue, o.currency),
+    fmt(o.subscriptionRevenue, o.currency),
+    fmt(o.totalRevenue, o.currency),
   ]);
 
   // ── CSV download ──────────────────────────────────────────────────────────
@@ -867,21 +880,63 @@ export default function Analytics() {
             </Card>
           </div>
 
-          {/* ── Top products ── */}
-          {tableRows.length > 0 && (
-            <Card padding="0">
-              <Box padding="400">
+          {/* ── Best-performing products ── */}
+          <Card padding="0">
+            <Box padding="400">
+              <BlockStack gap="100">
                 <Text variant="headingMd" as="h4">
-                  Top performing products
+                  Best-performing products
+                </Text>
+                <Text variant="bodySm" tone="subdued" as="p">
+                  All products sold (upsells, add-ons, subscriptions and regular
+                  products), ranked by revenue in the selected period.
+                </Text>
+              </BlockStack>
+            </Box>
+            {loading ? (
+              <Box padding="400">
+                <Text tone="subdued">Loading…</Text>
+              </Box>
+            ) : tableRows.length === 0 ? (
+              <Box padding="400" paddingBlockStart="0">
+                <Text tone="subdued">
+                  No product sales were recorded in this period yet.
                 </Text>
               </Box>
+            ) : (
               <DataTable
                 columnContentTypes={["text", "numeric", "numeric", "text"]}
-                headings={["Product", "Quantity sold", "Revenue", "Module"]}
+                headings={["Product", "Quantity sold", "Revenue", "Source"]}
                 rows={tableRows}
               />
-            </Card>
-          )}
+            )}
+          </Card>
+
+          {/* ── Most recent orders ── */}
+          <Card padding="0">
+            <Box padding="400">
+              <Text variant="headingMd" as="h4">
+                Most recent orders
+              </Text>
+            </Box>
+            {loading ? (
+              <Box padding="400">
+                <Text tone="subdued">Loading…</Text>
+              </Box>
+            ) : recentOrderRows.length === 0 ? (
+              <Box padding="400" paddingBlockStart="0">
+                <Text tone="subdued">
+                  No orders were recorded in this period yet.
+                </Text>
+              </Box>
+            ) : (
+              <DataTable
+                columnContentTypes={["text", "text", "numeric", "numeric", "numeric", "numeric"]}
+                headings={["Order", "Date", "Upsell", "Add-ons", "Subscriptions", "Order revenue"]}
+                rows={recentOrderRows}
+              />
+            )}
+          </Card>
         </BlockStack>
       </Page>
     </div>

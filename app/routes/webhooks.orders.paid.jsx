@@ -218,7 +218,9 @@ export const action = async ({ request }) => {
       } else if (props._hub_reward || props._triggered_reward) {
         // tracked but contributes no revenue
       } else {
+        // Any other (regular) product still counts toward best-performing products
         baseRevenue += lineTotal;
+        track("Other");
       }
     }
 
