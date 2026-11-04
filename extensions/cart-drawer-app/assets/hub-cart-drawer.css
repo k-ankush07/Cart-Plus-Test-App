@@ -1457,6 +1457,7 @@ span.hub-total-arrow svg {
   font-weight: 600;
   margin-bottom: 5px;
   text-align: center;
+  line-height: 13px;
 }
 
 .cart-additional-notes__textarea:focus,
@@ -3436,3 +3437,13 @@ select.hub-compact-variant {
     gap: 5px;
     flex-wrap: wrap;
 }
+
+.hub-upsell-side-panel.upsell-products .price.cart-plus-public-component-upsell-tile__price-row {
+    justify-content: center;
+}
+
+.hub-upsell-side-panel.upsell-products .upcart-internal-component-upsell-tile__rating.hub-rating-slot.cart-plus-public-component-upsell-tile__rating-row {
+    justify-content: center;
+}
+
+@keyframes hubCompactSpin { to { transform: rotate(360deg); } }

@@ -112,12 +112,7 @@ window.cartPlusRenderEmptyUpsell = async function (blockId) {
     return;
   }
 
-  const layout =
-    s.layout && s.layout !== "row"
-      ? s.layout
-      : s.direction === "carousel"
-        ? "carousel"
-        : "list";
+  const layout = window.cartPlusUpsellLayout(s);
   const ds = window.__HUB_ACTIVE_CART__?.designSettings || {};
 
   // Side panel: nothing inside the empty cart, the strip sits beside it

@@ -635,7 +635,6 @@ export default function Upsells({
           flexDirection: "column",
           gap: 6,
           padding: 6,
-          ...(panelOnLeft ? { paddingRight: 10 } : { paddingLeft: 10 }),
           boxSizing: "border-box",
           zIndex: 5,
           background:

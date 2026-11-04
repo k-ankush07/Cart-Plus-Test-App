@@ -121,8 +121,16 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
   scrollbar-width: none;      
   -ms-overflow-style: none;    
 }
+
+.cart-plus-upsells-side-panel {
+    padding: 6px;
+}
 .cart-plus-upsells-side-panel::-webkit-scrollbar {
   display: none;        
+}
+
+.cart-plus-upsells-side-panel .rating.cart-plus-public-component-upsell-tile__rating-row {
+    justify-content: center;
 }
 
 .cart-app--customFont,

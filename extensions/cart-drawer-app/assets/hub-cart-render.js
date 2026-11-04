@@ -1517,18 +1517,14 @@ if (savedEl) {
           );
           upsellContainer.innerHTML = "";
 
-          const upLayout =
-            upsellSettings.layout && upsellSettings.layout !== "row"
-              ? upsellSettings.layout
-              : upsellSettings.direction === "carousel"
-                ? "carousel"
-                : "list";
+         const upLayout = window.cartPlusUpsellLayout(upsellSettings);
           if (upLayout === "side" && upsellProducts.length > 0) {
             // Side panel: nothing inside the cart, the strip sits beside it (left / right as set in the editor)
             upsellContainer.style.display = "none";
             window.cartPlusRenderSidePanel?.(blockId, upsellProducts, upsellSettings);
           } else if (upsellProducts.length > 0) {
             window.cartPlusRemoveSidePanel?.(blockId);
+            upsellContainer.style.display = ""; 
             const wrapper = document.createElement("div");
             wrapper.className = "upsell-inner";
             const heading = document.createElement("h3");
@@ -1560,6 +1556,7 @@ if (savedEl) {
             if (upLayout === "compact") {
               window._cartPlusUpsellOverride = upsellSettings;
               productsDiv.innerHTML = window.cartPlusCompactHTML(upsellProducts);
+              hubUtils.applyRatings(productsDiv); 
               window._cartPlusUpsellOverride = null;
               const track = productsDiv.querySelector(".hub-compact-track");
               if (track) setTimeout(() => window.cartPlusCompactEdges(track), 0);
