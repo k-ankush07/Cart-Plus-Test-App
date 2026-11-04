@@ -25,6 +25,7 @@ const NAV_LINKS = [
   { href: "/app/sticky-cart", label: "Sticky Cart" },
   { href: "/app/pricing", label: "Pricing" },
   { href: "/app/analytics", label: "Analytics" },
+  { href: "/app/activity", label: "Activity" },
   { href: "/app/feature-board", label: "Suggest a feature" },
 ];
 
