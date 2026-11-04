@@ -201,15 +201,17 @@ const Sidebar = memo(function Sidebar({
   selectedPreviewProducts = [],
   onPreviewProductsChange,
   onPreviewLoading,
-  markets = DEFAULT_MARKETS, // [{ label, value }]
+  markets, // optional extra options [{ label, value }]
   market,
   onMarketChange,
 }) {
   /* ---------- previewing market ---------- */
-  const [localMarket, setLocalMarket] = useState(markets[0]?.value ?? "");
+  const [localMarket, setLocalMarket] = useState("");
 
   const authenticatedFetch = useAuthenticatedFetch();
   const [marketList, setMarketList] = useState([]);
+  const [primaryMarketId, setPrimaryMarketId] = useState(null);
+  const [marketsLoaded, setMarketsLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -219,9 +221,14 @@ const Sidebar = memo(function Sidebar({
         const data = await res.json();
         if (!res.ok)
           throw new Error(data?.error || `Request failed: ${res.status}`);
-        if (!cancelled) setMarketList(data.markets || []);
+        if (!cancelled) {
+          setMarketList(data.markets || []);
+          setPrimaryMarketId(data.primaryMarketId || null);
+        }
       } catch (err) {
         console.error("Failed to load markets:", err);
+      } finally {
+        if (!cancelled) setMarketsLoaded(true);
       }
     })();
     return () => {
@@ -230,17 +237,32 @@ const Sidebar = memo(function Sidebar({
   }, []);
 
   const marketOptions = [
-    ...markets,
-    ...marketList.map((m) => ({
-      label:
-        m.status && m.status !== "ACTIVE"
-          ? `${m.name} (${m.status.toLowerCase()})`
-          : m.name,
-      value: m.id,
-    })),
+    // static fallback only until the store's real markets arrive / if none exist
+    ...(markets ?? (marketList.length ? [] : DEFAULT_MARKETS)),
+    ...marketList.map((m) => {
+      const isPrimary = m.id === primaryMarketId;
+      const status =
+        m.status && m.status !== "ACTIVE" ? ` (${m.status.toLowerCase()})` : "";
+      return {
+        label: `${m.name}${isPrimary ? " (Default)" : ""}${status}`,
+        value: m.id,
+      };
+    }),
   ];
 
-  const marketValue = market ?? localMarket;
+  // pick the store's default market (else the first one) once, unless one is already chosen
+  const defaultMarketId =
+    primaryMarketId || marketList[0]?.id || marketOptions[0]?.value || "";
+  const currentMarket = market ?? localMarket;
+  const isValidSelection = marketOptions.some((o) => o.value === currentMarket);
+  const marketValue = isValidSelection ? currentMarket : defaultMarketId;
+
+  useEffect(() => {
+    if (marketsLoaded && !isValidSelection && defaultMarketId) {
+      setLocalMarket(defaultMarketId);
+      onMarketChange?.(defaultMarketId);
+    }
+  }, [marketsLoaded, isValidSelection, defaultMarketId]);
 
   const changeMarket = (v) => {
     setLocalMarket(v);

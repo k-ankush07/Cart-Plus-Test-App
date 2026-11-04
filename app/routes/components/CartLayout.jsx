@@ -136,7 +136,7 @@ const CartLayout = memo(function CartLayout({
       setPreviewProducts(lastPreviewRef.current);
     }
   };
-  const [selectedMarket, setSelectedMarket] = useState("IN");
+  const [selectedMarket, setSelectedMarket] = useState(""); // Sidebar selects the store's primary market once loaded
 
   // Sync state when cart prop changes (after switching carts via dropdown)
   useEffect(() => {
@@ -669,10 +669,6 @@ const CartLayout = memo(function CartLayout({
             selectedPreviewProducts={previewProducts}
             onPreviewProductsChange={setPreviewProducts}
             onPreviewLoading={setPreviewLoading}
-            markets={[
-              { label: "Default (India)", value: "IN" },
-              { label: "United States", value: "US" },
-            ]}
             market={selectedMarket}
             onMarketChange={setSelectedMarket}
             customItems={customItems}
