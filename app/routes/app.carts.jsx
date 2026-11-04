@@ -765,7 +765,6 @@ function AppCartsInner({
                   </span>
                 )}
 
-                {/* status dot: green = live, red = draft */}
                 <span
                   style={{
                     width: 10,

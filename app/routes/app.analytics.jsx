@@ -375,10 +375,6 @@ export const loader = async ({ request }) => {
   const defaultStartISO = defaultStart.toISOString();
   const defaultEndISO = defaultEnd.toISOString();
 
-  // Do NOT fetch stats here: the component already fetches on mount (and on
-  // every range change). Fetching in the loader too only froze navigation for
-  // seconds while duplicating the same request. Render instantly; load stats
-  // client-side with the existing "Loading…" state.
   return {
     initialStats: null,
     shop: shopDomain,
