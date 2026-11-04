@@ -449,10 +449,13 @@ export default function Activity() {
   const { shop, apiUrl, currency: shopCurrency } = useLoaderData();
   const navigate = useNavigate();
 
-  const [range, setRange] = useState(() => ({
-    start: new Date(),
-    end: new Date(),
-  }));
+  const [range, setRange] = useState(() => {
+    const end = new Date();
+    end.setHours(0, 0, 0, 0);
+    const start = new Date(end);
+    start.setDate(start.getDate() - 29);
+    return { start, end };
+  });
   const startISO = range.start.toISOString();
   const endISO = range.end.toISOString();
   // Persist the dropdown in the URL (?type=cart|all) without re-running the loader
@@ -579,7 +582,6 @@ export default function Activity() {
           mostAdded: attachProductImage(mostAdded),
           bestSelling: attachProductImage(bestSelling),
         });
-       
       } catch (error) {
         console.error("LOAD TOP PRODUCTS ERROR:", error);
       } finally {
