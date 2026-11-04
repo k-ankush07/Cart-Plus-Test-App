@@ -74,8 +74,8 @@ function _deleteBtn(key, title, iconColor = "currentColor") {
 function _unitPriceBlock(ctx) {
   if (ctx.isReward) {
     return ctx.isTriggeredReward && ctx.item.price > 0
-      ? `<p class="hub-item-reward-badge">Free</p><p class="hub-item-unit-price"><s>${hubUtils.formatMoney(ctx.item.price)}</s></p>`
-      : `<p class="hub-item-reward-badge">Free</p><p class="hub-item-unit-price">${hubUtils.formatMoney(ctx.item.price)}</p>`;
+      ? `<p class="hub-item-reward-badge">${window.cartPlusTextHtml("free")}</p><p class="hub-item-unit-price"><s>${hubUtils.formatMoney(ctx.item.price)}</s></p>`
+      : `<p class="hub-item-reward-badge">${window.cartPlusTextHtml("free")}</p><p class="hub-item-unit-price">${hubUtils.formatMoney(ctx.item.price)}</p>`;
   }
   return `
     <div class="hub-item-unit-price-wrap">
@@ -84,7 +84,7 @@ function _unitPriceBlock(ctx) {
       ${
         ctx.hasCompare
           ? `<span class="hub-item-save" style="color:${ctx.savingsColor};
-      background:${hexToRGBA(ctx.savingsColor, 0.1)};">${ctx.savingsText} ${hubUtils.formatMoney(ctx.unitSave * ctx.item.quantity)}</span>`
+      background:${hexToRGBA(ctx.savingsColor, 0.1)};">${window.cartPlusSaveHtml(ctx.savingsText, hubUtils.formatMoney(ctx.unitSave * ctx.item.quantity))}</span>`
           : ""
       }
     </div>
@@ -258,20 +258,20 @@ function subscriptionItemHTML(ctx) {
   const totalSave = unitSave * (ctx.singleItemPrice ? 1 : item.quantity);
 
   const priceRow = isReward
-    ? `<p class="hub-price hub-price-free">Free</p>
+    ? `<p class="hub-price hub-price-free">${window.cartPlusTextHtml("free")}</p>
        <div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
          <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
            ${hubUtils.formatMoney(lineTotal)}
          </span>
          ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price" style="color:${colorItems};">${hubUtils.formatMoney(compareTotal)}</span>` : ""}
-         ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(totalSave)}</span>` : ""}
+         ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${window.cartPlusSaveHtml(savingsText, hubUtils.formatMoney(totalSave))}</span>` : ""}
        </div>`
     : `<div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
          <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
            ${hubUtils.formatMoney(lineTotal)}
          </span>
          ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price" style="color:${colorItems};">${hubUtils.formatMoney(compareTotal)}</span>` : ""}
-         ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(totalSave)}</span>` : ""}
+         ${hasCompare && showStrikethrough ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${window.cartPlusSaveHtml(savingsText, hubUtils.formatMoney(totalSave))}</span>` : ""}
        </div>
        ${saveHtml}`;
 
@@ -339,13 +339,13 @@ function modernItemHTML(ctx) {
   const totalSave = unitSave * (ctx.singleItemPrice ? 1 : item.quantity);
 
   const priceRow = `
-    ${isReward ? `<p class="hub-price hub-price-free">Free</p>` : ""}
+    ${isReward ? `<p class="hub-price hub-price-free">${window.cartPlusTextHtml("free")}</p>` : ""}
     <div class="hub-item-price-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span class="hub-item-unit-price${hasCompare && showStrikethrough ? " hub-item-unit-price--sale" : ""}">
         ${hubUtils.formatMoney(lineTotal)}
       </span>
       ${hasCompare && showStrikethrough ? `<span class="hub-item-compare-price" style="color:${colorItems};">${hubUtils.formatMoney(compareTotal)}</span>` : ""}
-      ${hasCompare && showStrikethrough && showSavings && !isReward ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(totalSave)}</span>` : ""}
+      ${hasCompare && showStrikethrough && showSavings && !isReward ? `<span class="hub-item-save" style="color:${savingsColor};background:${hexToRGBA(savingsColor, 0.1)};">${window.cartPlusSaveHtml(savingsText, hubUtils.formatMoney(totalSave))}</span>` : ""}
     </div>
     `;
 

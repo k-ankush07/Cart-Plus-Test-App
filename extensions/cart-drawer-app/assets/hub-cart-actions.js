@@ -925,7 +925,7 @@ window.hubChangeVariantOption = async function (selectEl) {
         const totalSave = unitSave * newItem.quantity;
         const savingsText =
           window.__HUB_ACTIVE_CART__?.cartSettings?.savingsText || "Save";
-        saveBadgeEl.textContent = `${savingsText} ${hubUtils.formatMoney(totalSave)}`;
+        saveBadgeEl.textContent = window.cartPlusSaveText(savingsText, hubUtils.formatMoney(totalSave));
         saveBadgeEl.style.display = "";
       } else {
         saveBadgeEl.style.display = "none";

@@ -5,6 +5,7 @@ import {
 } from "../utils/cartItemOptions";
 import { backgroundToCss } from "../utils/background";
 import DeleteGlyph from "../ui/DeleteGlyph";
+import { savingsLabel } from "../utils/cartTexts";
 
 // "Products in cart" options (cartSettings.cartItem) for the rows below
 const ItemOpts = createContext(CART_ITEM_DEFAULTS);
@@ -440,7 +441,7 @@ function ClassicLayout({
                   borderRadius: "14px",
                 }}
               >
-                {cartSettings.savingsText} {item.savePct}%
+                {savingsLabel(cartSettings.savingsText, money(currency, item.compareAt - item.price))}
               </div>
             )}
             <DiscountBadge
@@ -608,7 +609,7 @@ function SubscriptionLayout({
                   lineHeight: "18px",
                 }}
               >
-                {cartSettings.savingsText} {item.savePct}%
+                {savingsLabel(cartSettings.savingsText, money(currency, item.compareAt - item.price))}
               </span>
             )}
           </div>
@@ -750,7 +751,7 @@ function ModernLayout({
                     lineHeight: "18px",
                   }}
                 >
-                  {cartSettings.savingsText} {item.savePct}%
+                  {savingsLabel(cartSettings.savingsText, money(currency, item.compareAt - item.price))}
                 </span>
               )}
             </div>

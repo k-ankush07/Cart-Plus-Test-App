@@ -1,3 +1,49 @@
+// Cart texts editable under "Edit translations" (designSettings.texts).
+// Keep the defaults in sync with app/routes/components/utils/cartTexts.js
+window.CART_PLUS_TEXT_DEFAULTS = {
+  free: "Free",
+};
+window.cartPlusText = function (key, vars) {
+  const custom = window.__HUB_ACTIVE_CART__?.designSettings?.texts?.[key];
+  let text =
+    typeof custom === "string" && custom.trim()
+      ? custom
+      : window.CART_PLUS_TEXT_DEFAULTS[key] ?? "";
+  Object.keys(vars || {}).forEach((k) => {
+    text = text.split(`{{${k}}}`).join(vars[k]);
+  });
+  return text;
+};
+
+// same as cartPlusText but safe to put inside innerHTML / template strings
+window.cartPlusTextHtml = function (key, vars) {
+  return String(window.cartPlusText(key, vars)).replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+  );
+};
+
+// Item savings badge ("Save ₹205.00"). A custom "You save {{amount_saved}}" text from
+// Edit translations wins; without one the old "<savingsText> <amount>" is kept.
+window.cartPlusSaveText = function (prefix, amount) {
+  // `prefix` is cartSettings.savingsText (Preferences → Edit copy and Edit translations
+  // edit the same value). With a {{amount_saved}} placeholder the amount goes there,
+  // otherwise it is appended: "Save" → "Save ₹205.00".
+  const placeholder = /\{+\s*amount_saved\s*\}+/gi;
+  const text = String(prefix ?? "");
+  if (placeholder.test(text)) {
+    placeholder.lastIndex = 0;
+    return text.replace(placeholder, () => amount);
+  }
+  return `${text} ${amount}`;
+};
+window.cartPlusSaveHtml = function (prefix, amount) {
+  return String(window.cartPlusSaveText(prefix, amount)).replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+  );
+};
+
 window.hubUtils = {
   cartPlusApplyOfferDiscount(offer, cents) {
     const base = Math.max(0, Number(cents) || 0);

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState } from "react";
 import {
   BlockStack,
   Box,
@@ -9,62 +9,66 @@ import {
   RangeSlider,
   Text,
   Tooltip,
-} from '@shopify/polaris'
-import { PlusCircleIcon, SettingsIcon, XSmallIcon } from '@shopify/polaris-icons'
-
+} from "@shopify/polaris";
+import {
+  PlusCircleIcon,
+  SettingsIcon,
+  XSmallIcon,
+  PlayIcon,
+} from "@shopify/polaris-icons";
 /* ------------------------------------------------------------------ */
 /* Constants & helpers                                                 */
 /* ------------------------------------------------------------------ */
 
-const ALL_IDS = ['A', 'B', 'C', 'D', 'E']
-const MIN_VARIANTS = 2
-const MAX_VARIANTS = ALL_IDS.length
-const MIN_WEIGHT = 10
+const ALL_IDS = ["A", "B", "C", "D", "E"];
+const MIN_VARIANTS = 2;
+const MAX_VARIANTS = ALL_IDS.length;
+const MIN_WEIGHT = 10;
 
 // Polaris design tokens, so the colors follow your theme.
 const SEGMENT_COLORS = [
-  'var(--p-color-bg-fill-inverse)',
-  'var(--p-color-bg-fill-info)',
-  'var(--p-color-bg-fill-success)',
-  'var(--p-color-bg-fill-caution)',
-  'var(--p-color-bg-fill-magic)',
-]
-const colorOf = (id) => SEGMENT_COLORS[ALL_IDS.indexOf(id)]
+  "var(--p-color-bg-fill-inverse)",
+  "var(--p-color-bg-fill-info)",
+  "var(--p-color-bg-fill-success)",
+  "var(--p-color-bg-fill-caution)",
+  "var(--p-color-bg-fill-magic)",
+];
+const colorOf = (id) => SEGMENT_COLORS[ALL_IDS.indexOf(id)];
 
-const sum = (obj, ids) => ids.reduce((t, id) => t + (obj[id] || 0), 0)
+const sum = (obj, ids) => ids.reduce((t, id) => t + (obj[id] || 0), 0);
 
 /** Equal split that always totals 100 (remainder goes to the first variants). */
 function evenWeights(ids) {
-  const base = Math.floor(100 / ids.length)
-  let rem = 100 - base * ids.length
-  return Object.fromEntries(ids.map((id) => [id, base + (rem-- > 0 ? 1 : 0)]))
+  const base = Math.floor(100 / ids.length);
+  let rem = 100 - base * ids.length;
+  return Object.fromEntries(ids.map((id) => [id, base + (rem-- > 0 ? 1 : 0)]));
 }
 
 /** Scale weights so they total exactly 100, every variant >= MIN_WEIGHT. */
 function normalize(weights, ids) {
-  const total = sum(weights, ids)
-  if (total === 0) return evenWeights(ids)
-  const out = {}
-  let assigned = 0
+  const total = sum(weights, ids);
+  if (total === 0) return evenWeights(ids);
+  const out = {};
+  let assigned = 0;
   ids.forEach((id) => {
-    out[id] = Math.floor(((weights[id] || 0) / total) * 100)
-    assigned += out[id]
-  })
-  out[ids[0]] += 100 - assigned
+    out[id] = Math.floor(((weights[id] || 0) / total) * 100);
+    assigned += out[id];
+  });
+  out[ids[0]] += 100 - assigned;
 
   // Enforce the minimum: lift low ones, take the deficit from the largest others
   ids.forEach((id) => {
     while (out[id] < MIN_WEIGHT) {
       const donor = ids
         .filter((i) => i !== id && out[i] > MIN_WEIGHT)
-        .sort((a, b) => out[b] - out[a])[0]
-      if (!donor) break
-      const take = Math.min(out[donor] - MIN_WEIGHT, MIN_WEIGHT - out[id])
-      out[donor] -= take
-      out[id] += take
+        .sort((a, b) => out[b] - out[a])[0];
+      if (!donor) break;
+      const take = Math.min(out[donor] - MIN_WEIGHT, MIN_WEIGHT - out[id]);
+      out[donor] -= take;
+      out[id] += take;
     }
-  })
-  return out
+  });
+  return out;
 }
 
 /**
@@ -72,47 +76,47 @@ function normalize(weights, ids) {
  * (the last variant takes from the previous ones). Every variant stays >= MIN_WEIGHT.
  */
 function setWeight(weights, ids, id, raw) {
-  if (ids.length === 1) return { [id]: 100 }
+  if (ids.length === 1) return { [id]: 100 };
 
-  const idx = ids.indexOf(id)
-  const before = ids.slice(0, idx)
-  const after = ids.slice(idx + 1)
-  const out = {}
-  ids.forEach((i) => (out[i] = weights[i] || 0))
+  const idx = ids.indexOf(id);
+  const before = ids.slice(0, idx);
+  const after = ids.slice(idx + 1);
+  const out = {};
+  ids.forEach((i) => (out[i] = weights[i] || 0));
 
-  const isLast = after.length === 0
-  const donors = isLast ? [...before].reverse() : after // who absorbs the change, in order
-  const lockedTotal = isLast ? 0 : sum(out, before)
+  const isLast = after.length === 0;
+  const donors = isLast ? [...before].reverse() : after; // who absorbs the change, in order
+  const lockedTotal = isLast ? 0 : sum(out, before);
   const max = isLast
     ? 100 - MIN_WEIGHT * before.length
-    : 100 - lockedTotal - MIN_WEIGHT * after.length
+    : 100 - lockedTotal - MIN_WEIGHT * after.length;
 
-  const value = Math.min(max, Math.max(MIN_WEIGHT, Math.round(raw)))
-  let diff = value - out[id] // positive = take from donors, negative = give to first donor
-  out[id] = value
+  const value = Math.min(max, Math.max(MIN_WEIGHT, Math.round(raw)));
+  let diff = value - out[id]; // positive = take from donors, negative = give to first donor
+  out[id] = value;
 
   if (diff < 0) {
-    out[donors[0]] += -diff
-    return out
+    out[donors[0]] += -diff;
+    return out;
   }
   for (let k = 0; k < donors.length && diff > 0; k++) {
-    const d = donors[k]
-    const take = Math.min(out[d] - MIN_WEIGHT, diff)
+    const d = donors[k];
+    const take = Math.min(out[d] - MIN_WEIGHT, diff);
     if (take > 0) {
-      out[d] -= take
-      diff -= take
+      out[d] -= take;
+      diff -= take;
     }
   }
-  return out
+  return out;
 }
 
 const DEFAULT_VALUE = {
   enabled: false,
-  variants: ['A', 'B'],
-  activeVariant: 'A',
-  allocation: 'even', // 'even' | 'custom'
+  variants: ["A", "B"],
+  activeVariant: "A",
+  allocation: "even", // 'even' | 'custom'
   weights: { A: 50, B: 50 }, // only used when allocation === 'custom'
-}
+};
 
 /* ------------------------------------------------------------------ */
 /* Settings modal                                                      */
@@ -120,39 +124,44 @@ const DEFAULT_VALUE = {
 
 function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
   // Everything is edited as a draft and only committed on Save / Apply.
-  const [variants, setVariants] = useState(value.variants)
-  const [allocation, setAllocation] = useState(value.allocation)
+  const [variants, setVariants] = useState(value.variants);
+  const [allocation, setAllocation] = useState(value.allocation);
   const [weights, setWeights] = useState(
-    value.allocation === 'custom' ? normalize(value.weights, value.variants) : evenWeights(value.variants)
-  )
+    value.allocation === "custom"
+      ? normalize(value.weights, value.variants)
+      : evenWeights(value.variants),
+  );
 
-  const shown = allocation === 'even' ? evenWeights(variants) : weights
-  const canAdd = variants.length < MAX_VARIANTS
-  const canRemove = variants.length > MIN_VARIANTS
+  const shown = allocation === "even" ? evenWeights(variants) : weights;
+  const canAdd = variants.length < MAX_VARIANTS;
+  const canRemove = variants.length > MIN_VARIANTS;
 
   const chooseMode = (mode) => {
     // Start custom allocation from whatever is currently displayed.
-    if (mode === 'custom' && allocation === 'even') setWeights(evenWeights(variants))
-    setAllocation(mode)
-  }
+    if (mode === "custom" && allocation === "even")
+      setWeights(evenWeights(variants));
+    setAllocation(mode);
+  };
 
   const addVariant = () => {
-    if (!canAdd) return
-    const newId = ALL_IDS.find((id) => !variants.includes(id))
-    const next = ALL_IDS.filter((id) => variants.includes(id) || id === newId)
-    setWeights((w) => setWeight({ ...w, [newId]: 0 }, next, newId, 100 / next.length))
-    setVariants(next)
-  }
+    if (!canAdd) return;
+    const newId = ALL_IDS.find((id) => !variants.includes(id));
+    const next = ALL_IDS.filter((id) => variants.includes(id) || id === newId);
+    setWeights((w) =>
+      setWeight({ ...w, [newId]: 0 }, next, newId, 100 / next.length),
+    );
+    setVariants(next);
+  };
 
   const removeVariant = (id) => {
-    if (!canRemove) return
-    const next = variants.filter((v) => v !== id)
+    if (!canRemove) return;
+    const next = variants.filter((v) => v !== id);
     setWeights((w) => {
-      const { [id]: _removed, ...rest } = w
-      return normalize(rest, next)
-    })
-    setVariants(next)
-  }
+      const { [id]: _removed, ...rest } = w;
+      return normalize(rest, next);
+    });
+    setVariants(next);
+  };
 
   return (
     <Modal
@@ -160,15 +169,18 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
       onClose={onCancel}
       title="A/B test settings"
       primaryAction={{
-        content: isNew ? 'Save' : 'Apply',
+        content: isNew ? "Save" : "Apply",
         onAction: () =>
           onApply({
             variants,
             allocation,
-            weights: allocation === 'custom' ? normalize(weights, variants) : evenWeights(variants),
+            weights:
+              allocation === "custom"
+                ? normalize(weights, variants)
+                : evenWeights(variants),
           }),
       }}
-      secondaryActions={[{ content: 'Cancel', onAction: onCancel }]}
+      secondaryActions={[{ content: "Cancel", onAction: onCancel }]}
       footer={
         isNew ? null : (
           <Button variant="plain" tone="critical" onClick={onStop}>
@@ -189,16 +201,16 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
               name="abt-allocation"
               label="Even allocation"
               helpText="Traffic is split equally across all variants"
-              checked={allocation === 'even'}
-              onChange={() => chooseMode('even')}
+              checked={allocation === "even"}
+              onChange={() => chooseMode("even")}
             />
             <RadioButton
               id="abt-custom"
               name="abt-allocation"
               label="Custom allocation"
               helpText="Set a specific traffic percentage for each variant"
-              checked={allocation === 'custom'}
-              onChange={() => chooseMode('custom')}
+              checked={allocation === "custom"}
+              onChange={() => chooseMode("custom")}
             />
           </BlockStack>
 
@@ -214,28 +226,43 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
               <div
                 aria-hidden="true"
                 style={{
-                  display: 'flex',
+                  display: "flex",
                   height: 8,
                   borderRadius: 99,
-                  overflow: 'hidden',
-                  background: 'var(--p-color-bg-fill-disabled)',
+                  overflow: "hidden",
+                  background: "var(--p-color-bg-fill-disabled)",
                 }}
               >
                 {variants.map((id) => (
                   <div
                     key={id}
-                    style={{ width: `${shown[id]}%`, background: colorOf(id), transition: 'width .15s' }}
+                    style={{
+                      width: `${shown[id]}%`,
+                      background: colorOf(id),
+                      transition: "width .15s",
+                    }}
                   />
                 ))}
               </div>
 
               {variants.map((id) => (
-                <InlineStack key={id} gap="300" blockAlign="center" wrap={false}>
+                <InlineStack
+                  key={id}
+                  gap="300"
+                  blockAlign="center"
+                  wrap={false}
+                >
                   <span
                     aria-hidden="true"
-                    style={{ width: 10, height: 10, borderRadius: '50%', background: colorOf(id), flex: 'none' }}
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      background: colorOf(id),
+                      flex: "none",
+                    }}
                   />
-                  <div style={{ width: 64, flex: 'none' }}>
+                  <div style={{ width: 64, flex: "none" }}>
                     <Text as="span" variant="bodyMd">
                       Variant {id}
                     </Text>
@@ -248,16 +275,23 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
                       max={100}
                       step={1}
                       value={shown[id]}
-                      disabled={allocation === 'even'}
-                      onChange={(v) => setWeights((w) => setWeight(w, variants, id, Number(v)))}
+                      disabled={allocation === "even"}
+                      onChange={(v) =>
+                        setWeights((w) => setWeight(w, variants, id, Number(v)))
+                      }
                     />
                   </div>
-                  <div style={{ width: 44, textAlign: 'right', flex: 'none' }}>
-                    <Text as="span" variant="bodyMd" fontWeight="semibold" numeric>
+                  <div style={{ width: 44, textAlign: "right", flex: "none" }}>
+                    <Text
+                      as="span"
+                      variant="bodyMd"
+                      fontWeight="semibold"
+                      numeric
+                    >
                       {shown[id]}%
                     </Text>
                   </div>
-                  <div style={{ width: 24, flex: 'none' }}>
+                  <div style={{ width: 24, flex: "none" }}>
                     {canRemove && (
                       <Button
                         size="micro"
@@ -273,8 +307,12 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
               ))}
 
               <InlineStack>
-                <Button icon={PlusCircleIcon} onClick={addVariant} disabled={!canAdd}>
-                  {canAdd ? 'Add variant' : `Maximum ${MAX_VARIANTS} variants`}
+                <Button
+                  icon={PlusCircleIcon}
+                  onClick={addVariant}
+                  disabled={!canAdd}
+                >
+                  {canAdd ? "Add variant" : `Maximum ${MAX_VARIANTS} variants`}
                 </Button>
               </InlineStack>
             </BlockStack>
@@ -282,34 +320,34 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
         </BlockStack>
       </Modal.Section>
     </Modal>
-  )
+  );
 }
 
 /** One variant tab. The remove (×) button only appears on hover or keyboard focus. */
 function VariantTab({ id, active, canRemove, onSelect, onRemove }) {
-  const [hovered, setHovered] = useState(false)
-  const [focused, setFocused] = useState(false)
-  const showRemove = canRemove && (hovered || focused)
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const showRemove = canRemove && (hovered || focused);
 
   return (
     <div
-      style={{ position: 'relative' }}
+      style={{ position: "relative" }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false)
+        if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false);
       }}
     >
       <Button
         pressed={active}
         onClick={onSelect}
-        accessibilityLabel={`Variant ${id}${active ? ' (selected)' : ''}`}
+        accessibilityLabel={`Variant ${id}${active ? " (selected)" : ""}`}
       >
         {id}
       </Button>
       {showRemove && (
-        <div style={{ position: 'absolute', top: -10, right: -10, zIndex: 1 }}>
+        <div style={{ position: "absolute", top: -10, right: -10, zIndex: 1 }}>
           <Button
             size="micro"
             variant="tertiary"
@@ -321,7 +359,7 @@ function VariantTab({ id, active, canRemove, onSelect, onRemove }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -349,88 +387,107 @@ export default function ABTesting({
   onRunTest,
   onStopTest,
 }) {
-  const [state, setState] = useState({ ...DEFAULT_VALUE, ...defaultValue })
-  const [settingsOpen, setSettingsOpen] = useState(openOnMount)
+  const [state, setState] = useState({ ...DEFAULT_VALUE, ...defaultValue });
+  const [settingsOpen, setSettingsOpen] = useState(openOnMount);
 
-  const { enabled, variants, activeVariant } = state
-  const canAdd = variants.length < MAX_VARIANTS
-  const canRemove = variants.length > MIN_VARIANTS
+  const { enabled, variants, activeVariant } = state;
+  const canAdd = variants.length < MAX_VARIANTS;
+  const canRemove = variants.length > MIN_VARIANTS;
 
   const update = (patch) => {
-    const next = { ...state, ...patch }
-    setState(next)
-    onChange?.(next)
-  }
+    const next = { ...state, ...patch };
+    setState(next);
+    onChange?.(next);
+  };
 
   // Called by the settings modal. "Run A/B Test" opens it first; the test starts on Save.
   const commitSettings = (patch) => {
-    const prev = state.variants
-    const added = patch.variants.filter((v) => !prev.includes(v))
-    const removed = prev.filter((v) => !patch.variants.includes(v))
-    const nextActive = !enabled || !patch.variants.includes(activeVariant) ? patch.variants[0] : activeVariant
+    const prev = state.variants;
+    const added = patch.variants.filter((v) => !prev.includes(v));
+    const removed = prev.filter((v) => !patch.variants.includes(v));
+    const nextActive =
+      !enabled || !patch.variants.includes(activeVariant)
+        ? patch.variants[0]
+        : activeVariant;
 
-    update({ ...patch, enabled: true, activeVariant: nextActive })
-    setSettingsOpen(false)
+    update({ ...patch, enabled: true, activeVariant: nextActive });
+    setSettingsOpen(false);
 
-    removed.forEach((id) => onVariantRemove?.(id))
-    added.forEach((id) => onVariantAdd?.(id, activeVariant)) // new variants start as a copy of the one being edited
-    if (!enabled) onRunTest?.()
-    if (nextActive !== activeVariant) onActiveVariantChange?.(nextActive)
-  }
+    removed.forEach((id) => onVariantRemove?.(id));
+    added.forEach((id) => onVariantAdd?.(id, activeVariant)); // new variants start as a copy of the one being edited
+    if (!enabled) onRunTest?.();
+    if (nextActive !== activeVariant) onActiveVariantChange?.(nextActive);
+  };
 
   const stopTest = async () => {
-    setSettingsOpen(false)
+    setSettingsOpen(false);
     try {
-      await onStopTest?.()
-      update({ ...DEFAULT_VALUE })
+      await onStopTest?.();
+      update({ ...DEFAULT_VALUE });
     } catch (error) {
-      console.error("Could not stop A/B test:", error)
-      setSettingsOpen(true)
+      console.error("Could not stop A/B test:", error);
+      setSettingsOpen(true);
     }
-  }
+  };
 
   const selectVariant = (id) => {
-    if (id === activeVariant) return
-    update({ activeVariant: id })
-    onActiveVariantChange?.(id)
-  }
+    if (id === activeVariant) return;
+    update({ activeVariant: id });
+    onActiveVariantChange?.(id);
+  };
 
   const addVariant = () => {
-    if (!canAdd) return
-    const newId = ALL_IDS.find((id) => !variants.includes(id))
-    const nextVariants = ALL_IDS.filter((id) => variants.includes(id) || id === newId)
+    if (!canAdd) return;
+    const newId = ALL_IDS.find((id) => !variants.includes(id));
+    const nextVariants = ALL_IDS.filter(
+      (id) => variants.includes(id) || id === newId,
+    );
     const nextWeights =
-      state.allocation === 'custom'
-        ? setWeight({ ...state.weights, [newId]: 0 }, nextVariants, newId, 100 / nextVariants.length)
-        : evenWeights(nextVariants)
-    update({ variants: nextVariants, weights: nextWeights, activeVariant: newId })
-    onVariantAdd?.(newId, activeVariant) // new variant starts as a copy of the one being edited
-    onActiveVariantChange?.(newId)
-  }
+      state.allocation === "custom"
+        ? setWeight(
+            { ...state.weights, [newId]: 0 },
+            nextVariants,
+            newId,
+            100 / nextVariants.length,
+          )
+        : evenWeights(nextVariants);
+    update({
+      variants: nextVariants,
+      weights: nextWeights,
+      activeVariant: newId,
+    });
+    onVariantAdd?.(newId, activeVariant); // new variant starts as a copy of the one being edited
+    onActiveVariantChange?.(newId);
+  };
 
   const removeVariant = (id) => {
-    if (!canRemove) return
-    const nextVariants = variants.filter((v) => v !== id)
-    const { [id]: _removed, ...rest } = state.weights
-    const nextActive = activeVariant === id ? nextVariants[0] : activeVariant
+    if (!canRemove) return;
+    const nextVariants = variants.filter((v) => v !== id);
+    const { [id]: _removed, ...rest } = state.weights;
+    const nextActive = activeVariant === id ? nextVariants[0] : activeVariant;
     update({
       variants: nextVariants,
       weights: normalize(rest, nextVariants),
       activeVariant: nextActive,
-    })
-    onVariantRemove?.(id)
-    if (nextActive !== activeVariant) onActiveVariantChange?.(nextActive)
-  }
+    });
+    onVariantRemove?.(id);
+    if (nextActive !== activeVariant) onActiveVariantChange?.(nextActive);
+  };
 
   const summary = useMemo(() => {
-    const w = state.allocation === 'even' ? evenWeights(variants) : normalize(state.weights, variants)
-    return variants.map((id) => `${id} ${w[id]}%`).join(' · ')
-  }, [state.allocation, state.weights, variants])
+    const w =
+      state.allocation === "even"
+        ? evenWeights(variants)
+        : normalize(state.weights, variants);
+    return variants.map((id) => `${id} ${w[id]}%`).join(" · ");
+  }, [state.allocation, state.weights, variants]);
 
   if (!enabled) {
     return (
       <>
-        <Button onClick={() => setSettingsOpen(true)}>Run A/B Test</Button>
+        <Button icon={PlayIcon} onClick={() => setSettingsOpen(true)}>
+          Run A/B Test
+        </Button>
         {settingsOpen && (
           <SettingsModal
             isNew
@@ -440,14 +497,19 @@ export default function ABTesting({
           />
         )}
       </>
-    )
+    );
   }
 
   return (
     <>
       <InlineStack gap="300" blockAlign="start" wrap={false}>
         <Tooltip content={`Traffic split: ${summary}`}>
-          <InlineStack gap="200" wrap={false} role="group" aria-label="Variants">
+          <InlineStack
+            gap="200"
+            wrap={false}
+            role="group"
+            aria-label="Variants"
+          >
             {variants.map((id) => (
               <VariantTab
                 key={id}
@@ -494,5 +556,5 @@ export default function ABTesting({
         />
       )}
     </>
-  )
+  );
 }

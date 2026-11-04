@@ -18,6 +18,7 @@ import {
   InfoIcon,
   CheckIcon,
   CaretDownIcon,
+  LanguageIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useMemo, useRef, memo } from "react";
 import { useNavigate, useLocation, useNavigation } from "react-router-dom";
@@ -49,6 +50,7 @@ import {
   toggleCustomBlock,
 } from "./utils/customBlocks";
 import ABTesting from "./ABTesting";
+import EditTranslationsModal from "./ui/EditTranslationsModal";
 
 const CartLayout = memo(function CartLayout({
   abTesting,
@@ -94,6 +96,7 @@ const CartLayout = memo(function CartLayout({
   const [cartStatus, setCartStatus] = useState(cart?.status || "unpublished");
   const [previewPopoverOpen, setPreviewPopoverOpen] = useState(false);
   const [publishModal, setPublishModal] = useState(false);
+  const [translationsModal, setTranslationsModal] = useState(false);
   const [previewMode, setPreviewMode] = useState("items");
   // last non-empty selection, restored when returning to "Item in cart"
   const lastPreviewRef = useRef(
@@ -408,8 +411,7 @@ const CartLayout = memo(function CartLayout({
     sidePanelEnabled && sideUpsells?.sidePanelPosition === "right";
   const isFloating = designSettings?.layout === "floating";
   const previewWidth = designSettings?.desktopWidth === "wide" ? 500 : 440;
-  const sidePanelPreviewWidth =
-    previewWidth - (isFloating ? 32 : 0) - 50 + 190;
+  const sidePanelPreviewWidth = previewWidth - (isFloating ? 32 : 0) - 50 + 190;
 
   return (
     <TemplateBackgroundContext.Provider value={templateBg}>
@@ -499,6 +501,13 @@ const CartLayout = memo(function CartLayout({
             </Popover> */}
 
             <ABTesting key={abTesting?.resetKey} {...abTesting} />
+
+            <Button onClick={() => setTranslationsModal(true)}>
+              <InlineStack gap="200" align="center">
+                <Icon source={LanguageIcon} />
+                Edit translations
+              </InlineStack>
+            </Button>
 
             {/* <Button
               variant="tertiary"
@@ -829,6 +838,14 @@ const CartLayout = memo(function CartLayout({
           </Modal.Section>
         </Modal>
 
+        <EditTranslationsModal
+          open={translationsModal}
+          onClose={() => setTranslationsModal(false)}
+          designSettings={designSettings}
+          cartSettings={cartSettings}
+          handleChange={handleChange}
+        />
+
         <Modal
           open={leaveModal}
           onClose={() => setLeaveModal(false)}
@@ -937,9 +954,7 @@ const CartLayout = memo(function CartLayout({
           apiUrl={apiUrl}
           previewProducts={previewProducts}
           previewLoading={previewLoading}
-          onBannerChange={(patch) =>
-            handleChange("header", patchBanner(patch))
-          }
+          onBannerChange={(patch) => handleChange("header", patchBanner(patch))}
           onAddPreviewProduct={(product, variant) =>
             setPreviewProducts((prev) => {
               const existing = prev.find((p) => p.id === product.id);

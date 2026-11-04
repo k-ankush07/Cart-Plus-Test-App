@@ -1128,7 +1128,7 @@ if (savedEl) {
         const priceQty = itemOpts.singleItemPrice ? 1 : item.quantity;
         const saveHtml =
           hasDiscount && showSavings && layoutName !== "subscription"
-            ? `<p class="hub-item-save" style="color:${savingsColor};background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">${savingsText} ${hubUtils.formatMoney(unitSave * priceQty)}</p>`
+            ? `<p class="hub-item-save" style="color:${savingsColor};background:${hubUtils.hexToRGBA(designSettings.savingsColor, 0.1)};">${window.cartPlusSaveHtml(savingsText, hubUtils.formatMoney(unitSave * priceQty))}</p>`
             : "";
 
         const priceHtml = hasDiscount
