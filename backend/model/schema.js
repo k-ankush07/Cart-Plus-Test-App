@@ -230,8 +230,46 @@ const cartOrderCountModel =
 
 const contactModel =
   mongoose.models["Contact"] || mongoose.model("Contact", contactSchema);
- 
+
+// Cart activity feed: one document per item added to / removed from a cart.
+const cartActivitySchema = new mongoose.Schema({
+  shop: { type: String, required: true },
+  cartId: { type: String, default: null }, // Cart Plus cart design id
+  sessionId: { type: String, required: true },
+  cartToken: { type: String, default: null }, // Shopify cart token
+  action: {
+    type: String,
+    enum: ["added", "removed", "product_viewed", "page_viewed"],
+    required: true,
+  },
+  pageTitle: { type: String, default: "" }, // page_viewed
+  url: { type: String, default: "" }, // product_viewed / page_viewed
+  currency: { type: String, default: "" },
+  quantity: { type: Number, default: 1 }, // always positive; sign comes from action
+  productTitle: { type: String, default: "" },
+  variantTitle: { type: String, default: "" },
+  productId: { type: String, default: null },
+  variantId: { type: String, default: null },
+  handle: { type: String, default: "" },
+  image: { type: String, default: "" },
+  price: { type: Number, default: 0 },
+  customerId: { type: String, default: null },
+  timezone: { type: String, default: "" },
+  userAgent: { type: String, default: "" },
+  createdAt: { type: Date, default: Date.now },
+});
+
+cartActivitySchema.index({ shop: 1, createdAt: -1 });
+cartActivitySchema.index({ shop: 1, sessionId: 1, createdAt: 1 });
+// Keep the feed bounded: drop events after 90 days.
+cartActivitySchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 90 });
+
+const cartActivityModel =
+  mongoose.models["CartActivity"] ||
+  mongoose.model("CartActivity", cartActivitySchema);
+
 export {
+  cartActivityModel,
   cartModels,
   stickyCartModel,
   shopConfigModel,

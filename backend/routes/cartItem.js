@@ -7,6 +7,7 @@ import {
   analyticsModel,
   orderRevenueModel,
   cartOrderCountModel,
+  cartActivityModel,
   contactModel
 } from "../model/schema.js";
 import { sendEmail } from "./sendEmail.js";
@@ -903,6 +904,183 @@ router.post("/track-event", async (req, res) => {
   } catch (error) {
     console.error("TRACK EVENT ERROR:", error);
     res.status(500).json({ success: false });
+  }
+});
+
+// ─── Cart activity feed ───────────────────────────────────────────────────────
+
+const cleanShopDomain = (shop) =>
+  String(shop || "").replace("https://", "").replace("http://", "").replace(/\/$/, "");
+
+// Storefront posts one batch per cart mutation: { shop, sessionId, events: [...] }
+router.post("/cart-activity", async (req, res) => {
+  try {
+    const { shop, sessionId, cartId, cartToken, customerId, timezone, userAgent, events } =
+      req.body || {};
+    const cleanShop = cleanShopDomain(shop);
+
+    if (!cleanShop || !sessionId || !Array.isArray(events) || events.length === 0) {
+      return res.status(400).json({ success: false, message: "Missing shop, sessionId or events" });
+    }
+
+    const docs = events
+      .slice(0, 50)
+      .filter(
+        (e) =>
+          e &&
+          ["added", "removed", "product_viewed", "page_viewed"].includes(e.action),
+      )
+      .map((e) => ({
+        pageTitle: String(e.pageTitle || "").slice(0, 300),
+        url: String(e.url || "").slice(0, 1000),
+        currency: String(e.currency || "").slice(0, 10),
+        shop: cleanShop,
+        cartId: cartId || null,
+        sessionId: String(sessionId),
+        cartToken: cartToken || null,
+        action: e.action,
+        quantity: Math.max(1, Math.abs(Number(e.quantity) || 1)),
+        productTitle: String(e.productTitle || "").slice(0, 300),
+        variantTitle: String(e.variantTitle || "").slice(0, 200),
+        productId: e.productId ? String(e.productId) : null,
+        variantId: e.variantId ? String(e.variantId) : null,
+        handle: String(e.handle || "").slice(0, 300),
+        image: String(e.image || "").slice(0, 1000),
+        price: Number(e.price) || 0,
+        customerId: customerId ? String(customerId) : null,
+        timezone: String(timezone || "").slice(0, 80),
+        userAgent: String(userAgent || "").slice(0, 400),
+        createdAt: new Date(),
+      }));
+
+    if (docs.length) await cartActivityModel.insertMany(docs);
+    return res.json({ success: true, saved: docs.length });
+  } catch (error) {
+    console.error("CART ACTIVITY SAVE ERROR:", error);
+    return res.status(500).json({ success: false });
+  }
+});
+
+// Feed for the Activity page. Query: shop, startDate, endDate, action, before, limit
+router.get("/cart-activity", async (req, res) => {
+  try {
+    const { shop, startDate, endDate, action, before } = req.query;
+    const cleanShop = cleanShopDomain(shop);
+    if (!cleanShop) {
+      return res.status(400).json({ success: false, message: "Missing shop" });
+    }
+
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 25, 1), 100);
+    const createdAt = {};
+    if (startDate) createdAt.$gte = new Date(startDate);
+    if (endDate) createdAt.$lte = new Date(endDate);
+    if (before) createdAt.$lt = new Date(before);
+
+    const filter = { shop: cleanShop };
+    if (Object.keys(createdAt).length) filter.createdAt = createdAt;
+    if (action === "added" || action === "removed") filter.action = action;
+
+    // type=cart (default): item added / removed only
+    // type=all: also product / page views, plus cart opened + checkout events
+    const includeAll = req.query.type === "all";
+    if (!includeAll && !filter.action) filter.action = { $in: ["added", "removed"] };
+
+    const [cartRows, eventRows] = await Promise.all([
+      cartActivityModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .limit(limit + 1)
+        .lean(),
+      includeAll
+        ? analyticsModel
+            .find({
+              shop: cleanShop,
+              ...(Object.keys(createdAt).length ? { createdAt } : {}),
+            })
+            .select("eventType sessionId createdAt userAgent")
+            .sort({ createdAt: -1 })
+            .limit(limit + 1)
+            .lean()
+        : [],
+    ]);
+
+    const rows = [
+      ...cartRows.map((r) => ({ ...r, kind: "cart" })),
+      ...eventRows.map((r) => ({ ...r, kind: "event" })),
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const hasMore = rows.length > limit;
+    const events = rows.slice(0, limit);
+    return res.json({
+      success: true,
+      data: {
+        events,
+        hasMore,
+        nextBefore: hasMore ? events[events.length - 1].createdAt : null,
+      },
+    });
+  } catch (error) {
+    console.error("CART ACTIVITY LIST ERROR:", error);
+    return res.status(500).json({ success: false });
+  }
+});
+
+// Timeline of one shopper session (the "View Cart" page). Query: shop, sessionId
+router.get("/cart-activity/session", async (req, res) => {
+  try {
+    const { shop, sessionId } = req.query;
+    const cleanShop = cleanShopDomain(shop);
+    if (!cleanShop || !sessionId) {
+      return res.status(400).json({ success: false, message: "Missing shop or sessionId" });
+    }
+
+    const [activity, analytics] = await Promise.all([
+      cartActivityModel.find({ shop: cleanShop, sessionId }).sort({ createdAt: 1 }).lean(),
+      analyticsModel
+        .find({ shop: cleanShop, sessionId })
+        .select("eventType createdAt cartId meta userAgent")
+        .sort({ createdAt: 1 })
+        .lean(),
+    ]);
+
+    const timeline = [
+      ...activity.map((a) => ({
+        type:
+          a.action === "added"
+            ? "item_added"
+            : a.action === "removed"
+              ? "item_removed"
+              : a.action, // product_viewed | page_viewed
+        at: a.createdAt,
+        productTitle: a.productTitle,
+        pageTitle: a.pageTitle,
+        variantTitle: a.variantTitle,
+        handle: a.handle,
+        image: a.image,
+        url: a.url,
+        price: a.price,
+        currency: a.currency,
+        quantity: a.quantity,
+      })),
+      ...analytics.map((a) => ({ type: a.eventType, at: a.createdAt })),
+    ].sort((x, y) => new Date(x.at) - new Date(y.at));
+
+    const first = activity[0] || null;
+    return res.json({
+      success: true,
+      data: {
+        sessionId,
+        customerId: first?.customerId || null,
+        timezone: first?.timezone || "",
+        userAgent: first?.userAgent || analytics[0]?.userAgent || "",
+        cartToken: first?.cartToken || null,
+        startedAt: timeline[0]?.at || null,
+        timeline,
+      },
+    });
+  } catch (error) {
+    console.error("CART ACTIVITY SESSION ERROR:", error);
+    return res.status(500).json({ success: false });
   }
 });
 

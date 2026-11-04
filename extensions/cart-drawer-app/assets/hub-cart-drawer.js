@@ -308,6 +308,7 @@ function initCartDrawerAfterData() {
   window.__hubFetchPatched = true;
 
   const originalFetch = window.fetch;
+  window.__hubOriginalFetch = originalFetch;
 
   window.fetch = async function (...args) {
     let [input, init] = args;
@@ -402,6 +403,10 @@ function initCartDrawerAfterData() {
         url.includes("/cart/update"))
     ) {
       window._hubSyncCartPageIfOnCartPage?.();
+      // Activity feed: skip Cart Plus' own internal reward / variant swaps
+      window._hubTrackCartActivity?.({
+        internal: !!(window._hubRewardUpdating || window._hubVariantSwapping),
+      });
     }
 
     // ── Fire cart:updated for mutations ──
@@ -433,6 +438,153 @@ function initCartDrawerAfterData() {
 
     return response;
   };
+})();
+
+// ── CART ACTIVITY TRACKER ────────────────────────────────────────────────────
+// After every cart mutation, diff /cart.js against the previous snapshot and
+// report items added / removed to the Activity feed.
+(function () {
+  if (window._hubTrackCartActivity) return;
+
+  const rawFetch = () => window.__hubOriginalFetch || window.fetch;
+
+  const readCart = async () => {
+    try {
+      const r = await rawFetch()("/cart.js", { headers: { Accept: "application/json" } });
+      return r.ok ? await r.json() : null;
+    } catch (_) {
+      return null;
+    }
+  };
+
+  // variantId -> { qty, item } (lines of the same variant are summed)
+  const toMap = (cart) => {
+    const map = new Map();
+    for (const item of cart?.items || []) {
+      const key = String(item.variant_id);
+      const prev = map.get(key);
+      map.set(key, { qty: (prev?.qty || 0) + item.quantity, item: prev?.item || item });
+    }
+    return map;
+  };
+
+  let snapshot = readCart().then((c) => (c ? toMap(c) : null));
+  let chain = Promise.resolve();
+
+  const describe = (item, action, quantity) => ({
+    action,
+    quantity,
+    productTitle: item.product_title || item.title || "",
+    variantTitle:
+      item.variant_title && item.variant_title !== "Default Title" ? item.variant_title : "",
+    productId: item.product_id,
+    variantId: item.variant_id,
+    handle: item.handle || "",
+    image: item.image || item.featured_image?.url || "",
+    price: (item.final_price || item.price || 0) / 100,
+  });
+
+  window._hubTrackCartActivity = function ({ internal = false } = {}) {
+    chain = chain
+      .then(async () => {
+        const prev = await snapshot;
+        const cart = await readCart();
+        if (!cart) return;
+        const next = toMap(cart);
+        snapshot = Promise.resolve(next);
+        if (!prev || internal) return;
+
+        const events = [];
+        for (const key of new Set([...prev.keys(), ...next.keys()])) {
+          const before = prev.get(key);
+          const after = next.get(key);
+          const delta = (after?.qty || 0) - (before?.qty || 0);
+          if (delta === 0) continue;
+          events.push(describe((after || before).item, delta > 0 ? "added" : "removed", Math.abs(delta)));
+        }
+        if (!events.length) return;
+
+        const shopInfo = window.__SHOPIFY_SHOP__ || {};
+        const shop = shopInfo.myshopify_domain || shopInfo.permanent_domain || shopInfo.domain;
+        if (!shop) return;
+
+        await rawFetch()(`${apiUrl}/api/cart-activity`, {
+          method: "POST",
+          headers: authHeaders(),
+          keepalive: true,
+          body: JSON.stringify({
+            shop,
+            sessionId: getSessionId(),
+            cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
+            cartToken: cart.token || null,
+            customerId: window.ShopifyAnalytics?.meta?.page?.customerId || null,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+            userAgent: navigator.userAgent,
+            events,
+          }),
+        });
+      })
+      .catch(() => {});
+  };
+
+  // ── Product / page views for the Activity feed ──────────────────────────────
+  function trackPageView() {
+    try {
+      if (window.Shopify?.designMode) return; // theme editor
+      const shop =
+        window.__SHOPIFY_SHOP__?.myshopify_domain ||
+        window.__SHOPIFY_SHOP__?.permanent_domain ||
+        window.Shopify?.shop;
+      if (!shop) return;
+
+      // Ignore reloads / duplicate fires of the same URL within 3 seconds
+      const href = window.location.href;
+      try {
+        const last = JSON.parse(sessionStorage.getItem("hub_last_view") || "null");
+        if (last && last.href === href && Date.now() - last.at < 3000) return;
+        sessionStorage.setItem("hub_last_view", JSON.stringify({ href, at: Date.now() }));
+      } catch (_) {}
+
+      const meta = window.ShopifyAnalytics?.meta;
+      let event;
+      if (meta?.page?.pageType === "product" && meta.product) {
+        const variants = meta.product.variants || [];
+        const wantedId = meta.selectedVariantId || variants[0]?.id;
+        const v = variants.find((x) => String(x.id) === String(wantedId)) || variants[0];
+        event = {
+          action: "product_viewed",
+          productTitle: v?.name || document.title,
+          productId: meta.product.id,
+          variantId: v?.id,
+          price: (v?.price || 0) / 100,
+          currency: window.Shopify?.currency?.active || "",
+          url: href,
+          image: document.querySelector('meta[property="og:image"]')?.content || "",
+        };
+      } else {
+        event = { action: "page_viewed", pageTitle: document.title, url: href };
+      }
+
+      rawFetch()(`${apiUrl}/api/cart-activity`, {
+        method: "POST",
+        headers: authHeaders(),
+        keepalive: true,
+        body: JSON.stringify({
+          shop,
+          sessionId: getSessionId(),
+          cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
+          customerId: window.ShopifyAnalytics?.meta?.page?.customerId || null,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+          userAgent: navigator.userAgent,
+          events: [event],
+        }),
+      }).catch(() => {});
+    } catch (_) {}
+  }
+
+  const scheduleViewTracking = () => setTimeout(trackPageView, 800);
+  if (document.readyState === "complete") scheduleViewTracking();
+  else window.addEventListener("load", scheduleViewTracking, { once: true });
 })();
 
 // ── CART INITIALISATION ───────────────────────────────────────────────────────
