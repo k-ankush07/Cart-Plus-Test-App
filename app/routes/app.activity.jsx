@@ -194,11 +194,6 @@ function FeedList({ events, now, navigate, currency }) {
   );
 }
 
-function locationFromTimezone(tz) {
-  if (!tz) return "—";
-  return tz.split("/").pop().replace(/_/g, " ");
-}
-
 const cellStyle = { padding: "12px 6px", verticalAlign: "middle" };
 const headStyle = {
   ...cellStyle,
@@ -343,7 +338,6 @@ export default function Activity() {
       >
         <BlockStack gap="400">
           <InlineStack gap="300" blockAlign="center">
-            <DateRangePicker value={range} onChange={setRange} />
             <div style={{ minWidth: 170 }}>
               <Select
                 label="Activity type"
@@ -353,6 +347,7 @@ export default function Activity() {
                 onChange={setType}
               />
             </div>
+
             <Button
               pressed={live}
               onClick={() => setLive((v) => !v)}
@@ -370,19 +365,24 @@ export default function Activity() {
             >
               Live
             </Button>
+
             <Button
               icon={RefreshIcon}
               accessibilityLabel="Refresh"
               onClick={() => reload()}
               loading={loading}
             />
+
             {lastUpdated && (
               <Text variant="bodyMd" tone="subdued" as="span">
                 Last updated: {timeAgo(lastUpdated, now)}
               </Text>
             )}
-          </InlineStack>
 
+            <div style={{ flex: 1 }} />
+
+            <DateRangePicker value={range} onChange={setRange} />
+          </InlineStack>
           <Card>
             <BlockStack gap="300">
               <Text variant="bodySm" tone="subdued" as="p">
@@ -483,10 +483,17 @@ export default function Activity() {
                                   blockAlign="start"
                                   wrap={false}
                                 >
-                                  <Thumbnail
-                                    source={e.image || ""}
-                                    alt=""
-                                    size="medium"
+                                  <img
+                                    src={e.image}
+                                    style={{
+                                      width: "56px",
+                                      height: "56px",
+                                      objectFit: "cover",
+                                      border: "none",
+                                      outline: "none",
+                                      boxShadow: "none",
+                                      borderRadius: "8px",
+                                    }}
                                   />
 
                                   <div
@@ -503,14 +510,25 @@ export default function Activity() {
                                         url={`https://${shop}/products/${e.handle}`}
                                         target="_blank"
                                       >
-                                        {e.productTitle || "Product"}
+                                        <span
+                                          style={{
+                                            display: "inline-block",
+                                            maxWidth: "180px",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                            verticalAlign: "bottom",
+                                          }}
+                                          title={e.productTitle || "Product"}
+                                        >
+                                          {e.productTitle || "Product"}
+                                        </span>
                                       </Link>
                                     ) : (
                                       <Text as="span">
                                         {e.productTitle || "Product"}
                                       </Text>
                                     )}
-
                                     {e.variantTitle && (
                                       <Text
                                         variant="bodySm"
