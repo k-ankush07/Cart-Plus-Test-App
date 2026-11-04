@@ -14,7 +14,7 @@ import {
   PlusCircleIcon,
   SettingsIcon,
   XSmallIcon,
-  PlayIcon,
+  ChartVerticalIcon,
 } from "@shopify/polaris-icons";
 /* ------------------------------------------------------------------ */
 /* Constants & helpers                                                 */
@@ -485,7 +485,7 @@ export default function ABTesting({
   if (!enabled) {
     return (
       <>
-        <Button icon={PlayIcon} onClick={() => setSettingsOpen(true)}>
+        <Button icon={ChartVerticalIcon} onClick={() => setSettingsOpen(true)}>
           Run A/B Test
         </Button>
         {settingsOpen && (

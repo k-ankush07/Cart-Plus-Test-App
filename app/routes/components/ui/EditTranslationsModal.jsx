@@ -22,7 +22,7 @@ export default function EditTranslationsModal({
   handleChange,
 }) {
   return (
-    <Modal open={open} onClose={onClose} title="Edit translations" primaryAction={{ content: "Done", onAction: onClose }}>
+    <Modal size="large" open={open} onClose={onClose} title="Edit translations" primaryAction={{ content: "Done", onAction: onClose }}>
       <Modal.Section>
         <BlockStack gap="300">
           <Text as="h3" variant="headingSm">
