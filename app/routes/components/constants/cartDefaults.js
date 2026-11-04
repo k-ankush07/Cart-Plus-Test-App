@@ -3,6 +3,7 @@ import { TEMPLATE_DEFAULTS } from "../utils/templateTheme";
 export const defaultSettings = {
   ...TEMPLATE_DEFAULTS,
   inheritFonts: true,
+  customFont: "Poppins", // used when inheritFonts is false
   showStrikethrough: true,
   enableSubtotal: true,
   enableShipping:true,

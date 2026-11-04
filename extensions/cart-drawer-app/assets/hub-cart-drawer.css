@@ -1896,7 +1896,7 @@ display: flex;
 }
 
 .cart-app--customFont * {
-  font-family: "Poppins", sans-serif !important;
+  font-family: var(--cart-custom-font, "Poppins"), sans-serif !important;
 }
 
 .cart-app--customFont,
@@ -1919,7 +1919,7 @@ display: flex;
 .cart-app--customFont input,
 .cart-app--customFont textarea,
 .cart-app--customFont select {
-  font-family: "Poppins", sans-serif !important;
+  font-family: var(--cart-custom-font, "Poppins"), sans-serif !important;
   margin: 0;
 }
 

@@ -16,6 +16,7 @@ import CustomHtml from "./cart-Items/CustomHtml";
 import { getCustomBlocks, placedBlockIds } from "./utils/customBlocks";
 import { customBlockNodes } from "./cart-Items/CustomBlocks";
 import BannerImage from "./cart-Items/BannerImage";
+import { customFontCssVar } from "./utils/fonts";
 import Timer from "./cart-Items/Timer";
 import OneTickUpsell from "./cart-Items/OneTickUpsell";
 import SectionBg from "./cart-Items/SectionBg";
@@ -240,6 +241,9 @@ const CartPreview = memo(function CartPreview({
           : `${maxWidth - (floating ? 32 : 0)}px`,
         width: "100%",
         position: "relative",
+        ...(designSettings.inheritFonts
+          ? {}
+          : { "--cart-custom-font": customFontCssVar(designSettings.customFont) }),
         ...(sidePanelOnRight ? { right: "190px" } : {}),
         overflowY: cartSettings?.disableFixedFooter ? "auto" : "unset",
         ...(designSettings.themed

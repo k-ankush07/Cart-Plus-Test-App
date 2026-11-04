@@ -649,6 +649,27 @@ bs.textContent += `
     ? `color:${designSettings.textColor};${floating ? "border-radius:" + designSettings.drawerRadius + "px;" : ""}--cp-surface:${designSettings.backgroundColor};--cp-text:${designSettings.textColor};--cp-card-radius:${designSettings.cardRadius}px;--cp-field-radius:${designSettings.fieldRadius}px;--cp-image-radius:${designSettings.imageRadius}px;${designSettings.accentBorder ? "--cp-accent-border:" + designSettings.accentBorder + ";" : ""}${designSettings.themed && designSettings.buttonColor ? "--cp-accent-bg:" + designSettings.buttonColor + ";" : ""}`
     : "";
 
+  // Custom font (Appearance → Fonts). Whitelisted so the setting can't inject anything.
+  const CART_PLUS_FONTS = [
+    "Poppins", "Inter", "Roboto", "Montserrat", "Playfair Display",
+    "Open Sans", "Lato", "Nunito", "Raleway", "Merriweather",
+  ];
+  let customFontVar = "";
+  if (!designSettings.inheritFonts) {
+    const fontName = CART_PLUS_FONTS.includes(designSettings.customFont)
+      ? designSettings.customFont
+      : CART_PLUS_FONTS[0];
+    customFontVar = `--cart-custom-font:'${fontName}';`;
+    const fontLinkId = "cart-plus-font-" + fontName.replace(/\s+/g, "-").toLowerCase();
+    if (!document.getElementById(fontLinkId)) {
+      const link = document.createElement("link");
+      link.id = fontLinkId;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/\s+/g, "+")}:wght@400;500;600;700&display=swap`;
+      document.head.appendChild(link);
+    }
+  }
+
   root.insertAdjacentHTML(
     "beforeend",
     `
@@ -658,6 +679,7 @@ bs.textContent += `
       style="background-color:${designSettings.backgroundColor || ""};
       ${designSettings.bodyBackground ? "background:" + designSettings.bodyBackground + ";" : ""}
       ${themedVars}
+      ${customFontVar}
       width:${drawerWidth}px;
       overflow-y:${disableFixedFooter ? "auto" : floating ? "hidden" : "unset"};
       scrollbar-width:none;

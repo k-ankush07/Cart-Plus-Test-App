@@ -3,6 +3,7 @@ import {
   LegacyStack,
   Text,
   Checkbox,
+  RadioButton,
   Select,
   TextField,
   InlineStack,
@@ -14,6 +15,7 @@ import {
 } from "@shopify/polaris";
 import { PaintBrushFlatIcon } from "@shopify/polaris-icons";
 import ColorInput from "../ui/ColorInput";
+import { CUSTOM_FONTS, resolveCustomFont } from "../utils/fonts";
 import "../../../index.css";
 
 export default function Appearance({
@@ -54,52 +56,72 @@ export default function Appearance({
       {/* CARD 1 — General + Cart width */}
       <Box paddingBlockEnd="400">
         <Card>
-        <BlockStack gap="500">
-          <BlockStack gap="100">
-            <Text as="p" variant="bodySm" fontWeight="semibold">
-              Fonts
-            </Text>
-            <Checkbox
-              label="Use theme fonts"
-              checked={designSettings.inheritFonts}
-              onChange={(value) => handleChange("inheritFonts", value)}
-            />
-            {/* <Checkbox
+          <BlockStack gap="500">
+            <BlockStack gap="100">
+              <Text as="p" variant="bodySm" fontWeight="semibold">
+                Fonts
+              </Text>
+              <InlineStack gap="400">
+                <RadioButton
+                  label="Use theme fonts"
+                  name="cart-font-mode"
+                  checked={!!designSettings.inheritFonts}
+                  onChange={() => handleChange("inheritFonts", true)}
+                />
+                <RadioButton
+                  label="Custom font"
+                  name="cart-font-mode"
+                  checked={!designSettings.inheritFonts}
+                  onChange={() => handleChange("inheritFonts", false)}
+                />
+              </InlineStack>
+              {!designSettings.inheritFonts && (
+                <Box paddingBlockStart="200">
+                  <Select
+                    label="Font family"
+                    labelHidden
+                    options={CUSTOM_FONTS.map((f) => ({ label: f, value: f }))}
+                    value={resolveCustomFont(designSettings.customFont)}
+                    onChange={(value) => handleChange("customFont", value)}
+                  />
+                </Box>
+              )}
+              {/* <Checkbox
               label="Show compare-at prices"
               checked={designSettings.showStrikethrough}
               onChange={(value) => handleChange("showStrikethrough", value)}
             /> */}
+            </BlockStack>
+            <BlockStack gap="100">
+              <Text variant="headingSm" as="p">
+                Cart width
+              </Text>
+              <InlineStack align="space-between" gap="300" wrap={false}>
+                <div style={{ width: "100%" }}>
+                  <Select
+                    label="Desktop"
+                    options={[
+                      { label: "Default", value: "base" },
+                      { label: "Wide", value: "wide" },
+                    ]}
+                    value={designSettings.desktopWidth}
+                    onChange={(value) => handleChange("desktopWidth", value)}
+                  />
+                </div>
+                <div style={{ width: "100%" }}>
+                  <Select
+                    label="Mobile"
+                    options={[
+                      { label: "Full", value: "full" },
+                      { label: "Nearly full", value: "fullWithGap" },
+                    ]}
+                    value={designSettings.mobileWidth}
+                    onChange={(value) => handleChange("mobileWidth", value)}
+                  />
+                </div>
+              </InlineStack>
+            </BlockStack>
           </BlockStack>
-          <BlockStack gap="100">
-            <Text variant="headingSm" as="p">
-              Cart width
-            </Text>
-            <InlineStack align="space-between" gap="300" wrap={false}>
-              <div style={{ width: "100%" }}>
-                <Select
-                  label="Desktop"
-                  options={[
-                    { label: "Default", value: "base" },
-                    { label: "Wide", value: "wide" },
-                  ]}
-                  value={designSettings.desktopWidth}
-                  onChange={(value) => handleChange("desktopWidth", value)}
-                />
-              </div>
-              <div style={{ width: "100%" }}>
-                <Select
-                  label="Mobile"
-                  options={[
-                    { label: "Full", value: "full" },
-                    { label: "Nearly full", value: "fullWithGap" },
-                  ]}
-                  value={designSettings.mobileWidth}
-                  onChange={(value) => handleChange("mobileWidth", value)}
-                />
-              </div>
-            </InlineStack>
-          </BlockStack>
-        </BlockStack>
         </Card>
       </Box>
 
