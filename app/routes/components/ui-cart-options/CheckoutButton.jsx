@@ -7,6 +7,8 @@ import {
   InlineStack,
   RangeSlider,
   Text,
+  LegacyCard,
+  Checkbox,
 } from "@shopify/polaris";
 import { CartIcon } from "@shopify/polaris-icons";
 
@@ -19,13 +21,26 @@ import {
 } from "../utils/checkoutButton";
 import "../../../index.css";
 
-export default function CheckoutButton({ cartSettings, designSettings, handleChange }) {
+export default function CheckoutButton({
+  cartSettings,
+  designSettings,
+  handleChange,
+  setDesignSettings,
+}) {
   const s = getCheckoutButton(cartSettings);
   const update = (patch) =>
     handleChange("cartSettings", patchCheckoutButton(patch));
 
-  const label = s.label ?? cartSettings?.checkoutButtonText ?? "Checkout • {{Price}}";
+  const label =
+    s.label ?? cartSettings?.checkoutButtonText ?? "Checkout • {{Price}}";
   const radius = s.radius ?? (Number(designSettings?.buttonRadius) || 0);
+
+   const handleChange1 = (key, value) => {
+    setDesignSettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
   return (
     <div className="mainContent">
@@ -41,12 +56,23 @@ export default function CheckoutButton({ cartSettings, designSettings, handleCha
               </Text>
             </InlineStack>
 
-            <RichTextEditor value={label} onChange={(val) => update({ label: val })} />
+            <RichTextEditor
+              value={label}
+              onChange={(val) => update({ label: val })}
+            />
             <Text variant="bodySm" tone="subdued">
               Use {"{{Price}}"} to show the cart total.
             </Text>
           </BlockStack>
         </Card>
+
+        <LegacyCard sectioned title="Button settings">
+          <Checkbox
+            label="Show continue shopping button"
+            checked={designSettings.continueshopping}
+            onChange={(val) => handleChange1("continueshopping", val)}
+          />
+        </LegacyCard>
 
         <Card>
           <BlockStack gap="300">
@@ -63,7 +89,9 @@ export default function CheckoutButton({ cartSettings, designSettings, handleCha
               <ColorInput
                 label="Button Background"
                 value={
-                  s.background?.color || designSettings?.buttonColor || "#000000"
+                  s.background?.color ||
+                  designSettings?.buttonColor ||
+                  "#000000"
                 }
                 onChange={(color) =>
                   update({ background: { type: "plain", color } })
@@ -71,7 +99,9 @@ export default function CheckoutButton({ cartSettings, designSettings, handleCha
               />
               <ColorInput
                 label="Button Border"
-                value={s.borderColor || designSettings?.accentSolid || "#000000"}
+                value={
+                  s.borderColor || designSettings?.accentSolid || "#000000"
+                }
                 onChange={(val) => update({ borderColor: val })}
               />
             </InlineGrid>

@@ -198,6 +198,7 @@ export const action = async ({ request }) => {
 
       const track = (module) =>
         trackedItems.push({
+          image: item.images,
           title: item.title || item.name || "Unknown product",
           productId: item.product_id ? String(item.product_id) : null,
           variantId: item.variant_id ? String(item.variant_id) : null,

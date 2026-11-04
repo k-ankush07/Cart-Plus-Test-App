@@ -1,7 +1,8 @@
+
 import { authenticate } from "../shopify.server";
 import { json } from "@remix-run/node";
 
-// Shared product fields so every query returns the same shape
+// Shared product fields
 const PRODUCT_FIELDS = `
   id
   title
@@ -28,6 +29,7 @@ const buildProduct = (node, variants) => {
   const maxCompareAt = Math.max(
     ...variants.map((v) => parseFloat(v.compareAtPrice || 0)),
   );
+
   const fallbackImage = node.featuredImage?.url || null;
 
   return {
@@ -36,7 +38,6 @@ const buildProduct = (node, variants) => {
     image: fallbackImage,
     price: minPrice.toFixed(2),
     compareAtPrice: maxCompareAt > 0 ? maxCompareAt.toFixed(2) : null,
-    // No fake reviews. Plug in a review app here if you have one.
     rating: null,
     reviewCount: 0,
     variants: variants.map((v) => ({
@@ -62,9 +63,54 @@ export const action = async ({ request }) => {
 
   const variantIds = body.variantIds || [];
   const collectionIds = body.collectionIds || [];
-  const limit = Math.min(Math.max(parseInt(body.limit, 10) || 10, 1), 50);
+  const productIds = body.productIds || [];
 
-  // ── 1) Nothing selected -> latest active products from the store ──────────
+  const limit = Math.min(
+    Math.max(parseInt(body.limit, 10) || 10, 1),
+    50,
+  );
+
+  // ── 1) Fetch products by Shopify product IDs ─────────────
+  if (productIds.length) {
+    const query = `
+      query ($ids: [ID!]!) {
+        nodes(ids: $ids) {
+          ... on Product {
+            ${PRODUCT_FIELDS}
+          }
+        }
+      }
+    `;
+
+    const ids = productIds.map((id) =>
+      String(id).startsWith("gid://")
+        ? String(id)
+        : `gid://shopify/Product/${id}`,
+    );
+
+    const allProducts = [];
+
+    for (let i = 0; i < ids.length; i += 250) {
+      const res = await admin.graphql(query, {
+        variables: {
+          ids: ids.slice(i, i + 250),
+        },
+      });
+
+      const data = await res.json();
+
+      allProducts.push(...(data?.data?.nodes || []));
+    }
+
+    const finalProducts = allProducts
+      .filter((p) => p && p.status === "ACTIVE")
+      .map(transformProduct)
+      .filter(Boolean);
+
+    return json({ products: finalProducts });
+  }
+
+  // ── 2) Nothing selected -> latest active products ────────
   if (!variantIds.length && !collectionIds.length) {
     const query = `
       query ($first: Int!) {
@@ -74,7 +120,10 @@ export const action = async ({ request }) => {
       }
     `;
 
-    const res = await admin.graphql(query, { variables: { first: limit } });
+    const res = await admin.graphql(query, {
+      variables: { first: limit },
+    });
+
     const data = await res.json();
 
     const finalProducts = (data?.data?.products?.edges || [])
@@ -84,7 +133,7 @@ export const action = async ({ request }) => {
     return json({ products: finalProducts });
   }
 
-  // ── 2) Products from the selected collection(s) ───────────────────────────
+  // ── 3) Products from selected collections ───────────────
   if (collectionIds.length) {
     const query = `
       query ($id: ID!, $first: Int!, $cursor: String) {
@@ -108,10 +157,16 @@ export const action = async ({ request }) => {
 
       while (hasNextPage && allProducts.length < limit) {
         const res = await admin.graphql(query, {
-          variables: { id: collectionId, first: Math.min(limit, 50), cursor },
+          variables: {
+            id: collectionId,
+            first: Math.min(limit, 50),
+            cursor,
+          },
         });
+
         const data = await res.json();
         const products = data?.data?.collection?.products;
+
         if (!products) break;
 
         allProducts.push(
@@ -119,14 +174,17 @@ export const action = async ({ request }) => {
         );
 
         hasNextPage = products.pageInfo.hasNextPage;
-        if (hasNextPage) {
+
+        if (hasNextPage && products.edges.length) {
           cursor = products.edges[products.edges.length - 1].cursor;
+        } else {
+          break;
         }
       }
     }
 
-    // Remove duplicates when collections overlap
     const seen = new Set();
+
     const finalProducts = allProducts
       .map(({ node }) => transformProduct(node))
       .filter((p) => p && !seen.has(p.id) && seen.add(p.id))
@@ -135,7 +193,7 @@ export const action = async ({ request }) => {
     return json({ products: finalProducts });
   }
 
-  // ── 3) Products from the selected variants ────────────────────────────────
+  // ── 4) Products from selected variants ──────────────────
   const query = `
     query ($ids: [ID!]!) {
       nodes(ids: $ids) {
@@ -152,19 +210,25 @@ export const action = async ({ request }) => {
     }
   `;
 
-  // Shopify's nodes() takes at most 250 ids, and a few products can have hundreds of
-  // variants, so ask in chunks
   const NODES_LIMIT = 250;
   const variantNodes = [];
+
   for (let i = 0; i < variantIds.length; i += NODES_LIMIT) {
+    const ids = variantIds.slice(i, i + NODES_LIMIT).map((id) =>
+      String(id).startsWith("gid://")
+        ? String(id)
+        : `gid://shopify/ProductVariant/${id}`,
+    );
+
     const res = await admin.graphql(query, {
-      variables: { ids: variantIds.slice(i, i + NODES_LIMIT) },
+      variables: { ids },
     });
+
     const data = await res.json();
+
     variantNodes.push(...(data?.data?.nodes || []));
   }
 
-  // Group the selected variants by their parent product
   const grouped = new Map();
 
   variantNodes.forEach((variantNode) => {
@@ -174,8 +238,12 @@ export const action = async ({ request }) => {
     const { product, ...variant } = variantNode;
 
     if (!grouped.has(product.id)) {
-      grouped.set(product.id, { product, variants: [] });
+      grouped.set(product.id, {
+        product,
+        variants: [],
+      });
     }
+
     grouped.get(product.id).variants.push(variant);
   });
 

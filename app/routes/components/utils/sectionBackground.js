@@ -3,7 +3,6 @@
 // Sections that already have their own background card (Header, Announcement, Timer,
 // Products in cart) are not listed here.
 export const SECTION_BG_KEYS = [
-  "Banner Image",
   "Progress Bar",
   "One Tick Upsell",
   "Upsells",

@@ -5,6 +5,8 @@ export const BANNER_DEFAULTS = {
   width: 100, // % of the cart width
   padding: 0, // px around the banner
   radius: 0, // px
+  posX: 50, // % focal point (object-position x) set via "Reposition image"
+  posY: 50, // % focal point (object-position y)
 };
 
 export const getBanner = (headerSettings) => ({

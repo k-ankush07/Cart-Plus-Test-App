@@ -36,14 +36,6 @@ const EVENT_META = {
   checkout_completed: { label: "Completed checkout", tone: "success" },
 };
 
-function timeAgo(from, now) {
-  const sec = Math.max(0, Math.floor((now - from) / 1000));
-  if (sec < 60) return `${sec}s ago`;
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  return `${Math.floor(min / 60)}h ago`;
-}
-
 // Whole days in the viewer's local time: start of first day → end of last day
 function getRange(range) {
   const start = new Date(range.start);
@@ -51,6 +43,31 @@ function getRange(range) {
   const end = new Date(range.end);
   end.setHours(23, 59, 59, 999);
   return { startDate: start.toISOString(), endDate: end.toISOString() };
+}
+
+function LastUpdated({ value }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    setNow(Date.now()); // value badalte hi turant sync
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [value]);
+
+  if (!value) return null;
+
+  const sec = Math.max(0, Math.floor((now - value) / 1000));
+  let label;
+  if (sec < 60) label = `${sec}s ago`;
+  else if (sec < 3600) label = `${Math.floor(sec / 60)}m ago`;
+  else if (sec < 86400) label = `${Math.floor(sec / 3600)}h ago`;
+  else label = `${Math.floor(sec / 86400)}d ago`;
+
+  return (
+    <Text variant="bodyMd" tone="subdued" as="span">
+      Last updated: {label}
+    </Text>
+  );
 }
 
 function formatDateTime(value) {
@@ -214,9 +231,23 @@ function TopProductsCard({
   items,
   loading,
   valueText,
+  valueOrder,
+  valueHeading = "Total",
   shop,
   showImage,
+  orderHeading = "Times",
+  bestSellingProductHeading = "Times",
+  valueOrderFalse = true,
 }) {
+  const titleClip = {
+    display: "inline-block",
+    maxWidth: 260,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    verticalAlign: "bottom",
+  };
+
   return (
     <Card>
       <BlockStack gap="300">
@@ -242,86 +273,158 @@ function TopProductsCard({
         ) : (
           <div
             style={{
+              overflowX: "auto",
               border: "1px solid #e3e3e3",
               borderRadius: 12,
-              overflow: "hidden",
             }}
           >
-            {items.map((p, i) => (
-              <div
-                key={p.id}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "24px minmax(0, 1fr) auto",
-                  alignItems: "center",
-                  columnGap: 12,
-                  padding: "12px 16px",
-                  borderTop: i === 0 ? "none" : "1px solid #f1f1f1",
-                  background: i === 0 ? "#f7fbff" : "transparent",
-                }}
-              >
-                <Text fontWeight="semibold" tone="subdued" as="span">
-                  {i + 1}
-                </Text>
-
-                <InlineStack gap="300" blockAlign="center" wrap={false}>
-                  {showImage && p.image && (
-                    <img
-                      src={p.image}
-                      alt=""
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                minWidth: 360,
+              }}
+            >
+              <thead>
+                <tr style={{ borderBottom: "1px solid #e3e3e3" }}>
+                  {/* <th style={{ ...headStyle, width: 40, paddingLeft: 16 }}>
+                    #
+                  </th> */}
+                  <th style={headStyle}>Product</th>
+                  {valueOrderFalse && (
+                    <th
                       style={{
-                        width: 40,
-                        height: 40,
-                        objectFit: "cover",
-                        borderRadius: 8,
+                        ...headStyle,
+                        textAlign: "right",
+                        paddingRight: 16,
+                        whiteSpace: "nowrap",
                       }}
-                    />
+                    >
+                      {orderHeading}
+                    </th>
                   )}
-                  <div style={{ minWidth: 0 }}>
-                    {p.handle ? (
-                      <Link
-                        url={`https://${shop}/products/${p.handle}`}
-                        target="_blank"
-                      >
-                        <span
-                          title={p.title}
-                          style={{
-                            display: "inline-block",
-                            maxWidth: 220,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            verticalAlign: "bottom",
-                          }}
-                        >
-                          {p.title}
-                        </span>
-                      </Link>
-                    ) : (
-                      <span
-                        title={p.title}
+                  {valueOrderFalse && (
+                    <th
+                      style={{
+                        ...headStyle,
+                        textAlign: "right",
+                        paddingRight: 16,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {valueHeading}
+                    </th>
+                  )}
+                  {!valueOrderFalse && (
+                    <th
+                      style={{
+                        ...headStyle,
+                        textAlign: "right",
+                        paddingRight: 16,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {bestSellingProductHeading}
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((p, i) => (
+                  <tr
+                    key={p.id}
+                    style={{
+                      borderBottom:
+                        i === items.length - 1 ? "none" : "1px solid #f1f1f1",
+                      background: i === 0 ? "#f7fbff" : "transparent",
+                    }}
+                  >
+                    {/* <td style={{ ...cellStyle, paddingLeft: 16 }}>
+                      <Text fontWeight="semibold" tone="subdued" as="span">
+                        {i + 1}
+                      </Text>
+                    </td> */}
+
+                    <td style={cellStyle}>
+                      <InlineStack gap="300" blockAlign="center" wrap={false}>
+                        {showImage && p.image && (
+                          <img
+                            src={p.image}
+                            alt=""
+                            style={{
+                              width: 40,
+                              height: 40,
+                              objectFit: "cover",
+                              borderRadius: 8,
+                              flexShrink: 0,
+                            }}
+                          />
+                        )}
+                        <div style={{ minWidth: 0 }}>
+                          {p.handle ? (
+                            <Link
+                              url={`https://${shop}/products/${p.handle}`}
+                              target="_blank"
+                            >
+                              <span title={p.title} style={titleClip}>
+                                {p.title}
+                              </span>
+                            </Link>
+                          ) : (
+                            <span title={p.title} style={titleClip}>
+                              <Text as="span">{p.title}</Text>
+                            </span>
+                          )}
+                        </div>
+                      </InlineStack>
+                    </td>
+
+                    {valueOrderFalse && (
+                      <td
                         style={{
-                          display: "inline-block",
-                          maxWidth: 220,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
+                          ...cellStyle,
+                          textAlign: "right",
+                          paddingRight: 16,
                           whiteSpace: "nowrap",
                         }}
                       >
-                        <Text as="span">{p.title}</Text>
-                      </span>
+                        <InlineStack
+                          gap="200"
+                          blockAlign="center"
+                          align="end"
+                          wrap={false}
+                        >
+                          <Text fontWeight="semibold" as="span">
+                            {valueOrder(p)}
+                          </Text>
+                        </InlineStack>
+                      </td>
                     )}
-                  </div>
-                </InlineStack>
 
-                <InlineStack gap="200" blockAlign="center">
-                  {i === 0 && <Badge tone="success">Top</Badge>}
-                  <Text fontWeight="semibold" as="span">
-                    {valueText(p)}
-                  </Text>
-                </InlineStack>
-              </div>
-            ))}
+                    <td
+                      style={{
+                        ...cellStyle,
+                        textAlign: "right",
+                        paddingRight: 16,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <InlineStack
+                        gap="200"
+                        blockAlign="center"
+                        align="end"
+                        wrap={false}
+                      >
+                        {i === 0 && <Badge tone="success">Top</Badge>}
+                        <Text fontWeight="semibold" as="span">
+                          {valueText(p)}
+                        </Text>
+                      </InlineStack>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </BlockStack>
@@ -392,21 +495,93 @@ export default function Activity() {
   const loadTop = useCallback(
     async ({ silent = false } = {}) => {
       if (!silent) setTopLoading(true);
+
       try {
         const { startDate, endDate } = getRange({
           start: startISO,
           end: endISO,
         });
+
         const url = new URL(`${apiUrl}/api/cart-activity/top-products`);
         url.searchParams.set("shop", shop);
         url.searchParams.set("startDate", startDate);
         url.searchParams.set("endDate", endDate);
+
         const res = await fetch(url.toString(), {
           headers: { "x-api-key": clientApiKey },
         });
+
         const json = await res.json();
-        if (json.success) setTop(json.data);
-      } catch (_) {
+
+        if (!json.success) return;
+
+        const { mostAdded = [], bestSelling = [] } = json.data;
+
+        const productIds = [
+          ...new Set(
+            [...mostAdded, ...bestSelling]
+              .map((p) => String(p.productId || ""))
+              .filter(Boolean),
+          ),
+        ];
+
+        let shopifyProducts = [];
+
+        if (productIds.length > 0) {
+          const productRes = await fetch("/shopify/get-products", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              shop,
+              productIds,
+            }),
+          });
+
+          const productJson = await productRes.json();
+          shopifyProducts =
+            productJson.products ||
+            productJson.data?.products ||
+            productJson.data ||
+            [];
+        }
+
+        const getProductId = (id) =>
+          String(id || "")
+            .split("/")
+            .pop();
+
+        const productMap = new Map(
+          shopifyProducts.map((product) => [getProductId(product.id), product]),
+        );
+
+        const attachProductImage = (products) =>
+          products.map((p) => {
+            const shopifyProduct = productMap.get(getProductId(p.productId));
+
+            const image =
+              shopifyProduct?.featuredImage?.url ||
+              shopifyProduct?.images?.edges?.[0]?.node?.url ||
+              shopifyProduct?.image?.src ||
+              shopifyProduct?.image ||
+              p.image ||
+              "";
+
+            return {
+              ...p,
+              image,
+              title: p.title || shopifyProduct?.title || "Product",
+            };
+          });
+
+        setTop({
+          mostAdded: attachProductImage(mostAdded),
+          bestSelling: attachProductImage(bestSelling),
+        });
+       
+      } catch (error) {
+        console.error("LOAD TOP PRODUCTS ERROR:", error);
       } finally {
         if (!silent) setTopLoading(false);
       }
@@ -561,11 +736,7 @@ export default function Activity() {
               loading={loading}
             />
 
-            {lastUpdated && (
-              <Text variant="bodyMd" tone="subdued" as="span">
-                Last updated: {timeAgo(lastUpdated, now)}
-              </Text>
-            )}
+            <LastUpdated value={lastUpdated} />
 
             <div style={{ flex: 1 }} />
 
@@ -585,9 +756,10 @@ export default function Activity() {
               items={top.bestSelling}
               loading={topLoading}
               shop={shop}
-              showImage={false}
+              showImage
+              valueOrder={(p) => `${p.quantity}`}
               valueText={(p) =>
-                `${p.quantity} sold · ${priceLabel(p.revenue, p.currency || shopCurrency)}`
+                `${priceLabel(p.revenue, p.currency || shopCurrency)}`
               }
             />
             <TopProductsCard
@@ -597,7 +769,9 @@ export default function Activity() {
               loading={topLoading}
               shop={shop}
               showImage
-              valueText={(p) => `${p.addedQty} added`}
+              valueOrder={(p) => `${p.quantity}`}
+              valueText={(p) => `${p.addedQty} `}
+              valueOrderFalse={false}
             />
           </div>
 

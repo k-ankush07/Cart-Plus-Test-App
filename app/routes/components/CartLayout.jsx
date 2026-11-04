@@ -28,7 +28,7 @@ import {
   getCarts,
 } from "../../services/apiRoutes";
 import { getCurrencySymbol } from "./utils/currency";
-import { toggleBanner } from "./utils/banner";
+import { toggleBanner, patchBanner } from "./utils/banner";
 import { toggleTimer } from "./utils/timer";
 import { toggleOneTick } from "./utils/oneTick";
 import { toggleSummary } from "./utils/summary";
@@ -90,7 +90,7 @@ const CartLayout = memo(function CartLayout({
   const location = useLocation();
   const navigation = useNavigation();
 
-  const [cartName, setCartName] = useState(initialCartName || "Untitled cart");
+  const [cartName, setCartName] = useState(initialCartName || "My Cart");
   const [cartStatus, setCartStatus] = useState(cart?.status || "unpublished");
   const [previewPopoverOpen, setPreviewPopoverOpen] = useState(false);
   const [publishModal, setPublishModal] = useState(false);
@@ -140,7 +140,7 @@ const CartLayout = memo(function CartLayout({
 
   // Sync state when cart prop changes (after switching carts via dropdown)
   useEffect(() => {
-    setCartName(initialCartName || "Untitled cart");
+    setCartName(initialCartName || "My Cart");
     setCartStatus(cart?.status || "unpublished");
   }, [cart?.cartId]);
 
@@ -288,9 +288,9 @@ const CartLayout = memo(function CartLayout({
                         />
                       )}
                     </svg>
-                    {(c.cartName || "Untitled cart").length > 20
-                      ? (c.cartName || "Untitled cart").slice(0, 20) + "..."
-                      : c.cartName || "Untitled cart"}
+                    {(c.cartName || "My Cart").length > 20
+                      ? (c.cartName || "My Cart").slice(0, 20) + "..."
+                      : c.cartName || "My Cart"}
                   </span>
                 ),
                 onAction: () => {
@@ -344,7 +344,7 @@ const CartLayout = memo(function CartLayout({
         root.classList.remove("sidebar-position-right");
         root.classList.add("sidebar-position-left");
       }
-      root.style.bottom = "-50px";
+      root.style.bottom = "-15px";
     };
 
     const trySetup = () => {
@@ -941,6 +941,9 @@ const CartLayout = memo(function CartLayout({
           apiUrl={apiUrl}
           previewProducts={previewProducts}
           previewLoading={previewLoading}
+          onBannerChange={(patch) =>
+            handleChange("header", patchBanner(patch))
+          }
           onAddPreviewProduct={(product, variant) =>
             setPreviewProducts((prev) => {
               const existing = prev.find((p) => p.id === product.id);

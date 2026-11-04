@@ -616,7 +616,7 @@ function AppCartsInner({
       return true;
     })
     .filter((c) =>
-      (c.cartName || "Untitled cart")
+      (c.cartName || "My Cart")
         .toLowerCase()
         .includes(searchValue.toLowerCase()),
     )
@@ -1051,13 +1051,13 @@ function AppCartsInner({
               active={popoverActive && !creatingFrom}
               activator={
                 <Button
-                  icon={PlusIcon}
+                  variant="primary"
                   onClick={() => setPopoverActive((v) => !v)}
                   disclosure
                   loading={!!creatingFrom}
                   disabled={!!creatingFrom}
                 >
-                  {creatingFrom ? "Creating..." : "Create cart"}
+                  {creatingFrom ? "Creating..." : "Create Cart"}
                 </Button>
               }
               onClose={() => setPopoverActive(false)}
@@ -1250,68 +1250,71 @@ function AppCartsInner({
           </Layout.Section>
 
           {/* App Features */}
-          <Layout.Section>
-            <BlockStack gap="300">
-              <Text variant="headingMd" as="h3">
-                App Features
-              </Text>
-              <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
-                {appFeatures.map((feature) => (
-                  <Card key={feature.title} padding="400">
-                    <BlockStack gap="300">
-                      <InlineStack gap="300" blockAlign="center" wrap={false}>
-                        <div
-                          style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 8,
-                            background: "#f1f2f3",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <Icon source={feature.icon} />
-                        </div>
-                        <div
-                          style={{
-                            flex: 1,
-                            minWidth: 0,
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 2,
-                          }}
-                        >
-                          <Text variant="bodyMd" as="p">
-                            {feature.title}
-                          </Text>
-                          <Text variant="headingSm" as="p">
-                            {feature.subtitle}
-                          </Text>
-                        </div>
-                        {feature.isActive && (
-                          <div style={{ flexShrink: 0 }}>
-                            <Badge tone="success">Active</Badge>
+
+          <Layout.Section gap="300">
+            <Box paddingBlockStart="800">
+              <BlockStack gap="300">
+                <Text variant="headingMd" as="h3">
+                  App Features 🔥
+                </Text>
+                <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
+                  {appFeatures.map((feature) => (
+                    <Card key={feature.title} padding="400">
+                      <BlockStack gap="300">
+                        <InlineStack gap="300" blockAlign="center" wrap={false}>
+                          <div
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 8,
+                              background: "#f1f2f3",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Icon source={feature.icon} />
                           </div>
-                        )}
-                      </InlineStack>
-                      <Button
-                        fullWidth
-                        disabled={!featureCart?.cartId}
-                        onClick={() =>
-                          navigate(
-                            `/app/cart-editor/${featureCart.cartId}?from=carts&module=${feature.module}`,
-                          )
-                        }
-                      >
-                        Configure
-                      </Button>
-                    </BlockStack>
-                  </Card>
-                ))}
-              </InlineGrid>
-            </BlockStack>
+                          <div
+                            style={{
+                              flex: 1,
+                              minWidth: 0,
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 2,
+                            }}
+                          >
+                            <Text variant="bodyMd" as="p">
+                              {feature.title}
+                            </Text>
+                            <Text variant="headingSm" as="p">
+                              {feature.subtitle}
+                            </Text>
+                          </div>
+                          {feature.isActive && (
+                            <div style={{ flexShrink: 0 }}>
+                              <Badge tone="success">Active</Badge>
+                            </div>
+                          )}
+                        </InlineStack>
+                        <Button
+                          fullWidth
+                          disabled={!featureCart?.cartId}
+                          onClick={() =>
+                            navigate(
+                              `/app/cart-editor/${featureCart.cartId}?from=carts&module=${feature.module}`,
+                            )
+                          }
+                        >
+                          Configure
+                        </Button>
+                      </BlockStack>
+                    </Card>
+                  ))}
+                </InlineGrid>
+              </BlockStack>
+            </Box>
           </Layout.Section>
         </Layout>
 
@@ -1486,7 +1489,7 @@ function AppCartsInner({
             setPublishModal(false);
             setCartToPublish(null);
           }}
-          title={`Publish "${cartToPublish?.cartName || "Untitled cart"}"?`}
+          title={`Publish "${cartToPublish?.cartName || "My Cart"}"?`}
           primaryAction={{
             content: "Publish cart",
             loading: modalLoading,
@@ -1517,7 +1520,7 @@ function AppCartsInner({
           open={deleteModal}
           size="small"
           onClose={() => setDeleteModal(false)}
-          title={`Are you sure you want to delete "${selectedCart?.cartName || "Untitled cart"}"?`}
+          title={`Are you sure you want to delete "${selectedCart?.cartName || "My Cart"}"?`}
           primaryAction={{
             content: "Delete cart",
             destructive: true,
@@ -1549,7 +1552,7 @@ function AppCartsInner({
             setUnpublishModal(false);
             setCartToUnpublish(null);
           }}
-          title={`Unpublish "${cartToUnpublish?.cartName || "Untitled cart"}"?`}
+          title={`Unpublish "${cartToUnpublish?.cartName || "My Cart"}"?`}
           primaryAction={{
             content: "Unpublish cart",
             destructive: true,

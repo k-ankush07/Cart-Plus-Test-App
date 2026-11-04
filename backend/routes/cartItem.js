@@ -169,7 +169,7 @@ router.post("/create-cart", async (req, res) => {
     }
 
     const count = await cartModels.countDocuments({ shop });
-    const cartName = clientCartName?.trim() || `Untitled cart ${count + 1}`;
+    const cartName = clientCartName?.trim() || `My Cart ${count + 1}`;
     const cartId = clientCartId || crypto.randomUUID();
 
     const newCart = await cartModels.create({
@@ -556,7 +556,7 @@ router.post("/duplicate-cart", async (req, res) => {
       ...existingCart._doc,
       _id: undefined,
       cartId: generateNewCartId(),
-      cartName: `Copy of ${existingCart.cartName || "Untitled cart"}`,
+      cartName: `Copy of ${existingCart.cartName || "My Cart"}`,
       status: "unpublished",
       createdAt: new Date(),
     };
@@ -1076,6 +1076,7 @@ router.get("/cart-activity/top-products", async (req, res) => {
         {
           $group: {
             _id: { $ifNull: ["$productId", "$productTitle"] },
+            productId: { $first: "$productId" },
             productTitle: { $first: "$productTitle" },
             handle: { $first: "$handle" },
             image: { $first: "$image" },
@@ -1089,12 +1090,15 @@ router.get("/cart-activity/top-products", async (req, res) => {
         { $limit: 5 },
       ]),
       // Best-selling: order items ki quantity (orderRevenue.items se)
+
       orderRevenueModel.aggregate([
         { $match: { shop: cleanShop, ...dateMatch } },
         { $unwind: "$items" },
         {
           $group: {
-            _id: "$items.title",
+            _id: "$items.productId",
+            productId: { $first: "$items.productId" },
+            title: { $first: "$items.title" },
             currency: { $first: "$currency" },
             quantity: { $sum: "$items.quantity" },
             revenue: { $sum: "$items.revenue" },
@@ -1110,6 +1114,7 @@ router.get("/cart-activity/top-products", async (req, res) => {
       data: {
         mostAdded: mostAdded.map((p) => ({
           id: String(p._id),
+          productId: p.productId,
           title: p.productTitle || "Product",
           handle: p.handle || "",
           image: p.image || "",
@@ -1118,9 +1123,11 @@ router.get("/cart-activity/top-products", async (req, res) => {
           addedQty: p.addedQty,
           addCount: p.addCount,
         })),
+
         bestSelling: bestSelling.map((p) => ({
-          id: String(p._id),
-          title: p._id || "Product",
+          id: String(p.productId || p._id),
+          productId: p.productId,
+          title: p.title || "Product",
           currency: p.currency || "",
           quantity: p.quantity || 0,
           revenue: p.revenue || 0,

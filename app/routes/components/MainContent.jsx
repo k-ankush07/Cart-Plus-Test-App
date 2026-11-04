@@ -28,230 +28,320 @@ import CheckoutButton from "./ui-cart-options/CheckoutButton";
 import PaymentBadges from "./ui-cart-options/PaymentBadges";
 import CartVisibility from "./ui-cart-options/CartVisibility";
 import EmptyCart from "./ui-cart-options/EmptyCart";
-import { getEmptyUpsells, emptyUpsellsHandleChange } from "./utils/emptyUpsells";
+import {
+  getEmptyUpsells,
+  emptyUpsellsHandleChange,
+} from "./utils/emptyUpsells";
 import CustomBlock from "./ui-cart-options/CustomBlock";
 import { isCustomBlockKey } from "./utils/customBlocks";
 import "../../index.css";
 
-const MainContent = memo(function MainContent({ activeTab, designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
-    announcementSettings, rewardsSettings, currency, recommendationsSettings, subscriptionUpgradesSettings, upsellsSettings,
-    additionalNotesSettings, addonsSettings, discountCodesSettings, expressPaymentsSettings, trustBadgesSettings, cartSettings,
-    triggeredRewardsSettings, cartStatus, cartId, setActiveTab
+const MainContent = memo(function MainContent({
+  activeTab,
+  designSettings,
+  headerSettings,
+  handleChange,
+  accessToken,
+  shop,
+  apiUrl,
+  announcementSettings,
+  rewardsSettings,
+  currency,
+  recommendationsSettings,
+  subscriptionUpgradesSettings,
+  upsellsSettings,
+  additionalNotesSettings,
+  addonsSettings,
+  discountCodesSettings,
+  expressPaymentsSettings,
+  trustBadgesSettings,
+  cartSettings,
+  triggeredRewardsSettings,
+  cartStatus,
+  cartId,
+  setActiveTab,
 }) {
+  const componentMap = useMemo(
+    () => ({
+      Template: (
+        <TemplateSettings
+          designSettings={designSettings}
+          setDesignSettings={(updater) => handleChange("design", updater)}
+        />
+      ),
+      Header: (
+        <TopSection
+          headerSettings={headerSettings}
+          handleChange={handleChange}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      "Banner Image": (
+        <BannerImage
+          headerSettings={headerSettings}
+          handleChange={handleChange}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      Timer: (
+        <TimerSettings
+          headerSettings={headerSettings}
+          handleChange={handleChange}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      Announcement: (
+        <Notices
+          announcementSettings={announcementSettings}
+          handleChange={handleChange}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+          currency={currency}
+          designSettings={designSettings}
+        />
+      ),
+      "Progress Bar": (
+        <TieredOffers
+          rewardsSettings={rewardsSettings}
+          handleChange={handleChange}
+          currency={currency}
+        />
+      ),
+      "One Tick Upsell": (
+        <OneTickUpsell
+          cartSettings={cartSettings}
+          handleChange={handleChange}
+          currency={currency}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      "Triggered Rewards": (
+        <SmartOffers
+          triggeredRewardsSettings={triggeredRewardsSettings}
+          handleChange={handleChange}
+          currency={currency}
+          cartStatus={cartStatus}
+          cartId={cartId}
+        />
+      ),
+      "Recommended Products": (
+        <Recommended
+          recommendationsSettings={recommendationsSettings}
+          handleChange={handleChange}
+          currency={currency}
+        />
+      ),
+      "Subscription Upgrade": (
+        <SubscriptionUpgrades
+          subscriptionUpgradesSettings={subscriptionUpgradesSettings}
+          handleChange={handleChange}
+        />
+      ),
+      "Cross-sell": (
+        <UpsellsSettings
+          upsellsSettings={upsellsSettings}
+          handleChange={handleChange}
+          currency={currency}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      "Order notes": (
+        <AddNotes
+          additionalNotesSettings={additionalNotesSettings}
+          handleChange={handleChange}
+        />
+      ),
+      "Shipping Protection & Add-ons": (
+        <AddOns
+          addonsSettings={addonsSettings}
+          handleChange={handleChange}
+          currency={currency}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      "Discount code": (
+        <DiscountCode
+          discountCodesSettings={discountCodesSettings}
+          handleChange={handleChange}
+        />
+      ),
+      "Security Badges": (
+        <SecurityBadges
+          trustBadgesSettings={trustBadgesSettings}
+          handleChange={handleChange}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      Settings: (
+        <Setting cartSettings={cartSettings} handleChange={handleChange} />
+      ),
+      "Products in cart": (
+        <CartItem
+          handleChange={handleChange}
+          cartSettings={cartSettings}
+          currency={currency}
+        />
+      ),
+      "Empty Cross-sell": (
+        <UpsellsSettings
+          upsellsSettings={getEmptyUpsells(cartSettings)}
+          handleChange={emptyUpsellsHandleChange(handleChange)}
+          currency={currency}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      "Empty Login": (
+        <LoginMessage
+          cartSettings={cartSettings}
+          handleChange={handleChange}
+          settingsKey="emptyLogin"
+        />
+      ),
+      "Empty Settings": (
+        <EmptyCart
+          cartSettings={cartSettings}
+          designSettings={designSettings}
+          handleChange={handleChange}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      "Cart Visibility": (
+        <CartVisibility
+          cartSettings={cartSettings}
+          handleChange={handleChange}
+        />
+      ),
+      "Payment Badges": (
+        <PaymentBadges
+          cartSettings={cartSettings}
+          handleChange={handleChange}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+      "Checkout Button": (
+        <CheckoutButton
+          cartSettings={cartSettings}
+          designSettings={designSettings}
+          handleChange={handleChange}
+          setDesignSettings={(updater) => handleChange("design", updater)}
+        />
+      ),
+      Login: (
+        <LoginMessage cartSettings={cartSettings} handleChange={handleChange} />
+      ),
+      "Age Verification": (
+        <AgeVerification
+          cartSettings={cartSettings}
+          handleChange={handleChange}
+          currency={currency}
+        />
+      ),
+      Summary: (
+        <CartSummary
+          cartSettings={cartSettings}
+          handleChange={handleChange}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
+        />
+      ),
+    }),
+    [
+      designSettings,
+      headerSettings,
+      handleChange,
+      accessToken,
+      shop,
+      apiUrl,
+      announcementSettings,
+      rewardsSettings,
+      currency,
+      recommendationsSettings,
+      subscriptionUpgradesSettings,
+      upsellsSettings,
+      additionalNotesSettings,
+      addonsSettings,
+      discountCodesSettings,
+      expressPaymentsSettings,
+      trustBadgesSettings,
+      cartSettings,
+      triggeredRewardsSettings,
+    ],
+  );
 
-    const componentMap = useMemo(() => ({
-        Template: (
-            <TemplateSettings
-                designSettings={designSettings}
-                setDesignSettings={(updater) =>
-                    handleChange("design", updater)
-                }
-            />
-        ),
-        "Header": <TopSection
-            headerSettings={headerSettings}
-            handleChange={handleChange}
-            shop={shop}
-            accessToken={accessToken}
-            apiUrl={apiUrl}
-        />,
-        "Banner Image": <BannerImage
-            headerSettings={headerSettings}
-            handleChange={handleChange}
-            shop={shop}
-            accessToken={accessToken}
-            apiUrl={apiUrl}
-        />,
-        Timer: <TimerSettings
-            headerSettings={headerSettings}
-            handleChange={handleChange}
-            shop={shop}
-            accessToken={accessToken}
-            apiUrl={apiUrl}
-        />,
-        Announcement: <Notices
-            announcementSettings={announcementSettings}
-            handleChange={handleChange}
-            shop={shop}
-            accessToken={accessToken}
-            apiUrl={apiUrl}
-            currency={currency}
-            designSettings={designSettings}
-        />,
-        "Progress Bar": (
-            <TieredOffers
-                rewardsSettings={rewardsSettings}
-                handleChange={handleChange}
-                currency={currency}
-            />
-        ),
-        "One Tick Upsell": (
-            <OneTickUpsell
-                cartSettings={cartSettings}
-                handleChange={handleChange}
-                currency={currency}
-                shop={shop}
-                accessToken={accessToken}
-                apiUrl={apiUrl}
-            />
-        ),
-        "Triggered Rewards": (
-            <SmartOffers
-                triggeredRewardsSettings={triggeredRewardsSettings}
-                handleChange={handleChange}
-                currency={currency}
-                cartStatus={cartStatus}
-                cartId={cartId}
-            />
-        ),
-        "Recommended Products": (
-            <Recommended
-                recommendationsSettings={recommendationsSettings}
-                handleChange={handleChange}
-                currency={currency}
-            />
-        ),
-        "Subscription Upgrade": (
-            <SubscriptionUpgrades
-                subscriptionUpgradesSettings={subscriptionUpgradesSettings}
-                handleChange={handleChange}
-            />
-        ),
-        "Cross-sell": (
-            <UpsellsSettings
-                upsellsSettings={upsellsSettings}
-                handleChange={handleChange}
-                currency={currency}
-                shop={shop}
-                accessToken={accessToken}
-                apiUrl={apiUrl}
-            />
-        ),
-        "Order notes": (
-            <AddNotes
-                additionalNotesSettings={additionalNotesSettings}
-                handleChange={handleChange}
-            />
-        ),
-        "Shipping Protection & Add-ons": (
-            <AddOns
-                addonsSettings={addonsSettings}
-                handleChange={handleChange}
-                currency={currency}
-                shop={shop}
-                accessToken={accessToken}
-                apiUrl={apiUrl}
-            />
-        ),
-        "Discount code": (
-            <DiscountCode
-                discountCodesSettings={discountCodesSettings}
-                handleChange={handleChange}
-            />
-        ),
-        "Security Badges": (
-            <SecurityBadges
-                trustBadgesSettings={trustBadgesSettings}
-                handleChange={handleChange}
-                shop={shop}
-                accessToken={accessToken}
-                apiUrl={apiUrl}
-            />
-        ),
-        "Settings": (
-            <Setting
-                cartSettings={cartSettings}
-                handleChange={handleChange}
-            />
-        ),
-        "Products in cart": (
-            <CartItem
-                handleChange={handleChange}
-                cartSettings={cartSettings}
-                currency={currency}
-            />
-        ),
-        "Empty Cross-sell": (
-            <UpsellsSettings
-                upsellsSettings={getEmptyUpsells(cartSettings)}
-                handleChange={emptyUpsellsHandleChange(handleChange)}
-                currency={currency}
-                shop={shop}
-                accessToken={accessToken}
-                apiUrl={apiUrl}
-            />
-        ),
-        "Empty Login": (
-            <LoginMessage cartSettings={cartSettings} handleChange={handleChange} settingsKey="emptyLogin" />
-        ),
-        "Empty Settings": (
-            <EmptyCart cartSettings={cartSettings} designSettings={designSettings} handleChange={handleChange} shop={shop} accessToken={accessToken} apiUrl={apiUrl} />
-        ),
-        "Cart Visibility": (
-            <CartVisibility cartSettings={cartSettings} handleChange={handleChange} />
-        ),
-        "Payment Badges": (
-            <PaymentBadges cartSettings={cartSettings} handleChange={handleChange} shop={shop} accessToken={accessToken} apiUrl={apiUrl} />
-        ),
-        "Checkout Button": (
-            <CheckoutButton cartSettings={cartSettings} designSettings={designSettings} handleChange={handleChange} />
-        ),
-        Login: (
-            <LoginMessage cartSettings={cartSettings} handleChange={handleChange} />
-        ),
-        "Age Verification": (
-            <AgeVerification cartSettings={cartSettings} handleChange={handleChange} currency={currency} />
-        ),
-        Summary: (
-            <CartSummary cartSettings={cartSettings} handleChange={handleChange} shop={shop} accessToken={accessToken} apiUrl={apiUrl} />
+  return (
+    <div className="mainContent">
+      {isCustomBlockKey(activeTab) ? (
+        <CustomBlock
+          key={activeTab}
+          blockId={activeTab}
+          cartSettings={cartSettings}
+          handleChange={handleChange}
+          onDeleted={() => setActiveTab?.("Header")}
+        />
+      ) : (
+        componentMap[activeTab] || (
+          <Card>
+            <Text variant="headingMd">{activeTab} Settings</Text>
+          </Card>
         )
-    }), [designSettings, headerSettings, handleChange, accessToken, shop, apiUrl,
-        announcementSettings, rewardsSettings, currency, recommendationsSettings,
-        subscriptionUpgradesSettings, upsellsSettings, additionalNotesSettings,
-        addonsSettings, discountCodesSettings, expressPaymentsSettings,
-        trustBadgesSettings, cartSettings, triggeredRewardsSettings]);
+      )}
 
-    return (
-        <div className="mainContent">
-
-            {isCustomBlockKey(activeTab) ? (
-                <CustomBlock
-                    key={activeTab}
-                    blockId={activeTab}
-                    cartSettings={cartSettings}
-                    handleChange={handleChange}
-                    onDeleted={() => setActiveTab?.("Header")}
-                />
-            ) : componentMap[activeTab] || (
-                <Card>
-                    <Text variant="headingMd">{activeTab} Settings</Text>
-                </Card>
-            )}
-
-            {/* Cross-sell: the same Background color that fills the cart body (.cart-app__body) */}
-            {activeTab === "Cross-sell" && (
-                <div style={{ marginTop: 16 }}>
-                    <BackgroundInput
-                        title="Background color"
-                        value={getCartItemOptions(cartSettings).sectionBackground || { type: "plain", color: "#ffffff" }}
-                        onChange={(bg) => handleChange("cartSettings", patchCartItem({ sectionBackground: bg }))}
-                    />
-                </div>
-            )}
-
-            {/* every section's options end with its Background color */}
-            {SECTION_BG_KEYS.includes(sectionBgId(activeTab)) && componentMap[activeTab] && (
-                <div style={{ marginTop: 16 }}>
-                    <SectionBackground
-                        sectionKey={sectionBgId(activeTab)}
-                        cartSettings={cartSettings}
-                        handleChange={handleChange}
-                    />
-                </div>
-            )}
-
+      {/* Cross-sell: the same Background color that fills the cart body (.cart-app__body) */}
+      {activeTab === "Cross-sell" && (
+        <div style={{ marginTop: 16 }}>
+          <BackgroundInput
+            title="Background color"
+            value={
+              getCartItemOptions(cartSettings).sectionBackground || {
+                type: "plain",
+                color: "#ffffff",
+              }
+            }
+            onChange={(bg) =>
+              handleChange(
+                "cartSettings",
+                patchCartItem({ sectionBackground: bg }),
+              )
+            }
+          />
         </div>
-    );
+      )}
+
+      {/* every section's options end with its Background color */}
+      {SECTION_BG_KEYS.includes(sectionBgId(activeTab)) &&
+        componentMap[activeTab] && (
+          <div style={{ marginTop: 16 }}>
+            <SectionBackground
+              sectionKey={sectionBgId(activeTab)}
+              cartSettings={cartSettings}
+              handleChange={handleChange}
+            />
+          </div>
+        )}
+    </div>
+  );
 });
 
 export default MainContent;

@@ -69,6 +69,7 @@ const CartPreview = memo(function CartPreview({
   previewLoading,
   onRemovePreviewProduct,
   onAddPreviewProduct,
+  onBannerChange,
 }) {
   const designSettings = useMemo(
     () => applyTemplateTheme(rawDesignSettings),
@@ -129,7 +130,10 @@ const CartPreview = memo(function CartPreview({
     ...blockNodes,
     "Banner Image": (
       <SectionBg id="Banner Image" cartSettings={cartSettings}>
-        <BannerImage headerSettings={headerSettings} />
+        <BannerImage
+          headerSettings={headerSettings}
+          onReposition={onBannerChange}
+        />
       </SectionBg>
     ),
     Announcement: showTopRows &&

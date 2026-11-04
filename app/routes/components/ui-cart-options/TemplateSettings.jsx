@@ -11,7 +11,7 @@ import {
   TextField,
   ColorPicker,
   Button,
-    Icon,
+  Icon,
 } from "@shopify/polaris";
 import { RefreshIcon, AppsIcon } from "@shopify/polaris-icons";
 import Appearance from "./Appearance";
@@ -368,7 +368,7 @@ const Swatch = ({ background, selected, onClick, label, size = 28 }) => (
     style={{
       width: size,
       height: size,
-      borderRadius: "50%",
+      borderRadius: "5px",
       border: "none",
       padding: 0,
       cursor: "pointer",
@@ -470,7 +470,7 @@ export default function TemplateSettings({
       <Box paddingBlockEnd="400">
         <InlineStack align="space-between" blockAlign="center">
           <InlineStack blockAlign="center" gap="100">
-           <Icon source={AppsIcon} />
+            <Icon source={AppsIcon} />
             <Text variant="headingMd" as="h2">
               Template
             </Text>
@@ -549,7 +549,6 @@ export default function TemplateSettings({
                       onClick={() => update({ themeColor: c })}
                     />
                   ))}
-
               <Popover
                 active={customOpen}
                 autofocusTarget="none"
@@ -678,25 +677,27 @@ export default function TemplateSettings({
 
         {/* Style */}
         <Card>
-          <BlockStack gap="400">
+          <BlockStack gap="500">
             <Text as="h3" variant="headingSm">
               Style
             </Text>
 
             <BlockStack gap="100">
-              <Text as="p" variant="bodySm">
+              <Text as="p" variant="bodySm" fontWeight="semibold">
                 Appearance
               </Text>
-              <RadioButton
-                label="Light"
-                checked={t.appearance === "light"}
-                onChange={() => update({ appearance: "light" })}
-              />
-              <RadioButton
-                label="Dark"
-                checked={t.appearance === "dark"}
-                onChange={() => update({ appearance: "dark" })}
-              />
+                <InlineStack gap="400">
+                <RadioButton
+                  label="Light"
+                  checked={t.appearance === "light"}
+                  onChange={() => update({ appearance: "light" })}
+                />
+                <RadioButton
+                  label="Dark"
+                  checked={t.appearance === "dark"}
+                  onChange={() => update({ appearance: "dark" })}
+                />
+              </InlineStack>
             </BlockStack>
 
             <BlockStack gap="100">

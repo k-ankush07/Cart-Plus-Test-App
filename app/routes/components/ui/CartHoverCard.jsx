@@ -96,7 +96,7 @@ export default function CartHoverCard({ cart, children }) {
                 >
                     {/* Cart name */}
                     <p
-                        title={cart.cartName || "Untitled cart"}
+                        title={cart.cartName || "My Cart"}
                         style={{
                             margin: "0 0 12px 0",
                             fontWeight: 600,
@@ -109,7 +109,7 @@ export default function CartHoverCard({ cart, children }) {
                             maxWidth: "180px", 
                         }}
                     >
-                        {cart.cartName || "Untitled cart"}
+                        {cart.cartName || "My Cart"}
                     </p>
 
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

@@ -83,6 +83,12 @@ export default function BannerImage({
             <span className="sb-switch-knob" />
           </button>
         </InlineStack>
+        <Box paddingBlockStart="200">
+          <Text as="p" variant="bodySm" tone="subdued">
+            We recommend a 700 × 200 px aspect ratio for the best visual
+            experience.
+          </Text>
+        </Box>
       </Box>
 
       <LegacyCard sectioned>
@@ -148,16 +154,12 @@ export default function BannerImage({
               {error}
             </Text>
           )}
-          <Text as="p" variant="bodySm" tone="subdued">
-            We recommend a 700 × 200 px aspect ratio for the best visual
-            experience.
-          </Text>
         </BlockStack>
       </LegacyCard>
 
       <LegacyCard sectioned title="Layout">
         <BlockStack gap="300">
-          <RangeSlider
+          {/* <RangeSlider
             label="Width"
             value={banner.width}
             min={10}
@@ -165,9 +167,9 @@ export default function BannerImage({
             output
             suffix={unit(banner.width, "%")}
             onChange={(width) => update({ width })}
-          />
+          /> */}
           <RangeSlider
-            label="Padding"
+            label="Margin"
             value={banner.padding}
             min={0}
             max={40}

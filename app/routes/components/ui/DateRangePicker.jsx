@@ -1,3 +1,4 @@
+
 import {
     DatePicker,
     OptionList,
@@ -11,24 +12,39 @@ import {
     Popover,
     Scrollable,
 } from "@shopify/polaris";
+
 import { CalendarIcon, ArrowRightIcon } from "@shopify/polaris-icons";
 import { useState, useCallback } from "react";
 
-const CalendarPrefix = () => <Icon source={CalendarIcon} tone="subdued" />;
+const CalendarPrefix = () => (
+    <Icon source={CalendarIcon} tone="subdued" />
+);
 
 const PRESETS = [
+    { label: "Today", value: "today", prefix: <CalendarPrefix /> },
+    { label: "Yesterday", value: "yesterday", prefix: <CalendarPrefix /> },
+    { label: "Last 7 days", value: "7", prefix: <CalendarPrefix /> },
     { label: "Last 30 days", value: "30", prefix: <CalendarPrefix /> },
     { label: "Last 60 days", value: "60", prefix: <CalendarPrefix /> },
     { label: "Last 90 days", value: "90", prefix: <CalendarPrefix /> },
     { label: "Last 365 days", value: "365", prefix: <CalendarPrefix /> },
 ];
 
+// ── Date helpers ──────────────────────────────────────────────
+
 const pad = (n) => String(n).padStart(2, "0");
-const fmt = (d) => d ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` : "";
+
+const fmt = (d) =>
+    d
+        ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+        : "";
+
 const parse = (s) => {
     if (!s) return null;
+
     const [y, m, d] = s.split("-").map(Number);
     const date = new Date(y, m - 1, d);
+
     return isNaN(date.getTime()) ? null : date;
 };
 
@@ -40,24 +56,56 @@ const todayMidnight = () => {
 
 const presetRange = (days) => {
     const end = todayMidnight();
-    const start = new Date(end.getTime() - (days - 1) * 86400000);
+    const start = new Date(end);
+
+    start.setDate(start.getDate() - (days - 1));
+
     return { start, end };
 };
+
+// ── Preset range handler ───────────────────────────────────────
+
+const getPresetRange = (selected) => {
+    const today = todayMidnight();
+
+    if (selected === "today") {
+        return {
+            start: today,
+            end: new Date(today),
+        };
+    }
+
+    if (selected === "yesterday") {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        return {
+            start: yesterday,
+            end: new Date(yesterday),
+        };
+    }
+
+    const days = Number(selected);
+
+    return presetRange(days);
+};
+
+// ── Main component ────────────────────────────────────────────
 
 export default function DateRangePicker({ value, onChange }) {
     const today = todayMidnight();
 
-    // ── open state ──────────────────────────────────────────────────────────
+    // Open state
     const [open, setOpen] = useState(false);
 
-    // ── applied (committed) state ────────────────────────────────────────────
+    // Applied state
     const initRange = value || presetRange(30);
     const initPreset = "30";
 
     const [appliedRange, setAppliedRange] = useState(initRange);
     const [appliedPreset, setAppliedPreset] = useState(initPreset);
 
-    // ── draft (in-panel) state ───────────────────────────────────────────────
+    // Draft state
     const [range, setRange] = useState(initRange);
     const [preset, setPreset] = useState(initPreset);
 
@@ -69,64 +117,109 @@ export default function DateRangePicker({ value, onChange }) {
         year: initRange.start.getFullYear(),
     });
 
-    // ── helpers ──────────────────────────────────────────────────────────────
+    // ── Sync draft state ───────────────────────────────────────
+
     const syncDraftToApplied = useCallback((r, p) => {
         setRange(r);
         setPreset(p);
         setStartInput(fmt(r.start));
         setEndInput(fmt(r.end));
-        setCalDate({ month: r.start.getMonth(), year: r.start.getFullYear() });
+
+        setCalDate({
+            month: r.start.getMonth(),
+            year: r.start.getFullYear(),
+        });
     }, []);
 
-    // ── handlers ─────────────────────────────────────────────────────────────
+    // ── Toggle popover ─────────────────────────────────────────
+
     const handleToggle = useCallback(() => {
         if (!open) {
-            // reset draft to applied when re-opening
             syncDraftToApplied(appliedRange, appliedPreset);
         }
+
         setOpen((o) => !o);
     }, [open, appliedRange, appliedPreset, syncDraftToApplied]);
+
+    // ── Close popover ──────────────────────────────────────────
 
     const handleClose = useCallback(() => {
         syncDraftToApplied(appliedRange, appliedPreset);
         setOpen(false);
     }, [appliedRange, appliedPreset, syncDraftToApplied]);
 
+    // ── Handle preset selection ─────────────────────────────────
+
     const handlePreset = useCallback((vals) => {
-        const days = parseInt(vals[0]);
-        const r = presetRange(days);
+        const selected = vals[0];
+
+        if (!selected) return;
+
+        const r = getPresetRange(selected);
+
         setRange(r);
-        setPreset(vals[0]);
+        setPreset(selected);
+
         setStartInput(fmt(r.start));
         setEndInput(fmt(r.end));
-        setCalDate({ month: r.start.getMonth(), year: r.start.getFullYear() });
+
+        setCalDate({
+            month: r.start.getMonth(),
+            year: r.start.getFullYear(),
+        });
     }, []);
+
+    // ── Start date input ────────────────────────────────────────
 
     const handleStartInput = useCallback((val) => {
         setStartInput(val);
         setPreset(null);
+
         const d = parse(val);
+
         if (d) {
-            setRange((prev) => ({ start: d, end: d > prev.end ? d : prev.end }));
-            setCalDate({ month: d.getMonth(), year: d.getFullYear() });
+            setRange((prev) => ({
+                start: d,
+                end: d > prev.end ? d : prev.end,
+            }));
+
+            setCalDate({
+                month: d.getMonth(),
+                year: d.getFullYear(),
+            });
         }
     }, []);
+
+    // ── End date input ──────────────────────────────────────────
 
     const handleEndInput = useCallback((val) => {
         setEndInput(val);
         setPreset(null);
+
         const d = parse(val);
+
         if (d) {
-            setRange((prev) => ({ start: d < prev.start ? d : prev.start, end: d }));
+            setRange((prev) => ({
+                start: d < prev.start ? d : prev.start,
+                end: d,
+            }));
         }
     }, []);
+
+    // ── Calendar change ─────────────────────────────────────────
 
     const handleCalendarChange = useCallback((r) => {
         setRange(r);
         setPreset(null);
-        if (r.start) setStartInput(fmt(r.start));
+
+        if (r.start) {
+            setStartInput(fmt(r.start));
+        }
+
         setEndInput(fmt(r.end ?? r.start));
     }, []);
+
+    // ── Save selected range ─────────────────────────────────────
 
     const handleSave = useCallback(() => {
         setAppliedRange(range);
@@ -134,17 +227,17 @@ export default function DateRangePicker({ value, onChange }) {
 
         setOpen(false);
 
-        setTimeout(() => {
-            onChange?.(range);
-        }, 0);
+        onChange?.(range);
     }, [range, preset, onChange]);
 
-    // ── button label ─────────────────────────────────────────────────────────
+    // ── Button label ────────────────────────────────────────────
+
     const buttonLabel =
         PRESETS.find((p) => p.value === appliedPreset)?.label ||
         `${fmt(appliedRange.start)} – ${fmt(appliedRange.end)}`;
 
-    // ── activator ────────────────────────────────────────────────────────────
+    // ── Activator ───────────────────────────────────────────────
+
     const activator = (
         <Button icon={CalendarIcon} disclosure onClick={handleToggle}>
             {buttonLabel}
@@ -158,15 +251,19 @@ export default function DateRangePicker({ value, onChange }) {
             onClose={handleClose}
             fluidContent
         >
-            {/* ── top section: presets + calendar ── */}
-            <Box
-                minWidth="calc(500px + 200px)"
-                padding="100"
-            >
-                <Box borderBlockEndWidth="025" borderColor="border-secondary" borderStyle="solid">
+            <Box minWidth="calc(500px + 200px)" padding="100">
+
+                {/* Presets + Calendar */}
+
+                <Box
+                    borderBlockEndWidth="025"
+                    borderColor="border-secondary"
+                    borderStyle="solid"
+                >
                     <InlineStack gap="100" align="start" wrap={false}>
 
-                        {/* LEFT — Presets */}
+                        {/* LEFT - Presets */}
+
                         <Scrollable style={{ minWidth: "180px" }}>
                             <Box
                                 minHeight="100%"
@@ -176,7 +273,11 @@ export default function DateRangePicker({ value, onChange }) {
                                 borderStyle="solid"
                             >
                                 <BlockStack gap="050">
-                                    <Box paddingBlockStart="200" paddingInlineStart="300">
+
+                                    <Box
+                                        paddingBlockStart="200"
+                                        paddingInlineStart="300"
+                                    >
                                         <Text variant="headingMd" as="h4">
                                             Presets
                                         </Text>
@@ -189,16 +290,25 @@ export default function DateRangePicker({ value, onChange }) {
                                             onChange={handlePreset}
                                         />
                                     </Scrollable>
+
                                 </BlockStack>
                             </Box>
                         </Scrollable>
 
-                        {/* RIGHT — Calendar */}
+                        {/* RIGHT - Calendar */}
+
                         <Scrollable>
-                            <Box maxWidth="500px" paddingBlockStart="200" paddingBlockEnd="200" paddingInlineStart="300" paddingInlineEnd="200">
+                            <Box
+                                maxWidth="500px"
+                                paddingBlockStart="200"
+                                paddingBlockEnd="200"
+                                paddingInlineStart="300"
+                                paddingInlineEnd="200"
+                            >
                                 <BlockStack gap="400">
 
                                     {/* Date inputs */}
+
                                     <InlineStack
                                         gap="100"
                                         blockAlign="center"
@@ -217,7 +327,10 @@ export default function DateRangePicker({ value, onChange }) {
                                         </Box>
 
                                         <Box minHeight="100%">
-                                            <Icon source={ArrowRightIcon} tone="subdued" />
+                                            <Icon
+                                                source={ArrowRightIcon}
+                                                tone="subdued"
+                                            />
                                         </Box>
 
                                         <Box>
@@ -233,22 +346,31 @@ export default function DateRangePicker({ value, onChange }) {
                                     </InlineStack>
 
                                     {/* Calendar */}
+
                                     <DatePicker
                                         month={month}
                                         year={year}
                                         selected={range}
                                         onChange={handleCalendarChange}
-                                        onMonthChange={(m, y) => setCalDate({ month: m, year: y })}
+                                        onMonthChange={(m, y) =>
+                                            setCalDate({
+                                                month: m,
+                                                year: y,
+                                            })
+                                        }
                                         allowRange
                                         multiMonth
                                         disableDatesAfter={today}
                                     />
+
                                 </BlockStack>
                             </Box>
                         </Scrollable>
 
                     </InlineStack>
                 </Box>
+
+                {/* Footer */}
 
                 <Box
                     borderColor="border-secondary"
@@ -259,12 +381,19 @@ export default function DateRangePicker({ value, onChange }) {
                     paddingInlineEnd="200"
                 >
                     <InlineStack align="end" gap="200">
-                        <Button onClick={handleClose}>Cancel</Button>
-                        <Button variant="primary" onClick={handleSave}>
+                        <Button onClick={handleClose}>
+                            Cancel
+                        </Button>
+
+                        <Button
+                            variant="primary"
+                            onClick={handleSave}
+                        >
                             Save
                         </Button>
                     </InlineStack>
                 </Box>
+
             </Box>
         </Popover>
     );

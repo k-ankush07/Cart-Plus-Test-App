@@ -169,10 +169,14 @@ window.cartPlusIsVisible = function (cartSettings) {
 
 // ── Banner Image ───────────────────────────────────────────────────────────
 window.cartPlusBannerHTML = function (headerSettings) {
-  const b = { enabled: false, image: "", width: 100, padding: 0, radius: 0, ...(headerSettings?.banner || {}) };
+  const b = { enabled: false, image: "", width: 100, padding: 0, radius: 0, posX: 50, posY: 50, ...(headerSettings?.banner || {}) };
   if (!b.enabled || !b.image) return "";
+  // Same 700 × 200 crop + focal point as the editor preview.
+  const pos = (n) => Math.min(100, Math.max(0, Number(n) || 0));
   return `<div class="cart-plus-banner-image" style="padding:${b.padding}px;display:flex;justify-content:center;">
-    <img src="${b.image}" alt="" style="display:block;width:${b.width}%;max-width:100%;height:auto;border-radius:${b.radius}px;">
+    <div style="width:${b.width}%;max-width:100%;aspect-ratio:700 / 200;overflow:hidden;border-radius:${b.radius}px;">
+      <img src="${b.image}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;object-position:${pos(b.posX)}% ${pos(b.posY)}%;">
+    </div>
   </div>`;
 };
 

@@ -427,7 +427,8 @@ function buildSecondarySetupTasks(
 ) {
   const cartId = liveCart?.cartId;
   const goTo = (module) => () =>
-    cartId && navigate(`/app/carts/editor/${cartId}?from=home&module=${module}`);
+    cartId &&
+    navigate(`/app/carts/editor/${cartId}?from=home&module=${module}`);
   const storeHandle =
     shop?.myshopifyDomain?.replace(".myshopify.com", "") || "";
   const themeId = mainThemeId || "current";
@@ -1140,10 +1141,68 @@ function DashboardInner({
     },
   ];
 
+  useEffect(() => {
+    if (window.Cal) return;
+
+    (function (C, A, L) {
+      let p = function (a, ar) {
+        a.q.push(ar);
+      };
+
+      let d = C.document;
+
+      C.Cal =
+        C.Cal ||
+        function () {
+          let cal = C.Cal;
+          let ar = arguments;
+
+          if (!cal.loaded) {
+            cal.ns = {};
+            cal.q = cal.q || [];
+
+            d.head.appendChild(d.createElement("script")).src = A;
+
+            cal.loaded = true;
+          }
+
+          if (ar[0] === L) {
+            const api = function () {
+              p(api, arguments);
+            };
+
+            const namespace = ar[1];
+            api.q = api.q || [];
+
+            if (typeof namespace === "string") {
+              cal.ns[namespace] = cal.ns[namespace] || api;
+              p(cal.ns[namespace], ar);
+              p(cal, ["initNamespace", namespace]);
+            } else {
+              p(cal, ar);
+            }
+
+            return;
+          }
+
+          p(cal, ar);
+        };
+    })(window, "https://app.cal.com/embed/embed.js", "init");
+
+    window.Cal("init", "30min", {
+      origin: "https://app.cal.com",
+    });
+
+    window.Cal.ns["30min"]("ui", {
+      hideEventTypeDetails: false,
+      layout: "month_view",
+    });
+  }, []);
+
   return (
     <div className="_page_yc9hy_1">
       <Page
-       fullWidth
+        fullWidth
         title={
           <InlineStack gap="300" blockAlign="center" wrap={false}>
             <img
@@ -1170,18 +1229,18 @@ function DashboardInner({
           <InlineStack align="end" gap="300">
             <DateRangePicker value={range} onChange={setRange} />
             <Button variant="primary" onClick={() => navigate("/app/carts")}>
-              Your Carts
+              My Carts
             </Button>
           </InlineStack>
         }
       >
-        <BlockStack gap="400">
+        <BlockStack gap="600">
           {/* ── Live carts ── */}
           <BlockStack gap="200">
-            <InlineStack gap="200" blockAlign="center">
+            {/* <InlineStack gap="200" blockAlign="center">
               <LiveDot />
               <Text variant="headingMd">Live carts</Text>
-            </InlineStack>
+            </InlineStack> */}
 
             {/* Revenue tiles */}
             <div
@@ -1253,7 +1312,7 @@ function DashboardInner({
                   You have{" "}
                   <a
                     href={`https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps`}
-                    target="_top"
+                    target="self"
                     style={{ color: "inherit", textDecoration: "underline" }}
                   >
                     {appEmbedInstalled ? 1 : 0} active app blocks
@@ -1278,7 +1337,7 @@ function DashboardInner({
                     onClick={() =>
                       window.open(
                         `https://admin.shopify.com/store/${storeHandle}/themes/${themeId}/editor?context=apps&activateAppId=${appEmbedId}%2Fapp-embed`,
-                        "_top",
+                        "self",
                       )
                     }
                   >
@@ -1293,7 +1352,7 @@ function DashboardInner({
           <BlockStack>
             <Box paddingBlockEnd="200">
               <InlineStack gap="200" blockAlign="center">
-                <Text variant="headingMd">Cart logs</Text>
+                <Text variant="headingMd">My Cart</Text> <LiveDot />
               </InlineStack>
             </Box>
 
@@ -1495,7 +1554,7 @@ function DashboardInner({
                                   }}
                                 >
                                   <Text truncate as="span">
-                                    {cart.cartName || "Untitled cart"}
+                                    {cart.cartName || "My Cart"}
                                   </Text>
                                 </div>
                                 {abTest && (
@@ -1746,10 +1805,10 @@ function DashboardInner({
         </BlockStack>
 
         {/* ── App Features ── */}
-        <Box paddingBlockStart="400">
+        <Box paddingBlockStart="800">
           <BlockStack gap="300">
             <Text variant="headingMd" as="h3">
-              App Features
+              App Features 🔥
             </Text>
 
             <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
@@ -1953,7 +2012,7 @@ function DashboardInner({
       </Box> */}
 
         {/* ── Help cards ── */}
-        <Box paddingBlockStart="400">
+        <Box paddingBlockStart="1000">
           <InlineGrid columns={{ xs: 1, sm: 1 }} gap="300">
             {/* ── Customer success specialist ── */}
             <Card padding="400">
@@ -2000,7 +2059,7 @@ function DashboardInner({
                       Hi! I’m your customer success specialist
                     </Text>
                     <Text variant="headingSm" as="p">
-                      Ankush Kumar
+                      Ankush 
                     </Text>
                   </div>
                 </InlineStack>
@@ -2008,15 +2067,23 @@ function DashboardInner({
                 <ButtonGroup>
                   <Button
                     icon={ChatIcon}
-                    onClick={() => navigate("/app/support")}
+                    onClick={() => {
+                      window.tidioChatApi?.open();
+                    }}
                   >
                     Chat Now
                   </Button>
                   <Button
                     icon={PhoneIcon}
-                    onClick={() =>
-                      window.open("https://your-calendly-link.com", "_blank")
-                    }
+                    onClick={() => {
+                      window.Cal?.("modal", {
+                        calLink: "cartplus/30min",
+                        config: {
+                          layout: "month_view",
+                          useSlotsViewOnSmallScreen: "true",
+                        },
+                      });
+                    }}
                   >
                     Schedule strategy call
                   </Button>
