@@ -668,7 +668,7 @@ function PricingInner({ activePlan, isDev, isFreeStore }) {
                           </Box>
                           <Box minWidth="240px">
                             <Text as="span" variant="bodySm" tone="subdued">
-                              Up to 100 orders/mo
+                              Up to 50 orders/mo
                             </Text>
                           </Box>
                           <Box minWidth="140px">
