@@ -527,64 +527,64 @@ function initCartDrawerAfterData() {
       .catch(() => {});
   };
 
-  // ── Product / page views for the Activity feed ──────────────────────────────
-  function trackPageView() {
-    try {
-      if (window.Shopify?.designMode) return; // theme editor
-      const shop =
-        window.__SHOPIFY_SHOP__?.myshopify_domain ||
-        window.__SHOPIFY_SHOP__?.permanent_domain ||
-        window.Shopify?.shop;
-      if (!shop) return;
+  // // ── Product / page views for the Activity feed ──────────────────────────────
+  // function trackPageView() {
+  //   try {
+  //     if (window.Shopify?.designMode) return; // theme editor
+  //     const shop =
+  //       window.__SHOPIFY_SHOP__?.myshopify_domain ||
+  //       window.__SHOPIFY_SHOP__?.permanent_domain ||
+  //       window.Shopify?.shop;
+  //     if (!shop) return;
 
-      // Ignore reloads / duplicate fires of the same URL within 3 seconds
-      const href = window.location.href;
-      try {
-        const last = JSON.parse(sessionStorage.getItem("hub_last_view") || "null");
-        if (last && last.href === href && Date.now() - last.at < 3000) return;
-        sessionStorage.setItem("hub_last_view", JSON.stringify({ href, at: Date.now() }));
-      } catch (_) {}
+  //     // Ignore reloads / duplicate fires of the same URL within 3 seconds
+  //     const href = window.location.href;
+  //     try {
+  //       const last = JSON.parse(sessionStorage.getItem("hub_last_view") || "null");
+  //       if (last && last.href === href && Date.now() - last.at < 3000) return;
+  //       sessionStorage.setItem("hub_last_view", JSON.stringify({ href, at: Date.now() }));
+  //     } catch (_) {}
 
-      const meta = window.ShopifyAnalytics?.meta;
-      let event;
-      if (meta?.page?.pageType === "product" && meta.product) {
-        const variants = meta.product.variants || [];
-        const wantedId = meta.selectedVariantId || variants[0]?.id;
-        const v = variants.find((x) => String(x.id) === String(wantedId)) || variants[0];
-        event = {
-          action: "product_viewed",
-          productTitle: v?.name || document.title,
-          productId: meta.product.id,
-          variantId: v?.id,
-          price: (v?.price || 0) / 100,
-          currency: window.Shopify?.currency?.active || "",
-          url: href,
-          image: document.querySelector('meta[property="og:image"]')?.content || "",
-        };
-      } else {
-        event = { action: "page_viewed", pageTitle: document.title, url: href };
-      }
+  //     const meta = window.ShopifyAnalytics?.meta;
+  //     let event;
+  //     if (meta?.page?.pageType === "product" && meta.product) {
+  //       const variants = meta.product.variants || [];
+  //       const wantedId = meta.selectedVariantId || variants[0]?.id;
+  //       const v = variants.find((x) => String(x.id) === String(wantedId)) || variants[0];
+  //       event = {
+  //         action: "product_viewed",
+  //         productTitle: v?.name || document.title,
+  //         productId: meta.product.id,
+  //         variantId: v?.id,
+  //         price: (v?.price || 0) / 100,
+  //         currency: window.Shopify?.currency?.active || "",
+  //         url: href,
+  //         image: document.querySelector('meta[property="og:image"]')?.content || "",
+  //       };
+  //     } else {
+  //       event = { action: "page_viewed", pageTitle: document.title, url: href };
+  //     }
 
-      rawFetch()(`${apiUrl}/api/cart-activity`, {
-        method: "POST",
-        headers: authHeaders(),
-        keepalive: true,
-        body: JSON.stringify({
-          shop,
-          sessionId: getSessionId(),
-          cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
-          customerId: window.ShopifyAnalytics?.meta?.page?.customerId || null,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
-          userAgent: navigator.userAgent,
-          events: [event],
-        }),
-      }).catch(() => {});
-    } catch (_) {}
-  }
+  //     rawFetch()(`${apiUrl}/api/cart-activity`, {
+  //       method: "POST",
+  //       headers: authHeaders(),
+  //       keepalive: true,
+  //       body: JSON.stringify({
+  //         shop,
+  //         sessionId: getSessionId(),
+  //         cartId: window.__HUB_ACTIVE_CART__?.cartId || null,
+  //         customerId: window.ShopifyAnalytics?.meta?.page?.customerId || null,
+  //         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+  //         userAgent: navigator.userAgent,
+  //         events: [event],
+  //       }),
+  //     }).catch(() => {});
+  //   } catch (_) {}
+  // }
 
-  const scheduleViewTracking = () => setTimeout(trackPageView, 800);
-  if (document.readyState === "complete") scheduleViewTracking();
-  else window.addEventListener("load", scheduleViewTracking, { once: true });
+  // const scheduleViewTracking = () => setTimeout(trackPageView, 800);
+  // if (document.readyState === "complete") scheduleViewTracking();
+  // else window.addEventListener("load", scheduleViewTracking, { once: true });
 })();
 
 // ── CART INITIALISATION ───────────────────────────────────────────────────────

@@ -12,6 +12,7 @@ import {
   Badge,
   Thumbnail,
   Link,
+  Pagination,
 } from "@shopify/polaris";
 import { RefreshIcon } from "@shopify/polaris-icons";
 import DateRangePicker from "./components/ui/DateRangePicker";
@@ -19,10 +20,14 @@ import { requireShopData } from "./components/shop.server";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const ACTIVITY_TYPES = [
-  { label: "Cart Activity", value: "cart" },
-  { label: "All Activity", value: "all" },
-];
+const SHOW_ALL_ACTIVITY = false;
+
+const ACTIVITY_TYPES = SHOW_ALL_ACTIVITY
+  ? [
+      { label: "Cart Activity", value: "cart" },
+      { label: "All Activity", value: "all" },
+    ]
+  : [{ label: "Cart Activity", value: "cart" }];
 
 // Non-cart events shown under "All Activity"
 const EVENT_META = {
@@ -203,6 +208,127 @@ const headStyle = {
   fontSize: 13,
 };
 
+function TopProductsCard({
+  title,
+  subtitle,
+  items,
+  loading,
+  valueText,
+  shop,
+  showImage,
+}) {
+  return (
+    <Card>
+      <BlockStack gap="300">
+        <BlockStack gap="050">
+          <Text variant="headingMd" as="h3">
+            {title}
+          </Text>
+          <Text variant="bodySm" tone="subdued" as="p">
+            {subtitle}
+          </Text>
+        </BlockStack>
+
+        {loading ? (
+          <Text tone="subdued" as="p">
+            Loading…
+          </Text>
+        ) : items.length === 0 ? (
+          <Box padding="400">
+            <Text tone="subdued" alignment="center" as="p">
+              No data in this period yet.
+            </Text>
+          </Box>
+        ) : (
+          <div
+            style={{
+              border: "1px solid #e3e3e3",
+              borderRadius: 12,
+              overflow: "hidden",
+            }}
+          >
+            {items.map((p, i) => (
+              <div
+                key={p.id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "24px minmax(0, 1fr) auto",
+                  alignItems: "center",
+                  columnGap: 12,
+                  padding: "12px 16px",
+                  borderTop: i === 0 ? "none" : "1px solid #f1f1f1",
+                  background: i === 0 ? "#f7fbff" : "transparent",
+                }}
+              >
+                <Text fontWeight="semibold" tone="subdued" as="span">
+                  {i + 1}
+                </Text>
+
+                <InlineStack gap="300" blockAlign="center" wrap={false}>
+                  {showImage && p.image && (
+                    <img
+                      src={p.image}
+                      alt=""
+                      style={{
+                        width: 40,
+                        height: 40,
+                        objectFit: "cover",
+                        borderRadius: 8,
+                      }}
+                    />
+                  )}
+                  <div style={{ minWidth: 0 }}>
+                    {p.handle ? (
+                      <Link
+                        url={`https://${shop}/products/${p.handle}`}
+                        target="_blank"
+                      >
+                        <span
+                          title={p.title}
+                          style={{
+                            display: "inline-block",
+                            maxWidth: 220,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            verticalAlign: "bottom",
+                          }}
+                        >
+                          {p.title}
+                        </span>
+                      </Link>
+                    ) : (
+                      <span
+                        title={p.title}
+                        style={{
+                          display: "inline-block",
+                          maxWidth: 220,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <Text as="span">{p.title}</Text>
+                      </span>
+                    )}
+                  </div>
+                </InlineStack>
+
+                <InlineStack gap="200" blockAlign="center">
+                  {i === 0 && <Badge tone="success">Top</Badge>}
+                  <Text fontWeight="semibold" as="span">
+                    {valueText(p)}
+                  </Text>
+                </InlineStack>
+              </div>
+            ))}
+          </div>
+        )}
+      </BlockStack>
+    </Card>
+  );
+}
+
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
@@ -228,6 +354,7 @@ export default function Activity() {
   const endISO = range.end.toISOString();
   // Persist the dropdown in the URL (?type=cart|all) without re-running the loader
   const [type, setTypeState] = useState(() =>
+    SHOW_ALL_ACTIVITY &&
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("type") === "all"
       ? "all"
@@ -239,6 +366,9 @@ export default function Activity() {
     url.searchParams.set("type", value);
     window.history.replaceState(null, "", url);
   };
+  const [top, setTop] = useState({ mostAdded: [], bestSelling: [] });
+  const [topLoading, setTopLoading] = useState(true);
+
   const [lastUpdated, setLastUpdated] = useState(null);
   const [now, setNow] = useState(() => Date.now());
   const [live, setLive] = useState(false);
@@ -250,10 +380,39 @@ export default function Activity() {
   const [error, setError] = useState(false);
   const requestId = useRef(0);
 
+  const [page, setPage] = useState(0);
+  const cursorsRef = useRef([null]);
+  const pageRef = useRef(0);
+
   const clientApiKey =
     (typeof import.meta !== "undefined" &&
       import.meta.env?.VITE_API_SECRET_KEY) ||
     "";
+
+  const loadTop = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) setTopLoading(true);
+      try {
+        const { startDate, endDate } = getRange({
+          start: startISO,
+          end: endISO,
+        });
+        const url = new URL(`${apiUrl}/api/cart-activity/top-products`);
+        url.searchParams.set("shop", shop);
+        url.searchParams.set("startDate", startDate);
+        url.searchParams.set("endDate", endDate);
+        const res = await fetch(url.toString(), {
+          headers: { "x-api-key": clientApiKey },
+        });
+        const json = await res.json();
+        if (json.success) setTop(json.data);
+      } catch (_) {
+      } finally {
+        if (!silent) setTopLoading(false);
+      }
+    },
+    [apiUrl, shop, startISO, endISO, clientApiKey],
+  );
 
   const fetchPage = useCallback(
     async ({ before } = {}) => {
@@ -263,7 +422,7 @@ export default function Activity() {
       url.searchParams.set("startDate", startDate);
       url.searchParams.set("endDate", endDate);
       url.searchParams.set("type", type);
-      url.searchParams.set("limit", type === "all" ? "50" : "25");
+      url.searchParams.set("limit", type === "all" ? "50" : "10");
       if (before) url.searchParams.set("before", before);
 
       const res = await fetch(url.toString(), {
@@ -277,11 +436,22 @@ export default function Activity() {
   );
 
   const reload = useCallback(
-    async ({ silent = false } = {}) => {
+    async ({ silent = false, keepPage = false } = {}) => {
       const id = ++requestId.current;
       if (!silent) setLoading(true);
+
+      if (!keepPage) {
+        cursorsRef.current = [null];
+        pageRef.current = 0;
+        setPage(0);
+      }
+      const before = cursorsRef.current[pageRef.current] || undefined;
+
       try {
-        const data = await fetchPage();
+        const [data] = await Promise.all([
+          fetchPage({ before }),
+          loadTop({ silent }),
+        ]);
         if (id !== requestId.current) return;
         setEvents(data.events);
         setHasMore(data.hasMore);
@@ -294,7 +464,7 @@ export default function Activity() {
         if (id === requestId.current && !silent) setLoading(false);
       }
     },
-    [fetchPage],
+    [fetchPage, loadTop],
   );
 
   useEffect(() => {
@@ -310,24 +480,42 @@ export default function Activity() {
   // Live mode: poll every 10 seconds
   useEffect(() => {
     if (!live) return undefined;
-    const timer = setInterval(() => reload({ silent: true }), 10000);
+    const timer = setInterval(
+      () => reload({ silent: true, keepPage: true }),
+      10000,
+    );
     return () => clearInterval(timer);
   }, [live, reload]);
 
-  const loadMore = async () => {
-    if (!nextBefore) return;
+  const goToPage = async (targetIndex) => {
+    if (loadingMore) return;
+    const before =
+      targetIndex > pageRef.current
+        ? nextBefore
+        : cursorsRef.current[targetIndex] || undefined;
+    if (targetIndex > pageRef.current && !before) return;
+
     setLoadingMore(true);
     try {
-      const data = await fetchPage({ before: nextBefore });
-      setEvents((prev) => [...prev, ...data.events]);
+      const data = await fetchPage({ before });
+      if (targetIndex > pageRef.current) {
+        cursorsRef.current[targetIndex] = before;
+      }
+      pageRef.current = targetIndex;
+      setPage(targetIndex);
+      setEvents(data.events);
       setHasMore(data.hasMore);
       setNextBefore(data.nextBefore);
+      setError(false);
     } catch (e) {
       setError(true);
     } finally {
       setLoadingMore(false);
     }
   };
+
+  const onNext = () => goToPage(pageRef.current + 1);
+  const onPrevious = () => goToPage(pageRef.current - 1);
 
   return (
     <div className="_page_yc9hy_1">
@@ -369,7 +557,7 @@ export default function Activity() {
             <Button
               icon={RefreshIcon}
               accessibilityLabel="Refresh"
-              onClick={() => reload()}
+              onClick={() => reload({ keepPage: true })}
               loading={loading}
             />
 
@@ -383,6 +571,36 @@ export default function Activity() {
 
             <DateRangePicker value={range} onChange={setRange} />
           </InlineStack>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+              gap: 16,
+            }}
+          >
+            <TopProductsCard
+              title="Best-selling product"
+              subtitle="Top 5 by units sold in this period"
+              items={top.bestSelling}
+              loading={topLoading}
+              shop={shop}
+              showImage={false}
+              valueText={(p) =>
+                `${p.quantity} sold · ${priceLabel(p.revenue, p.currency || shopCurrency)}`
+              }
+            />
+            <TopProductsCard
+              title="Most-added product"
+              subtitle="Top 5 by units added to cart in this period"
+              items={top.mostAdded}
+              loading={topLoading}
+              shop={shop}
+              showImage
+              valueText={(p) => `${p.addedQty} added`}
+            />
+          </div>
+
           <Card>
             <BlockStack gap="300">
               <Text variant="bodySm" tone="subdued" as="p">
@@ -610,11 +828,15 @@ export default function Activity() {
                 </div>
               )}
 
-              {hasMore && (
+              {(page > 0 || hasMore) && (
                 <InlineStack align="center">
-                  <Button onClick={loadMore} loading={loadingMore}>
-                    Load more activity
-                  </Button>
+                  <Pagination
+                    label={`Page ${page + 1}`}
+                    hasPrevious={page > 0 && !loadingMore}
+                    onPrevious={onPrevious}
+                    hasNext={hasMore && !loadingMore}
+                    onNext={onNext}
+                  />
                 </InlineStack>
               )}
             </BlockStack>

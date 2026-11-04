@@ -8,11 +8,17 @@ import {
   orderRevenueModel,
   cartOrderCountModel,
   cartActivityModel,
-  contactModel
+  contactModel,
 } from "../model/schema.js";
 import { sendEmail } from "./sendEmail.js";
-import { buildPlanUpgradeEmailHtml, buildPlanLimitReachedEmailHtml,
-   buildWelcomeEmailHtml, buildContactFormEmailHtml, buildContactFormThankYouEmailHtml, buildEmailHtml  } from "./emailTemplates.js";
+import {
+  buildPlanUpgradeEmailHtml,
+  buildPlanLimitReachedEmailHtml,
+  buildWelcomeEmailHtml,
+  buildContactFormEmailHtml,
+  buildContactFormThankYouEmailHtml,
+  buildEmailHtml,
+} from "./emailTemplates.js";
 import crypto from "crypto";
 
 const generateNewCartId = () => {
@@ -33,14 +39,14 @@ const FREE_SHOPS = (process.env.FREE_SHOPS || "")
   .split(",")
   .map((s) => s.trim().toLowerCase())
   .filter(Boolean);
-const isFreeShop = (shop) => FREE_SHOPS.includes(String(shop || "").toLowerCase());
+const isFreeShop = (shop) =>
+  FREE_SHOPS.includes(String(shop || "").toLowerCase());
 
 const isEntitled = (shopPlan) => {
   if (!shopPlan) return false;
   if (shopPlan.isDev) return true;
   return shopPlan.plan !== "free" && shopPlan.status === "active";
 };
-
 
 const getMonthlyOrderCount = async (shop) => {
   const now = new Date();
@@ -165,7 +171,7 @@ router.post("/create-cart", async (req, res) => {
     const count = await cartModels.countDocuments({ shop });
     const cartName = clientCartName?.trim() || `Untitled cart ${count + 1}`;
     const cartId = clientCartId || crypto.randomUUID();
-    
+
     const newCart = await cartModels.create({
       shop,
       shopEmail,
@@ -258,7 +264,9 @@ router.post("/archive-ab-test/:cartId", async (req, res) => {
     const abTest = cart?.cartSettings?.abTest;
 
     if (!cart) {
-      return res.status(404).json({ success: false, message: "Cart not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Cart not found" });
     }
     if (!abTest?.enabled || !Array.isArray(abTest.variants)) {
       return res.status(400).json({
@@ -589,18 +597,17 @@ const STICKY_CART_FIELDS = [
 router.post("/save-sticky-cart", async (req, res) => {
   try {
     const { shop, cartId } = req.body;
- 
+
     if (!shop) {
       return res.json({ success: false, message: "shop is required" });
     }
- 
+
     const fields = Object.fromEntries(
-      STICKY_CART_FIELDS.filter((key) => req.body[key] !== undefined).map((key) => [
-        key,
-        req.body[key],
-      ]),
+      STICKY_CART_FIELDS.filter((key) => req.body[key] !== undefined).map(
+        (key) => [key, req.body[key]],
+      ),
     );
- 
+
     const updatedStickyCart = await stickyCartModel.findOneAndUpdate(
       { shop },
       {
@@ -614,7 +621,7 @@ router.post("/save-sticky-cart", async (req, res) => {
         setDefaultsOnInsert: true,
       },
     );
- 
+
     res.json({
       success: true,
       data: updatedStickyCart,
@@ -676,7 +683,7 @@ router.post("/save-shop-token", async (req, res) => {
       {
         upsert: true,
         new: true,
-      }
+      },
     );
 
     if (isNewStore) {
@@ -752,7 +759,9 @@ router.post("/shop-plan", async (req, res) => {
     const { shop, plan, price, subscriptionId, status, isDev } = req.body;
 
     if (!shop || !plan || price === undefined) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
     // 1. Read previous plan BEFORE updating
@@ -770,18 +779,17 @@ router.post("/shop-plan", async (req, res) => {
     };
     if (isDev !== undefined) update.isDev = isDev;
 
-    const updated = await shopPlanModel.findOneAndUpdate(
-      { shop },
-      update,
-      { upsert: true, new: true }
-    );
+    const updated = await shopPlanModel.findOneAndUpdate({ shop }, update, {
+      upsert: true,
+      new: true,
+    });
 
     const finalStatus = status || "active";
     const isNowPaidAndActive = plan !== "free" && finalStatus === "active";
     const wasPreviouslyDifferent =
       !previousPlan ||
       previousPlan.plan !== plan ||
-      previousPlan.status !== "active"; 
+      previousPlan.status !== "active";
 
     if (isNowPaidAndActive && wasPreviouslyDifferent) {
       try {
@@ -796,11 +804,11 @@ router.post("/shop-plan", async (req, res) => {
         if (toEmail) {
           const subject = "Your Cart Plus plan has been upgraded";
           const html = buildPlanUpgradeEmailHtml({ storeOwner, shop, plan });
-          await Promise.all([
-            sendEmail(toEmail, subject, html),
-          ]);
+          await Promise.all([sendEmail(toEmail, subject, html)]);
         } else {
-          console.warn(`[hub] Plan upgrade email skipped — no email on file for shop: ${shop}`);
+          console.warn(
+            `[hub] Plan upgrade email skipped — no email on file for shop: ${shop}`,
+          );
         }
       } catch (emailError) {
         console.error("[hub] Plan upgrade email error:", emailError);
@@ -808,7 +816,6 @@ router.post("/shop-plan", async (req, res) => {
     }
 
     return res.status(200).json({ success: true, data: updated });
-
   } catch (error) {
     console.error("UPSERT SHOP PLAN ERROR:", error);
     return res.status(500).json({ success: false, message: "Server error" });
@@ -910,17 +917,35 @@ router.post("/track-event", async (req, res) => {
 // ─── Cart activity feed ───────────────────────────────────────────────────────
 
 const cleanShopDomain = (shop) =>
-  String(shop || "").replace("https://", "").replace("http://", "").replace(/\/$/, "");
+  String(shop || "")
+    .replace("https://", "")
+    .replace("http://", "")
+    .replace(/\/$/, "");
 
 // Storefront posts one batch per cart mutation: { shop, sessionId, events: [...] }
 router.post("/cart-activity", async (req, res) => {
   try {
-    const { shop, sessionId, cartId, cartToken, customerId, timezone, userAgent, events } =
-      req.body || {};
+    const {
+      shop,
+      sessionId,
+      cartId,
+      cartToken,
+      customerId,
+      timezone,
+      userAgent,
+      events,
+    } = req.body || {};
     const cleanShop = cleanShopDomain(shop);
 
-    if (!cleanShop || !sessionId || !Array.isArray(events) || events.length === 0) {
-      return res.status(400).json({ success: false, message: "Missing shop, sessionId or events" });
+    if (
+      !cleanShop ||
+      !sessionId ||
+      !Array.isArray(events) ||
+      events.length === 0
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing shop, sessionId or events" });
     }
 
     const docs = events
@@ -928,11 +953,12 @@ router.post("/cart-activity", async (req, res) => {
       .filter(
         (e) =>
           e &&
-          ["added", "removed", "product_viewed", "page_viewed"].includes(e.action),
+          // ["added", "removed", "product_viewed", "page_viewed"].includes(e.action),
+          ["added", "removed"].includes(e.action),
       )
       .map((e) => ({
-        pageTitle: String(e.pageTitle || "").slice(0, 300),
-        url: String(e.url || "").slice(0, 1000),
+        // pageTitle: String(e.pageTitle || "").slice(0, 300),
+        // url: String(e.url || "").slice(0, 1000),
         currency: String(e.currency || "").slice(0, 10),
         shop: cleanShop,
         cartId: cartId || null,
@@ -952,7 +978,6 @@ router.post("/cart-activity", async (req, res) => {
         userAgent: String(userAgent || "").slice(0, 400),
         createdAt: new Date(),
       }));
-
     if (docs.length) await cartActivityModel.insertMany(docs);
     return res.json({ success: true, saved: docs.length });
   } catch (error) {
@@ -970,7 +995,10 @@ router.get("/cart-activity", async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing shop" });
     }
 
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 25, 1), 100);
+    const limit = Math.min(
+      Math.max(parseInt(req.query.limit, 10) || 25, 1),
+      100,
+    );
     const createdAt = {};
     if (startDate) createdAt.$gte = new Date(startDate);
     if (endDate) createdAt.$lte = new Date(endDate);
@@ -982,8 +1010,10 @@ router.get("/cart-activity", async (req, res) => {
 
     // type=cart (default): item added / removed only
     // type=all: also product / page views, plus cart opened + checkout events
-    const includeAll = req.query.type === "all";
-    if (!includeAll && !filter.action) filter.action = { $in: ["added", "removed"] };
+    const SHOW_ALL_ACTIVITY = false;
+    const includeAll = SHOW_ALL_ACTIVITY && req.query.type === "all";
+    if (!includeAll && !filter.action)
+      filter.action = { $in: ["added", "removed"] };
 
     const [cartRows, eventRows] = await Promise.all([
       cartActivityModel
@@ -1025,17 +1055,100 @@ router.get("/cart-activity", async (req, res) => {
   }
 });
 
+// Top 5 most-added (cart activity) + best-selling (order items). Query: shop, startDate, endDate
+router.get("/cart-activity/top-products", async (req, res) => {
+  try {
+    const { shop, startDate, endDate } = req.query;
+    const cleanShop = cleanShopDomain(shop);
+    if (!cleanShop) {
+      return res.status(400).json({ success: false, message: "Missing shop" });
+    }
+
+    const createdAt = {};
+    if (startDate) createdAt.$gte = new Date(startDate);
+    if (endDate) createdAt.$lte = new Date(endDate);
+    const dateMatch = Object.keys(createdAt).length ? { createdAt } : {};
+
+    const [mostAdded, bestSelling] = await Promise.all([
+      // Most-added: "added" events ki total quantity, product ke hisaab se
+      cartActivityModel.aggregate([
+        { $match: { shop: cleanShop, action: "added", ...dateMatch } },
+        {
+          $group: {
+            _id: { $ifNull: ["$productId", "$productTitle"] },
+            productTitle: { $first: "$productTitle" },
+            handle: { $first: "$handle" },
+            image: { $first: "$image" },
+            price: { $first: "$price" },
+            currency: { $first: "$currency" },
+            addedQty: { $sum: "$quantity" },
+            addCount: { $sum: 1 },
+          },
+        },
+        { $sort: { addedQty: -1 } },
+        { $limit: 5 },
+      ]),
+      // Best-selling: order items ki quantity (orderRevenue.items se)
+      orderRevenueModel.aggregate([
+        { $match: { shop: cleanShop, ...dateMatch } },
+        { $unwind: "$items" },
+        {
+          $group: {
+            _id: "$items.title",
+            currency: { $first: "$currency" },
+            quantity: { $sum: "$items.quantity" },
+            revenue: { $sum: "$items.revenue" },
+          },
+        },
+        { $sort: { quantity: -1, revenue: -1 } },
+        { $limit: 5 },
+      ]),
+    ]);
+
+    return res.json({
+      success: true,
+      data: {
+        mostAdded: mostAdded.map((p) => ({
+          id: String(p._id),
+          title: p.productTitle || "Product",
+          handle: p.handle || "",
+          image: p.image || "",
+          price: p.price || 0,
+          currency: p.currency || "",
+          addedQty: p.addedQty,
+          addCount: p.addCount,
+        })),
+        bestSelling: bestSelling.map((p) => ({
+          id: String(p._id),
+          title: p._id || "Product",
+          currency: p.currency || "",
+          quantity: p.quantity || 0,
+          revenue: p.revenue || 0,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("TOP PRODUCTS ERROR:", error);
+    return res.status(500).json({ success: false });
+  }
+});
+
 // Timeline of one shopper session (the "View Cart" page). Query: shop, sessionId
 router.get("/cart-activity/session", async (req, res) => {
   try {
     const { shop, sessionId } = req.query;
     const cleanShop = cleanShopDomain(shop);
     if (!cleanShop || !sessionId) {
-      return res.status(400).json({ success: false, message: "Missing shop or sessionId" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing shop or sessionId" });
     }
 
     const [activity, analytics] = await Promise.all([
-      cartActivityModel.find({ shop: cleanShop, sessionId }).sort({ createdAt: 1 }).lean(),
+      cartActivityModel
+        .find({ shop: cleanShop, sessionId })
+        .sort({ createdAt: 1 })
+        .lean(),
       analyticsModel
         .find({ shop: cleanShop, sessionId })
         .select("eventType createdAt cartId meta userAgent")
@@ -1125,7 +1238,8 @@ router.post("/order-revenue", async (req, res) => {
       attributedCartId === publishedCart.cartId &&
       activeAbTest?.enabled === true &&
       activeAbTest.variants?.includes(variantKey) &&
-      String(activeAbTest.variantIds?.[variantKey] || "") === String(variantId || "");
+      String(activeAbTest.variantIds?.[variantKey] || "") ===
+        String(variantId || "");
 
     // ─── Plan limit check ────────────────────────────────────────────────────
     const shopPlan = await shopPlanModel.findOne({ shop });
@@ -1148,10 +1262,12 @@ router.post("/order-revenue", async (req, res) => {
 
         if (toEmail) {
           const subject = "You've reached your monthly order limit – Cart Plus";
-          const html = buildPlanLimitReachedEmailHtml({ storeOwner, shop, plan: planName });
-          await Promise.all([
-            sendEmail(toEmail, subject, html),
-          ]);
+          const html = buildPlanLimitReachedEmailHtml({
+            storeOwner,
+            shop,
+            plan: planName,
+          });
+          await Promise.all([sendEmail(toEmail, subject, html)]);
         }
       } catch (emailError) {
         console.error("[hub] Limit reached email error:", emailError);
@@ -1170,7 +1286,8 @@ router.post("/order-revenue", async (req, res) => {
 
       return res.status(403).json({
         success: false,
-        message: "Monthly order limit reached for your plan. Cart has been unpublished.",
+        message:
+          "Monthly order limit reached for your plan. Cart has been unpublished.",
         planName,
         monthlyLimit,
         monthlyOrderCount,
@@ -1180,7 +1297,9 @@ router.post("/order-revenue", async (req, res) => {
 
     // Shopify can deliver orders/paid more than once for the same order.
     // Only count the order the first time its revenue record is created.
-    const alreadyCounted = await orderRevenueModel.exists({ orderId: cartToken });
+    const alreadyCounted = await orderRevenueModel.exists({
+      orderId: cartToken,
+    });
 
     const today = new Date().toISOString().slice(0, 10);
     if (!alreadyCounted) {
@@ -1257,7 +1376,10 @@ router.get("/cart-stats", async (req, res) => {
     // Parse cartIds filter
     const cartIdFilter =
       cartIds && cartIds.trim() !== ""
-        ? cartIds.split(",").map((id) => id.trim()).filter(Boolean)
+        ? cartIds
+            .split(",")
+            .map((id) => id.trim())
+            .filter(Boolean)
         : null;
 
     // Build date filter
@@ -1509,7 +1631,12 @@ router.get("/cart-stats", async (req, res) => {
     });
 
     revenueByVariant.forEach(
-      ({ _id: { cartId, variantKey }, variantId, revenue, completedOrders }) => {
+      ({
+        _id: { cartId, variantKey },
+        variantId,
+        revenue,
+        completedOrders,
+      }) => {
         if (!stats[cartId]) stats[cartId] = emptyStat();
         if (!stats[cartId].variants) stats[cartId].variants = {};
         stats[cartId].variants[variantKey] = {
@@ -1572,7 +1699,19 @@ router.get("/cart-stats", async (req, res) => {
 
     const result = {};
     Object.entries(stats).forEach(
-      ([cartId, { revenue, impressions, checkouts, completedOrders, ordersByDate, impressionsByDate, revenueByDate, variants }]) => {
+      ([
+        cartId,
+        {
+          revenue,
+          impressions,
+          checkouts,
+          completedOrders,
+          ordersByDate,
+          impressionsByDate,
+          revenueByDate,
+          variants,
+        },
+      ]) => {
         const numerator = completedOrders > 0 ? completedOrders : checkouts;
         const ordersByDateArr = Object.entries(ordersByDate)
           .map(([date, count]) => ({ date, totalOrders: count }))
@@ -1611,7 +1750,7 @@ router.get("/cart-stats", async (req, res) => {
           ),
           ordersByDate: ordersByDateArr,
         };
-      }
+      },
     );
 
     const breakdown = shopRevenueBreakdown[0] || {
@@ -1690,7 +1829,9 @@ router.get("/revenue-stats", async (req, res) => {
           baseRevenue: { $sum: "$baseRevenue" },
           orderCount: { $sum: 1 },
           upsellOrderCount: {
-            $sum: { $cond: [{ $gt: [{ $ifNull: ["$upsellRevenue", 0] }, 0] }, 1, 0] },
+            $sum: {
+              $cond: [{ $gt: [{ $ifNull: ["$upsellRevenue", 0] }, 0] }, 1, 0],
+            },
           },
         },
       },
@@ -1822,7 +1963,9 @@ router.get("/revenue-stats", async (req, res) => {
 
       const bucketDate =
         doc.date ||
-        (doc.createdAt ? new Date(doc.createdAt).toISOString().slice(0, 10) : null);
+        (doc.createdAt
+          ? new Date(doc.createdAt).toISOString().slice(0, 10)
+          : null);
       if (!bucketDate) return;
 
       checkoutsByDate[bucketDate] = (checkoutsByDate[bucketDate] || 0) + count;
@@ -1838,8 +1981,13 @@ router.get("/revenue-stats", async (req, res) => {
       data: {
         revenue: {
           totals: totals || {
-            totalRevenue: 0, upsellRevenue: 0, addonRevenue: 0,
-            subscriptionRevenue: 0, baseRevenue: 0, orderCount: 0, upsellOrderCount: 0,
+            totalRevenue: 0,
+            upsellRevenue: 0,
+            addonRevenue: 0,
+            subscriptionRevenue: 0,
+            baseRevenue: 0,
+            orderCount: 0,
+            upsellOrderCount: 0,
           },
           daily: dailyRevenue,
         },
@@ -1923,7 +2071,7 @@ router.get("/cart-order-count", async (req, res) => {
 // ─── Contact Form ─────────────────────────────────────────────────────────────
 // Handles submissions from the public "Let's Discuss Your Goals" contact
 // form: saves them to Mongo and notifies the team by email.
- 
+
 router.post("/contact", async (req, res) => {
   try {
     const { firstName, lastName, email, phone, address } = req.body;
@@ -1945,11 +2093,17 @@ router.post("/contact", async (req, res) => {
 
     try {
       const subject = `New contact form submission — ${firstName} ${lastName}`;
-      const html = buildContactFormEmailHtml({ firstName, lastName, email, phone, address });
+      const html = buildContactFormEmailHtml({
+        firstName,
+        lastName,
+        email,
+        phone,
+        address,
+      });
 
       const thankYouSubject = "Thanks for reaching out – Cart Plus";
       const thankYouHtml = buildContactFormThankYouEmailHtml({ firstName });
-       await Promise.all([
+      await Promise.all([
         sendEmail("support@cartplus.io", subject, html),
         sendEmail(email, thankYouSubject, thankYouHtml),
       ]);
@@ -1967,15 +2121,17 @@ router.post("/contact", async (req, res) => {
   }
 });
 
-router.post('/portfolio-contact', async (req, res) => {
+router.post("/portfolio-contact", async (req, res) => {
   try {
     const { name, email, message } = req.body || {};
 
     if (!name || !email || !message) {
-      return res.status(400).json({ error: 'Name, email and message are all required.' });
+      return res
+        .status(400)
+        .json({ error: "Name, email and message are all required." });
     }
 
-    const TO_EMAIL = 'kankush7677@gmail.com';
+    const TO_EMAIL = "kankush7677@gmail.com";
     const subject = `New message from ${name} (via portfolio)`;
     const html = buildEmailHtml({ name, email, message });
 
@@ -1983,8 +2139,10 @@ router.post('/portfolio-contact', async (req, res) => {
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Contact form email error:', err);
-    return res.status(500).json({ error: 'Could not send email. Please try again later.' });
+    console.error("Contact form email error:", err);
+    return res
+      .status(500)
+      .json({ error: "Could not send email. Please try again later." });
   }
 });
 
