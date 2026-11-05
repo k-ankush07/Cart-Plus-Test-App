@@ -492,6 +492,7 @@ async function checkAppEmbed(shopDomain, accessToken, themeId) {
     const assetRes = await fetch(
       `https://${shopDomain}/admin/api/2025-10/themes/${themeId}/assets.json?asset[key]=config/settings_data.json`,
       {
+        signal: AbortSignal.timeout(8000),
         headers: {
           "X-Shopify-Access-Token": accessToken,
           "Content-Type": "application/json",
@@ -517,6 +518,7 @@ async function getMainThemeId(shopDomain, accessToken) {
     const res = await fetch(
       `https://${shopDomain}/admin/api/2025-10/themes.json`,
       {
+        signal: AbortSignal.timeout(8000),
         headers: {
           "X-Shopify-Access-Token": accessToken,
           "Content-Type": "application/json",

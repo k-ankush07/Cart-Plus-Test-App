@@ -632,26 +632,26 @@ export default function CartEditor() {
 
       let shopifyDiscountId = existingDiscountId;
 
-      if (rewards.length > 0) {
-        const syncRes = await fetch("/shopify/create-discount", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            cartId,
-            rewards,
-            discountCombinations,
-            existingDiscountId,
-            cartStatus: cart?.status,
-          }),
-        });
-
-        const syncData = await syncRes.json();
-
-        if (syncData.discountId) {
-          shopifyDiscountId = syncData.discountId;
-        }
-      }
-
+     // if (rewards.length > 0) {
+      //   const syncRes = await fetch("/shopify/create-discount", {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({
+      //       cartId,
+      //       rewards,
+      //       discountCombinations,
+      //       existingDiscountId,
+      //       cartStatus: cart?.status,
+      //     }),
+      //   });
+      //
+      //   const syncData = await syncRes.json();
+      //
+      //   if (syncData.discountId) {
+      //     shopifyDiscountId = syncData.discountId;
+      //   }
+      // }
+      
       const updatedTriggeredRewardsSettings = {
         ...triggeredRewardsSettings,
         shopifyDiscountId,

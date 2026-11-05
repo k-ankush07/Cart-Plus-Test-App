@@ -564,7 +564,7 @@ export default function Analytics() {
   const convertedCarts = checkoutComplete;
   const abandonedCheckouts = Math.max(checkoutInitiations - convertedCarts, 0);
   const overallConversionRate = pct(convertedCarts, totalCarts);
-  const upsellToggleRevenue = totals.upsellRevenue ?? 0;
+  const totalRevenueForPeriod = totals.totalRevenue ?? 0;
 
   // Funnel: percentages are relative to cart views, capped at 100%
   const funnelSteps = [
@@ -824,9 +824,9 @@ export default function Analytics() {
                 "Converted carts ÷ total carts.",
               ],
               [
-                "Upsell Toggle Revenue",
-                fmt(upsellToggleRevenue, resolvedCurrency),
-                "Revenue generated from upsell items.",
+                "Total revenue",
+                fmt(totalRevenueForPeriod, resolvedCurrency),
+                "Revenue generated from upsells, add-ons, subscriptions, and other products.",
               ],
             ].map(([title, value, tip]) => (
               <SmallCard

@@ -56,7 +56,7 @@ const cleanShopDomain = (shop) =>
 // ─── Plan order limits (monthly) ─────────────────────────────────────────────
 const PLAN_ORDER_LIMITS = {
   free: 50,
-  starter: 200,
+  starter: 250,
   advance: 1000,
   unlimited: Infinity,
 };
@@ -1157,7 +1157,11 @@ router.post("/order-revenue", async (req, res) => {
     // ─── Plan limit check ────────────────────────────────────────────────────
     const shopPlan = await shopPlanModel.findByShop(shop);
     const planName = shopPlan?.plan || "free";
-    const enforceLimit = !shopPlan?.isDev && !isFreeShop(shop);
+    // Dev/partner stores are exempt from limits. To TEST the limit on a dev
+    // store, set ENFORCE_PLAN_LIMIT_ON_DEV=true in the backend env.
+    const devExempt =
+      !!shopPlan?.isDev && process.env.ENFORCE_PLAN_LIMIT_ON_DEV !== "true";
+    const enforceLimit = !devExempt && !isFreeShop(shop);
     const monthlyLimit = PLAN_ORDER_LIMITS[planName] ?? PLAN_ORDER_LIMITS.free;
     const monthlyOrderCount = await getMonthlyOrderCount(shop);
 

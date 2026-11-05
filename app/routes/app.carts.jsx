@@ -150,8 +150,8 @@ function Switch({ checked, disabled, onChange }) {
 }
 
 const PLAN_ORDER_LIMITS = {
-  free: 100,
-  starter: 200,
+  free: 50,
+  starter: 250,
   advance: Infinity,
   unlimited: Infinity,
 };
@@ -178,6 +178,7 @@ async function checkAppEmbed(shopDomain, accessToken, themeId) {
     const assetRes = await fetch(
       `https://${shopDomain}/admin/api/2025-10/themes/${themeId}/assets.json?asset[key]=config/settings_data.json`,
       {
+        signal: AbortSignal.timeout(8000),
         headers: {
           "X-Shopify-Access-Token": accessToken,
           "Content-Type": "application/json",
@@ -197,10 +198,19 @@ async function checkAppEmbed(shopDomain, accessToken, themeId) {
   return false;
 }
 
+// The backend requires x-api-key on every /api route; without it these
+// calls got 401 and silently fell back to plan="free", orders=0, so the
+// "limit reached" banner / disabled buttons never showed.
+const apiKeyHeaders = () => ({
+  "x-api-key":
+    process.env.API_SECRET_KEY || import.meta.env.VITE_API_SECRET_KEY || "",
+});
+
 async function fetchShopPlan(apiUrl, shopDomain) {
   try {
     const res = await fetch(
       `${apiUrl}/api/shop-plan?shop=${encodeURIComponent(shopDomain)}`,
+      { signal: AbortSignal.timeout(8000), headers: apiKeyHeaders() },
     );
     const data = await res.json();
     return data?.data?.plan || "free";
@@ -213,6 +223,7 @@ async function fetchCurrentMonthOrders(apiUrl, shopDomain) {
   try {
     const res = await fetch(
       `${apiUrl}/api/cart-order-count?shop=${encodeURIComponent(shopDomain)}`,
+      { signal: AbortSignal.timeout(8000), headers: apiKeyHeaders() },
     );
     const data = await res.json();
     const now = new Date();
@@ -243,6 +254,7 @@ async function getMainThemeId(shopDomain, accessToken) {
     const res = await fetch(
       `https://${shopDomain}/admin/api/2025-10/themes.json`,
       {
+        signal: AbortSignal.timeout(8000),
         headers: {
           "X-Shopify-Access-Token": accessToken,
           "Content-Type": "application/json",
@@ -1056,14 +1068,14 @@ function AppCartsInner({
           <InlineStack gap="300">
             <DateRangePicker value={range} onChange={setRange} />
             <Popover
-              active={popoverActive && !creatingFrom}
+              active={popoverActive && !creatingFrom && !limitReached}
               activator={
                 <Button
                   variant="primary"
                   onClick={() => setPopoverActive((v) => !v)}
                   disclosure
                   loading={!!creatingFrom}
-                  disabled={!!creatingFrom}
+                  disabled={!!creatingFrom || limitReached}
                 >
                   {creatingFrom ? "Creating..." : "Create Cart"}
                 </Button>
