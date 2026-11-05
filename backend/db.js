@@ -11,6 +11,12 @@ export const getPool = () => {
         process.env.DATABASE_URL ||
         "postgresql://postgres:postgres@localhost:5432/cartplus",
       ssl: process.env.PGSSL === "true" ? { rejectUnauthorized: false } : undefined,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 10_000,
+      idleTimeoutMillis: 30_000, 
+      connectionTimeoutMillis: 10_000, 
+      query_timeout: 15_000,
+      max: 10,
     });
     pool.on("error", (err) => console.error("PG POOL ERROR:", err));
   }

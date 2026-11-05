@@ -5,17 +5,35 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
+// GET with a timeout + one retry: a stale connection/cold backend would
+// otherwise leave the page on its loading skeleton until a manual refresh.
+const fetchJsonRetry = async (url, options = {}, { timeoutMs = 12000, retries = 1 } = {}) => {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      return await res.json();
+    } catch (err) {
+      lastErr = err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw lastErr;
+};
+
 export const getCartStats = async (apiUrl, shop, startDate, endDate, cartIds = []) => {
   const params = new URLSearchParams({ shop });
   if (startDate) params.append("startDate", startDate);
   if (endDate) params.append("endDate", endDate);
   if (cartIds.length > 0) params.append("cartIds", cartIds.join(","));
 
-  const res = await fetch(`${apiUrl}/api/cart-stats?${params}`, {
+  return fetchJsonRetry(`${apiUrl}/api/cart-stats?${params}`, {
     credentials: "include",
     headers: authHeaders(),
   });
-  return res.json();
 };
 
 export const getCart = async (apiUrl, cartId) => {
@@ -63,13 +81,11 @@ export const archiveAbTest = async (apiUrl, cartId, winnerId) => {
 };
   
 export const getCarts = async (apiUrl, shop) => {
-  const res = await fetch(`${apiUrl}/api/get-carts?shop=${shop}`, {
+  return fetchJsonRetry(`${apiUrl}/api/get-carts?shop=${shop}`, {
     method: "GET",
     credentials: "include",
     headers: authHeaders(),
   });
-
-  return res.json();
 };
 
 export const deleteCart = async (apiUrl, cartId) => {
