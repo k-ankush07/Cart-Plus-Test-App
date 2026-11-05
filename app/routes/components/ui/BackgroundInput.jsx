@@ -1,4 +1,5 @@
 import {
+  Button,
   LegacyCard,
   Text,
   InlineStack,
@@ -33,21 +34,36 @@ export default function BackgroundInput({
     <LegacyCard sectioned>
       <BlockStack gap="300">
         {/* Title: left aligned */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {/* Icon ka margin:auto isi wrapper ke andar rehta hai */}
-          <span
-            style={{
-              display: "inline-flex",
-              flexShrink: 0,
-              width: 20,
-              height: 20,
-            }}
-          >
-            <Icon source={PaintBrushFlatIcon} />
-          </span>
-          <Text as="h3" variant="headingSm">
-            {title}
-          </Text>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* Icon ka margin:auto isi wrapper ke andar rehta hai */}
+            <span
+              style={{
+                display: "inline-flex",
+                flexShrink: 0,
+                width: 20,
+                height: 20,
+              }}
+            >
+              <Icon source={PaintBrushFlatIcon} />
+            </span>
+            <Text as="h3" variant="headingSm">
+              {title}
+            </Text>
+          </div>
+          {/* back to the theme (Template tab) colour: clears the saved value */}
+          {value && (
+            <Button variant="plain" onClick={() => onChange(null)}>
+              Use default color
+            </Button>
+          )}
         </div>
 
         <InlineStack gap="400" align="start">

@@ -2,6 +2,7 @@ import {
   Banner,
   BlockStack,
   Button,
+  ButtonGroup,
   Card,
   Checkbox,
   Divider,
@@ -375,17 +376,37 @@ export default function UpsellsSettings({
           <BlockStack gap="300">
             <Text variant="headingSm">Styles</Text>
             <InlineGrid columns={2} gap="400">
-              <RangeSlider
-                label="Image size"
-                min={40}
-                max={200}
-                output
-                value={upsellsSettings.imageSize ?? 72}
-                suffix={
-                  <Text as="span">{upsellsSettings.imageSize ?? 72} px</Text>
-                }
-                onChange={(val) => update("imageSize", val)}
-              />
+              {upsellsSettings.layout === "compact" ? (
+                // Compact: the image always fills its tile, so choose how many tiles share a row
+                <BlockStack gap="100">
+                  <Text as="p" variant="bodyMd">
+                    Products per row
+                  </Text>
+                  <ButtonGroup variant="segmented">
+                    {[1, 2, 3, 4].map((n) => (
+                      <Button
+                        key={n}
+                        pressed={(upsellsSettings.compactColumns ?? 3) === n}
+                        onClick={() => update("compactColumns", n)}
+                      >
+                        {String(n)}
+                      </Button>
+                    ))}
+                  </ButtonGroup>
+                </BlockStack>
+              ) : (
+                <RangeSlider
+                  label="Image size"
+                  min={40}
+                  max={200}
+                  output
+                  value={upsellsSettings.imageSize ?? 72}
+                  suffix={
+                    <Text as="span">{upsellsSettings.imageSize ?? 72} px</Text>
+                  }
+                  onChange={(val) => update("imageSize", val)}
+                />
+              )}
               <RangeSlider
                 label="Radius"
                 min={0}

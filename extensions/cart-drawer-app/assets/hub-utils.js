@@ -393,7 +393,7 @@ window.hubUtils = {
     }
 
     return `
-    <div class="hub-rec-product ${layoutClass || ""} upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" style="background:${cardBg};border:1px solid ${cardBorder};${u.radius !== null && u.radius !== undefined ? `border-radius:${u.radius}px;` : ""}">
+    <div class="hub-rec-product ${layoutClass || ""} upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" style="background:${cardBg};border:1px solid ${cardBorder};">
       <div class="upcart-internal-component-upsell-tile__info_count cart-plus-public-component-upsell-tile">
         <div class="upcart-internal-component-upsell-tile__image-container cart-plus-public-component-upsell-tile__image-container" style="${imageBox}">
           <img class="hub-product-img cart-plus-public-component-upsell-tile__image"

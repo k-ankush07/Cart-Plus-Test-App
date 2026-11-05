@@ -70,6 +70,7 @@ export default function Upsells({
     showLabel = true,
     labelText = "Save {{saved_percentage}}",
     imageSize = null,
+    compactColumns: compactColumnsSetting = 3,
     radius = null,
     primaryTextColor = null,
     secondaryTextColor = null,
@@ -79,6 +80,7 @@ export default function Upsells({
     buttonTextColor = null,
     cardBackground = null,
   } = upsellsSettings || {};
+  const compactColumns = Math.min(4, Math.max(1, Number(compactColumnsSetting) || 3));
   const layout =
     upsellsSettings?.layout && upsellsSettings.layout !== "row"
       ? upsellsSettings.layout
@@ -106,8 +108,11 @@ export default function Upsells({
   };
   const sidePanelImageBox = {
     ...imageBox,
-    width: Math.min(imageSize || 70, 56),
-    minWidth: Math.min(imageSize || 70, 56),
+    // follows Styles > Image size, limited only by the panel's width
+    width: imageSize || 70,
+    minWidth: 0,
+    maxWidth: "100%",
+    alignSelf: "center",
   };
 
   const updateProgress = (swiper) => {
@@ -325,7 +330,7 @@ export default function Upsells({
           background:
             backgroundToCss(cardBackground) || designSettings.accentColor,
           ...(vertical ? { padding: 9 } : {}),
-          ...(radius !== null ? { borderRadius: radius } : {}),
+          // Radius setting rounds the product images only, not the card
           border: `1px solid ${cardBorder}`,
           ...(vertical
             ? {
@@ -914,12 +919,14 @@ export default function Upsells({
                   position: "relative",
                   flex: "0 0 auto",
                   scrollSnapAlign: "start",
-                  width: Math.max(88, Math.min(imageSize || 96, 128)),
+                  // N tiles share the row (8px gaps); the image fills the tile width
+                  width: `calc((100% - ${8 * (compactColumns - 1)}px) / ${compactColumns})`,
+                  minWidth: 0,
                   boxSizing: "border-box",
                   background:
                     backgroundToCss(cardBackground) ||
                     designSettings.accentColor,
-                  borderRadius: radius ?? 8,
+                  borderRadius: 8,
                   border: `1px solid ${cardBorder}`,
                   padding: 8,
                   display: "flex",
@@ -1051,7 +1058,17 @@ export default function Upsells({
                 </div>
 
                 {product.variants.length > 1 && (
-                  <div className="  cart-plus-internal-component-upsell-tile__variant-row upsell">
+                  <div
+                    className="  cart-plus-internal-component-upsell-tile__variant-row upsell"
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      width: "100%",
+                      margin: 0,
+                      padding: 0,
+                      boxSizing: "border-box",
+                    }}
+                  >
                     <select
                       className="cart-plus-upsell-item-variant-selector"
                       value={v.id}
@@ -1060,6 +1077,9 @@ export default function Upsells({
                       }
                       style={{
                         width: "100%",
+                        margin: 0,
+                        textAlign: "center",
+                        textAlignLast: "center",
                         fontSize: 11,
                         color: primary,
                         minWidth: 0,

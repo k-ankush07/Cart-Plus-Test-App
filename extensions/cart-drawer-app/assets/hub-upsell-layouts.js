@@ -71,11 +71,13 @@ window.cartPlusCompactHTML = function (products) {
   const fmt = hubUtils.formatMoney;
   const bg = window.cartPlusBgCss(u.cardBackground) || ds.accentColor || "";
   const cardBorder = ds.accentBorder || "rgba(0, 0, 0, 0.08)";
-  const radius = u.radius ?? 8;
+  const radius = 8; // card corners are fixed; the Radius setting only rounds the image
   const btnBg =
     window.cartPlusBgCss(u.buttonBackground) || ds.buttonColor || "#000";
   const btnText = u.buttonTextColor || ds.buttonTextColor || "#fff";
-  const tileW = Math.max(88, Math.min(u.imageSize || 96, 128));
+  // N tiles share one row (8px gaps); the image fills the tile width
+  const cols = Math.min(4, Math.max(1, Number(u.compactColumns) || 3));
+  const tileW = `calc((100% - ${8 * (cols - 1)}px) / ${cols})`;
 
   const tiles = products
     .filter((p) => (p.variants || []).length)
@@ -87,14 +89,14 @@ window.cartPlusCompactHTML = function (products) {
         "";
       const select =
         p.variants.length > 1
-          ? `<select class="hub-compact-variant" style="width:100%;min-width:0;font-size:11px;color:${primary};">${p.variants
+          ? `<select class="hub-compact-variant" style="width:100%;min-width:0;margin:0;text-align:center;text-align-last:center;font-size:11px;color:${primary};">${p.variants
               .map(
                 (x) =>
                   `<option value="${x.id}" data-price="${Number(x.price) || 0}" data-compare-price="${Number(x.compare_at_price) || 0}" data-image="${imgOf(x)}"${x.id === v.id ? " selected" : ""}>${x.title}</option>`,
               )
               .join("")}</select>`
           : "";
-      return `<div class="hub-rec-product hub-rec-product-compact hub-compact-tile" style="position:relative;flex:0 0 auto;scroll-snap-align:start;width:${tileW}px;background:${bg};border:1px solid ${cardBorder};border-radius:${radius}px;padding:8px;box-sizing:border-box;display:flex;flex-direction:column;gap:5px;">
+      return `<div class="hub-rec-product hub-rec-product-compact hub-compact-tile" style="position:relative;flex:0 0 auto;scroll-snap-align:start;width:${tileW};min-width:0;background:${bg};border:1px solid ${cardBorder};border-radius:${radius}px;padding:8px;box-sizing:border-box;display:flex;flex-direction:column;gap:5px;">
         <img class="hub-compact-img" src="${imgOf(v) || cartPlusFirstImage(p)}" alt="${p.title}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${u.radius ?? 6}px;display:block;">
         <button type="button" class="hub-compact-add" data-variant="${v.id}" aria-label="${u.buttonText || "Add"}" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;cursor:pointer;background:${btnBg};color:${btnText};font-size:14px;line-height:20px;padding:0;">+</button>
         <a href="/products/${p.handle}" class="cart-plus-internal-component-upsell-tile__title-link" style="text-decoration:none;"><h3 class="cart-plus-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title" style="color:${primary};font-size:13px;line-height:1.3;margin:0;text-decoration:none;font-weight:600; display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${p.title}</h3></a>
