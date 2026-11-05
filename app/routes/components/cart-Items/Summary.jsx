@@ -315,7 +315,6 @@ export default function Summary({
             padding: "4px 10px",
             marginTop: 6,
             borderRadius: 8,
-            border: "1px solid #b7e8a0",
             border: `1px solid ${shade(bannerBg, -25)}`,
             background: `linear-gradient(90deg, ${shade(bannerBg, -12)} 0%, ${bannerBg} 50%, ${shade(bannerBg, 6)} 100%)`,
             color: s.savingsBannerTextColor || "#1d2b1a",

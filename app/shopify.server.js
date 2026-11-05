@@ -24,6 +24,8 @@ const shopify = shopifyApp({
   hooks: {
     afterAuth: async ({ session, admin }) => {
       await shopify.registerWebhooks({ session });
+ 
+      void (async () => {
       try {
         if (session.refreshToken) {
           await prisma.session.update({
@@ -45,13 +47,6 @@ const shopify = shopifyApp({
         const offlineSession = await shopify.sessionStorage.loadSession(
           `offline_${session.shop}`,
         );
-
-        if (offlineSession) {
-          console.log(
-            "[DEBUG] offlineSession.refreshToken:",
-            offlineSession.refreshToken,
-          );
-        }
 
         const accessToken = offlineSession?.accessToken;
         if (!accessToken) {
@@ -102,6 +97,7 @@ const shopify = shopifyApp({
       } catch (err) {
         console.warn("[hub] Could not sync shop token:", err.message);
       }
+      })();
     },
   },
   ...(process.env.SHOP_CUSTOM_DOMAIN

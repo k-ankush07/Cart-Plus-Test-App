@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  query,
   cartModels,
   stickyCartModel,
   shopConfigModel,
@@ -26,6 +27,31 @@ const generateNewCartId = () => {
 };
 
 const router = express.Router();
+
+// ─── SQL helpers ─────────────────────────────────────────────────────────────
+const rows = async (text, params) => (await query(text, params)).rows;
+
+const dateSql = (params, start, end, col = '"createdAt"') => {
+  let s = "";
+  if (start) {
+    params.push(start);
+    s += ` AND ${col} >= $${params.length}`;
+  }
+  if (end) {
+    params.push(end);
+    s += ` AND ${col} <= $${params.length}`;
+  }
+  return s;
+};
+
+const REV_SUM = `SUM(COALESCE("totalRevenue",0) + COALESCE("baseRevenue",0))::float`;
+const DAY = `to_char("createdAt" AT TIME ZONE 'UTC', 'YYYY-MM-DD')`;
+
+const cleanShopDomain = (shop) =>
+  String(shop || "")
+    .replace("https://", "")
+    .replace("http://", "")
+    .replace(/\/$/, "");
 
 // ─── Plan order limits (monthly) ─────────────────────────────────────────────
 const PLAN_ORDER_LIMITS = {
@@ -55,24 +81,30 @@ const getMonthlyOrderCount = async (shop) => {
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
   );
   const monthEnd = nextMonth.toISOString().slice(0, 10);
-
-  const result = await cartOrderCountModel.aggregate([
-    {
-      $match: {
-        shop,
-        date: { $gte: monthStart, $lt: monthEnd },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: "$totalOrders" },
-      },
-    },
-  ]);
-
-  return result[0]?.total || 0;
+  return cartOrderCountModel.monthTotal(shop, monthStart, monthEnd);
 };
+
+const CART_SETTING_KEYS = [
+  "designSettings",
+  "headerSettings",
+  "announcementSettings",
+  "rewardsSettings",
+  "recommendationsSettings",
+  "subscriptionUpgradesSettings",
+  "upsellsSettings",
+  "additionalNotesSettings",
+  "addonsSettings",
+  "discountCodesSettings",
+  "expressPaymentsSettings",
+  "trustBadgesSettings",
+  "cartSettings",
+  "triggeredRewardsSettings",
+];
+
+const pick = (obj, keys) =>
+  Object.fromEntries(keys.map((k) => [k, obj?.[k]]));
+
+// ─── Carts ───────────────────────────────────────────────────────────────────
 
 router.get("/get-carts", async (req, res) => {
   try {
@@ -84,8 +116,8 @@ router.get("/get-carts", async (req, res) => {
       });
     }
     const [carts, shopPlan] = await Promise.all([
-      cartModels.find({ shop }),
-      shopPlanModel.findOne({ shop }),
+      cartModels.findByShop(shop),
+      shopPlanModel.findByShop(shop),
     ]);
 
     return res.status(200).json({
@@ -96,31 +128,20 @@ router.get("/get-carts", async (req, res) => {
     });
   } catch (error) {
     console.error("GET CARTS ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
 router.get("/get-cart/:cartId", async (req, res) => {
   try {
     const { cartId } = req.params;
-
     if (!cartId) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing cartId",
-      });
+      return res.status(400).json({ success: false, message: "Missing cartId" });
     }
 
-    const cart = await cartModels.findOne({ cartId });
-
+    const cart = await cartModels.findByCartId(cartId);
     if (!cart) {
-      return res.status(404).json({
-        success: false,
-        message: "Cart not found",
-      });
+      return res.status(404).json({ success: false, message: "Cart not found" });
     }
 
     return res.status(200).json({
@@ -130,11 +151,7 @@ router.get("/get-cart/:cartId", async (req, res) => {
     });
   } catch (error) {
     console.error("GET CART ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -146,20 +163,6 @@ router.post("/create-cart", async (req, res) => {
       storeOwner,
       cartId: clientCartId,
       cartName: clientCartName,
-      designSettings,
-      headerSettings,
-      announcementSettings,
-      rewardsSettings,
-      recommendationsSettings,
-      subscriptionUpgradesSettings,
-      upsellsSettings,
-      additionalNotesSettings,
-      addonsSettings,
-      discountCodesSettings,
-      expressPaymentsSettings,
-      trustBadgesSettings,
-      cartSettings,
-      triggeredRewardsSettings,
     } = req.body;
 
     if (!shop || !shopEmail || !storeOwner) {
@@ -168,7 +171,7 @@ router.post("/create-cart", async (req, res) => {
         .json({ success: false, message: "Missing required fields" });
     }
 
-    const count = await cartModels.countDocuments({ shop });
+    const count = await cartModels.countByShop(shop);
     const cartName = clientCartName?.trim() || `My Cart ${count + 1}`;
     const cartId = clientCartId || crypto.randomUUID();
 
@@ -179,20 +182,7 @@ router.post("/create-cart", async (req, res) => {
       cartId,
       cartName,
       status: "unpublished",
-      designSettings,
-      headerSettings,
-      announcementSettings,
-      rewardsSettings,
-      recommendationsSettings,
-      subscriptionUpgradesSettings,
-      upsellsSettings,
-      additionalNotesSettings,
-      addonsSettings,
-      discountCodesSettings,
-      expressPaymentsSettings,
-      trustBadgesSettings,
-      cartSettings,
-      triggeredRewardsSettings,
+      ...pick(req.body, CART_SETTING_KEYS),
     });
 
     return res.status(201).json({
@@ -211,43 +201,13 @@ router.put("/update-cart/:cartId", async (req, res) => {
     const { cartId } = req.params;
 
     const updateData = {};
-
     if (req.body.cartName) updateData.cartName = req.body.cartName;
     if (req.body.status) updateData.status = req.body.status;
-    if (req.body.designSettings)
-      updateData.designSettings = req.body.designSettings;
-    if (req.body.headerSettings)
-      updateData.headerSettings = req.body.headerSettings;
-    if (req.body.announcementSettings)
-      updateData.announcementSettings = req.body.announcementSettings;
-    if (req.body.rewardsSettings)
-      updateData.rewardsSettings = req.body.rewardsSettings;
-    if (req.body.recommendationsSettings)
-      updateData.recommendationsSettings = req.body.recommendationsSettings;
-    if (req.body.subscriptionUpgradesSettings)
-      updateData.subscriptionUpgradesSettings =
-        req.body.subscriptionUpgradesSettings;
-    if (req.body.upsellsSettings)
-      updateData.upsellsSettings = req.body.upsellsSettings;
-    if (req.body.additionalNotesSettings)
-      updateData.additionalNotesSettings = req.body.additionalNotesSettings;
-    if (req.body.addonsSettings)
-      updateData.addonsSettings = req.body.addonsSettings;
-    if (req.body.discountCodesSettings)
-      updateData.discountCodesSettings = req.body.discountCodesSettings;
-    if (req.body.expressPaymentsSettings)
-      updateData.expressPaymentsSettings = req.body.expressPaymentsSettings;
-    if (req.body.trustBadgesSettings)
-      updateData.trustBadgesSettings = req.body.trustBadgesSettings;
-    if (req.body.cartSettings) updateData.cartSettings = req.body.cartSettings;
-    if (req.body.triggeredRewardsSettings)
-      updateData.triggeredRewardsSettings = req.body.triggeredRewardsSettings;
+    CART_SETTING_KEYS.forEach((key) => {
+      if (req.body[key]) updateData[key] = req.body[key];
+    });
 
-    const updatedCart = await cartModels.findOneAndUpdate(
-      { cartId },
-      updateData,
-      { new: true },
-    );
+    const updatedCart = await cartModels.update(cartId, updateData);
 
     res.json({ success: true, data: updatedCart });
   } catch (error) {
@@ -260,7 +220,7 @@ router.post("/archive-ab-test/:cartId", async (req, res) => {
   try {
     const { cartId } = req.params;
     const { winnerId: requestedWinnerId } = req.body || {};
-    const cart = await cartModels.findOne({ cartId });
+    const cart = await cartModels.findByCartId(cartId);
     const abTest = cart?.cartSettings?.abTest;
 
     if (!cart) {
@@ -298,59 +258,37 @@ router.post("/archive-ab-test/:cartId", async (req, res) => {
         .filter(([variantId]) => variantId),
     );
     const activeVariantIds = Object.keys(variantIdToKey);
+
     const [revenueByVariant, impressionsByVariant] = await Promise.all([
-      orderRevenueModel.aggregate([
-        {
-          $match: {
-            shop: cart.shop,
-            cartId,
-            variantId: { $in: activeVariantIds },
-            createdAt: { $gte: startedAt, $lte: endedAt },
-          },
-        },
-        {
-          $group: {
-            _id: "$variantId",
-            revenue: {
-              $sum: {
-                $add: [
-                  { $ifNull: ["$totalRevenue", 0] },
-                  { $ifNull: ["$baseRevenue", 0] },
-                ],
-              },
-            },
-            completedOrders: { $sum: 1 },
-          },
-        },
-      ]),
-      analyticsModel.aggregate([
-        {
-          $match: {
-            shop: cart.shop,
-            cartId,
-            eventType: "cart_impression",
-            createdAt: { $gte: startedAt, $lte: endedAt },
-            "meta.variantId": { $in: activeVariantIds },
-          },
-        },
-        {
-          $group: {
-            _id: "$meta.variantId",
-            impressions: { $sum: 1 },
-          },
-        },
-      ]),
+      rows(
+        `SELECT "variantId", ${REV_SUM} AS revenue, COUNT(*)::int AS "completedOrders"
+         FROM order_revenue
+         WHERE shop = $1 AND "cartId" = $2
+           AND "variantId" = ANY($3::text[])
+           AND "createdAt" >= $4 AND "createdAt" <= $5
+         GROUP BY "variantId"`,
+        [cart.shop, cartId, activeVariantIds, startedAt, endedAt],
+      ),
+      rows(
+        `SELECT meta->>'variantId' AS "variantId", COUNT(*)::int AS impressions
+         FROM analytics
+         WHERE shop = $1 AND "cartId" = $2 AND "eventType" = 'cart_impression'
+           AND "createdAt" >= $4 AND "createdAt" <= $5
+           AND meta->>'variantId' = ANY($3::text[])
+         GROUP BY meta->>'variantId'`,
+        [cart.shop, cartId, activeVariantIds, startedAt, endedAt],
+      ),
     ]);
 
     const revenueByKey = Object.fromEntries(
-      revenueByVariant.map(({ _id, revenue, completedOrders }) => {
-        const variantKey = variantIdToKey[String(_id)];
-        return [variantKey, { revenue, completedOrders }];
-      }),
+      revenueByVariant.map(({ variantId, revenue, completedOrders }) => [
+        variantIdToKey[String(variantId)],
+        { revenue, completedOrders },
+      ]),
     );
     const impressionsByKey = Object.fromEntries(
-      impressionsByVariant.map(({ _id, impressions }) => [
-        variantIdToKey[String(_id)],
+      impressionsByVariant.map(({ variantId, impressions }) => [
+        variantIdToKey[String(variantId)],
         impressions,
       ]),
     );
@@ -446,26 +384,27 @@ router.post("/archive-ab-test/:cartId", async (req, res) => {
       expressPaymentsSettings: "expressPaymentsSettings",
       trustBadgesSettings: "trustBadgesSettings",
     };
+    const changes = {};
     Object.entries(snapshotFields).forEach(([snapshotKey, cartKey]) => {
       if (winnerSnapshot[snapshotKey] !== undefined) {
-        cart[cartKey] = winnerSnapshot[snapshotKey];
+        changes[cartKey] = winnerSnapshot[snapshotKey];
       }
     });
 
     const { abTest: _activeAbTest, ...winnerCartSettings } =
       winnerSnapshot.cartSettings || {};
-    cart.cartSettings = {
+    changes.cartSettings = {
       ...winnerCartSettings,
       abTest: archivedAbTest,
     };
-    await cart.save();
+    const savedCart = await cartModels.update(cartId, changes);
 
     return res.json({
       success: true,
       message: winnerId
         ? `A/B test archived. Variant ${winnerId} had the highest revenue.`
         : "A/B test archived. No winner yet because no variant has recorded revenue.",
-      data: { cart, archiveRecord, abTest: archivedAbTest },
+      data: { cart: savedCart, archiveRecord, abTest: archivedAbTest },
     });
   } catch (error) {
     console.error("ARCHIVE A/B TEST ERROR:", error);
@@ -476,13 +415,10 @@ router.post("/archive-ab-test/:cartId", async (req, res) => {
 router.delete("/delete-cart", async (req, res) => {
   try {
     const { cartId } = req.body;
-    const deletedCart = await cartModels.findOneAndDelete({ cartId });
+    const deletedCart = await cartModels.deleteByCartId(cartId);
 
     if (!deletedCart) {
-      return res.status(404).json({
-        success: false,
-        message: "Cart not found",
-      });
+      return res.status(404).json({ success: false, message: "Cart not found" });
     }
 
     return res.status(200).json({
@@ -492,10 +428,7 @@ router.delete("/delete-cart", async (req, res) => {
     });
   } catch (error) {
     console.error("DELETE CART ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -503,7 +436,7 @@ router.post("/toggle-publish", async (req, res) => {
   try {
     const { cartId } = req.body;
 
-    const cart = await cartModels.findOne({ cartId });
+    const cart = await cartModels.findByCartId(cartId);
     if (!cart)
       return res
         .status(404)
@@ -512,22 +445,13 @@ router.post("/toggle-publish", async (req, res) => {
     const isPublishing = cart.status !== "published";
 
     if (isPublishing) {
-      await cartModels.updateMany(
-        { shop: cart.shop, status: "published" },
-        { $set: { status: "unpublished" } },
-      );
+      await cartModels.unpublishAllInShop(cart.shop);
     }
 
-    const updateData = {
+    const updatedCart = await cartModels.update(cartId, {
       status: isPublishing ? "published" : "unpublished",
       ...(isPublishing && { lastLiveDate: new Date() }),
-    };
-
-    const updatedCart = await cartModels.findOneAndUpdate(
-      { cartId },
-      { $set: updateData },
-      { new: true },
-    );
+    });
 
     return res.json({
       success: true,
@@ -546,32 +470,30 @@ router.post("/duplicate-cart", async (req, res) => {
   try {
     const { cartId } = req.body;
 
-    const existingCart = await cartModels.findOne({ cartId });
-
+    const existingCart = await cartModels.findByCartId(cartId);
     if (!existingCart) {
       return res.json({ success: false, message: "Cart not found" });
     }
 
-    const newCart = {
-      ...existingCart._doc,
-      _id: undefined,
+    const savedCart = await cartModels.create({
+      shop: existingCart.shop,
+      shopEmail: existingCart.shopEmail,
+      storeOwner: existingCart.storeOwner,
+      lastLiveDate: existingCart.lastLiveDate,
+      ...pick(existingCart, CART_SETTING_KEYS),
       cartId: generateNewCartId(),
       cartName: `Copy of ${existingCart.cartName || "My Cart"}`,
       status: "unpublished",
-      createdAt: new Date(),
-    };
-
-    const savedCart = await cartModels.create(newCart);
-
-    res.json({
-      success: true,
-      data: savedCart,
     });
+
+    res.json({ success: true, data: savedCart });
   } catch (error) {
     console.error(error);
     res.json({ success: false });
   }
 });
+
+// ─── Sticky cart ─────────────────────────────────────────────────────────────
 
 const STICKY_CART_FIELDS = [
   "enabled",
@@ -609,24 +531,13 @@ router.post("/save-sticky-cart", async (req, res) => {
       ),
     );
 
-    const updatedStickyCart = await stickyCartModel.findOneAndUpdate(
-      { shop },
-      {
-        $set: { shop, ...fields },
-        $setOnInsert: { cartId: cartId || generateNewCartId() },
-      },
-      {
-        new: true,
-        upsert: true,
-        runValidators: true,
-        setDefaultsOnInsert: true,
-      },
-    );
-
-    res.json({
-      success: true,
-      data: updatedStickyCart,
+    const updatedStickyCart = await stickyCartModel.upsertByShop({
+      shop,
+      ...fields,
+      cartId: cartId || generateNewCartId(), // sirf insert pe use hota hai
     });
+
+    res.json({ success: true, data: updatedStickyCart });
   } catch (error) {
     console.error(error);
     res.json({ success: false, message: error.message });
@@ -636,27 +547,21 @@ router.post("/save-sticky-cart", async (req, res) => {
 router.get("/get-sticky-cart/:shop", async (req, res) => {
   try {
     const { shop } = req.params;
-    const stickyCart = await stickyCartModel.findOne({ shop });
+    const stickyCart = await stickyCartModel.findByShop(shop);
 
     if (!stickyCart) {
-      return res.status(404).json({
-        success: false,
-        message: "Sticky cart not found",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Sticky cart not found" });
     }
-    return res.status(200).json({
-      success: true,
-      data: stickyCart,
-    });
+    return res.status(200).json({ success: true, data: stickyCart });
   } catch (error) {
     console.error("GET STICKY CART ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
+// ─── Shop token ──────────────────────────────────────────────────────────────
 // Called by the Remix app after OAuth to persist the offline Admin token.
 router.post("/save-shop-token", async (req, res) => {
   try {
@@ -667,28 +572,22 @@ router.post("/save-shop-token", async (req, res) => {
         message: "Missing shop or accessToken",
       });
     }
-    const existing = await shopConfigModel.findOne({ shop });
+    const existing = await shopConfigModel.findByShop(shop);
     const isNewStore = !existing;
     const tokenChanged = existing?.accessToken !== accessToken;
-    const emailChanged = existing?.email !== email;
+    const emailChanged = (existing?.email ?? null) !== (email ?? null);
     if (!isNewStore && !tokenChanged && !emailChanged) {
       return res.json({ success: true, updated: false });
     }
-    await shopConfigModel.findOneAndUpdate(
-      { shop },
-      {
-        accessToken,
-        email,
-        updatedAt: new Date(),
-      },
-      {
-        upsert: true,
-        new: true,
-      },
-    );
+    await shopConfigModel.upsertByShop({
+      shop,
+      accessToken,
+      email,
+      updatedAt: new Date(),
+    });
 
     if (isNewStore) {
-      const existingPlan = await shopPlanModel.findOne({ shop });
+      const existingPlan = await shopPlanModel.findByShop(shop);
       if (!existingPlan) {
         await shopPlanModel.create({
           shop,
@@ -699,9 +598,9 @@ router.post("/save-shop-token", async (req, res) => {
         });
       }
     }
-    // ────────────────────────────────────────────────────────────────────
+
     try {
-      const cart = await cartModels.findOne({ shop });
+      const cart = await cartModels.findAnyByShop(shop);
       const storeOwner = cart?.storeOwner || "there";
       const subject = "Welcome to Cart Plus 🎉";
       const html = buildWelcomeEmailHtml({ storeOwner, shop });
@@ -711,16 +610,10 @@ router.post("/save-shop-token", async (req, res) => {
     } catch (emailError) {
       console.error("[hub] Email error:", emailError);
     }
-    return res.json({
-      success: true,
-      updated: true,
-      isNewStore,
-    });
+    return res.json({ success: true, updated: true, isNewStore });
   } catch (error) {
     console.error("SAVE SHOP TOKEN ERROR:", error);
-    return res.status(500).json({
-      success: false,
-    });
+    return res.status(500).json({ success: false });
   }
 });
 
@@ -732,13 +625,13 @@ router.get("/shop-plan", async (req, res) => {
     if (!shop)
       return res.status(400).json({ success: false, message: "Missing shop" });
 
-    const plan = await shopPlanModel.findOne({ shop });
+    const plan = await shopPlanModel.findByShop(shop);
 
     if (isFreeShop(shop)) {
       return res.status(200).json({
         success: true,
         data: {
-          ...(plan?.toObject?.() || {}),
+          ...(plan || {}),
           shop,
           plan: "unlimited",
           price: 0,
@@ -766,10 +659,9 @@ router.post("/shop-plan", async (req, res) => {
     }
 
     // 1. Read previous plan BEFORE updating
-    const previousPlan = await shopPlanModel.findOne({ shop });
+    const previousPlan = await shopPlanModel.findByShop(shop);
 
-    // 2. Save to DB first. Only overwrite isDev when the caller provides it
-    //    (the billing action omits it and must not wipe the stored value).
+    // 2. Save. isDev tabhi overwrite hota hai jab caller bheje.
     const update = {
       shop,
       plan,
@@ -780,10 +672,7 @@ router.post("/shop-plan", async (req, res) => {
     };
     if (isDev !== undefined) update.isDev = isDev;
 
-    const updated = await shopPlanModel.findOneAndUpdate({ shop }, update, {
-      upsert: true,
-      new: true,
-    });
+    const updated = await shopPlanModel.upsertByShop(update);
 
     const finalStatus = status || "active";
     const isNowPaidAndActive = plan !== "free" && finalStatus === "active";
@@ -795,8 +684,8 @@ router.post("/shop-plan", async (req, res) => {
     if (isNowPaidAndActive && wasPreviouslyDifferent) {
       try {
         const [shopConfig, cart] = await Promise.all([
-          shopConfigModel.findOne({ shop }),
-          cartModels.findOne({ shop }),
+          shopConfigModel.findByShop(shop),
+          cartModels.findAnyByShop(shop),
         ]);
 
         const toEmail = shopConfig?.email || cart?.shopEmail;
@@ -805,7 +694,7 @@ router.post("/shop-plan", async (req, res) => {
         if (toEmail) {
           const subject = "Your Cart Plus plan has been upgraded";
           const html = buildPlanUpgradeEmailHtml({ storeOwner, shop, plan });
-          await Promise.all([sendEmail(toEmail, subject, html)]);
+          await sendEmail(toEmail, subject, html);
         } else {
           console.warn(
             `[hub] Plan upgrade email skipped — no email on file for shop: ${shop}`,
@@ -829,7 +718,7 @@ router.delete("/shop-plan", async (req, res) => {
     if (!shop)
       return res.status(400).json({ success: false, message: "Missing shop" });
 
-    await shopPlanModel.deleteMany({ shop });
+    await shopPlanModel.deleteByShop(shop);
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error("DELETE SHOP PLAN ERROR:", error);
@@ -837,27 +726,25 @@ router.delete("/shop-plan", async (req, res) => {
   }
 });
 
+// ─── Analytics events ────────────────────────────────────────────────────────
+
 router.post("/cart-impression", async (req, res) => {
   try {
     const { shop, cartId, sessionId, userAgent, variantId, variantKey } =
       req.body;
 
     if (!shop || !sessionId) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing shop or sessionId",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing shop or sessionId" });
     }
 
-    const impressionQuery = {
+    const exists = await analyticsModel.impressionExists({
       shop,
       sessionId,
       cartId,
-      eventType: "cart_impression",
-      ...(variantId ? { "meta.variantId": variantId } : {}),
-    };
-    const exists = await analyticsModel.findOne(impressionQuery);
-
+      variantId,
+    });
     if (exists) {
       return res.json({ success: true, duplicate: true });
     }
@@ -917,12 +804,6 @@ router.post("/track-event", async (req, res) => {
 
 // ─── Cart activity feed ───────────────────────────────────────────────────────
 
-const cleanShopDomain = (shop) =>
-  String(shop || "")
-    .replace("https://", "")
-    .replace("http://", "")
-    .replace(/\/$/, "");
-
 // Storefront posts one batch per cart mutation: { shop, sessionId, events: [...] }
 router.post("/cart-activity", async (req, res) => {
   try {
@@ -951,15 +832,8 @@ router.post("/cart-activity", async (req, res) => {
 
     const docs = events
       .slice(0, 50)
-      .filter(
-        (e) =>
-          e &&
-          // ["added", "removed", "product_viewed", "page_viewed"].includes(e.action),
-          ["added", "removed"].includes(e.action),
-      )
+      .filter((e) => e && ["added", "removed"].includes(e.action))
       .map((e) => ({
-        // pageTitle: String(e.pageTitle || "").slice(0, 300),
-        // url: String(e.url || "").slice(0, 1000),
         currency: String(e.currency || "").slice(0, 10),
         shop: cleanShop,
         cartId: cartId || null,
@@ -1000,48 +874,67 @@ router.get("/cart-activity", async (req, res) => {
       Math.max(parseInt(req.query.limit, 10) || 25, 1),
       100,
     );
-    const createdAt = {};
-    if (startDate) createdAt.$gte = new Date(startDate);
-    if (endDate) createdAt.$lte = new Date(endDate);
-    if (before) createdAt.$lt = new Date(before);
 
-    const filter = { shop: cleanShop };
-    if (Object.keys(createdAt).length) filter.createdAt = createdAt;
-    if (action === "added" || action === "removed") filter.action = action;
-
-    // type=cart (default): item added / removed only
-    // type=all: also product / page views, plus cart opened + checkout events
     const SHOW_ALL_ACTIVITY = false;
     const includeAll = SHOW_ALL_ACTIVITY && req.query.type === "all";
-    if (!includeAll && !filter.action)
-      filter.action = { $in: ["added", "removed"] };
 
-    const [cartRows, eventRows] = await Promise.all([
-      cartActivityModel
-        .find(filter)
-        .sort({ createdAt: -1 })
-        .limit(limit + 1)
-        .lean(),
-      includeAll
-        ? analyticsModel
-            .find({
-              shop: cleanShop,
-              ...(Object.keys(createdAt).length ? { createdAt } : {}),
-            })
-            .select("eventType sessionId createdAt userAgent")
-            .sort({ createdAt: -1 })
-            .limit(limit + 1)
-            .lean()
-        : [],
-    ]);
+    // cart_activity query
+    const params = [cleanShop];
+    let where = `shop = $1`;
+    where += dateSql(
+      params,
+      startDate ? new Date(startDate) : null,
+      endDate ? new Date(endDate) : null,
+    );
+    if (before) {
+      params.push(new Date(before));
+      where += ` AND "createdAt" < $${params.length}`;
+    }
+    if (action === "added" || action === "removed") {
+      params.push(action);
+      where += ` AND action = $${params.length}`;
+    } else if (!includeAll) {
+      where += ` AND action IN ('added','removed')`;
+    }
+    params.push(limit + 1);
+    const cartRowsP = rows(
+      `SELECT * FROM cart_activity WHERE ${where}
+       ORDER BY "createdAt" DESC LIMIT $${params.length}`,
+      params,
+    );
 
-    const rows = [
+    // analytics events (sirf type=all me)
+    let eventRowsP = Promise.resolve([]);
+    if (includeAll) {
+      const p2 = [cleanShop];
+      let w2 = `shop = $1`;
+      w2 += dateSql(
+        p2,
+        startDate ? new Date(startDate) : null,
+        endDate ? new Date(endDate) : null,
+      );
+      if (before) {
+        p2.push(new Date(before));
+        w2 += ` AND "createdAt" < $${p2.length}`;
+      }
+      p2.push(limit + 1);
+      eventRowsP = rows(
+        `SELECT "_id","eventType","sessionId","createdAt","userAgent"
+         FROM analytics WHERE ${w2}
+         ORDER BY "createdAt" DESC LIMIT $${p2.length}`,
+        p2,
+      );
+    }
+
+    const [cartRows, eventRows] = await Promise.all([cartRowsP, eventRowsP]);
+
+    const all = [
       ...cartRows.map((r) => ({ ...r, kind: "cart" })),
       ...eventRows.map((r) => ({ ...r, kind: "event" })),
     ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    const hasMore = rows.length > limit;
-    const events = rows.slice(0, limit);
+    const hasMore = all.length > limit;
+    const events = all.slice(0, limit);
     return res.json({
       success: true,
       data: {
@@ -1065,49 +958,48 @@ router.get("/cart-activity/top-products", async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing shop" });
     }
 
-    const createdAt = {};
-    if (startDate) createdAt.$gte = new Date(startDate);
-    if (endDate) createdAt.$lte = new Date(endDate);
-    const dateMatch = Object.keys(createdAt).length ? { createdAt } : {};
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+
+    const p1 = [cleanShop];
+    const d1 = dateSql(p1, start, end);
+    const p2 = [cleanShop];
+    const d2 = dateSql(p2, start, end, 'o."createdAt"');
+
+    const latest = (col) => `(array_agg(${col} ORDER BY "createdAt" DESC))[1]`;
 
     const [mostAdded, bestSelling] = await Promise.all([
-      // Most-added: "added" events ki total quantity, product ke hisaab se
-      cartActivityModel.aggregate([
-        { $match: { shop: cleanShop, action: "added", ...dateMatch } },
-        {
-          $group: {
-            _id: { $ifNull: ["$productId", "$productTitle"] },
-            productId: { $first: "$productId" },
-            productTitle: { $first: "$productTitle" },
-            handle: { $first: "$handle" },
-            image: { $first: "$image" },
-            price: { $first: "$price" },
-            currency: { $first: "$currency" },
-            addedQty: { $sum: "$quantity" },
-            addCount: { $sum: 1 },
-          },
-        },
-        { $sort: { addedQty: -1 } },
-        { $limit: 5 },
-      ]),
-      // Best-selling: order items ki quantity (orderRevenue.items se)
-
-      orderRevenueModel.aggregate([
-        { $match: { shop: cleanShop, ...dateMatch } },
-        { $unwind: "$items" },
-        {
-          $group: {
-            _id: "$items.productId",
-            productId: { $first: "$items.productId" },
-            title: { $first: "$items.title" },
-            currency: { $first: "$currency" },
-            quantity: { $sum: "$items.quantity" },
-            revenue: { $sum: "$items.revenue" },
-          },
-        },
-        { $sort: { quantity: -1, revenue: -1 } },
-        { $limit: 5 },
-      ]),
+      rows(
+        `SELECT COALESCE("productId","productTitle") AS "_id",
+                ${latest('"productId"')} AS "productId",
+                ${latest('"productTitle"')} AS "productTitle",
+                ${latest("handle")} AS handle,
+                ${latest("image")} AS image,
+                ${latest("price")} AS price,
+                ${latest("currency")} AS currency,
+                SUM(quantity)::int AS "addedQty",
+                COUNT(*)::int AS "addCount"
+         FROM cart_activity
+         WHERE shop = $1 AND action = 'added'${d1}
+         GROUP BY COALESCE("productId","productTitle")
+         ORDER BY "addedQty" DESC
+         LIMIT 5`,
+        p1,
+      ),
+      rows(
+        `SELECT item->>'productId' AS "productId",
+                MAX(item->>'title') AS title,
+                MAX(o.currency) AS currency,
+                SUM(COALESCE((item->>'quantity')::numeric,0))::float AS quantity,
+                SUM(COALESCE((item->>'revenue')::numeric,0))::float AS revenue
+         FROM order_revenue o
+         CROSS JOIN LATERAL jsonb_array_elements(o.items) AS item
+         WHERE o.shop = $1${d2}
+         GROUP BY item->>'productId'
+         ORDER BY quantity DESC, revenue DESC
+         LIMIT 5`,
+        p2,
+      ),
     ]);
 
     return res.json({
@@ -1124,9 +1016,8 @@ router.get("/cart-activity/top-products", async (req, res) => {
           addedQty: p.addedQty,
           addCount: p.addCount,
         })),
-
         bestSelling: bestSelling.map((p) => ({
-          id: String(p.productId || p._id),
+          id: String(p.productId || "unknown"),
           productId: p.productId,
           title: p.title || "Product",
           currency: p.currency || "",
@@ -1153,15 +1044,17 @@ router.get("/cart-activity/session", async (req, res) => {
     }
 
     const [activity, analytics] = await Promise.all([
-      cartActivityModel
-        .find({ shop: cleanShop, sessionId })
-        .sort({ createdAt: 1 })
-        .lean(),
-      analyticsModel
-        .find({ shop: cleanShop, sessionId })
-        .select("eventType createdAt cartId meta userAgent")
-        .sort({ createdAt: 1 })
-        .lean(),
+      rows(
+        `SELECT * FROM cart_activity
+         WHERE shop = $1 AND "sessionId" = $2 ORDER BY "createdAt" ASC`,
+        [cleanShop, sessionId],
+      ),
+      rows(
+        `SELECT "eventType","createdAt","cartId",meta,"userAgent"
+         FROM analytics
+         WHERE shop = $1 AND "sessionId" = $2 ORDER BY "createdAt" ASC`,
+        [cleanShop, sessionId],
+      ),
     ]);
 
     const timeline = [
@@ -1171,7 +1064,7 @@ router.get("/cart-activity/session", async (req, res) => {
             ? "item_added"
             : a.action === "removed"
               ? "item_removed"
-              : a.action, // product_viewed | page_viewed
+              : a.action,
         at: a.createdAt,
         productTitle: a.productTitle,
         pageTitle: a.pageTitle,
@@ -1232,10 +1125,7 @@ router.post("/order-revenue", async (req, res) => {
         .json({ success: false, message: "Missing shop or cartToken" });
     }
 
-    const publishedCart = await cartModels.findOne({
-      shop,
-      status: "published",
-    });
+    const publishedCart = await cartModels.findPublishedByShop(shop);
     if (!publishedCart) {
       return res
         .status(403)
@@ -1250,19 +1140,17 @@ router.post("/order-revenue", async (req, res) => {
         String(variantId || "");
 
     // ─── Plan limit check ────────────────────────────────────────────────────
-    const shopPlan = await shopPlanModel.findOne({ shop });
+    const shopPlan = await shopPlanModel.findByShop(shop);
     const planName = shopPlan?.plan || "free";
-    // Dev / partner stores are entitled to everything for free → no cap.
     const enforceLimit = !shopPlan?.isDev && !isFreeShop(shop);
     const monthlyLimit = PLAN_ORDER_LIMITS[planName] ?? PLAN_ORDER_LIMITS.free;
     const monthlyOrderCount = await getMonthlyOrderCount(shop);
 
-    // ─── Helper: send limit-reached email ───────────────────────────────────
     const sendLimitReachedEmail = async () => {
       try {
         const [shopConfig, cart] = await Promise.all([
-          shopConfigModel.findOne({ shop }),
-          cartModels.findOne({ shop }),
+          shopConfigModel.findByShop(shop),
+          cartModels.findAnyByShop(shop),
         ]);
 
         const toEmail = shopConfig?.email || cart?.shopEmail;
@@ -1275,21 +1163,15 @@ router.post("/order-revenue", async (req, res) => {
             shop,
             plan: planName,
           });
-          await Promise.all([sendEmail(toEmail, subject, html)]);
+          await sendEmail(toEmail, subject, html);
         }
       } catch (emailError) {
         console.error("[hub] Limit reached email error:", emailError);
       }
     };
-    // ────────────────────────────────────────────────────────────────────────
 
     if (enforceLimit && monthlyOrderCount >= monthlyLimit) {
-      await cartModels.findOneAndUpdate(
-        { cartId: publishedCart.cartId },
-        { $set: { status: "unpublished" } },
-      );
-
-      // Send limit-reached email
+      await cartModels.update(publishedCart.cartId, { status: "unpublished" });
       await sendLimitReachedEmail();
 
       return res.status(403).json({
@@ -1301,39 +1183,22 @@ router.post("/order-revenue", async (req, res) => {
         monthlyOrderCount,
       });
     }
-    // ────────────────────────────────────────────────────────────────────────
 
-    // Shopify can deliver orders/paid more than once for the same order.
-    // Only count the order the first time its revenue record is created.
-    const alreadyCounted = await orderRevenueModel.exists({
-      orderId: cartToken,
-    });
+    // Shopify orders/paid ek order ke liye multiple baar aa sakta hai.
+    // Order sirf tab count hota hai jab uska revenue record pehli baar bane.
+    const alreadyCounted = await orderRevenueModel.existsByOrderId(cartToken);
 
     const today = new Date().toISOString().slice(0, 10);
     if (!alreadyCounted) {
-      await cartOrderCountModel.findOneAndUpdate(
-        { shop, cartId: publishedCart.cartId, date: today },
-        {
-          $inc: { totalOrders: 1 },
-          $set: { updatedAt: new Date() },
-          $setOnInsert: { createdAt: new Date() },
-        },
-        { upsert: true, new: true },
-      );
+      await cartOrderCountModel.increment(shop, publishedCart.cartId, today);
     }
 
     // ─── Re-check after incrementing ────────────────────────────────────────
     const newMonthlyCount = monthlyOrderCount + 1;
     if (enforceLimit && newMonthlyCount >= monthlyLimit) {
-      await cartModels.findOneAndUpdate(
-        { cartId: publishedCart.cartId },
-        { $set: { status: "unpublished" } },
-      );
-
-      // Send limit-reached email
+      await cartModels.update(publishedCart.cartId, { status: "unpublished" });
       await sendLimitReachedEmail();
     }
-    // ────────────────────────────────────────────────────────────────────────
 
     const revenueRecord = {
       shop,
@@ -1342,7 +1207,6 @@ router.post("/order-revenue", async (req, res) => {
           ? attributedCartId
           : publishedCart.cartId,
       orderId: cartToken,
-      sessionId: sessionId || "",
       currency: currency || "USD",
       totalRevenue: totalRevenue || 0,
       upsellRevenue: upsellRevenue || 0,
@@ -1355,11 +1219,7 @@ router.post("/order-revenue", async (req, res) => {
       ...(validVariantAssignment ? { variantId, variantKey } : {}),
     };
 
-    await orderRevenueModel.findOneAndUpdate(
-      { orderId: cartToken },
-      revenueRecord,
-      { upsert: true, new: true },
-    );
+    await orderRevenueModel.upsertByOrderId(revenueRecord);
 
     return res.json({ success: true, counted: true, revenueSaved: true });
   } catch (error) {
@@ -1370,18 +1230,16 @@ router.post("/order-revenue", async (req, res) => {
   }
 });
 
+// ─── Cart stats ──────────────────────────────────────────────────────────────
+
 router.get("/cart-stats", async (req, res) => {
   try {
     const { shop, startDate, endDate, cartIds } = req.query;
     if (!shop)
       return res.status(400).json({ success: false, message: "Missing shop" });
 
-    const cleanShop = shop
-      .replace("https://", "")
-      .replace("http://", "")
-      .replace(/\/$/, "");
+    const cleanShop = cleanShopDomain(shop);
 
-    // Parse cartIds filter
     const cartIdFilter =
       cartIds && cartIds.trim() !== ""
         ? cartIds
@@ -1390,210 +1248,161 @@ router.get("/cart-stats", async (req, res) => {
             .filter(Boolean)
         : null;
 
-    // Build date filter
-    const dateFilter = {};
-    if (startDate) dateFilter.$gte = new Date(startDate);
+    const start = startDate ? new Date(startDate) : null;
+    let end = null;
     if (endDate) {
-      const end = new Date(endDate);
+      end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      dateFilter.$lte = end;
     }
-    const hasDateFilter = Object.keys(dateFilter).length > 0;
-
-    const revenueMatch = {
-      shop: cleanShop,
-      cartId: { $exists: true, $nin: [null, ""] },
-      ...(hasDateFilter && { createdAt: dateFilter }),
-    };
 
     const toDateStr = (d) => new Date(d).toISOString().slice(0, 10);
-    const orderCountDateFilter = {};
-    if (startDate) orderCountDateFilter.$gte = toDateStr(startDate);
-    if (endDate) orderCountDateFilter.$lte = toDateStr(endDate);
-    const orderCountMatch = {
-      shop: cleanShop,
-      ...(Object.keys(orderCountDateFilter).length && {
-        date: orderCountDateFilter,
-      }),
-    };
+    const startStr = startDate ? toDateStr(startDate) : null;
+    const endStr = endDate ? toDateStr(endDate) : null;
 
-    const analyticsMatch = {
-      shop: cleanShop,
-      cartId: { $exists: true, $nin: [null, ""] },
-      ...(hasDateFilter && { createdAt: dateFilter }),
-    };
-
-    const shopAnalyticsMatch = {
-      shop: cleanShop,
-      ...(hasDateFilter && { createdAt: dateFilter }),
-    };
-
-    // ← KEY CHANGE: filter shopRevenue to published cartIds only
-    const shopRevenueMatch = {
-      shop: cleanShop,
-      ...(hasDateFilter && { createdAt: dateFilter }),
-      ...(cartIdFilter ? { cartId: { $in: cartIdFilter } } : {}),
-    };
-
-    const publishedCart = await cartModels
-      .findOne({ shop: cleanShop, status: "published" })
-      .lean();
+    const publishedCart = await cartModels.findPublishedByShop(cleanShop);
     const activeAbTest = publishedCart?.cartSettings?.abTest;
     const activeVariantIds =
       activeAbTest?.enabled && activeAbTest.variantIds
         ? Object.values(activeAbTest.variantIds).filter(Boolean)
         : [];
 
+    const NOT_EMPTY_CART = `"cartId" IS NOT NULL AND "cartId" <> ''`;
+
+    // Har query ke liye (sql, params) banane wale chhote builders
+    const withRange = (sqlFn) => {
+      const params = [cleanShop];
+      const range = dateSql(params, start, end);
+      return { range, params, sql: sqlFn(range, params) };
+    };
+
+    const run = ({ sql, params }) => rows(sql, params);
+
+    // 1. revenue by cart
+    const q1 = withRange(
+      (r) => `SELECT "cartId", ${REV_SUM} AS "totalRevenue"
+              FROM order_revenue WHERE shop = $1 AND ${NOT_EMPTY_CART}${r}
+              GROUP BY "cartId"`,
+    );
+    // 2. analytics by cart + event
+    const q2 = withRange(
+      (r) => `SELECT "cartId", "eventType", COUNT(*)::int AS count
+              FROM analytics WHERE shop = $1 AND ${NOT_EMPTY_CART}${r}
+              GROUP BY "cartId","eventType"`,
+    );
+    // 3. shop level analytics
+    const q3 = withRange(
+      (r) => `SELECT "eventType", COUNT(*)::int AS count
+              FROM analytics WHERE shop = $1${r} GROUP BY "eventType"`,
+    );
+    // 4. shop revenue breakdown (optionally cartIds filter)
+    const q4 = (() => {
+      const params = [cleanShop];
+      let r = dateSql(params, start, end);
+      if (cartIdFilter) {
+        params.push(cartIdFilter);
+        r += ` AND "cartId" = ANY($${params.length}::text[])`;
+      }
+      return {
+        params,
+        sql: `SELECT COALESCE(SUM("addonRevenue"),0)::float AS "addonRevenue",
+                     COALESCE(SUM("upsellRevenue"),0)::float AS "upsellRevenue",
+                     COALESCE(SUM("subscriptionRevenue"),0)::float AS "subscriptionRevenue",
+                     COALESCE(SUM("baseRevenue"),0)::float AS "baseRevenue",
+                     COALESCE(${REV_SUM},0)::float AS "totalRevenue"
+              FROM order_revenue WHERE shop = $1${r}`,
+      };
+    })();
+    // 5. orders by cart by date (cart_order_counts, date TEXT)
+    const q5 = (() => {
+      const params = [cleanShop];
+      const r = dateSql(params, startStr, endStr, '"date"');
+      return {
+        params,
+        sql: `SELECT "cartId", "date", SUM("totalOrders")::int AS "totalOrders"
+              FROM cart_order_counts WHERE shop = $1${r}
+              GROUP BY "cartId","date" ORDER BY "date" ASC`,
+      };
+    })();
+    // 6. impressions by cart by date
+    const q6 = withRange(
+      (r) => `SELECT "cartId", ${DAY} AS date, COUNT(*)::int AS count
+              FROM analytics
+              WHERE shop = $1 AND ${NOT_EMPTY_CART}
+                AND "eventType" = 'cart_impression'${r}
+              GROUP BY "cartId", ${DAY} ORDER BY date ASC`,
+    );
+    // 7. revenue by cart by date
+    const q7 = withRange(
+      (r) => `SELECT "cartId", ${DAY} AS date, ${REV_SUM} AS "totalRevenue"
+              FROM order_revenue WHERE shop = $1 AND ${NOT_EMPTY_CART}${r}
+              GROUP BY "cartId", ${DAY} ORDER BY date ASC`,
+    );
+
+    // 8 & 9. A/B variants (sirf jab published cart + active variants ho)
+    const hasVariants = !!publishedCart && activeVariantIds.length > 0;
+    const q8 = hasVariants
+      ? (() => {
+          const params = [cleanShop];
+          const r = dateSql(params, start, end);
+          params.push(publishedCart.cartId, activeVariantIds);
+          const n = params.length;
+          return {
+            params,
+            sql: `SELECT "cartId", "variantKey",
+                         MAX("variantId") AS "variantId",
+                         ${REV_SUM} AS revenue,
+                         COUNT(*)::int AS "completedOrders"
+                  FROM order_revenue
+                  WHERE shop = $1${r}
+                    AND "cartId" = $${n - 1}
+                    AND "variantId" = ANY($${n}::text[])
+                    AND "variantKey" IS NOT NULL AND "variantKey" <> ''
+                  GROUP BY "cartId","variantKey"`,
+          };
+        })()
+      : null;
+    const q9 = hasVariants
+      ? (() => {
+          const params = [cleanShop];
+          const r = dateSql(params, start, end);
+          params.push(publishedCart.cartId, activeVariantIds);
+          const n = params.length;
+          return {
+            params,
+            sql: `SELECT "cartId", meta->>'variantKey' AS "variantKey",
+                         MAX(meta->>'variantId') AS "variantId",
+                         COUNT(*)::int AS impressions
+                  FROM analytics
+                  WHERE shop = $1${r}
+                    AND "cartId" = $${n - 1}
+                    AND "eventType" = 'cart_impression'
+                    AND meta->>'variantId' = ANY($${n}::text[])
+                    AND COALESCE(meta->>'variantKey','') <> ''
+                  GROUP BY "cartId", meta->>'variantKey'`,
+          };
+        })()
+      : null;
+
     const [
       revenueByCart,
       analyticsByCart,
       shopAnalytics,
-      shopRevenueBreakdown,
+      shopRevenueRows,
       ordersByCartByDate,
       impressionsByCartByDate,
       revenueByCartByDate,
       revenueByVariant,
       impressionsByVariant,
     ] = await Promise.all([
-      orderRevenueModel.aggregate([
-        { $match: revenueMatch },
-        {
-          $group: {
-            _id: "$cartId",
-            totalRevenue: {
-              $sum: {
-                $add: [
-                  { $ifNull: ["$totalRevenue", 0] },
-                  { $ifNull: ["$baseRevenue", 0] },
-                ],
-              },
-            },
-          },
-        },
-      ]),
-      analyticsModel.aggregate([
-        { $match: analyticsMatch },
-        {
-          $group: {
-            _id: { cartId: "$cartId", eventType: "$eventType" },
-            count: { $sum: 1 },
-          },
-        },
-      ]),
-      analyticsModel.aggregate([
-        { $match: shopAnalyticsMatch },
-        { $group: { _id: "$eventType", count: { $sum: 1 } } },
-      ]),
-      orderRevenueModel.aggregate([
-        { $match: shopRevenueMatch },
-        {
-          $group: {
-            _id: null,
-            addonRevenue: { $sum: "$addonRevenue" },
-            upsellRevenue: { $sum: "$upsellRevenue" },
-            subscriptionRevenue: { $sum: "$subscriptionRevenue" },
-            baseRevenue: { $sum: "$baseRevenue" },
-            totalRevenue: {
-              $sum: {
-                $add: [
-                  { $ifNull: ["$totalRevenue", 0] },
-                  { $ifNull: ["$baseRevenue", 0] },
-                ],
-              },
-            },
-          },
-        },
-      ]),
-      cartOrderCountModel.aggregate([
-        { $match: orderCountMatch },
-        {
-          $group: {
-            _id: { cartId: "$cartId", date: "$date" },
-            totalOrders: { $sum: "$totalOrders" },
-          },
-        },
-        { $sort: { "_id.date": 1 } },
-      ]),
-      analyticsModel.aggregate([
-        { $match: { ...analyticsMatch, eventType: "cart_impression" } },
-        {
-          $group: {
-            _id: {
-              cartId: "$cartId",
-              date: {
-                $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
-              },
-            },
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { "_id.date": 1 } },
-      ]),
-      orderRevenueModel.aggregate([
-        { $match: revenueMatch },
-        {
-          $group: {
-            _id: {
-              cartId: "$cartId",
-              date: {
-                $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
-              },
-            },
-            totalRevenue: {
-              $sum: {
-                $add: [
-                  { $ifNull: ["$totalRevenue", 0] },
-                  { $ifNull: ["$baseRevenue", 0] },
-                ],
-              },
-            },
-          },
-        },
-        { $sort: { "_id.date": 1 } },
-      ]),
-      orderRevenueModel.aggregate([
-        {
-          $match: {
-            ...revenueMatch,
-            cartId: publishedCart?.cartId,
-            variantId: { $in: activeVariantIds },
-            variantKey: { $exists: true, $nin: [null, ""] },
-          },
-        },
-        {
-          $group: {
-            _id: { cartId: "$cartId", variantKey: "$variantKey" },
-            variantId: { $first: "$variantId" },
-            revenue: {
-              $sum: {
-                $add: [
-                  { $ifNull: ["$totalRevenue", 0] },
-                  { $ifNull: ["$baseRevenue", 0] },
-                ],
-              },
-            },
-            completedOrders: { $sum: 1 },
-          },
-        },
-      ]),
-      analyticsModel.aggregate([
-        {
-          $match: {
-            ...analyticsMatch,
-            cartId: publishedCart?.cartId,
-            eventType: "cart_impression",
-            "meta.variantId": { $in: activeVariantIds },
-            "meta.variantKey": { $exists: true, $nin: [null, ""] },
-          },
-        },
-        {
-          $group: {
-            _id: { cartId: "$cartId", variantKey: "$meta.variantKey" },
-            variantId: { $first: "$meta.variantId" },
-            impressions: { $sum: 1 },
-          },
-        },
-      ]),
+      run(q1),
+      run(q2),
+      run(q3),
+      run(q4),
+      run(q5),
+      run(q6),
+      run(q7),
+      q8 ? run(q8) : [],
+      q9 ? run(q9) : [],
     ]);
 
     const emptyStat = () => ({
@@ -1607,47 +1416,39 @@ router.get("/cart-stats", async (req, res) => {
     });
 
     const stats = {};
+    const get = (cartId) => (stats[cartId] ||= emptyStat());
 
-    revenueByCart.forEach(({ _id, totalRevenue }) => {
-      if (!stats[_id]) stats[_id] = emptyStat();
-      stats[_id].revenue = totalRevenue;
+    revenueByCart.forEach(({ cartId, totalRevenue }) => {
+      get(cartId).revenue = totalRevenue;
     });
 
-    analyticsByCart.forEach(({ _id: { cartId, eventType }, count }) => {
-      if (!stats[cartId]) stats[cartId] = emptyStat();
-      if (eventType === "cart_impression") stats[cartId].impressions = count;
-      if (eventType === "checkout_initiated") stats[cartId].checkouts = count;
+    analyticsByCart.forEach(({ cartId, eventType, count }) => {
+      const s = get(cartId);
+      if (eventType === "cart_impression") s.impressions = count;
+      if (eventType === "checkout_initiated") s.checkouts = count;
     });
 
-    ordersByCartByDate.forEach(({ _id: { cartId, date }, totalOrders }) => {
-      if (!stats[cartId]) stats[cartId] = emptyStat();
-      stats[cartId].completedOrders += totalOrders;
-      stats[cartId].ordersByDate[date] =
-        (stats[cartId].ordersByDate[date] || 0) + totalOrders;
+    ordersByCartByDate.forEach(({ cartId, date, totalOrders }) => {
+      const s = get(cartId);
+      s.completedOrders += totalOrders;
+      s.ordersByDate[date] = (s.ordersByDate[date] || 0) + totalOrders;
     });
 
-    impressionsByCartByDate.forEach(({ _id: { cartId, date }, count }) => {
-      if (!stats[cartId]) stats[cartId] = emptyStat();
-      stats[cartId].impressionsByDate[date] =
-        (stats[cartId].impressionsByDate[date] || 0) + count;
+    impressionsByCartByDate.forEach(({ cartId, date, count }) => {
+      const s = get(cartId);
+      s.impressionsByDate[date] = (s.impressionsByDate[date] || 0) + count;
     });
 
-    revenueByCartByDate.forEach(({ _id: { cartId, date }, totalRevenue }) => {
-      if (!stats[cartId]) stats[cartId] = emptyStat();
-      stats[cartId].revenueByDate[date] =
-        (stats[cartId].revenueByDate[date] || 0) + totalRevenue;
+    revenueByCartByDate.forEach(({ cartId, date, totalRevenue }) => {
+      const s = get(cartId);
+      s.revenueByDate[date] = (s.revenueByDate[date] || 0) + totalRevenue;
     });
 
     revenueByVariant.forEach(
-      ({
-        _id: { cartId, variantKey },
-        variantId,
-        revenue,
-        completedOrders,
-      }) => {
-        if (!stats[cartId]) stats[cartId] = emptyStat();
-        if (!stats[cartId].variants) stats[cartId].variants = {};
-        stats[cartId].variants[variantKey] = {
+      ({ cartId, variantKey, variantId, revenue, completedOrders }) => {
+        const s = get(cartId);
+        s.variants ||= {};
+        s.variants[variantKey] = {
           variantId,
           revenue,
           completedOrders,
@@ -1658,11 +1459,11 @@ router.get("/cart-stats", async (req, res) => {
     );
 
     impressionsByVariant.forEach(
-      ({ _id: { cartId, variantKey }, variantId, impressions }) => {
-        if (!stats[cartId]) stats[cartId] = emptyStat();
-        if (!stats[cartId].variants) stats[cartId].variants = {};
-        if (!stats[cartId].variants[variantKey]) {
-          stats[cartId].variants[variantKey] = {
+      ({ cartId, variantKey, variantId, impressions }) => {
+        const s = get(cartId);
+        s.variants ||= {};
+        if (!s.variants[variantKey]) {
+          s.variants[variantKey] = {
             variantId,
             revenue: 0,
             completedOrders: 0,
@@ -1670,8 +1471,8 @@ router.get("/cart-stats", async (req, res) => {
             conversionRate: 0,
           };
         }
-        stats[cartId].variants[variantKey].variantId ||= variantId;
-        stats[cartId].variants[variantKey].impressions = impressions;
+        s.variants[variantKey].variantId ||= variantId;
+        s.variants[variantKey].impressions = impressions;
       },
     );
 
@@ -1694,14 +1495,14 @@ router.get("/cart-stats", async (req, res) => {
 
       if (!hasPerCartAnalytics) {
         const shopImpressions =
-          shopAnalytics.find((e) => e._id === "cart_impression")?.count || 0;
+          shopAnalytics.find((e) => e.eventType === "cart_impression")?.count ||
+          0;
         const shopCheckouts =
-          shopAnalytics.find((e) => e._id === "checkout_initiated")?.count || 0;
+          shopAnalytics.find((e) => e.eventType === "checkout_initiated")
+            ?.count || 0;
 
-        if (!stats[pid])
-          stats[pid] = { revenue: 0, impressions: 0, checkouts: 0 };
-        stats[pid].impressions = shopImpressions;
-        stats[pid].checkouts = shopCheckouts;
+        get(pid).impressions = shopImpressions;
+        get(pid).checkouts = shopCheckouts;
       }
     }
 
@@ -1761,13 +1562,7 @@ router.get("/cart-stats", async (req, res) => {
       },
     );
 
-    const breakdown = shopRevenueBreakdown[0] || {
-      addonRevenue: 0,
-      upsellRevenue: 0,
-      subscriptionRevenue: 0,
-      baseRevenue: 0,
-      totalRevenue: 0,
-    };
+    const breakdown = shopRevenueRows[0] || {};
 
     return res.json({
       success: true,
@@ -1789,102 +1584,126 @@ router.get("/cart-stats", async (req, res) => {
 router.get("/revenue-stats", async (req, res) => {
   try {
     const { shop, startDate, endDate } = req.query;
-
-    const cleanShop = shop
-      ?.replace("https://", "")
-      .replace("http://", "")
-      .replace(/\/$/, "");
+    const cleanShop = cleanShopDomain(shop);
 
     if (!cleanShop) {
       return res.status(400).json({ success: false, message: "Missing shop" });
     }
 
-    // Build date filter from query params; fall back to last 30 days
-    const dateFilter = {};
-    if (startDate) {
-      dateFilter.$gte = new Date(startDate);
-    } else {
-      dateFilter.$gte = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    }
+    // Date range (default: last 30 days)
+    const rangeStart = startDate
+      ? new Date(startDate)
+      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    let rangeEnd;
     if (endDate) {
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
-      dateFilter.$lte = end;
+      rangeEnd = new Date(endDate);
+      rangeEnd.setHours(23, 59, 59, 999);
     } else {
-      dateFilter.$lte = new Date();
+      rangeEnd = new Date();
     }
+    const P = [cleanShop, rangeStart, rangeEnd];
+    const RANGE = `shop = $1 AND "createdAt" >= $2 AND "createdAt" <= $3`;
 
-    const rangeStart = dateFilter.$gte;
-
-    // ───── Revenue Totals (scoped to date range) ─────
-    const [totals] = await orderRevenueModel.aggregate([
-      { $match: { shop: cleanShop, createdAt: dateFilter } },
-      {
-        $group: {
-          _id: null,
-          currency: { $first: "$currency" },
-          totalRevenue: {
-            $sum: {
-              $add: [
-                { $ifNull: ["$totalRevenue", 0] },
-                { $ifNull: ["$baseRevenue", 0] },
-              ],
-            },
-          },
-          upsellRevenue: { $sum: "$upsellRevenue" },
-          addonRevenue: { $sum: "$addonRevenue" },
-          subscriptionRevenue: { $sum: "$subscriptionRevenue" },
-          baseRevenue: { $sum: "$baseRevenue" },
-          orderCount: { $sum: 1 },
-          upsellOrderCount: {
-            $sum: {
-              $cond: [{ $gt: [{ $ifNull: ["$upsellRevenue", 0] }, 0] }, 1, 0],
-            },
-          },
-        },
-      },
+    const [
+      totalsRows,
+      uniqueSessionStats,
+      topProductsRaw,
+      recentOrdersRaw,
+      dailyRevenue,
+      analyticsStats,
+      dailyAnalytics,
+      cartOrderCounts,
+    ] = await Promise.all([
+      // Revenue totals
+      rows(
+        `SELECT MAX(currency) AS currency,
+                COALESCE(${REV_SUM},0)::float AS "totalRevenue",
+                COALESCE(SUM("upsellRevenue"),0)::float AS "upsellRevenue",
+                COALESCE(SUM("addonRevenue"),0)::float AS "addonRevenue",
+                COALESCE(SUM("subscriptionRevenue"),0)::float AS "subscriptionRevenue",
+                COALESCE(SUM("baseRevenue"),0)::float AS "baseRevenue",
+                COUNT(*)::int AS "orderCount",
+                (COUNT(*) FILTER (WHERE COALESCE("upsellRevenue",0) > 0))::int AS "upsellOrderCount"
+         FROM order_revenue WHERE ${RANGE}`,
+        P,
+      ),
+      // Unique sessions per event
+      rows(
+        `SELECT "eventType" AS _id, COUNT(DISTINCT "sessionId")::int AS count
+         FROM analytics WHERE ${RANGE} GROUP BY "eventType"`,
+        P,
+      ),
+      // Best-performing products
+      rows(
+        `SELECT item->>'title' AS title, item->>'module' AS module,
+                MAX(item->>'productId') AS "productId",
+                SUM(COALESCE((item->>'quantity')::numeric,0))::float AS quantity,
+                SUM(COALESCE((item->>'revenue')::numeric,0))::float AS revenue
+         FROM order_revenue o
+         CROSS JOIN LATERAL jsonb_array_elements(o.items) AS item
+         WHERE o.shop = $1 AND o."createdAt" >= $2 AND o."createdAt" <= $3
+         GROUP BY item->>'title', item->>'module'
+         ORDER BY revenue DESC LIMIT 5`,
+        P,
+      ),
+      // Recent orders
+      rows(
+        `SELECT * FROM order_revenue WHERE ${RANGE}
+         ORDER BY "createdAt" DESC LIMIT 5`,
+        P,
+      ),
+      // Daily revenue
+      rows(
+        `SELECT ${DAY} AS "_id",
+                COALESCE(SUM("upsellRevenue"),0)::float AS "upsellRevenue",
+                COALESCE(SUM("addonRevenue"),0)::float AS "addonRevenue",
+                COALESCE(SUM("subscriptionRevenue"),0)::float AS "subscriptionRevenue",
+                COALESCE(SUM("baseRevenue"),0)::float AS "baseRevenue",
+                ${REV_SUM} AS total
+         FROM order_revenue WHERE ${RANGE}
+         GROUP BY ${DAY} ORDER BY "_id" ASC`,
+        P,
+      ),
+      // Analytics totals
+      rows(
+        `SELECT "eventType" AS _id, COUNT(*)::int AS count
+         FROM analytics WHERE ${RANGE} GROUP BY "eventType"`,
+        P,
+      ),
+      // Daily analytics
+      rows(
+        `SELECT ${DAY} AS date, "eventType", COUNT(*)::int AS count
+         FROM analytics WHERE ${RANGE}
+         GROUP BY ${DAY}, "eventType" ORDER BY date ASC`,
+        P,
+      ),
+      // Checkouts completed (cart_order_counts, date TEXT)
+      rows(
+        `SELECT * FROM cart_order_counts
+         WHERE shop = $1 AND "date" >= $2 AND "date" <= $3`,
+        [
+          cleanShop,
+          rangeStart.toISOString().slice(0, 10),
+          rangeEnd.toISOString().slice(0, 10),
+        ],
+      ),
     ]);
 
-    // ───── Unique sessions per event (for Total Carts / Abandoned Carts) ─────
-    const uniqueSessionStats = await analyticsModel.aggregate([
-      { $match: { shop: cleanShop, createdAt: dateFilter } },
-      { $group: { _id: { eventType: "$eventType", sessionId: "$sessionId" } } },
-      { $group: { _id: "$_id.eventType", count: { $sum: 1 } } },
-    ]);
+    const totals = totalsRows[0];
+
     const uniqueSessions = {};
     uniqueSessionStats.forEach((item) => {
       uniqueSessions[item._id] = item.count;
     });
 
-    // ───── Best-performing products (app-attributed lines, by revenue) ─────
-    const topProductsRaw = await orderRevenueModel.aggregate([
-      { $match: { shop: cleanShop, createdAt: dateFilter } },
-      { $unwind: "$items" },
-      {
-        $group: {
-          _id: { title: "$items.title", module: "$items.module" },
-          productId: { $first: "$items.productId" },
-          quantity: { $sum: "$items.quantity" },
-          revenue: { $sum: "$items.revenue" },
-        },
-      },
-      { $sort: { revenue: -1 } },
-      { $limit: 5 },
-    ]);
     const topProducts = topProductsRaw.map((p) => ({
-      name: p._id.title,
+      name: p.title,
       productId: p.productId || null,
-      module: p._id.module,
+      module: p.module,
       quantity: p.quantity,
       revenue: p.revenue,
     }));
 
-    // ───── Most recent orders (scoped to date range) ─────
-    const recentOrdersRaw = await orderRevenueModel
-      .find({ shop: cleanShop, createdAt: dateFilter })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean();
     const recentOrders = recentOrdersRaw.map((o) => ({
       orderNumber: o.orderNumber ?? null,
       orderId: o.orderId,
@@ -1895,7 +1714,6 @@ router.get("/revenue-stats", async (req, res) => {
       subscriptionRevenue: o.subscriptionRevenue || 0,
       totalRevenue: (o.totalRevenue || 0) + (o.baseRevenue || 0),
       itemCount: (o.items || []).reduce((n, i) => n + (i.quantity || 1), 0),
-      // product ids/titles so the dashboard can show the product images
       items: (o.items || []).map((i) => ({
         title: i.title,
         productId: i.productId || null,
@@ -1903,72 +1721,16 @@ router.get("/revenue-stats", async (req, res) => {
       })),
     }));
 
-    // ───── Daily revenue (scoped to date range) ─────
-    const dailyRevenue = await orderRevenueModel.aggregate([
-      { $match: { shop: cleanShop, createdAt: dateFilter } },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          upsellRevenue: { $sum: "$upsellRevenue" },
-          addonRevenue: { $sum: "$addonRevenue" },
-          subscriptionRevenue: { $sum: "$subscriptionRevenue" },
-          baseRevenue: { $sum: "$baseRevenue" },
-          total: {
-            $sum: {
-              $add: [
-                { $ifNull: ["$totalRevenue", 0] },
-                { $ifNull: ["$baseRevenue", 0] },
-              ],
-            },
-          },
-        },
-      },
-      { $sort: { _id: 1 } },
-    ]);
-
-    // ───── Analytics Totals (scoped to date range) ─────
-    const analyticsStats = await analyticsModel.aggregate([
-      { $match: { shop: cleanShop, createdAt: dateFilter } },
-      { $group: { _id: "$eventType", count: { $sum: 1 } } },
-    ]);
-
     const analyticsFormatted = {};
     analyticsStats.forEach((item) => {
       analyticsFormatted[item._id] = item.count;
     });
 
-    // ───── Daily Analytics (scoped to date range) ─────
-    const dailyAnalytics = await analyticsModel.aggregate([
-      { $match: { shop: cleanShop, createdAt: dateFilter } },
-      {
-        $group: {
-          _id: {
-            date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-            eventType: "$eventType",
-          },
-          count: { $sum: 1 },
-        },
-      },
-      { $sort: { "_id.date": 1 } },
-    ]);
-
     const dailyAnalyticsMap = {};
-    dailyAnalytics.forEach(({ _id, count }) => {
-      const { date, eventType } = _id;
+    dailyAnalytics.forEach(({ date, eventType, count }) => {
       if (!dailyAnalyticsMap[date]) dailyAnalyticsMap[date] = {};
       dailyAnalyticsMap[date][eventType] = count;
     });
-
-    // ───── Checkouts Completed (scoped to date range) ─────
-    const rangeStartDate = rangeStart.toISOString().slice(0, 10);
-    const rangeEndDate = dateFilter.$lte.toISOString().slice(0, 10);
-
-    const cartOrderCounts = await cartOrderCountModel
-      .find({
-        shop: cleanShop,
-        date: { $gte: rangeStartDate, $lte: rangeEndDate },
-      })
-      .lean();
 
     let checkoutsCompleted = 0;
     const checkoutsByDate = {};
@@ -1995,18 +1757,7 @@ router.get("/revenue-stats", async (req, res) => {
     return res.json({
       success: true,
       data: {
-        revenue: {
-          totals: totals || {
-            totalRevenue: 0,
-            upsellRevenue: 0,
-            addonRevenue: 0,
-            subscriptionRevenue: 0,
-            baseRevenue: 0,
-            orderCount: 0,
-            upsellOrderCount: 0,
-          },
-          daily: dailyRevenue,
-        },
+        revenue: { totals, daily: dailyRevenue },
         analytics: analyticsFormatted,
         uniqueSessions,
         topProducts,
@@ -2035,13 +1786,7 @@ router.get("/cart-order-count", async (req, res) => {
       });
     }
 
-    const filter = { shop };
-    if (cartId) filter.cartId = cartId;
-
-    const orderCounts = await cartOrderCountModel
-      .find(filter)
-      .sort({ date: -1 })
-      .lean();
+    const orderCounts = await cartOrderCountModel.find(shop, cartId);
 
     if (!orderCounts || orderCounts.length === 0) {
       return res.status(404).json({
@@ -2050,7 +1795,6 @@ router.get("/cart-order-count", async (req, res) => {
       });
     }
 
-    // Aggregate across the filtered docs
     let totalOrders = 0;
     const byDate = {};
     orderCounts.forEach((doc) => {
@@ -2065,18 +1809,13 @@ router.get("/cart-order-count", async (req, res) => {
       byDate[bucket] = (byDate[bucket] || 0) + count;
     });
 
-    // Sorted [{ date, totalOrders }] for easy charting (most recent first)
     const dateWise = Object.entries(byDate)
       .map(([date, count]) => ({ date, totalOrders: count }))
       .sort((a, b) => (a.date < b.date ? 1 : -1));
 
     return res.status(200).json({
       success: true,
-      data: {
-        breakdown: orderCounts,
-        totalOrders,
-        dateWise,
-      },
+      data: { breakdown: orderCounts, totalOrders, dateWise },
     });
   } catch (error) {
     console.error("CART ORDER COUNT ERROR:", error);
@@ -2085,8 +1824,6 @@ router.get("/cart-order-count", async (req, res) => {
 });
 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
-// Handles submissions from the public "Let's Discuss Your Goals" contact
-// form: saves them to Mongo and notifies the team by email.
 
 router.post("/contact", async (req, res) => {
   try {
@@ -2095,7 +1832,7 @@ router.post("/contact", async (req, res) => {
     if (!firstName || !email) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: firstName, lastName, email, phone",
+        message: "Missing required fields: firstName, email",
       });
     }
 
@@ -2108,7 +1845,7 @@ router.post("/contact", async (req, res) => {
     });
 
     try {
-      const subject = `New contact form submission — ${firstName} ${lastName}`;
+      const subject = `New contact form submission — ${firstName} ${lastName || ""}`.trim();
       const html = buildContactFormEmailHtml({
         firstName,
         lastName,

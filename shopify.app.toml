@@ -2,7 +2,7 @@
 
 client_id = "0741db22a559208f286f8afcfb6dcc65"
 name = "Cart Plus Testing"
-application_url = "https://factor-design-namespace-oral.trycloudflare.com"
+application_url = "https://moreover-hydraulic-gauge-opens.trycloudflare.com"
 embedded = true
 
 [build]
@@ -37,10 +37,10 @@ scopes = "read_discounts,read_locations,read_markets,read_orders,read_pixels,rea
 
 [auth]
 redirect_urls = [
-  "https://factor-design-namespace-oral.trycloudflare.com/api/auth"
+  "https://moreover-hydraulic-gauge-opens.trycloudflare.com/api/auth"
 ]
 
 [app_proxy]
-url = "https://factor-design-namespace-oral.trycloudflare.com/api/proxy-order-track"
+url = "https://moreover-hydraulic-gauge-opens.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"
