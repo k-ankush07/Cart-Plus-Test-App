@@ -56,47 +56,51 @@ const POSITIONS = [
   // bottom bar
   "bottom",
 ];
- 
+
 const stickyCartSchema = new mongoose.Schema({
   shop: { type: String, required: true, unique: true },
   cartId: { type: String, required: true, unique: true },
- 
+
   enabled: { type: Boolean, default: true },
- 
+
   // NEW: which design is used
   template: {
     type: String,
     enum: ["bubble", "pill", "ring", "tab", "bar"],
     default: "bubble",
   },
- 
+
   // Desktop + mobile positioning (valid values depend on the template)
   position: { type: String, enum: POSITIONS, default: "bottom-right" },
   mobilePosition: { type: String, enum: POSITIONS, default: "bottom-right" }, // NEW
   displayOnMobile: { type: Boolean, default: true }, // NEW (replaces device)
   device: { type: String, default: "all" }, // kept for older readers: "all" | "desktop"
- 
+
   // Icon
   selectedIcon: { type: String, default: "bag" }, // cart | basket | basket-2 | bag | bag-2 | tote | custom
   customIconUrl: { type: String, default: null },
   iconColor: { type: String, default: "#ffffff" },
   iconSize: { type: Number, min: 16, max: 40, default: 24 }, // was 24–72, default 45
- 
+
   // Button
   bgColor: { type: String, default: "#000000" }, // template colour
   buttonSize: { type: Number, min: 40, max: 100, default: 60 }, // was 56–120, default 82
-  barRadius: { type: Number, min: 0, max: 50, default: 50 }, 
-
+  barRadius: { type: Number, min: 0, max: 50, default: 50 },
+  barStyle: {
+    type: String,
+    enum: ["floating", "attached"],
+    default: "floating",
+  },
   // Count badge
   enableCount: { type: Boolean, default: true }, // NEW
   qBgColor: { type: String, default: "#6d3bff" },
   qTextColor: { type: String, default: "#ffffff" },
- 
+
   hideOnEmptyCart: { type: Boolean, default: false },
   customCss: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
 });
- 
+
 // Stores the offline Admin API access token per shop so the backend
 // can call Shopify Admin API without requiring an embedded session.
 const shopConfigSchema = new mongoose.Schema({
@@ -200,9 +204,9 @@ cartOrderCountSchema.index({ shop: 1, cartId: 1, date: 1 }, { unique: true });
 
 const contactSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
-  lastName: { type: String,},
-  email:{ type: String, required: true },
-  phone: { type: String,},
+  lastName: { type: String },
+  email: { type: String, required: true },
+  phone: { type: String },
   address: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
 });
@@ -262,7 +266,10 @@ const cartActivitySchema = new mongoose.Schema({
 cartActivitySchema.index({ shop: 1, createdAt: -1 });
 cartActivitySchema.index({ shop: 1, sessionId: 1, createdAt: 1 });
 // Keep the feed bounded: drop events after 90 days.
-cartActivitySchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 90 });
+cartActivitySchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 60 * 60 * 24 * 90 },
+);
 
 const cartActivityModel =
   mongoose.models["CartActivity"] ||
@@ -277,5 +284,5 @@ export {
   analyticsModel,
   orderRevenueModel,
   cartOrderCountModel,
-  contactModel
+  contactModel,
 };

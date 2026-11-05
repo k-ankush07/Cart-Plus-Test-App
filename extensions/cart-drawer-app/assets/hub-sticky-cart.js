@@ -150,7 +150,12 @@ function scopeCss(css, scope) {
       customIconUrl,
       bgColor: data?.bgColor ?? "#000000",
       iconColor: data?.iconColor ?? "#ffffff",
-      iconSize: clamp(data?.iconSize, ICON_SIZE.min, ICON_SIZE.max, ICON_SIZE.def),
+      iconSize: clamp(
+        data?.iconSize,
+        ICON_SIZE.min,
+        ICON_SIZE.max,
+        ICON_SIZE.def,
+      ),
       buttonSize: clamp(
         data?.buttonSize,
         BUTTON_SIZE.min,
@@ -158,6 +163,7 @@ function scopeCss(css, scope) {
         BUTTON_SIZE.def,
       ),
       barRadius: clamp(data?.barRadius, 0, 50, 50),
+      barStyle: data?.barStyle === "attached" ? "attached" : "floating",
       qBgColor: data?.qBgColor ?? "#6d3bff",
       qTextColor: data?.qTextColor ?? "#ffffff",
       enableCount: data?.enableCount ?? true,
@@ -240,9 +246,11 @@ function scopeCss(css, scope) {
       const arrow = Math.min(h - 20, 40);
       const chevron = Math.min(s.iconSize, arrow - 8);
       const fallbackColors = ["#d9d2c5", "#cbc3b3", "#bdb4a1"];
-      const items = thumbs.length
-        ? thumbs.slice(0, 3)
-        : [null];
+      const items = thumbs.length ? thumbs.slice(0, 3) : [null];
+      const attached = s.barStyle === "attached";
+      const barPos = attached ? "bottom:0;left:0;right:0;" : pos;
+      const barRadius = attached ? 0 : s.barRadius;
+      const barShadow = attached ? "0 -2px 10px rgba(0,0,0,0.15)" : SHADOW;
       const thumbsHtml = items
         .map((src, i) => {
           const fill = src
@@ -255,7 +263,7 @@ function scopeCss(css, scope) {
         .join("");
 
       return {
-        css: `${BASE}${pos}height:${h}px;padding:0 ${Math.round(h * 0.18)}px 0 ${Math.round(h * 0.22)}px;border-radius:${s.barRadius}px;background:${bg};color:${fg};box-shadow:${SHADOW};display:flex;align-items:center;gap:14px;font-family:sans-serif;`,
+        css: `${BASE}${barPos}height:${h}px;padding:0 ${Math.round(h * 0.18)}px 0 ${Math.round(h * 0.22)}px;border-radius:${barRadius}px;background:${bg};color:${fg};box-shadow:${barShadow};display:flex;align-items:center;gap:14px;font-family:sans-serif;`,
         html: `<span class="cart-plus__glyph cart-plus-sticky-cart-icon" style="display:flex;">${thumbsHtml}</span><span style="display:flex;flex-direction:column;line-height:1.2;flex:1;"><strong style="font-size:18px;">${total}</strong>${
           showBadge
             ? `<span style="font-size:12px;opacity:.85;">${count} ${count === 1 ? "Product" : "Products"}</span>`
@@ -279,7 +287,8 @@ function scopeCss(css, scope) {
 
   function formatTotal(cents) {
     try {
-      if (window.hubUtils?.formatMoney) return window.hubUtils.formatMoney(cents);
+      if (window.hubUtils?.formatMoney)
+        return window.hubUtils.formatMoney(cents);
     } catch (_) {}
     const currency = window.Shopify?.currency?.active;
     try {

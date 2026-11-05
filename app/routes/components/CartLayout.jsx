@@ -554,7 +554,7 @@ const CartLayout = memo(function CartLayout({
 
         {/* ── Main layout ── */}
         <div
-          className="appLayout"
+          className={`appLayout ${sidePanelEnabled ? "appLayout-side-panel" : ""}`}
           style={{
             paddingRight: isPreviewVisible
               ? designSettings?.desktopWidth === "wide"

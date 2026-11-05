@@ -32,6 +32,11 @@ span.sb-slot.main span.Polaris-Icon {
     transition: padding-right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.appLayout.appLayout-side-panel {
+    width: 100%;
+    max-width: 1510px;
+}
+
 body.library-modal-open .Polaris-Modal-Dialog__Modal {
   max-width: min(1500px, 90vw) !important;
   width: 90vw !important;

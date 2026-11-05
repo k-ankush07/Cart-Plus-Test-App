@@ -58,6 +58,11 @@ const ALLOWED_ICON_EXTENSIONS = ".png,.svg";
 const PREVIEW_COUNT = 3;
 const PREVIEW_HEIGHT = 620;
 
+const BAR_STYLES = [
+  { label: "Floating", value: "floating" },
+  { label: "Attached (edge to edge)", value: "attached" },
+];
+
 const TEMPLATES = [
   { id: "bubble", label: "Bubble" },
   { id: "pill", label: "Pill with label" },
@@ -315,6 +320,7 @@ function buildSettings(data) {
       BAR_RADIUS_MAX,
       BAR_RADIUS_DEFAULT,
     ),
+    barStyle: data?.barStyle === "attached" ? "attached" : "floating",
     qBgColor: data?.qBgColor ?? "#6d3bff",
     qTextColor: data?.qTextColor ?? "#ffffff",
     enableCount: data?.enableCount ?? true,
@@ -913,6 +919,7 @@ function StickyWidget({ s, count, position }) {
   }
 
   if (s.template === "bar") {
+    const attached = s.barStyle === "attached";
     const h = btn + 10;
     const thumb = h - 28;
     const arrow = Math.min(h - 20, 40);
@@ -923,12 +930,13 @@ function StickyWidget({ s, count, position }) {
         style={{
           position: "absolute",
           ...pos,
+          ...(attached ? { left: 0, right: 0, bottom: 0 } : {}),
           height: h,
           padding: `0 ${Math.round(h * 0.18)}px 0 ${Math.round(h * 0.22)}px`,
-          borderRadius: s.barRadius,
+          borderRadius: attached ? 0 : s.barRadius,
           background: s.bgColor,
           color: s.iconColor,
-          boxShadow: SHADOW,
+          boxShadow: attached ? "0 -2px 10px rgba(0,0,0,0.15)" : SHADOW,
           display: "flex",
           alignItems: "center",
           gap: 14,
@@ -1459,7 +1467,20 @@ export default function StickyCart() {
                         />
                       ))}
                     </InlineGrid>
-                    {s.template === "bar" && (
+                   {s.template === "bar" && (
+                      <Select
+                        label="Bar style"
+                        options={BAR_STYLES}
+                        value={s.barStyle}
+                        onChange={(v) => set({ barStyle: v })}
+                        helpText={
+                          s.barStyle === "attached"
+                            ? "The bar sits flush against the left, right and bottom edges."
+                            : "The bar floats with a margin around it."
+                        }
+                      />
+                    )}
+                    {s.template === "bar" && s.barStyle !== "attached" && (
                       <RangeSlider
                         label="Border radius"
                         min={BAR_RADIUS_MIN}
