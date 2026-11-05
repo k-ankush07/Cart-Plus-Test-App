@@ -16,7 +16,7 @@ import fileUpload from "./routes/fileUpload.js";
 import { requireApiKey } from "./middleware/auth.js";
 
 const app = express();
-const port = process.env.PORT || 6002;
+const port = process.env.PORT || 7002;
 
 app.use(express.json());
 
