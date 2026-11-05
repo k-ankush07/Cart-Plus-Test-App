@@ -352,9 +352,11 @@ export default function DiscountCode({
             title="Container"
             hint="The outer box of the discount block."
           >
-            {color("bg", "Background")}
-            {color("textColor", "Text color", "#1a1a1a")}
-            {color("accent", "Accent color")}
+            <InlineGrid columns={3} gap="300">
+              {color("bg", "Background")}
+              {color("textColor", "Text color", "#1a1a1a")}
+              {color("accent", "Accent color")}
+            </InlineGrid>
             <InlineGrid columns={2} gap="300">
               {num("radius", "Border radius (px)", 0, 40)}
               {num("padding", "Inner padding (px)", 0, 48)}
@@ -362,7 +364,6 @@ export default function DiscountCode({
             {toggle("shadow", "Show shadow")}
           </Section>
         )}
-
         {/* ───────── Savings banner (Compact + Chip) ───────── */}
         {!isClassic && (
           <Section
@@ -373,18 +374,24 @@ export default function DiscountCode({
             {T.showBanner && (
               <>
                 {text("heading", "Heading text")}
-                {color("headingColor", "Heading color")}
-                {color("amountColor", "Saved amount color")}
-                {num("amountSize", "Saved amount size (px)", 12, 40)}
-                {color("bannerBg", "Banner background", T.accent)}
-                {num("bannerRadius", "Banner border radius (px)", 0, 30)}
 
+                <InlineGrid columns={3} gap="300">
+                  {color("headingColor", "Heading color")}
+                  {color("amountColor", "Saved amount color")}
+                  {color("bannerBg", "Banner background", T.accent)}
+                </InlineGrid>
+                <InlineGrid columns={2} gap="300">
+                  {num("amountSize", "Saved amount size (px)", 12, 40)}
+                  {num("bannerRadius", "Banner border radius (px)", 0, 30)}
+                </InlineGrid>
                 <Text as="p" variant="bodyMd" fontWeight="medium">
                   Badge
                 </Text>
-                {text("badgeText", "Badge symbol")}
-                {color("badgeBg", "Badge background")}
-                {color("badgeColor", "Badge symbol color")}
+                <InlineGrid columns={3} gap="300">
+                  {text("badgeText", "Badge symbol")}
+                  {color("badgeBg", "Badge background")}
+                  {color("badgeColor", "Badge symbol color")}
+                </InlineGrid>
                 {num("badgeRadius", "Badge border radius (px)", 0, 22)}
 
                 <Text as="p" variant="bodyMd" fontWeight="medium">
@@ -397,9 +404,11 @@ export default function DiscountCode({
                       "Use {n} for the number of applied codes.",
                     )
                   : text("clearAllText", "Button text")}
-                {color("pillBg", "Pill background")}
-                {color("pillColor", "Pill text color")}
-                {color("pillBorder", "Pill border color")}
+                <InlineGrid columns={3} gap="300">
+                  {color("pillBg", "Pill background")}
+                  {color("pillColor", "Pill text color")}
+                  {color("pillBorder", "Pill border color")}
+                </InlineGrid>
               </>
             )}
           </Section>
@@ -411,19 +420,27 @@ export default function DiscountCode({
             title={isCompact ? "Applied code rows" : "Applied code chips"}
           >
             {toggle("showList", "Show applied codes")}
+
             {T.showList && isCompact && (
               <>
-                {color("rowColor", "Code text color")}
-                {color("rowIconColor", "Tag icon color")}
-                {color("rowAmountColor", "Amount color")}
-                {color("removeColor", "Remove (×) color")}
-                {color("rowDivider", "Divider color")}
+                <InlineGrid columns={3} gap="300">
+                  {color("rowColor", "Code text color")}
+                  {color("rowIconColor", "Tag icon color")}
+                  {color("rowAmountColor", "Amount color")}
+                </InlineGrid>
+                <InlineGrid columns={3} gap="300">
+                  {color("removeColor", "Remove (×) color")}
+                  {color("rowDivider", "Divider color")}
+                </InlineGrid>
               </>
             )}
+
             {T.showList && isChip && (
               <>
-                {color("chipBg", "Chip background", T.accent)}
-                {color("chipColor", "Chip text & icon color")}
+                <InlineGrid columns={2} gap="300">
+                  {color("chipBg", "Chip background", T.accent)}
+                  {color("chipColor", "Chip text & icon color")}
+                </InlineGrid>
                 {num("chipRadius", "Chip border radius (px)", 0, 30)}
               </>
             )}
@@ -438,12 +455,15 @@ export default function DiscountCode({
                 {toggle("showMoreOffers", "Show “+N more offers” button")}
                 {T.showMoreOffers && (
                   <>
-                    {text(
-                      "moreOffersText",
-                      "More offers text",
-                      "Shown as “+N …”.",
-                    )}
-                    {color("moreOffersColor", "More offers text color")}
+                    <InlineGrid columns={2} gap="300" alignItems="start">
+                      {text(
+                        "moreOffersText",
+                        "More offers text",
+                        "Shown as “+N …”.",
+                      )}
+                      {color("moreOffersColor", "More offers text color")}
+                    </InlineGrid>
+
                     <BlockStack gap="200">
                       <Text as="p" variant="bodyMd">
                         Icon
@@ -475,12 +495,13 @@ export default function DiscountCode({
                 )}
               </>
             )}
+
             {toggle("showEnterLink", "Show “Enter a coupon code” link")}
             {T.showEnterLink && (
-              <>
+              <InlineGrid columns={2} gap="300">
                 {text("linkText", "Link text")}
                 {color("linkColor", "Link color")}
-              </>
+              </InlineGrid>
             )}
           </Section>
         )}
