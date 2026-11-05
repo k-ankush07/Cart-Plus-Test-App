@@ -533,12 +533,6 @@ export default function Analytics() {
   const toggleFilter = (key) =>
     setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  // Aggregate totals using normalised keys
-  const cartImpressions = labels.reduce(
-    (sum, l) => sum + (normalisedDailyAnalytics[l]?.cart_impression ?? 0),
-    0,
-  );
-
   const checkouts = labels.reduce(
     (sum, l) => sum + (normalisedDailyAnalytics[l]?.checkout_initiated ?? 0),
     0,
@@ -554,22 +548,31 @@ export default function Analytics() {
   const totals = stats?.revenue?.totals ?? {};
   const uniq = stats?.uniqueSessions ?? {};
 
-  const cartViews = cartImpressions;
-  const totalCarts = uniq.cart_impression ?? 0;
+  const cartViews = stats?.cartMetrics?.cartViews ?? 0;
+  const totalCarts = stats?.cartMetrics?.totalCarts ?? 0;
+  const addedSessions = stats?.cartMetrics?.addedSessions ?? 0;
   const checkoutInitiations = checkouts;
   const abandonedCarts = Math.max(
-    totalCarts - (uniq.checkout_initiated ?? 0),
+    addedSessions - (uniq.checkout_initiated ?? 0),
     0,
   );
   const convertedCarts = checkoutComplete;
   const abandonedCheckouts = Math.max(checkoutInitiations - convertedCarts, 0);
-  const overallConversionRate = pct(convertedCarts, totalCarts);
+  const overallConversionRate = pct(convertedCarts, addedSessions);
   const totalRevenueForPeriod = totals.totalRevenue ?? 0;
-
-  // Funnel: percentages are relative to cart views, capped at 100%
   const funnelSteps = [
-    { label: "Cart views", count: cartViews, percent: cartViews > 0 ? 100 : 0, tip: "Times the cart was displayed." },
-    { label: "Added to cart", count: totalCarts, percent: pct(totalCarts, cartViews), tip: "Unique shopper sessions with an active cart." },
+    {
+      label: "Cart views",
+      count: cartViews,
+      percent: cartViews > 0 ? 100 : 0,
+      tip: "Unique shopper sessions that viewed the cart.",
+    },
+    {
+      label: "Added to cart",
+      count: totalCarts,
+      percent: pct(totalCarts, cartViews),
+      tip: "Total quantity of items added to carts during this period.",
+    },
     { label: "Checkout initiated", count: checkoutInitiations, percent: pct(checkoutInitiations, cartViews), tip: "Times a customer clicked checkout." },
     { label: "Order complete", count: convertedCarts, percent: pct(convertedCarts, cartViews), tip: "Checkouts completed as orders." },
   ];
@@ -795,9 +798,13 @@ export default function Analytics() {
               [
                 "Total Carts",
                 totalCarts,
-                "Unique shopper sessions that saw the cart.",
+                "Total quantity of items added to carts during this period.",
               ],
-              ["Cart Views", cartViews, "Total times the cart was displayed."],
+              [
+                "Cart Views",
+                cartViews,
+                "Unique shopper sessions that viewed the cart.",
+              ],
               [
                 "Abandoned Carts",
                 abandonedCarts,

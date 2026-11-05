@@ -550,9 +550,7 @@ router.get("/get-sticky-cart/:shop", async (req, res) => {
     const stickyCart = await stickyCartModel.findByShop(shop);
 
     if (!stickyCart) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Sticky cart not found" });
+      return res.status(200).json({ success: true, data: null });
     }
     return res.status(200).json({ success: true, data: stickyCart });
   } catch (error) {
@@ -1631,6 +1629,7 @@ router.get("/revenue-stats", async (req, res) => {
       dailyRevenue,
       analyticsStats,
       dailyAnalytics,
+      cartMetricsRows,
       cartOrderCounts,
     ] = await Promise.all([
       // Revenue totals
@@ -1696,6 +1695,24 @@ router.get("/revenue-stats", async (req, res) => {
          GROUP BY ${DAY}, "eventType" ORDER BY date ASC`,
         P,
       ),
+      // Cart Views count unique sessions that viewed the cart.
+      // Total Carts sum the quantity of items added, including repeat additions.
+      rows(
+        `SELECT
+           (SELECT COALESCE(SUM(quantity), 0)::int
+            FROM cart_activity
+            WHERE shop = $1 AND "createdAt" >= $2 AND "createdAt" <= $3
+              AND action = 'added') AS "totalCarts",
+           (SELECT COUNT(DISTINCT "sessionId")::int
+            FROM cart_activity
+            WHERE shop = $1 AND "createdAt" >= $2 AND "createdAt" <= $3
+              AND action = 'added') AS "addedSessions",
+           (SELECT COUNT(DISTINCT "sessionId")::int
+            FROM analytics
+            WHERE shop = $1 AND "createdAt" >= $2 AND "createdAt" <= $3
+              AND "eventType" = 'cart_impression') AS "cartViews"`,
+        P,
+      ),
       // Checkouts completed (cart_order_counts, date TEXT)
       rows(
         `SELECT * FROM cart_order_counts
@@ -1709,6 +1726,11 @@ router.get("/revenue-stats", async (req, res) => {
     ]);
 
     const totals = totalsRows[0];
+    const cartMetrics = cartMetricsRows[0] || {
+      totalCarts: 0,
+      addedSessions: 0,
+      cartViews: 0,
+    };
 
     const uniqueSessions = {};
     uniqueSessionStats.forEach((item) => {
@@ -1777,6 +1799,7 @@ router.get("/revenue-stats", async (req, res) => {
       success: true,
       data: {
         revenue: { totals, daily: dailyRevenue },
+        cartMetrics,
         analytics: analyticsFormatted,
         uniqueSessions,
         topProducts,
