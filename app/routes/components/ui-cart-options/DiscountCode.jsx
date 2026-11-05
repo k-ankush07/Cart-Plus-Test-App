@@ -12,6 +12,7 @@ import {
   TextField,
   Box,
   Icon,
+  RangeSlider,
 } from "@shopify/polaris";
 import { DiscountIcon } from "@shopify/polaris-icons";
 import ColorInput from "../ui/ColorInput";
@@ -251,17 +252,33 @@ export default function DiscountCode({
       onChange={(v) => update(key, v)}
     />
   );
-  const num = (key, label, min, max, allowEmpty = false) => (
-    <TextField
-      label={label}
-      type="number"
-      autoComplete="off"
-      value={String(T[key] ?? "")}
-      onChange={(v) =>
-        update(key, allowEmpty && v === "" ? "" : clamp(v, min, max))
-      }
-    />
-  );
+  const num = (key, label, min, max, allowEmpty = false) => {
+    const raw = T[key];
+    const isEmpty = raw === "" || raw === undefined || raw === null;
+    const current = isEmpty ? min : Number(raw);
+
+    return (
+      <BlockStack gap="100">
+        <RangeSlider
+          label={label}
+          min={min}
+          max={max}
+          step={1}
+          output
+          value={current}
+          suffix={`${isEmpty && allowEmpty ? "auto" : current}px`}
+          onChange={(v) => update(key, Number(v))}
+        />
+        {/* {allowEmpty && !isEmpty && (
+        <InlineStack>
+          <Button variant="plain" onClick={() => update(key, "")}>
+            Reset to default
+          </Button>
+        </InlineStack>
+      )} */}
+      </BlockStack>
+    );
+  };
   const toggle = (key, label) => (
     <Checkbox
       label={label}
@@ -331,7 +348,10 @@ export default function DiscountCode({
 
         {/* ───────── Container (Compact + Chip) ───────── */}
         {!isClassic && (
-          <Section title="Container" hint="The outer box of the discount block.">
+          <Section
+            title="Container"
+            hint="The outer box of the discount block."
+          >
             {color("bg", "Background")}
             {color("textColor", "Text color", "#1a1a1a")}
             {color("accent", "Accent color")}
@@ -485,25 +505,34 @@ export default function DiscountCode({
             value={s.buttonText}
             onChange={(v) => update("buttonText", v)}
           />
-          {color("inputBg", "Input background")}
-          {color("inputColor", "Input text color", "#1a1a1a")}
-          {color("inputBorder", "Input border color", "#dcdcdc")}
-          {num("inputRadius", "Input border radius (px)", 0, 40, isClassic)}
-          {color("buttonBg", "Button background", "#16803c")}
-          {color("buttonColor", "Button text color")}
-          {num("buttonRadius", "Button border radius (px)", 0, 40, isClassic)}
+          <InlineGrid columns={3} gap="300">
+            {color("inputBg", "Input background")}
+            {color("inputColor", "Input text color", "#1a1a1a")}
+            {color("inputBorder", "Input border color", "#dcdcdc")}
+          </InlineGrid>
+
+          <InlineGrid columns={3} gap="300">
+            {color("buttonBg", "Button background", "#16803c")}
+            {color("buttonColor", "Button text color")}
+            {isClassic && color("iconColor", "Coupon icon color", "#000000")}
+          </InlineGrid>
+          <InlineGrid columns={2} gap="400">
+            {num("inputRadius", "Input border radius (px)", 0, 40, isClassic)}
+            {num("buttonRadius", "Button border radius (px)", 0, 40, isClassic)}
+          </InlineGrid>
           {isChip && (
             <>
               {toggle("showDashedBox", "Show dashed box around input")}
               {T.showDashedBox && (
                 <>
-                  {color("dashedColor", "Dashed border color")}
+                  <InlineGrid columns={3} gap="300">
+                    {color("dashedColor", "Dashed border color")}
+                  </InlineGrid>
                   {num("dashedRadius", "Dashed box radius (px)", 0, 30)}
                 </>
               )}
             </>
           )}
-          {isClassic && color("iconColor", "Coupon icon color", "#000000")}
         </Section>
 
         {/* ───────── Classic-only parts ───────── */}
@@ -535,7 +564,7 @@ export default function DiscountCode({
               onChange={(v) => update("showOfferBox", v)}
             />
             {s.showOfferBox && (
-              <>
+              <InlineGrid columns={2} gap="300">
                 <ColorInput
                   label="View All Offers Text Color"
                   value={s.viewAllOffersColor ?? "#ffffff"}
@@ -546,24 +575,26 @@ export default function DiscountCode({
                   value={s.viewAllOffersBgColor ?? "#000000"}
                   onChange={(v) => update("viewAllOffersBgColor", v)}
                 />
-              </>
+              </InlineGrid>
             )}
           </Section>
         )}
 
         {/* ───────── Offers panel (all 3) ───────── */}
         <Section title="Offers panel" hint="The slide-in list of all coupons.">
-          <TextField
-            label="Panel title"
-            autoComplete="off"
-            value={s.panelTitle ?? "Apply Coupon"}
-            onChange={(v) => update("panelTitle", v)}
-          />
-          <ColorInput
-            label="Offer badge color"
-            value={s.showOfferBgColor ?? "#6C4DFF"}
-            onChange={(v) => update("showOfferBgColor", v)}
-          />
+          <InlineGrid columns={2} gap="300">
+            <TextField
+              label="Panel title"
+              autoComplete="off"
+              value={s.panelTitle ?? "Apply Coupon"}
+              onChange={(v) => update("panelTitle", v)}
+            />
+            <ColorInput
+              label="Offer badge color"
+              value={s.showOfferBgColor ?? "#6C4DFF"}
+              onChange={(v) => update("showOfferBgColor", v)}
+            />
+          </InlineGrid>
         </Section>
 
         {/* ───────── Invalid message (all 3) ───────── */}

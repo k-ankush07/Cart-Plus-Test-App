@@ -5,9 +5,9 @@ import {
   TextField,
   Select,
   Button,
+  ButtonGroup,
   Modal,
   Pagination,
-  RadioButton,
   Checkbox,
   RangeSlider,
   InlineStack,
@@ -15,8 +15,15 @@ import {
   BlockStack,
   Box,
   Icon,
+  Divider,
 } from "@shopify/polaris";
-import { CartIcon, DeleteIcon, PlusIcon } from "@shopify/polaris-icons";
+import {
+  CartIcon,
+  DeleteIcon,
+  PlusIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@shopify/polaris-icons";
 import IconLibrary from "../ui/IconLibrary";
 import RichTextEditor from "../ui/RichTextEditor";
 import ColorInput from "../ui/ColorInput";
@@ -107,7 +114,12 @@ const CarouselPreview = () => (
     </div>
     <div style={{ display: "flex", gap: 3 }}>
       {[0, 1, 2].map((i) => (
-        <PSquare key={i} size={3} radius={2} color={i === 1 ? P_DARK : P_GRAY} />
+        <PSquare
+          key={i}
+          size={3}
+          radius={2}
+          color={i === 1 ? P_DARK : P_GRAY}
+        />
       ))}
     </div>
   </div>
@@ -278,6 +290,7 @@ export default function OneTickUpsell({
     handleNext: () => {},
   });
   const pickerOffer = oneTick.offers.find((o) => o.id === pickerFor);
+  const [openOffers, setOpenOffers] = useState({});
 
   return (
     <div className="mainContent">
@@ -360,33 +373,112 @@ export default function OneTickUpsell({
         </LegacyCard>
 
         <LegacyCard sectioned>
-          <BlockStack gap="300">
+          <BlockStack gap="400">
             <Text as="h3" variant="headingSm">
               Offers
             </Text>
 
-            {oneTick.offers.map((offer, index) => (
-              <div
-                key={offer.id}
-                style={{
-                  border: "1px solid #e1e3e5",
-                  borderRadius: 10,
-                  padding: 12,
-                }}
-              >
-                <BlockStack gap="300">
-                  <InlineStack align="space-between" blockAlign="center">
-                    <InlineStack gap="100" blockAlign="center">
-                      <Icon source={CartIcon} />
+            {oneTick.offers.map((offer, index) => {
+              const isOpen = openOffers[offer.id] ?? index === 0;
+              const toggle = () =>
+                setOpenOffers((p) => ({ ...p, [offer.id]: !isOpen }));
+
+              const discountSummary =
+                offer.discountType === "percentage"
+                  ? `${offer.discountValue}% off`
+                  : offer.discountType === "amount"
+                    ? `${currency || ""}${offer.discountValue} off`
+                    : "No discount";
+              const summary = `${offer.mode === "manual" ? "Manual" : "Auto"} · ${discountSummary}`;
+
+              const items = offer.selected?.items;
+              const title = items?.titles?.[0];
+              const count = items?.variants?.length || 0;
+              // the image key depends on the picker data, so several options are checked
+              const image =
+                items?.images?.[0] ||
+                items?.image ||
+                items?.imageUrls?.[0] ||
+                offer.selected?.image ||
+                null;
+
+              return (
+                <div
+                  key={offer.id}
+                  style={{
+                    border: "1px solid #e1e3e5",
+                    borderRadius: 12,
+                    overflow: "hidden",
+                    background: "#fff",
+                  }}
+                >
+                  {/* header */}
+                  {/* header */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      padding: "8px 12px",
+                      background: "#f6f6f7",
+                      borderBottom: isOpen ? "1px solid #e1e3e5" : "none",
+                    }}
+                  >
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={isOpen}
+                      onClick={toggle}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggle();
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-start",
+                        gap: 8,
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          width: 20,
+                          height: 20,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Icon
+                          source={isOpen ? ChevronUpIcon : ChevronDownIcon}
+                        />
+                      </span>
                       <Text as="span" variant="bodyMd" fontWeight="semibold">
                         Offer {index + 1}
                       </Text>
-                    </InlineStack>
+                      {!isOpen && (
+                        <Text
+                          as="span"
+                          variant="bodySm"
+                          tone="subdued"
+                          truncate
+                        >
+                          {summary}
+                        </Text>
+                      )}
+                    </div>
+
                     <Button
                       variant="plain"
                       tone="critical"
                       icon={DeleteIcon}
-                      accessibilityLabel="Delete offer"
+                      accessibilityLabel={`Delete offer ${index + 1}`}
                       onClick={() =>
                         update({
                           offers: oneTick.offers.filter(
@@ -395,166 +487,186 @@ export default function OneTickUpsell({
                         })
                       }
                     />
-                  </InlineStack>
+                  </div>
 
-                  <InlineStack gap="400">
-                    <RadioButton
-                      label="Auto-recommend (AI)"
-                      checked={offer.mode === "auto"}
-                      onChange={() => updateOffer(offer.id, { mode: "auto" })}
-                    />
-                    <RadioButton
-                      label="Manual selection"
-                      checked={offer.mode === "manual"}
-                      onChange={() => updateOffer(offer.id, { mode: "manual" })}
-                    />
-                  </InlineStack>
+                  {/* body */}
+                  {isOpen && (
+                    <div style={{ padding: 16 }}>
+                      <BlockStack gap="400">
+                        {/* product source */}
+                        <BlockStack gap="200">
+                          <Text as="p" variant="bodyMd" fontWeight="medium">
+                            Product
+                          </Text>
+                          <ButtonGroup variant="segmented" fullWidth>
+                            <Button
+                              pressed={offer.mode === "auto"}
+                              onClick={() =>
+                                updateOffer(offer.id, { mode: "auto" })
+                              }
+                            >
+                              Auto-recommend (AI)
+                            </Button>
+                            <Button
+                              pressed={offer.mode === "manual"}
+                              onClick={() =>
+                                updateOffer(offer.id, { mode: "manual" })
+                              }
+                            >
+                              Manual selection
+                            </Button>
+                          </ButtonGroup>
 
-                  {offer.mode === "manual" && (
-                    <>
-                      <Button
-                        variant="primary"
-                        fullWidth
-                        onClick={() => {
-                          setPicked(offer.selected);
-                          setPickerFor(offer.id);
-                        }}
-                      >
-                        Select Product
-                      </Button>
-                      {(() => {
-                        const items = offer.selected?.items;
-                        const title = items?.titles?.[0];
-                        const count = items?.variants?.length || 0;
-                        // the image key depends on the picker data, so several options are checked
-                        const image =
-                          items?.images?.[0] ||
-                          items?.image ||
-                          items?.imageUrls?.[0] ||
-                          offer.selected?.image ||
-                          null;
-
-                        return (
-                          <div
-                            style={{
-                              border: "1px dashed #c9cccf",
-                              borderRadius: 8,
-                              padding: 10,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                            }}
-                          >
-                            {title ? (
-                              <>
-                                {image && (
-                                  <img
-                                    src={image}
-                                    alt={title}
-                                    style={{
-                                      width: 48,
-                                      height: 48,
-                                      borderRadius: 6,
-                                      objectFit: "cover",
-                                      flexShrink: 0,
-                                    }}
-                                  />
-                                )}
-                                <div
+                          {offer.mode === "manual" && (
+                            <div
+                              style={{
+                                border: "1px dashed #c9cccf",
+                                borderRadius: 8,
+                                padding: 10,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                              }}
+                            >
+                              {image && (
+                                <img
+                                  src={image}
+                                  alt={title || ""}
                                   style={{
-                                    minWidth: 0,
-                                    flex: 1,
-                                    textAlign: "left",
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: 6,
+                                    objectFit: "cover",
+                                    flexShrink: 0,
                                   }}
-                                >
-                                  <Text
-                                    as="p"
-                                    variant="bodySm"
-                                    fontWeight="semibold"
-                                    truncate
-                                  >
-                                    {title}
-                                  </Text>
+                                />
+                              )}
+                              <div
+                                style={{
+                                  minWidth: 0,
+                                  flex: 1,
+                                  textAlign: "left",
+                                }}
+                              >
+                                {title ? (
+                                  <>
+                                    <Text
+                                      as="p"
+                                      variant="bodySm"
+                                      fontWeight="semibold"
+                                      truncate
+                                    >
+                                      {title}
+                                    </Text>
+                                    <Text
+                                      as="p"
+                                      variant="bodySm"
+                                      tone="subdued"
+                                    >
+                                      {count} variant{count === 1 ? "" : "s"}{" "}
+                                      selected
+                                    </Text>
+                                  </>
+                                ) : (
                                   <Text as="p" variant="bodySm" tone="subdued">
-                                    {count} variant{count === 1 ? "" : "s"}{" "}
-                                    selected
+                                    No product selected yet.
                                   </Text>
-                                </div>
-                              </>
-                            ) : (
-                              <div style={{ width: "100%", textAlign: "left" }}>
-                                <Text as="p" variant="bodySm" tone="subdued">
-                                  No product selected yet.
-                                </Text>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </>
-                  )}
+                              <Button
+                                onClick={() => {
+                                  setPicked(offer.selected);
+                                  setPickerFor(offer.id);
+                                }}
+                              >
+                                {title ? "Change" : "Select product"}
+                              </Button>
+                            </div>
+                          )}
+                        </BlockStack>
 
-                  <InlineGrid columns={2} gap="300">
-                    <Select
-                      label="Discount"
-                      options={[
-                        { label: "No discount", value: "none" },
-                        { label: "Percentage off", value: "percentage" },
-                        { label: "Amount off", value: "amount" },
-                      ]}
-                      value={offer.discountType}
-                      onChange={(discountType) =>
-                        updateOffer(offer.id, { discountType })
-                      }
-                    />
-                    <TextField
-                      label="Value"
-                      type="number"
-                      min={0}
-                      value={String(offer.discountValue)}
-                      disabled={offer.discountType === "none"}
-                      autoComplete="off"
-                      onChange={(v) =>
-                        updateOffer(offer.id, { discountValue: Number(v) || 0 })
-                      }
-                    />
-                  </InlineGrid>
+                        <Divider />
 
-                  <Checkbox
-                    label="Show label"
-                    checked={offer.showLabel}
-                    onChange={(showLabel) =>
-                      updateOffer(offer.id, { showLabel })
-                    }
-                  />
-                  {offer.showLabel && (
-                    <>
-                      <RichTextEditor
-                        value={offer.label}
-                        onChange={(label) => updateOffer(offer.id, { label })}
-                      />
-                      <Text as="p" variant="bodySm" tone="subdued">
-                        Use {"{{saved_percentage}}"} or {"{{saved_amount}}"}.
-                      </Text>
-                    </>
+                        {/* discount */}
+                        <InlineGrid columns={2} gap="300">
+                          <Select
+                            label="Discount"
+                            options={[
+                              { label: "No discount", value: "none" },
+                              { label: "Percentage off", value: "percentage" },
+                              { label: "Amount off", value: "amount" },
+                            ]}
+                            value={offer.discountType}
+                            onChange={(discountType) =>
+                              updateOffer(offer.id, { discountType })
+                            }
+                          />
+                          <TextField
+                            label="Value"
+                            type="number"
+                            min={0}
+                            value={String(offer.discountValue)}
+                            disabled={offer.discountType === "none"}
+                            autoComplete="off"
+                            suffix={
+                              offer.discountType === "percentage"
+                                ? "%"
+                                : undefined
+                            }
+                            onChange={(v) =>
+                              updateOffer(offer.id, {
+                                discountValue: Number(v) || 0,
+                              })
+                            }
+                          />
+                        </InlineGrid>
+
+                        <Divider />
+
+                        {/* label */}
+                        <BlockStack gap="200">
+                          <Checkbox
+                            label="Show label"
+                            checked={offer.showLabel}
+                            onChange={(showLabel) =>
+                              updateOffer(offer.id, { showLabel })
+                            }
+                          />
+                          {offer.showLabel && (
+                            <>
+                              <RichTextEditor
+                                value={offer.label}
+                                onChange={(label) =>
+                                  updateOffer(offer.id, { label })
+                                }
+                              />
+                              <Text as="p" variant="bodySm" tone="subdued">
+                                Use {"{{saved_percentage}}"} or{" "}
+                                {"{{saved_amount}}"}.
+                              </Text>
+                            </>
+                          )}
+                        </BlockStack>
+                      </BlockStack>
+                    </div>
                   )}
-                </BlockStack>
-              </div>
-            ))}
+                </div>
+              );
+            })}
 
             <Button
-              variant="primary"
               icon={PlusIcon}
               fullWidth
-              onClick={() =>
-                update({ offers: [...oneTick.offers, newOffer()] })
-              }
+              onClick={() => {
+                const offer = newOffer();
+                update({ offers: [...oneTick.offers, offer] });
+                setOpenOffers((p) => ({ ...p, [offer.id]: true }));
+              }}
             >
-              Offer
+              Add offer
             </Button>
           </BlockStack>
         </LegacyCard>
-
         <LegacyCard sectioned>
           <BlockStack gap="300">
             <Text as="h3" variant="headingSm">

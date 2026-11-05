@@ -603,18 +603,21 @@ export default function UpsellsSettings({
               accessToken={accessToken}
               apiUrl={apiUrl}
             />
-            <ColorInput
-              label="Icon color"
-              value={upsellsSettings.iconColor || "#000000"}
-              onChange={(val) => update("iconColor", val)}
-            />
+            <InlineGrid columns={2} gap="400">
+              <ColorInput
+                label="Icon color"
+                value={upsellsSettings.iconColor || "#000000"}
+                onChange={(val) => update("iconColor", val)}
+              />
 
-            <TextField
-              label="Button text"
-              value={upsellsSettings.buttonText}
-              maxLength={15}
-              onChange={(val) => update("buttonText", val.slice(0, 15))}
-            />
+              <TextField
+                label="Button text"
+                value={upsellsSettings.buttonText}
+                maxLength={15}
+                autoComplete="off"
+                onChange={(val) => update("buttonText", val.slice(0, 15))}
+              />
+            </InlineGrid>
             <Select
               label="Upsell position"
               options={[

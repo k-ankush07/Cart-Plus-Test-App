@@ -385,7 +385,7 @@ export default function AgeVerification({
                   onChange={(v) => update({ continueText: v })}
                 />
               )}
-              <InlineGrid columns={2} gap="300">
+              <InlineGrid columns={3} gap="300">
                 <ColorInput
                   label="Button / toggle color"
                   value={s.accent ?? "#111827"}

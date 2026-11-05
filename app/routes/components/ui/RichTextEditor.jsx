@@ -1,29 +1,12 @@
 import { useRef, useEffect, useState } from "react";
-import { BlockStack, InlineGrid, RangeSlider } from "@shopify/polaris";
-import ColorInput from "./ColorInput";
+import { RangeSlider } from "@shopify/polaris";
 
+// text buttons instead of image icons: crisp at any size, no extra requests
 const TOOLS = [
-  {
-    cmd: "bold",
-    icon: "https://slide.upcart.app/icons/bold-1.png",
-    alt: "Bold",
-  },
-  {
-    cmd: "italic",
-    icon: "https://www.hubsyntax.com/cart-images/italic-1.png",
-    alt: "Italic",
-  },
-  {
-    cmd: "underline",
-    icon: "https://www.hubsyntax.com/cart-images/underline-1.png",
-    alt: "Underline",
-  },
+  { cmd: "bold", alt: "Bold", label: <b>B</b> },
+  { cmd: "italic", alt: "Italic", label: <i>I</i> },
+  { cmd: "underline", alt: "Underline", label: <u>U</u> },
 ];
-
-const FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32, 40].map((n) => ({
-  label: `${n}px`,
-  value: String(n),
-}));
 
 const DEFAULT_COLOR = "#000000";
 const DEFAULT_SIZE = "14";
@@ -66,6 +49,13 @@ function normalize(root) {
   });
   root.normalize();
 }
+
+const divider = (
+  <span
+    aria-hidden="true"
+    style={{ width: 1, height: 18, background: "#e1e3e5", margin: "0 2px" }}
+  />
+);
 
 function RichTextEditor({ value, onChange }) {
   const ref = useRef(null);
@@ -186,79 +176,130 @@ function RichTextEditor({ value, onChange }) {
   };
 
   return (
-    <BlockStack gap="200">
+    <div
+      style={{
+        border: "1px solid #dcdcdc",
+        borderRadius: 8,
+        overflow: "hidden",
+        background: "#fff",
+      }}
+    >
+      {/* One compact toolbar row: B I U | colour | size */}
       <div
         style={{
-          border: "1px solid #dcdcdc",
-          borderRadius: "8px",
-          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "5px 8px",
+          background: "#fafafa",
+          borderBottom: "1px solid #e8e8e8",
         }}
       >
-        {/* Toolbar */}
-        <div
+        {TOOLS.map(({ cmd, alt, label }) => (
+          <button
+            key={cmd}
+            type="button"
+            title={alt}
+            aria-label={alt}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => format(cmd)}
+            style={{
+              width: 26,
+              height: 26,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: 0,
+              borderRadius: 6,
+              background: "transparent",
+              color: "#303030",
+              fontSize: 14,
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#ececec")}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "transparent")
+            }
+          >
+            {label}
+          </button>
+        ))}
+
+        {divider}
+
+        {/* colour swatch: the native picker sits invisibly on top of it */}
+        <label
+          title="Text color"
           style={{
-            borderBottom: "1px solid #e0e0e0",
-            padding: "12px",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
+            position: "relative",
+            width: 20,
+            height: 20,
+            borderRadius: 6,
+            border: "1px solid #c9cccf",
+            background: color,
+            cursor: "pointer",
+            overflow: "hidden",
+            flexShrink: 0,
           }}
         >
-          {TOOLS.map(({ cmd, icon, alt }) => (
-            <div
-              key={cmd}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => format(cmd)}
-              title={alt}
-              style={{
-                width: "30px",
-                height: "30px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                borderRadius: "4px",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "#e0e0e0")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "transparent")
-              }
-            >
-              <img src={icon} alt={alt} style={{ width: "20px" }} />
-            </div>
-          ))}
-        </div>
+          <input
+            type="color"
+            aria-label="Text color"
+            value={color}
+            onChange={(e) => applyColor(e.target.value)}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              opacity: 0,
+              cursor: "pointer",
+            }}
+          />
+        </label>
 
-        <div
-          ref={ref}
-          contentEditable
-          onInput={emit}
-          onKeyUp={saveSelection}
-          onMouseUp={saveSelection}
-          onBlur={saveSelection}
-          suppressContentEditableWarning
+        {divider}
+
+        <div style={{ width: 110, flexShrink: 0 }}>
+          <RangeSlider
+            label="Font size"
+            labelHidden
+            value={Number(fontSize)}
+            min={10}
+            max={40}
+            step={1}
+            onChange={applyFontSize}
+          />
+        </div>
+        <span
           style={{
-            padding: "16px",
-            outline: "none",
+            minWidth: 30,
+            fontSize: 12,
+            color: "#616161",
+            fontVariantNumeric: "tabular-nums",
           }}
-        />
+        >
+          {fontSize}px
+        </span>
       </div>
 
-      <InlineGrid columns={2} gap="300" alignItems="end">
-        <ColorInput label="Text color" value={color} onChange={applyColor} />
-        <RangeSlider
-          label="Font size"
-          value={Number(fontSize)}
-          min={10}
-          max={40}
-          step={1}
-          output
-          onChange={applyFontSize}
-        />
-      </InlineGrid>
-    </BlockStack>
+      <div
+        ref={ref}
+        contentEditable
+        onInput={emit}
+        onKeyUp={saveSelection}
+        onMouseUp={saveSelection}
+        onBlur={saveSelection}
+        suppressContentEditableWarning
+        style={{
+          padding: "10px 12px",
+          minHeight: 40,
+          fontSize: 14,
+          lineHeight: 1.4,
+          outline: "none",
+        }}
+      />
+    </div>
   );
 }
 
