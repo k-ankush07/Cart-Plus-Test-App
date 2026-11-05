@@ -110,14 +110,6 @@ const PreviewReward = () => (
   </div>
 );
 
-const PreviewNextReward = () => (
-  <div style={{ display: "grid", gap: 4 }}>
-    <Line h={2} />
-    <Line w="35%" h={2} />
-    <Line h={3} color={DARK} w="55%" />
-  </div>
-);
-
 const PreviewMilestone = () => (
   <div
     style={{

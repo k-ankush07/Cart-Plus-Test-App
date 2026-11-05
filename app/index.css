@@ -2383,3 +2383,9 @@ input.cart-plus-offers-code-input:focus {
 .cart-plus-upsells-side-panel button.cart-plus-internal-component__button.cart-plus-public-component__button {
     width: 100%;
 }
+
+._page_rodemap_suggestion {
+    width: 100%;
+    max-width: 2500px;
+    margin: 0 auto;
+}

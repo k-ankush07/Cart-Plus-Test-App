@@ -676,6 +676,7 @@ export default function Featureboard() {
   const selected = features.find((f) => f.id === selectedId) || null;
 
   return (
+    <div className="_page_rodemap_suggestion">
     <Page
       title="Roadmap"
       backAction={{ content: "Back", onAction: () => window.history.back() }}
@@ -831,5 +832,6 @@ export default function Featureboard() {
         </Modal.Section>
       </Modal>
     </Page>
+    </div>
   );
 }

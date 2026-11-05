@@ -112,6 +112,9 @@ const MainContent = memo(function MainContent({
           rewardsSettings={rewardsSettings}
           handleChange={handleChange}
           currency={currency}
+          shop={shop}
+          accessToken={accessToken}
+          apiUrl={apiUrl}
         />
       ),
       "One Tick Upsell": (
