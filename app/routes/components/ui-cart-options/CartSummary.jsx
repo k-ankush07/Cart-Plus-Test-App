@@ -218,14 +218,14 @@ export default function CartSummary({
               </InlineGrid>
             </BlockStack>
             <Checkbox
-              label="Show icons"
-              checked={s.showIcons}
-              onChange={(val) => update({ showIcons: val })}
+              label="Show heading icon"
+              checked={s.showTitleIcon}
+              onChange={(val) => update({ showTitleIcon: val })}
             />
-            {s.showIcons && (
+            {s.showTitleIcon && (
               <BlockStack gap="100">
                 <Text variant="bodyMd" fontWeight="medium">
-                  Summary icon
+                  Heading icon
                 </Text>
                 <IconLibrary
                   value={s.titleIcon}
@@ -246,6 +246,11 @@ export default function CartSummary({
                 />
               </BlockStack>
             )}
+            <Checkbox
+              label="Show other icons"
+              checked={s.showIcons}
+              onChange={(val) => update({ showIcons: val })}
+            />
 
             <Checkbox
               label="Make it expandable"

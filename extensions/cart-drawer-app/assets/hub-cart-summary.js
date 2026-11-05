@@ -191,7 +191,7 @@ window.cartPlusRenderSummary = function (blockId, data) {
     s.title === "Summary" ? designTitles[s.design] || s.title : s.title;
   const hasTitle = displayTitle.replace(/<[^>]*>|&nbsp;/g, "").trim();
   const titleIcon =
-    s.showIcons && s.titleIcon
+    (s.showTitleIcon ?? s.showIcons) && s.titleIcon
       ? window.hubLibraryIconHTML?.(s.titleIcon, 18, s.textColor) || ""
       : "";
   const titleInner = `<span class="cart-plus-summary__title-text">${titleIcon}<span>${displayTitle}</span></span>`;

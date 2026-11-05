@@ -10,6 +10,7 @@ import {
   DropZone,
   ProgressBar,
   RangeSlider,
+  InlineGrid 
 } from "@shopify/polaris";
 import { ImageIcon, DeleteIcon } from "@shopify/polaris-icons";
 import { uploadImage } from "../../../services/apiRoutes";
@@ -201,37 +202,39 @@ export default function BannerImage({
         </BlockStack>
       </LegacyCard>
 
-      <LegacyCard sectioned title="Layout">
-        <BlockStack gap="300">
-          {/* <RangeSlider
-            label="Width"
-            value={banner.width}
-            min={10}
-            max={100}
-            output
-            suffix={unit(banner.width, "%")}
-            onChange={(width) => update({ width })}
-          /> */}
-          <RangeSlider
-            label="Margin"
-            value={banner.padding}
-            min={0}
-            max={40}
-            output
-            suffix={unit(banner.padding, "px")}
-            onChange={(padding) => update({ padding })}
-          />
-          <RangeSlider
-            label="Corner radius"
-            value={banner.radius}
-            min={0}
-            max={24}
-            output
-            suffix={unit(banner.radius, "px")}
-            onChange={(radius) => update({ radius })}
-          />
-        </BlockStack>
-      </LegacyCard>
+     <LegacyCard sectioned title="Layout">
+  <BlockStack gap="300">
+    <InlineGrid columns={3} gap="400">
+      <RangeSlider
+        label="Top & bottom margin"
+        value={banner.paddingY}
+        min={0}
+        max={40}
+        output
+        suffix={unit(banner.paddingY, "px")}
+        onChange={(paddingY) => update({ paddingY })}
+      />
+      <RangeSlider
+        label="Left & right margin"
+        value={banner.paddingX}
+        min={0}
+        max={40}
+        output
+        suffix={unit(banner.paddingX, "px")}
+        onChange={(paddingX) => update({ paddingX })}
+      />
+      <RangeSlider
+        label="Corner radius"
+        value={banner.radius}
+        min={0}
+        max={24}
+        output
+        suffix={unit(banner.radius, "px")}
+        onChange={(radius) => update({ radius })}
+      />
+    </InlineGrid>
+  </BlockStack>
+</LegacyCard>
     </div>
   );
 }

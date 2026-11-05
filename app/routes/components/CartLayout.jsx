@@ -502,12 +502,12 @@ const CartLayout = memo(function CartLayout({
 
             <ABTesting key={abTesting?.resetKey} {...abTesting} />
 
-            <Button onClick={() => setTranslationsModal(true)}>
+            {/* <Button onClick={() => setTranslationsModal(true)}>
               <InlineStack gap="200" align="center">
                 <Icon source={LanguageIcon} />
                 Edit translations
               </InlineStack>
-            </Button>
+            </Button> */}
 
             {/* <Button
               variant="tertiary"

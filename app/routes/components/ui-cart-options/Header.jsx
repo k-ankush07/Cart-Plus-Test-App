@@ -463,6 +463,18 @@ export default function Header({
               onChange={(val) => updateHeader("iconbgHoverColor", val)}
             />
           </InlineGrid>
+
+          <RangeSlider
+            label="Border radius"
+            value={headerSettings.iconRadius ?? 0}
+            onChange={(val) => updateHeader("iconRadius", val)}
+            min={0}
+            max={50}
+            step={1}
+            prefix="0px"
+            suffix="50px"
+            output
+          />
           <Box paddingBlockStart="200" paddingBlockEnd="200">
             <Divider />
           </Box>

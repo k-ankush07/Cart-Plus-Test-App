@@ -281,7 +281,7 @@ const PreviewAlmost = () => (
 const BAR_STYLES = [
   { value: "icon", label: "Icon", preview: <PreviewIcon /> },
   { value: "reward", label: "Reward", preview: <PreviewReward /> },
-  { value: "nextReward", label: "Next Reward", preview: <PreviewNextReward /> },
+  // { value: "nextReward", label: "Next Reward", preview: <PreviewNextReward /> },
   { value: "milestone", label: "Milestone", preview: <PreviewMilestone /> },
   {
     value: "threshold",
@@ -291,7 +291,7 @@ const BAR_STYLES = [
   { value: "card", label: "Card", preview: <PreviewCard /> },
   { value: "gift", label: "Gift steps", preview: <PreviewGift /> },
   { value: "ring", label: "Ring", preview: <PreviewRing /> },
-  { value: "unlock", label: "Unlock rewards", preview: <PreviewUnlock /> },
+  // { value: "unlock", label: "Unlock rewards", preview: <PreviewUnlock /> },
   { value: "striped", label: "Striped", preview: <PreviewStriped /> },
   { value: "almost", label: "Almost there", preview: <PreviewAlmost /> },
 ];
@@ -456,43 +456,44 @@ export default function TieredOffers({
                     onChange={(v) => setCfg("iconColor", v)}
                   />
                 </InlineGrid>
-
-                <RangeSlider
-                  label="Border radius"
-                  min={0}
-                  max={40}
-                  value={t.radius}
-                  onChange={(v) => setCfg("radius", v)}
-                  suffix={<Text>{t.radius}px</Text>}
-                  output
-                />
-                <RangeSlider
-                  label="Padding (top / bottom)"
-                  min={6}
-                  max={32}
-                  value={t.padding}
-                  onChange={(v) => setCfg("padding", v)}
-                  suffix={<Text>{t.padding}px</Text>}
-                  output
-                />
-                <RangeSlider
-                  label="Message font size"
-                  min={11}
-                  max={22}
-                  value={t.fontSize}
-                  onChange={(v) => setCfg("fontSize", v)}
-                  suffix={<Text>{t.fontSize}px</Text>}
-                  output
-                />
-                <RangeSlider
-                  label="Bar height"
-                  min={4}
-                  max={16}
-                  value={t.barHeight}
-                  onChange={(v) => setCfg("barHeight", v)}
-                  suffix={<Text>{t.barHeight}px</Text>}
-                  output
-                />
+                <InlineGrid columns={2} gap="300">
+                  <RangeSlider
+                    label="Border radius"
+                    min={0}
+                    max={40}
+                    value={t.radius}
+                    onChange={(v) => setCfg("radius", v)}
+                    suffix={<Text>{t.radius}px</Text>}
+                    output
+                  />
+                  <RangeSlider
+                    label="Padding (top / bottom)"
+                    min={6}
+                    max={32}
+                    value={t.padding}
+                    onChange={(v) => setCfg("padding", v)}
+                    suffix={<Text>{t.padding}px</Text>}
+                    output
+                  />
+                  <RangeSlider
+                    label="Message font size"
+                    min={11}
+                    max={22}
+                    value={t.fontSize}
+                    onChange={(v) => setCfg("fontSize", v)}
+                    suffix={<Text>{t.fontSize}px</Text>}
+                    output
+                  />
+                  <RangeSlider
+                    label="Bar height"
+                    min={4}
+                    max={16}
+                    value={t.barHeight}
+                    onChange={(v) => setCfg("barHeight", v)}
+                    suffix={<Text>{t.barHeight}px</Text>}
+                    output
+                  />
+                </InlineGrid>
 
                 {["card", "gift", "striped", "almost"].includes(barStyle) && (
                   <BlockStack gap="200">
@@ -685,7 +686,7 @@ export default function TieredOffers({
           )}
 
           {barStyle === "reward" && (
-            <>
+            <InlineGrid columns={2} gap="300">
               <TextField
                 label="Reward ticket label"
                 value={rewardsSettings.rewardTicketLabel ?? "REWARD TICKET"}
@@ -698,7 +699,7 @@ export default function TieredOffers({
                 onChange={(v) => update("nextRewardLabel", v)}
                 autoComplete="off"
               />
-            </>
+            </InlineGrid>
           )}
           {barStyle === "milestone" && (
             <TextField
@@ -724,7 +725,7 @@ export default function TieredOffers({
 
           {/* Legacy color controls: only for non-themed styles */}
           {showLegacyStyling && (
-            <BlockStack gap="300">
+            <InlineGrid columns={2} gap="300">
               <ColorInput
                 label="Bar background color"
                 value={rewardsSettings.backgroundColor}
@@ -747,7 +748,7 @@ export default function TieredOffers({
                 value={rewardsSettings.incompleteIconColor}
                 onChange={(val) => update("incompleteIconColor", val)}
               />
-            </BlockStack>
+            </InlineGrid>
           )}
 
           {/* Success text applies to every style */}
@@ -770,7 +771,7 @@ export default function TieredOffers({
           {/* Bar length / gap: only for non-themed styles
               (themed styles use "Bar height" in Customize this style) */}
           {showLegacyStyling && (
-            <InlineStack gap="200" align="start">
+            <InlineGrid columns={2} gap="300">
               <Box width="100%">
                 <RangeSlider
                   label="Bar Length"
@@ -798,7 +799,7 @@ export default function TieredOffers({
                   output
                 />
               </Box>
-            </InlineStack>
+            </InlineGrid>
           )}
         </LegacyStack>
       </LegacyCard>

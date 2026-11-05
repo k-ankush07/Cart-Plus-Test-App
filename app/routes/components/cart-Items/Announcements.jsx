@@ -118,6 +118,9 @@ function TemplateAnnouncement({ s, currency, templateBg }) {
 
   let right = null;
 
+  const linkLabel = s.linkText ?? t.linkText;
+  const buttonLabel = s.buttonText ?? t.buttonText;
+
   if (s.template === "coupon")
     right = (
       <span style={{ ...pill, background: accentBg, color: accentText }}>
@@ -154,13 +157,13 @@ function TemplateAnnouncement({ s, currency, templateBg }) {
     );
   }
 
-  if (s.template === "vip")
+  if (s.template === "vip" && linkLabel?.trim())
     right = (
       <a
         href={s.link || "#"}
         style={{ color, fontWeight: 700, textDecoration: "underline" }}
       >
-        {s.linkText || t.linkText}
+        {linkLabel}
       </a>
     );
 
@@ -195,7 +198,7 @@ function TemplateAnnouncement({ s, currency, templateBg }) {
       </span>
     );
 
-  if (["flash_sale", "free_gift"].includes(s.template))
+ if (["flash_sale", "free_gift"].includes(s.template) && buttonLabel?.trim())
     right = (
       <a
         href={s.link || "#"}
@@ -206,7 +209,7 @@ function TemplateAnnouncement({ s, currency, templateBg }) {
           textDecoration: "none",
         }}
       >
-        {s.buttonText || t.buttonText}
+        {buttonLabel}
       </a>
     );
 

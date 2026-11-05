@@ -628,8 +628,8 @@ export default function TieredRewards({ rewardsSettings, currency }) {
               >
                 <div
                   style={{
-                    width: 64,
-                    height: 64,
+                    width: 54,
+                    height: 54,
                     borderRadius: "50%",
                     background: reached ? fillBg : trackBg,
                     color: reached

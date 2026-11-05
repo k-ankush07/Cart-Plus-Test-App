@@ -485,7 +485,7 @@ button.cart-app-item__qty-btn.cart-plus-product-quantity-minus.cart-plus-public-
     color: var(--icon-color);
     transition: background 0.3s ease;
     cursor: pointer;
-    padding: 0px;
+    padding:2px;
     display: flex;
     border: var(--border-width) solid var(--border-color);
 }

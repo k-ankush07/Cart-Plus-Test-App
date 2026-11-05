@@ -117,7 +117,7 @@ window.injectCartHTML = function (blockId, root) {
     `--icon-border-hover:${headerSettings.borderHoverColor || "transparent"}`,
     `--border-color:${headerSettings.iconBorderColor || "transparent"}`,
     `--border-width:${getBorderWidth(headerSettings.iconBorder)}`,
-    `--border-radius:${designSettings.buttonRadius || 0}px`,
+    `--border-radius:${headerSettings.iconRadius ?? designSettings.buttonRadius ?? 0}px`,
   ].join(";");
 
   // Close button HTML (reusable)

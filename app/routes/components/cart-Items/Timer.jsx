@@ -63,12 +63,15 @@ export default function Timer({ headerSettings, designSettings }) {
   useEffect(() => {
     if (!timer.enabled) return;
     const id = setInterval(
-      // the preview loops so the countdown always stays visible
-      () => setLeft((prev) => (prev <= 1 ? total : prev - 1)),
+      // with "Loop" on it restarts at 0, otherwise it stops at 0
+      () =>
+        setLeft((prev) =>
+          prev <= 1 ? (timer.loop ? total : 0) : prev - 1,
+        ),
       1000,
     );
     return () => clearInterval(id);
-  }, [timer.enabled, total]);
+  }, [timer.enabled, timer.loop, total]);
 
   if (!timer.enabled) return null;
 

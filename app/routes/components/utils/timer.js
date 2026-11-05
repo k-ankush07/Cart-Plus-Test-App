@@ -8,6 +8,7 @@ export const TIMER_DEFAULTS = {
   alignment: "center", // "left" | "center" | "right"
   minutes: 10,
   removeProducts: false,
+  loop: false, // restart from the full duration as soon as it reaches 0
   labels: { days: "days", hrs: "hrs", min: "min", sec: "sec" },
   background: null, // BackgroundInput value, null = transparent
   // Styles card (null = follow the theme / text color)

@@ -1883,7 +1883,7 @@ display: flex;
   color: var(--icon-color);
   transition: background 0.3s ease;
   cursor: pointer;
-  padding: 0px;
+  padding: 2px;
   display: flex;
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius);

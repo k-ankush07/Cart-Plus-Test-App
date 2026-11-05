@@ -53,7 +53,7 @@ export default function BannerImage({ headerSettings, onReposition }) {
     <div
       className="cart-plus-banner-image"
       style={{
-        padding: `${banner.padding}px`,
+        padding: `${banner.paddingY}px ${banner.paddingX}px`,
         display: "flex",
         justifyContent: "center",
       }}

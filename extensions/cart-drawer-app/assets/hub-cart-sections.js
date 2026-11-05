@@ -171,9 +171,11 @@ window.cartPlusIsVisible = function (cartSettings) {
 window.cartPlusBannerHTML = function (headerSettings) {
   const b = { enabled: false, image: "", width: 100, padding: 0, radius: 0, posX: 50, posY: 50, ...(headerSettings?.banner || {}) };
   if (!b.enabled || !b.image) return "";
+  const padY = b.paddingY ?? b.padding ?? 0;
+  const padX = b.paddingX ?? b.padding ?? 0;
   // Same 700 × 200 crop + focal point as the editor preview.
   const pos = (n) => Math.min(100, Math.max(0, Number(n) || 0));
-  return `<div class="cart-plus-banner-image" style="padding:${b.padding}px;display:flex;justify-content:center;">
+  return `<div class="cart-plus-banner-image" style="padding:${padY}px ${padX}px;display:flex;justify-content:center;">
     <div style="width:${b.width}%;max-width:100%;aspect-ratio:700 / 200;overflow:hidden;border-radius:${b.radius}px;">
       <img src="${b.image}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;object-position:${pos(b.posX)}% ${pos(b.posY)}%;">
     </div>
@@ -436,8 +438,16 @@ window.cartPlusStartTimer = function (blockId) {
       sessionStorage.setItem(key, String(end));
     } catch (_) {}
   }
-  const tick = () =>
+  const tick = () => {
+    if (timer.loop && Date.now() >= end) {
+      // reached 0: start over from the full duration
+      end = Date.now() + total * 1000;
+      try {
+        sessionStorage.setItem(key, String(end));
+      } catch (_) {}
+    }
     cartPlusTimerPaint(blockId, Math.max(0, Math.round((end - Date.now()) / 1000)), total);
+  };
   tick();
   window._cartPlusTimerId = setInterval(tick, 1000);
 };
@@ -462,7 +472,18 @@ window.cartPlusLoginHTML = function (cartSettings, key = "login") {
 
 // ── Age verification ───────────────────────────────────────────────────────
 function cartPlusGetAge(cartSettings) {
-  const savedSettings = cartSettings?.ageVerification || {};
+  const savedSettings = { ...(cartSettings?.ageVerification || {}) };
+  if (!savedSettings.template) {
+    // Classic wording from older saves must not override the template's text
+    const classicTexts = [
+      "I confirm I am {{minimumAge}} years of age or older.",
+      "I confirm I am {{minimumAge}} years or older.",
+      "This cart contains items you must be {{minimumAge}} or older to purchase.",
+    ];
+    ["checkboxText", "subtitle"].forEach((k) => {
+      if (classicTexts.includes(savedSettings[k])) delete savedSettings[k];
+    });
+  }
   const defaultBorder = "#dbe4f5";
   const design = window.__HUB_ACTIVE_CART__?.designSettings || {};
   const themeBorder =
@@ -487,7 +508,19 @@ function cartPlusGetAge(cartSettings) {
     toggleColor: "#1553d8",
     errorBackground: "#fff1f1",
     errorBorderColor: "#f7b8b8",
+    // no template picked: use the first template (Inline Yes / No), Classic is retired
+    ...(savedSettings.template
+      ? {}
+      : {
+          checkboxText: "Are you {{minimumAge}} or older?",
+          subtitle: "",
+          yesText: "Yes",
+          noText: "No",
+          borderColor: "#e5e5e5",
+          borderRadius: 12,
+        }),
     ...savedSettings,
+    ...(savedSettings.template ? {} : { template: "inline_yes_no" }),
   };
   if (
     themeBorder &&
@@ -729,19 +762,26 @@ window.cartPlusAnnouncementTemplate = function (ann, cart) {
     : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${CART_PLUS_ANN_ICONS[ann.template]}</svg>`;
 
   let right = "";
+  const linkLabel = ann.linkText ?? t.linkText;
+  const buttonLabel = ann.buttonText ?? t.buttonText;
+
   if (ann.template === "coupon") {
     right = `<span style="${pill}background:${accentBg};color:${accentText};">Use code: ${ann.couponCode || t.code}</span>`;
   } else if (ann.template === "progress") {
     const pct = Math.min(100, (current / goal) * 100);
     right = `<span style="display:inline-flex;align-items:center;gap:8px;"><span style="display:block;width:90px;height:6px;border-radius:6px;background:${accentBg}33;overflow:hidden;"><span class="cp-ann-progress-fill" style="display:block;width:${pct}%;height:100%;background:${accentBg};transition:width 450ms ease;"></span></span><small>${formatAmount(current)} / ${formatAmount(goal)}</small></span>`;
   } else if (ann.template === "vip") {
-    right = `<a href="${ann.link || "#"}" style="color:${color};font-weight:700;text-decoration:underline;">${ann.linkText || t.linkText}</a>`;
+    right = linkLabel?.trim()
+      ? `<a href="${ann.link || "#"}" style="color:${color};font-weight:700;text-decoration:underline;">${linkLabel}</a>`
+      : "";
   } else if (ann.template === "countdown") {
     const total = Number(ann.seconds ?? t.seconds) || 0;
     const cell = (k) => `<span data-cp-ann-${k} style="background:${accentBg};color:${accentText};border-radius:6px;padding:2px 8px;">00</span>`;
     right = `<span class="cp-ann-countdown" data-total="${total}" style="display:inline-flex;gap:4px;align-items:center;font-weight:700;">${cell("h")}:${cell("m")}:${cell("s")}</span>`;
   } else if (ann.template === "flash_sale" || ann.template === "free_gift") {
-    right = `<a href="${ann.link || "#"}" style="${pill}background:${accentBg};color:${accentText};text-decoration:none;">${ann.buttonText || t.buttonText}</a>`;
+    right = buttonLabel?.trim()
+      ? `<a href="${ann.link || "#"}" style="${pill}background:${accentBg};color:${accentText};text-decoration:none;">${buttonLabel}</a>`
+      : "";
   }
 
   const closable = ann.showClose !== false && ann.template !== "progress" && ann.template !== "vip";

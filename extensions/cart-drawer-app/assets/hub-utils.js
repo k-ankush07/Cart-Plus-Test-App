@@ -1045,7 +1045,7 @@ window.hubUtils = {
                 ? rewards.completeIconColor || "#ffffff"
                 : rewards.incompleteIconColor || "#000000";
               return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-                <div style="width:64px;height:64px;border-radius:50%;background:${reached ? fillColor : trackColor};color:${color};display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${reached ? `<span>✓</span>${doneLabel}` : index + 1}</div>
+                <div style="width:55px;height:55px;border-radius:50%;background:${reached ? fillColor : trackColor};color:${color};display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${reached ? `<span>✓</span>${doneLabel}` : index + 1}</div>
                 <span style="font-size:12px;font-weight:600;">${tier.description || ""}</span>
               </div>`;
             })

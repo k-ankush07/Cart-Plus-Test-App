@@ -39,6 +39,7 @@ export const defaultHeaderSettings = {
   closePosition: "right",
   iconBgColor: "#00000000",
   iconbgHoverColor: "#00000000",
+  iconRadius: 0,
   iconSize: "small",
   iconThickNess: "normal",
   iconColor: "#637381",

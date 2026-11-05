@@ -11,7 +11,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
     const CloseButton = ({ headerSettings }) => {
         return (
             <button
-                onClick={onClose}
+                // onClick={onClose}
                 className="cart-app__close cart-plus-close-btn cart-plus-public-header__close-button cart-plus-header-close-button"
                 style={{
                     flexShrink: 0,
@@ -22,7 +22,7 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                     "--icon-border-hover": headerSettings.borderHoverColor,
                     "--border-color": headerSettings.iconBorderColor,
                     "--border-width": getBorderWidth(headerSettings.iconBorder),
-                    borderRadius: `${designSettings.buttonRadius}px`,
+                    borderRadius: `${headerSettings.iconRadius ?? designSettings.buttonRadius ?? 0}px`,
                 }}
             >
                 <svg

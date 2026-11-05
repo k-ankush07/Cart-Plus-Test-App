@@ -366,7 +366,7 @@ export default function Summary({
   );
 
   // icon picked in the Summary settings, shown before the title
-  const titleIcon = s.showIcons && s.titleIcon && (
+  const titleIcon = s.showTitleIcon && s.titleIcon && (
     <LibraryIcon value={s.titleIcon} size={18} color={s.textColor} />
   );
   const titleRow = { display: "inline-flex", alignItems: "center", gap: 8 };

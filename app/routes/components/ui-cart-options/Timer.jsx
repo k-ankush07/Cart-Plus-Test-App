@@ -254,6 +254,9 @@ export default function Timer({
     update({ template: key, ...settings });
   };
 
+  const showSmallHeading = ["boxes", "rings"].includes(timer.style);
+  const showSubText = ["clock", "inline"].includes(timer.style);
+
   return (
     <div className="mainContent">
       <Box paddingBlockEnd="400">
@@ -284,13 +287,13 @@ export default function Timer({
           </Text>
           <InlineGrid columns={3} gap="200">
             {Object.entries(TIMER_TEMPLATES).map(([key]) => (
-                <TimerTemplatePreview
-                  key={key}
-                  template={key}
-                  selected={timer.template === key}
-                  onSelect={() => applyTemplate(key)}
-                />
-              ))}
+              <TimerTemplatePreview
+                key={key}
+                template={key}
+                selected={timer.template === key}
+                onSelect={() => applyTemplate(key)}
+              />
+            ))}
           </InlineGrid>
         </BlockStack>
       </Card>
@@ -313,30 +316,36 @@ export default function Timer({
               accessToken={accessToken}
               apiUrl={apiUrl}
             />
-            <ColorInput
-              label="Icon color"
-              value={timer.iconColor || "#000000"}
-              onChange={(iconColor) => update({ iconColor })}
-            />
+            <InlineGrid columns={2} gap="200">
+              <ColorInput
+                label="Icon color"
+                value={timer.iconColor || "#000000"}
+                onChange={(iconColor) => update({ iconColor })}
+              />
 
-            <ColorInput
-              label="Icon background"
-              value={timer.iconBg || "#f1f1f1"}
-              onChange={(iconBg) => update({ iconBg })}
-            />
-            <TextField
-              label="Small heading"
-              value={timer.eyebrow || ""}
-              autoComplete="off"
-              onChange={(eyebrow) => update({ eyebrow })}
-            />
-            <TextField
-              label="Sub text"
-              value={timer.subText || ""}
-              autoComplete="off"
-              helpText="Use {{minutes}} for remaining minutes"
-              onChange={(subText) => update({ subText })}
-            />
+              <ColorInput
+                label="Icon background"
+                value={timer.iconBg || "#f1f1f1"}
+                onChange={(iconBg) => update({ iconBg })}
+              />
+            </InlineGrid>
+            {showSmallHeading && (
+              <TextField
+                label="Small heading"
+                value={timer.eyebrow || ""}
+                autoComplete="off"
+                onChange={(eyebrow) => update({ eyebrow })}
+              />
+            )}
+            {showSubText && (
+              <TextField
+                label="Sub text"
+                value={timer.subText || ""}
+                autoComplete="off"
+                helpText="Use {{minutes}} for remaining minutes"
+                onChange={(subText) => update({ subText })}
+              />
+            )}
             <RichTextEditor
               value={timer.message}
               onChange={(message) => update({ message })}
@@ -371,6 +380,11 @@ export default function Timer({
               label="Remove the products once the timer is done"
               checked={timer.removeProducts}
               onChange={(removeProducts) => update({ removeProducts })}
+            />
+            <Checkbox
+              label="Loop the timer (restart from the beginning when it reaches 0)"
+              checked={timer.loop}
+              onChange={(loop) => update({ loop })}
             />
             <div style={{ maxWidth: 200 }}>
               <TextField

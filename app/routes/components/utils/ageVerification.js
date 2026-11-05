@@ -1,3 +1,5 @@
+import { AGE_TEMPLATES } from "./ageTemplates";
+
 // Age verification lives in cartSettings.ageVerification (saved with the cart settings).
 export const AGE_DEFAULTS = {
   enabled: false,
@@ -23,10 +25,32 @@ export const APPLY_TO_OPTIONS = [
   { value: "collections", label: "Specific collections" },
 ];
 
-export const getAgeVerification = (cartSettings) => ({
-  ...AGE_DEFAULTS,
-  ...(cartSettings?.ageVerification || {}),
-});
+// The Classic checkbox template is no longer offered, so a cart with no template
+// picked falls back to the first template (Inline Yes / No).
+const { label: _label, ...DEFAULT_TEMPLATE } = AGE_TEMPLATES.inline_yes_no;
+
+// Classic wording that older saves carry; it must not override the template's text.
+const CLASSIC_TEXTS = [
+  "I confirm I am {{minimumAge}} years of age or older.",
+  "I confirm I am {{minimumAge}} years or older.",
+  "This cart contains items you must be {{minimumAge}} or older to purchase.",
+];
+
+export const getAgeVerification = (cartSettings) => {
+  let saved = cartSettings?.ageVerification || {};
+  if (!saved.template) {
+    saved = { ...saved };
+    for (const key of ["checkboxText", "subtitle"]) {
+      if (CLASSIC_TEXTS.includes(saved[key])) delete saved[key];
+    }
+  }
+  return {
+    ...AGE_DEFAULTS,
+    ...(saved.template ? {} : { template: "inline_yes_no", ...DEFAULT_TEMPLATE }),
+    ...saved,
+    ...(saved.template ? {} : { template: "inline_yes_no" }),
+  };
+};
 
 // functional updater for handleChange("cartSettings", ...)
 // Back at all defaults -> the `ageVerification` key is dropped, so the save bar goes away.

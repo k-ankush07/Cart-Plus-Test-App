@@ -17,7 +17,8 @@ export const SUMMARY_DEFAULTS = {
   showAppliedDiscounts: true,
   appliedDiscountsLabel: "Discounts",
   design: "classic", // summary layout template
-  showIcons: false,
+  showIcons: false, // icons on the rows (fixed icons, show / hide only)
+  showTitleIcon: undefined, // heading icon (changeable); falls back to showIcons for older saves
   titleIcon: { type: "icon", name: "receipt" }, // IconLibrary value, shown before the title
   textColor: "#303030",
   background: null,
@@ -41,10 +42,10 @@ export const COMPARE_AT_OPTIONS = [
   { label: "Savings percentage", value: "percentage" },
 ];
 
-export const getSummary = (cartSettings) => ({
-  ...SUMMARY_DEFAULTS,
-  ...(cartSettings?.summary || {}),
-});
+export const getSummary = (cartSettings) => {
+  const s = { ...SUMMARY_DEFAULTS, ...(cartSettings?.summary || {}) };
+  return { ...s, showTitleIcon: s.showTitleIcon ?? s.showIcons ?? false };
+};
 
 // functional updater for handleChange("cartSettings", ...)
 // Back at all defaults -> the `summary` key is dropped, so the save bar goes away.

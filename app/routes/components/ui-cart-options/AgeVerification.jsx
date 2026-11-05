@@ -320,7 +320,7 @@ export default function AgeVerification({
               <Icon source={PersonIcon} />
             </Box>
             <Text variant="headingMd" as="h2">
-              Apply the age verification for :
+            Age verification
             </Text>
           </InlineStack>
           <button
@@ -338,10 +338,11 @@ export default function AgeVerification({
           <BlockStack gap="300">
             <Text variant="headingSm">Template</Text>
             <InlineGrid columns={3} gap="200">
-              <AgeTemplatePreview
+              {/* Classic template hidden from the picker */}
+              {/* <AgeTemplatePreview
                 selected={!s.template}
                 onSelect={() => update({ template: "", ...CLASSIC_BASE })}
-              />
+              /> */}
               {Object.entries(AGE_TEMPLATES).map(([key]) => (
                 <AgeTemplatePreview
                   key={key}
