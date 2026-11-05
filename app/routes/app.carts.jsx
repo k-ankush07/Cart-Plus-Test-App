@@ -258,10 +258,18 @@ async function getMainThemeId(shopDomain, accessToken) {
 }
 
 export const loader = async ({ request }) => {
-  const { shop, apiUrl, accessToken, currency } =
-    await requireShopData(request);
+  const {
+    shop,
+    apiUrl,
+    accessToken,
+    currency,
+    mainThemeId: cachedThemeId,
+  } = await requireShopData(request);
 
-  const mainThemeId = await getMainThemeId(shop.myshopifyDomain, accessToken);
+  const mainThemeId =
+    cachedThemeId && cachedThemeId !== "current"
+      ? cachedThemeId
+      : await getMainThemeId(shop.myshopifyDomain, accessToken);
 
   const appEmbedId = process.env.SHOPIFY_API_KEY || "";
 

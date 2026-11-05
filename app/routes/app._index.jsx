@@ -596,6 +596,15 @@ export const loader = async ({ request }) => {
     totalRevenue: 0,
   };
 
+  // Start the embed check right away — it doesn't depend on the carts
+  // response, so it no longer waits behind getCarts (was a serial waterfall).
+  const embedPromise = checkAppEmbed(
+    shop.myshopifyDomain,
+    accessToken,
+    mainThemeId,
+  );
+  embedPromise.catch(() => {}); // handled below via allSettled
+
   const dataPromise = getCarts(apiUrl, shop.myshopifyDomain).then(
     (cartsRes) => {
       const allCarts = cartsRes?.data || [];
@@ -612,7 +621,7 @@ export const loader = async ({ request }) => {
           today.toISOString(),
           publishedCartIds,
         ),
-        checkAppEmbed(shop.myshopifyDomain, accessToken, mainThemeId),
+        embedPromise,
       ]).then(([cartsResult, statsResult, embedResult]) => ({
         carts:
           cartsResult.status === "fulfilled"

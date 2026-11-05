@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLoaderData, useNavigate } from "react-router";
+import { useLoaderData, useNavigate, useSearchParams } from "react-router";
 import {
   Page,
   Card,
@@ -432,6 +432,12 @@ function TopProductsCard({
   );
 }
 
+// Changing only ?type must not re-run the loader.
+export function shouldRevalidate({ currentUrl, nextUrl, defaultShouldRevalidate }) {
+  if (currentUrl.pathname === nextUrl.pathname) return false;
+  return defaultShouldRevalidate;
+}
+
 // ─── Loader ───────────────────────────────────────────────────────────────────
 
 export const loader = async ({ request }) => {
@@ -466,11 +472,19 @@ export default function Activity() {
       ? "all"
       : "cart",
   );
+  const [, setSearchParams] = useSearchParams();
   const setType = (value) => {
     setTypeState(value);
-    const url = new URL(window.location.href);
-    url.searchParams.set("type", value);
-    window.history.replaceState(null, "", url);
+    // Go through the router (not raw history.replaceState) so React Router /
+    // App Bridge stay in sync with the URL and the sidebar highlight.
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("type", value);
+        return next;
+      },
+      { replace: true },
+    );
   };
   const [top, setTop] = useState({ mostAdded: [], bestSelling: [] });
   const [topLoading, setTopLoading] = useState(true);
