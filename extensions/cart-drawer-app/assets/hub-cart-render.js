@@ -881,6 +881,78 @@ if (savedEl) {
     const subscriptionSettings =
       window.__HUB_ACTIVE_CART__?.subscriptionUpgradesSettings;
 
+    // Same templates as the editor's SUBSCRIPTION_TEMPLATES (null = follow the theme)
+    const SP_TEMPLATES = {
+      default: { layout: "button", accent: null, accentText: null, trackBg: "#f5f5f5", trackText: "#374151", radius: null },
+      toggle: { layout: "toggle", accent: "#008a3e", accentText: "#ffffff", trackBg: "#f5f5f5", trackText: "#374151", radius: 999 },
+      toggle_dark: { layout: "toggle", accent: "#111827", accentText: "#ffffff", trackBg: "#eef0f3", trackText: "#374151", radius: 10 },
+      radio_dark: { layout: "radio", accent: "#111827", accentText: "#ffffff", trackBg: "#ffffff", trackText: "#1f2937", radius: 10 },
+    };
+    const spTpl =
+      SP_TEMPLATES[subscriptionSettings?.template] ||
+      Object.values(SP_TEMPLATES).find(
+        (x) => x.layout === subscriptionSettings?.layout,
+      ) ||
+      SP_TEMPLATES.default;
+    const spPick = (k) => subscriptionSettings?.[k] ?? spTpl[k];
+    const spLayout = spPick("layout");
+
+    // The toggle / radio switch handlers (attached once)
+    if (!window._hubSpOptListenerAttached) {
+      window._hubSpOptListenerAttached = true;
+      document.addEventListener("click", async (e) => {
+        const opt = e.target.closest(".hub-sp-opt");
+        if (!opt) return;
+        const wrapper = opt.closest(".hub-selling-plan-wrapper");
+        if (!wrapper) return;
+        window._subscriptionOpen = window._subscriptionOpen || {};
+        const itemKey = wrapper.dataset.itemKey;
+
+        if (opt.dataset.mode === "subscribe") {
+          wrapper.classList.add("show-subscription");
+          if (itemKey) window._subscriptionOpen[itemKey] = true;
+          return;
+        }
+
+        // One-time: drop the selling plan if the line already has one
+        wrapper.classList.remove("show-subscription");
+        if (itemKey) window._subscriptionOpen[itemKey] = false;
+        const select = wrapper.querySelector(".hub-selling-plan-select");
+        const currentPlanId = select?.dataset.currentPlan || "";
+        if (!currentPlanId) return;
+        wrapper.style.opacity = "0.6";
+        wrapper.style.pointerEvents = "none";
+        try {
+          const currentCart = await (await fetch("/cart.js")).json();
+          const line = currentCart.items.find(
+            (i) =>
+              String(i.variant_id) === String(select.dataset.variantId) &&
+              String(i.selling_plan_allocation?.selling_plan?.id || "") ===
+                currentPlanId,
+          );
+          if (!line) throw new Error("Cart line not found");
+          const res = await fetch("/cart/change.js", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: line.key,
+              quantity: line.quantity,
+              selling_plan: null,
+            }),
+          });
+          if (!res.ok) throw new Error(`Failed (status ${res.status})`);
+          const drawer = wrapper.closest(
+            `.hub-cart-block-${window.HUB_CART_BLOCK_ID}`,
+          );
+          if (drawer) await window.hubCartRender(drawer);
+        } catch (err) {
+          console.error("Remove selling plan error:", err);
+          wrapper.style.opacity = "";
+          wrapper.style.pointerEvents = "";
+        }
+      });
+    }
+
     if (!subscriptionSettings?.enabled) {
       const uniqueHandleVariantPairs = [
         ...new Set(
@@ -1080,18 +1152,38 @@ if (savedEl) {
           const planHeadingText =
             subscriptionSettings?.planHeadingText || "Subscription plans";
 
+          const spAccent = spPick("accent") ?? btnColor;
+          const spAccentText = spPick("accentText") ?? textColor;
+          const spRadius = spPick("radius") ?? designSettings.buttonRadius ?? 8;
+          const spSubLabel = (
+            subscriptionSettings?.subscribeLabel ?? "{{selling_plan_group_name}}"
+          ).replace(/\{\{selling_plan_group_name\}\}/g, groupName);
+          const spOneLabel =
+            subscriptionSettings?.planOptionsOneTimePurchaseText || "One-time";
+          const spVars = `--sp-accent:${spAccent};--sp-accent-text:${spAccentText};--sp-track-bg:${spPick("trackBg")};--sp-track-text:${spPick("trackText")};--sp-radius:${spRadius}px;`;
+          const spOpts =
+            spLayout === "toggle"
+              ? `<div class="hub-sp-toggle"><button type="button" class="hub-sp-opt" data-mode="subscribe">${spSubLabel}</button><button type="button" class="hub-sp-opt" data-mode="onetime">${spOneLabel}</button></div>`
+              : spLayout === "radio"
+                ? `<div class="hub-sp-radio"><button type="button" class="hub-sp-opt" data-mode="subscribe"><span class="hub-sp-dot"></span>${spSubLabel}</button><button type="button" class="hub-sp-opt" data-mode="onetime"><span class="hub-sp-dot"></span>${spOneLabel}</button></div>`
+                : "";
+
           sellingPlanHtml = `
-            <div class="hub-selling-plan-wrapper ${
+            <div class="hub-selling-plan-wrapper hub-sp-layout-${spLayout} ${
               window._subscriptionOpen?.[item.key] || sellingPlan
                 ? "show-subscription"
                 : ""
-            }">
-              <div class="hub-one-time-view">
+            }" data-item-key="${item.key}" style="${spVars}">
+              ${
+                spLayout === "button"
+                  ? `<div class="hub-one-time-view">
                 <button class="hub-upgrade-btn"
-                  style="border-radius:${designSettings.buttonRadius}px;--btn-bg:${btnColor};--btn-hover:${btnHoverColor};--btn-text:${textColor};">
+                  style="border-radius:${spRadius}px;--btn-bg:${spAccent};--btn-hover:${btnHoverColor};--btn-text:${spAccentText};">
                   <span class="btn-text">${buttonText}</span>
                 </button>
-              </div>
+              </div>`
+                  : spOpts
+              }
               <div class="hub-subscription-view">
                <select class="hub-selling-plan-select"
                      data-variant-id="${item.variant_id}" data-current-plan="${sellingPlan ? sellingPlan.selling_plan.id : ""}">

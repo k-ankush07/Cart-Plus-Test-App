@@ -1596,6 +1596,71 @@ span.hub-total-arrow svg {
   display: none;
 }
 
+/* Subscription templates: Toggle / Toggle dark / Radio dark */
+.hub-sp-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--sp-track-bg);
+  border-radius: var(--sp-radius);
+}
+.hub-sp-toggle .hub-sp-opt {
+  flex: 1;
+  border: 0;
+  cursor: pointer;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--sp-radius);
+  background: transparent;
+  color: var(--sp-track-text);
+}
+.hub-sp-radio {
+  display: grid;
+  gap: 8px;
+}
+.hub-sp-radio .hub-sp-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  cursor: pointer;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  background: var(--sp-track-bg);
+  color: var(--sp-track-text);
+  border: 1.5px solid #e5e7eb;
+  border-radius: min(var(--sp-radius), 14px);
+}
+.hub-sp-radio .hub-sp-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border: 2px solid #9ca3af;
+}
+/* active option: One-time when no plan is open, Subscribe once it is */
+.hub-selling-plan-wrapper:not(.show-subscription) .hub-sp-toggle .hub-sp-opt[data-mode="onetime"],
+.hub-selling-plan-wrapper.show-subscription .hub-sp-toggle .hub-sp-opt[data-mode="subscribe"] {
+  background: var(--sp-accent);
+  color: var(--sp-accent-text);
+}
+.hub-selling-plan-wrapper:not(.show-subscription) .hub-sp-radio .hub-sp-opt[data-mode="onetime"],
+.hub-selling-plan-wrapper.show-subscription .hub-sp-radio .hub-sp-opt[data-mode="subscribe"] {
+  border-color: var(--sp-accent);
+}
+.hub-selling-plan-wrapper:not(.show-subscription) .hub-sp-radio .hub-sp-opt[data-mode="onetime"] .hub-sp-dot,
+.hub-selling-plan-wrapper.show-subscription .hub-sp-radio .hub-sp-opt[data-mode="subscribe"] .hub-sp-dot {
+  border: 5px solid var(--sp-accent);
+}
+.hub-sp-layout-toggle .hub-subscription-view,
+.hub-sp-layout-radio .hub-subscription-view {
+  margin-top: 8px;
+}
+
 
 /* Toggle switch */
 .hub-addon-sp-toggle {
@@ -2194,12 +2259,11 @@ span.upsell-text.suggestion-product {
   font-weight: 400;
   font-size: 14px;
   line-height: 12px;
-  border-radius: 5px;
-  padding: 5px 15px;
+  border-radius: 10px;
+  padding: 6px;
   outline: none;
   box-shadow: none;
   cursor: pointer;
-  height: 40px;
   border: 1px solid #dddddd;
 }
 

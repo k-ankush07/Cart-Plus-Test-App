@@ -454,6 +454,52 @@ export default function Analytics() {
     };
   }, [startISO, endISO, shop, apiUrl]);
 
+  // Product images for "Best-performing products" (same lookup as the Activity page)
+  const [productImages, setProductImages] = useState({});
+  useEffect(() => {
+    const ids = [
+      ...new Set(
+        [
+          ...(stats?.topProducts ?? []).map((p) => p.productId),
+          ...(stats?.recentOrders ?? []).flatMap((o) =>
+            (o.items ?? []).map((i) => i.productId),
+          ),
+        ].filter(Boolean),
+      ),
+    ];
+    if (!ids.length) return;
+    let cancelled = false;
+    const idOf = (id) => String(id || "").split("/").pop();
+
+    (async () => {
+      try {
+        const res = await fetch("/shopify/get-products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shop, productIds: ids }),
+        });
+        const json = await res.json();
+        const products =
+          json.products || json.data?.products || json.data || [];
+        const map = {};
+        products.forEach((p) => {
+          map[idOf(p.id)] =
+            p.featuredImage?.url ||
+            p.images?.edges?.[0]?.node?.url ||
+            p.image?.src ||
+            (typeof p.image === "string" ? p.image : "") ||
+            "";
+        });
+        if (!cancelled) setProductImages(map);
+      } catch (error) {
+        console.error("Analytics product images error:", error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [stats, shop]);
+
   // ── Derived data ──────────────────────────────────────────────────────────
 
   // Use the currency from stats if available, fall back to loader currency
@@ -615,14 +661,80 @@ export default function Analytics() {
 
 
   const tableRows = (stats?.topProducts ?? []).slice(0, 5).map((p) => [
-    p.name,
+    <InlineStack key={`${p.name}-${p.module}`} gap="300" blockAlign="center" wrap={false}>
+      {productImages[String(p.productId || "")] ? (
+        <img
+          src={productImages[String(p.productId || "")]}
+          alt=""
+          style={{
+            width: 40,
+            height: 40,
+            objectFit: "cover",
+            borderRadius: 8,
+            flexShrink: 0,
+          }}
+        />
+      ) : (
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 8,
+            background: "#f1f1f1",
+            flexShrink: 0,
+          }}
+        />
+      )}
+      <span>{p.name}</span>
+    </InlineStack>,
     p.quantity,
     fmt(p.revenue, resolvedCurrency),
     p.module,
   ]);
 
-  const recentOrderRows = (stats?.recentOrders ?? []).slice(0, 5).map((o) => [
-    o.orderNumber ? `#${o.orderNumber}` : `…${String(o.orderId).slice(-6)}`,
+  const recentOrderRows = (stats?.recentOrders ?? []).slice(0, 5).map((o) => {
+    // one thumbnail per distinct product in the order (max 3, then "+N")
+    const seen = new Set();
+    const thumbs = (o.items ?? []).filter((i) => {
+      const key = String(i.productId || i.title);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    const shown = thumbs.slice(0, 3);
+    const extra = thumbs.length - shown.length;
+    const orderLabel = o.orderNumber
+      ? `#${o.orderNumber}`
+      : `…${String(o.orderId).slice(-6)}`;
+    return [
+    <InlineStack key={o.orderId} gap="200" blockAlign="center" wrap={false}>
+      <InlineStack gap="100" wrap={false}>
+        {shown.map((i, idx) => {
+          const src = productImages[String(i.productId || "")];
+          return src ? (
+            <img
+              key={idx}
+              src={src}
+              alt=""
+              title={i.title}
+              style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 6, flexShrink: 0 }}
+            />
+          ) : (
+            <div
+              key={idx}
+              title={i.title}
+              style={{ width: 32, height: 32, borderRadius: 6, background: "#f1f1f1", flexShrink: 0 }}
+            />
+          );
+        })}
+        {extra > 0 && (
+          <Text as="span" tone="subdued" variant="bodySm">
+            +{extra}
+          </Text>
+        )}
+      </InlineStack>
+      <span>{orderLabel}</span>
+    </InlineStack>,
     new Date(o.createdAt).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -632,7 +744,8 @@ export default function Analytics() {
     fmt(o.addonRevenue, o.currency),
     fmt(o.subscriptionRevenue, o.currency),
     fmt(o.totalRevenue, o.currency),
-  ]);
+    ];
+  });
 
   // ── CSV download ──────────────────────────────────────────────────────────
 
@@ -856,7 +969,7 @@ export default function Analytics() {
               </BlockStack>
             </Card>
 
-            <Card>
+            {/* <Card>
               <BlockStack gap="300">
                 <Text variant="headingMd" as="h4">
                   Total sales by source
@@ -873,7 +986,7 @@ export default function Analytics() {
                   />
                 </Box>
               </BlockStack>
-            </Card>
+            </Card> */}
           </div>
 
           {/* ── Best-performing products ── */}

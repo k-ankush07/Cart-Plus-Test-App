@@ -278,7 +278,7 @@ export const defaultCartSettings = {
   customCss: "",
   // Cart item layout
   cartItemLayout: "classic",
-  deleteBehavior: "undo",
+  deleteBehavior: "direct",
 };
 
 export const defaultTriggeredRewardsSettings = {

@@ -1862,6 +1862,7 @@ router.get("/revenue-stats", async (req, res) => {
       {
         $group: {
           _id: { title: "$items.title", module: "$items.module" },
+          productId: { $first: "$items.productId" },
           quantity: { $sum: "$items.quantity" },
           revenue: { $sum: "$items.revenue" },
         },
@@ -1871,6 +1872,7 @@ router.get("/revenue-stats", async (req, res) => {
     ]);
     const topProducts = topProductsRaw.map((p) => ({
       name: p._id.title,
+      productId: p.productId || null,
       module: p._id.module,
       quantity: p.quantity,
       revenue: p.revenue,
@@ -1892,6 +1894,12 @@ router.get("/revenue-stats", async (req, res) => {
       subscriptionRevenue: o.subscriptionRevenue || 0,
       totalRevenue: (o.totalRevenue || 0) + (o.baseRevenue || 0),
       itemCount: (o.items || []).reduce((n, i) => n + (i.quantity || 1), 0),
+      // product ids/titles so the dashboard can show the product images
+      items: (o.items || []).map((i) => ({
+        title: i.title,
+        productId: i.productId || null,
+        quantity: i.quantity || 1,
+      })),
     }));
 
     // ───── Daily revenue (scoped to date range) ─────

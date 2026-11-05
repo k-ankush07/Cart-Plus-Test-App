@@ -31,15 +31,14 @@ export default function CartHoverCard({ cart, children }) {
 
     const MODULE_LABELS = [
         { key: "announcementSettings", label: "Announcement" },
-        { key: "rewardsSettings", label: "Tiered Offers" },
-        { key: "triggeredRewardsSettings", label: "Triggered Rewards" },
-        { key: "recommendationsSettings", label: "Recommendations" },
+        { key: "rewardsSettings", label: "Progress Bar" },
+        { key: "recommendationsSettings", label: "Cross-sell" },
         { key: "upsellsSettings", label: "Upsells" },
         { key: "additionalNotesSettings", label: "Notes" },
         { key: "addonsSettings", label: "Add-ons" },
         { key: "discountCodesSettings", label: "Discount Codes" },
         { key: "expressPaymentsSettings", label: "Express Payments" },
-        { key: "trustBadgesSettings", label: "Badges" },
+        { key: "trustBadgesSettings", label: "Payment Badges" },
         { key: "subscriptionUpgradesSettings", label: "Subscription" },
     ];
 

@@ -16,13 +16,46 @@ import {
 } from "@shopify/polaris";
 
 import { useState, useEffect, Suspense } from "react";
-import { CheckIcon } from "@shopify/polaris-icons";
+import { CheckIcon, StarFilledIcon } from "@shopify/polaris-icons";
 import { useLoaderData, useFetcher, Await } from "react-router-dom";
 import { authenticate } from "../shopify.server";
 import "../index.css";
 import { requireShopData } from "./components/shop.server";
 
 // ─── Plan definitions ─────────────────────────────────────────────────────────
+
+const popularBadge = (
+  <span
+    style={{
+      position: "absolute",
+      bottom: "calc(100% + 4px)",
+      right: 0,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 4,
+      padding: "1px 8px",
+      borderRadius: 999,
+      fontSize: 11,
+      fontWeight: 600,
+      lineHeight: "16px",
+      whiteSpace: "nowrap",
+      background: "#FDE9A8",
+      border: "1px solid #E8C15A",
+      color: "#6B4A00",
+    }}
+  >
+    <svg
+      viewBox="0 0 20 20"
+      width="11"
+      height="11"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M11.128 4.123c-.453-.95-1.803-.95-2.256 0l-1.39 2.912-3.199.421c-1.042.138-1.46 1.422-.697 2.146l2.34 2.222-.587 3.172c-.192 1.034.901 1.828 1.825 1.327l2.836-1.54 2.836 1.54c.924.501 2.017-.293 1.825-1.327l-.587-3.172 2.34-2.222c.762-.724.345-2.008-.697-2.146l-3.2-.421-1.389-2.912Z" />
+    </svg>
+    Most popular
+  </span>
+);
 
 const PLANS = [
   {
@@ -451,7 +484,8 @@ function PricingInner({ activePlan, isDev, isFreeStore }) {
     }
   };
 
-  const renderRowButton = (plan) => {
+  // the button itself
+  const renderPlanButton = (plan) => {
     const isActive = activePlan === plan.id;
 
     const thisRowLoading = isLoading && pendingPlanId === plan.id;
@@ -487,6 +521,17 @@ function PricingInner({ activePlan, isDev, isFreeStore }) {
       >
         {isDowngrade ? `Downgrade to ${plan.name}` : plan.cta}
       </Button>
+    );
+  };
+
+  const renderRowButton = (plan) => {
+    const button = renderPlanButton(plan);
+    if (plan.badge !== "Popular") return button;
+    return (
+      <div style={{ position: "relative" }}>
+        {popularBadge}
+        {button}
+      </div>
     );
   };
 
@@ -688,7 +733,14 @@ function PricingInner({ activePlan, isDev, isFreeStore }) {
                     {PLANS.filter((p) => p.id !== "free").map((plan, idx) => (
                       <Box key={plan.id}>
                         {idx > 0 && <Divider />}
-                        <Box padding="300">
+                        <Box
+                          paddingBlockStart={
+                            plan.badge === "Popular" ? "600" : "300"
+                          }
+                          paddingBlockEnd="300"
+                          paddingInlineStart="300"
+                          paddingInlineEnd="300"
+                        >
                           <InlineStack
                             wrap={false}
                             gap="400"
@@ -709,6 +761,7 @@ function PricingInner({ activePlan, isDev, isFreeStore }) {
                                   >
                                     {plan.name}
                                   </Text>
+                              
                                   {activePlan === plan.id && (
                                     <Badge tone="success">Active</Badge>
                                   )}
