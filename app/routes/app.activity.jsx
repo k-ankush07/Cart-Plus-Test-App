@@ -241,7 +241,7 @@ function TopProductsCard({
 }) {
   const titleClip = {
     display: "inline-block",
-    maxWidth: 260,
+    maxWidth: 250,
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
@@ -282,7 +282,7 @@ function TopProductsCard({
               style={{
                 width: "100%",
                 borderCollapse: "collapse",
-                minWidth: 360,
+                minWidth: 320,
               }}
             >
               <thead>

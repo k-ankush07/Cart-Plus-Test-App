@@ -12,11 +12,19 @@ const fetchJsonRetry = async (url, options = {}, { timeoutMs = 12000, retries = 
   for (let attempt = 0; attempt <= retries; attempt++) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const t0 = Date.now();
+    const label = url.split("?")[0].replace(/^https?:\/\/[^/]+/, "");
     try {
       const res = await fetch(url, { ...options, signal: controller.signal });
-      return await res.json();
+      const body = await res.json();
+      const ms = Date.now() - t0;
+      if (ms > 2000 || !res.ok) {
+        console.warn(`[api] ${label} -> ${res.status} in ${ms}ms (attempt ${attempt + 1})`);
+      }
+      return body;
     } catch (err) {
       lastErr = err;
+      console.warn(`[api] ${label} FAILED after ${Date.now() - t0}ms (attempt ${attempt + 1}): ${err?.message}`);
     } finally {
       clearTimeout(timer);
     }

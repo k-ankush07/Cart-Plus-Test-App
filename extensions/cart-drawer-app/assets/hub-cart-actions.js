@@ -746,7 +746,7 @@ window.hubCheckoutClick = function (e, blockId, btn) {
 
 
   fetch(
-    `${window.__HUB_API_URL__ || "https://app.cartplus.io"}/api/track-event`,
+    `${window.__HUB_API_URL__ || "https://textapp.cartplus.io"}/api/track-event`,
     {
       method: "POST",
       headers: {

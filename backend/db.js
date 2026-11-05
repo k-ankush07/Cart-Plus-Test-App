@@ -13,12 +13,17 @@ export const getPool = () => {
       ssl: process.env.PGSSL === "true" ? { rejectUnauthorized: false } : undefined,
       keepAlive: true,
       keepAliveInitialDelayMillis: 10_000,
-      idleTimeoutMillis: 30_000, 
-      connectionTimeoutMillis: 10_000, 
+    
+      idleTimeoutMillis: 240_000,
+      connectionTimeoutMillis: 10_000,
       query_timeout: 15_000,
       max: 10,
     });
     pool.on("error", (err) => console.error("PG POOL ERROR:", err));
+    const heartbeat = setInterval(() => {
+      pool.query("SELECT 1").catch(() => {});
+    }, 60_000);
+    heartbeat.unref?.();
   }
   return pool;
 };

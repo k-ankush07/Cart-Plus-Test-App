@@ -160,7 +160,7 @@ function cartPlusOneTickTrigger(blockId, oneTick, offer, variantId) {
   if (oneTick.trigger === "toggle") {
     return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${activeColor};--cp-off:${design.accentBorder || "#c9cccf"};" onclick="this.setAttribute('aria-checked','true');this.closest('.cart-plus-onetick-card')?.classList.add('cart-plus-onetick-card--adding');setTimeout(function(){${call("true")}},450)"><span></span></button>`;
   }
-  return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true", ",this")}" style="width:100%; border:none;cursor:pointer;padding:6px 8px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
+  return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true", ",this")}" style="width:100%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border:none;cursor:pointer;padding:6px 8px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
 }
 
 function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {

@@ -1323,7 +1323,7 @@ function AppCartsInner({
                           disabled={!featureCart?.cartId}
                           onClick={() =>
                             navigate(
-                              `/app/cart-editor/${featureCart.cartId}?from=carts&module=${feature.module}`,
+                              `/app/carts/editor/${featureCart.cartId}?from=carts&module=${feature.module}`,
                             )
                           }
                         >
