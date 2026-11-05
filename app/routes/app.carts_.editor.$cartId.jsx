@@ -399,8 +399,12 @@ export default function CartEditor() {
           activeVariant: abActiveRef.current || cartSettings.abTest.variants?.[0] || "A",
         }
       : undefined,
-    onChange: (state) => {
+    onChange: (state, meta) => {
       if (!state.enabled) return; // stopping is handled by onStopTest
+      // variants can be renamed after a delete (A, C -> A, B): new letter -> letter it had before
+      const oldLetter = Object.fromEntries(
+        Object.entries(meta?.relabel || {}).map(([from, to]) => [to, from]),
+      );
       const config = {
         enabled: true,
         variants: state.variants,
@@ -423,16 +427,16 @@ export default function CartEditor() {
       config.variantIds = Object.fromEntries(
         config.variants.map((id) => [
           id,
-          !isNewTest && current?.variantIds?.[id]
-            ? current.variantIds[id]
+          !isNewTest && current?.variantIds?.[oldLetter[id] ?? id]
+            ? current.variantIds[oldLetter[id] ?? id]
             : createVariantId(),
         ]),
       );
       config.variantMeta = Object.fromEntries(
         config.variants.map((id) => [
           id,
-          !isNewTest && current?.variantMeta?.[id]
-            ? current.variantMeta[id]
+          !isNewTest && current?.variantMeta?.[oldLetter[id] ?? id]
+            ? current.variantMeta[oldLetter[id] ?? id]
             : now,
         ]),
       );
@@ -466,6 +470,17 @@ export default function CartEditor() {
     onVariantRemove: (id) => {
       if (id === abActiveRef.current) abActiveRef.current = null;
       else delete abStoreRef.current[id];
+    },
+    // { oldLetter: newLetter } after a delete: move the parked variants and the one on screen
+    onVariantsRelabel: (mapping) => {
+      abStoreRef.current = Object.fromEntries(
+        Object.entries(abStoreRef.current)
+          .filter(([k]) => mapping[k])
+          .map(([k, v]) => [mapping[k], v]),
+      );
+      if (abActiveRef.current && mapping[abActiveRef.current]) {
+        abActiveRef.current = mapping[abActiveRef.current];
+      }
     },
     onStopTest: stopAbTest,
   };

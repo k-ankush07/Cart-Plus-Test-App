@@ -110,6 +110,65 @@ function setWeight(weights, ids, id, raw) {
   return out;
 }
 
+/**
+ * Drop `removedId` and rename the survivors so the letters stay in order with no gap
+ * (A, B, C minus B -> A, B where the new B is the old C).
+ * Returns the new list and a { oldId: newId } map for every survivor.
+ */
+function removeAndReorder(ids, removedId) {
+  const mapping = {};
+  const next = ids
+    .filter((v) => v !== removedId)
+    .map((old, i) => {
+      mapping[old] = ALL_IDS[i];
+      return ALL_IDS[i];
+    });
+  return { next, mapping };
+}
+
+const remapKeys = (obj, mapping) =>
+  Object.fromEntries(
+    Object.entries(obj)
+      .filter(([k]) => mapping[k])
+      .map(([k, v]) => [mapping[k], v]),
+  );
+
+/** Confirmation shown before a variant (and its settings) is deleted. */
+function ConfirmRemoveModal({ id, variants, onConfirm, onCancel }) {
+  const { mapping } = removeAndReorder(variants, id);
+  const renamed = variants
+    .filter((v) => v !== id && mapping[v] !== v)
+    .map((v) => `${v} → ${mapping[v]}`);
+  return (
+    <Modal
+      open
+      onClose={onCancel}
+      title={`Delete variant ${id}?`}
+      primaryAction={{
+        content: `Delete variant ${id}`,
+        destructive: true,
+        onAction: onConfirm,
+      }}
+      secondaryActions={[{ content: "Cancel", onAction: onCancel }]}
+    >
+      <Modal.Section>
+        <BlockStack gap="200">
+          <Text as="p">
+            All settings of variant {id} will be permanently removed. This
+            can't be undone.
+          </Text>
+          {renamed.length > 0 && (
+            <Text as="p" tone="subdued">
+              The remaining variants will be renamed to keep the order:{" "}
+              {renamed.join(", ")}.
+            </Text>
+          )}
+        </BlockStack>
+      </Modal.Section>
+    </Modal>
+  );
+}
+
 const DEFAULT_VALUE = {
   enabled: false,
   variants: ["A", "B"],
@@ -132,6 +191,12 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
       : evenWeights(value.variants),
   );
 
+  // draft variant id -> the variant it was when the modal opened (null = added here)
+  const [origin, setOrigin] = useState(() =>
+    Object.fromEntries(value.variants.map((v) => [v, v])),
+  );
+  const [pendingRemove, setPendingRemove] = useState(null);
+
   const shown = allocation === "even" ? evenWeights(variants) : weights;
   const canAdd = variants.length < MAX_VARIANTS;
   const canRemove = variants.length > MIN_VARIANTS;
@@ -150,20 +215,21 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
     setWeights((w) =>
       setWeight({ ...w, [newId]: 0 }, next, newId, 100 / next.length),
     );
+    setOrigin((o) => ({ ...o, [newId]: null }));
     setVariants(next);
   };
 
   const removeVariant = (id) => {
     if (!canRemove) return;
-    const next = variants.filter((v) => v !== id);
-    setWeights((w) => {
-      const { [id]: _removed, ...rest } = w;
-      return normalize(rest, next);
-    });
+    const { next, mapping } = removeAndReorder(variants, id);
+    setWeights((w) => normalize(remapKeys(w, mapping), next));
+    setOrigin((o) => remapKeys(o, mapping));
     setVariants(next);
+    setPendingRemove(null);
   };
 
   return (
+    <>
     <Modal
       open
       onClose={onCancel}
@@ -172,6 +238,7 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
         content: isNew ? "Save" : "Apply",
         onAction: () =>
           onApply({
+            origin,
             variants,
             allocation,
             weights:
@@ -299,7 +366,7 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
                         tone="critical"
                         icon={XSmallIcon}
                         accessibilityLabel={`Remove variant ${id}`}
-                        onClick={() => removeVariant(id)}
+                        onClick={() => setPendingRemove(id)}
                       />
                     )}
                   </div>
@@ -320,6 +387,15 @@ function SettingsModal({ value, isNew, onApply, onCancel, onStop }) {
         </BlockStack>
       </Modal.Section>
     </Modal>
+      {pendingRemove && (
+        <ConfirmRemoveModal
+          id={pendingRemove}
+          variants={variants}
+          onConfirm={() => removeVariant(pendingRemove)}
+          onCancel={() => setPendingRemove(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -384,39 +460,54 @@ export default function ABTesting({
   onActiveVariantChange,
   onVariantAdd,
   onVariantRemove,
+  onVariantsRelabel,
   onRunTest,
   onStopTest,
 }) {
   const [state, setState] = useState({ ...DEFAULT_VALUE, ...defaultValue });
   const [settingsOpen, setSettingsOpen] = useState(openOnMount);
+  const [pendingRemove, setPendingRemove] = useState(null);
 
   const { enabled, variants, activeVariant } = state;
   const canAdd = variants.length < MAX_VARIANTS;
   const canRemove = variants.length > MIN_VARIANTS;
 
-  const update = (patch) => {
+  // `meta.relabel` ({ oldId: newId }) tells the parent that variants were renamed
+  const update = (patch, meta) => {
     const next = { ...state, ...patch };
     setState(next);
-    onChange?.(next);
+    onChange?.(next, meta);
   };
 
   // Called by the settings modal. "Run A/B Test" opens it first; the test starts on Save.
-  const commitSettings = (patch) => {
+  const commitSettings = ({ origin, ...patch }) => {
     const prev = state.variants;
-    const added = patch.variants.filter((v) => !prev.includes(v));
-    const removed = prev.filter((v) => !patch.variants.includes(v));
-    const nextActive =
-      !enabled || !patch.variants.includes(activeVariant)
-        ? patch.variants[0]
-        : activeVariant;
+    // draft id -> id it had before; variants deleted in the modal are simply missing
+    const kept = Object.values(origin || {}).filter(Boolean);
+    const removed = prev.filter((v) => !kept.includes(v));
+    const added = patch.variants.filter((v) => !origin?.[v]);
+    const relabel = {};
+    Object.entries(origin || {}).forEach(([draftId, oldId]) => {
+      if (oldId) relabel[oldId] = draftId;
+    });
 
-    update({ ...patch, enabled: true, activeVariant: nextActive });
+    const activeSurvives = enabled && !!relabel[activeVariant];
+    const nextActive = activeSurvives ? relabel[activeVariant] : patch.variants[0];
+
+    update(
+      { ...patch, enabled: true, activeVariant: nextActive },
+      { relabel },
+    );
     setSettingsOpen(false);
 
     removed.forEach((id) => onVariantRemove?.(id));
-    added.forEach((id) => onVariantAdd?.(id, activeVariant)); // new variants start as a copy of the one being edited
+    if (Object.keys(relabel).some((k) => relabel[k] !== k))
+      onVariantsRelabel?.(relabel);
+    // new variants start as a copy of the one being edited
+    added.forEach((id) => onVariantAdd?.(id, nextActive));
     if (!enabled) onRunTest?.();
-    if (nextActive !== activeVariant) onActiveVariantChange?.(nextActive);
+    if (!activeSurvives && nextActive !== activeVariant)
+      onActiveVariantChange?.(nextActive);
   };
 
   const stopTest = async () => {
@@ -460,18 +551,25 @@ export default function ABTesting({
     onActiveVariantChange?.(newId);
   };
 
+  // Deletes the variant and renames the rest in order (A, C -> A, B) after confirmation.
   const removeVariant = (id) => {
+    setPendingRemove(null);
     if (!canRemove) return;
-    const nextVariants = variants.filter((v) => v !== id);
-    const { [id]: _removed, ...rest } = state.weights;
-    const nextActive = activeVariant === id ? nextVariants[0] : activeVariant;
-    update({
-      variants: nextVariants,
-      weights: normalize(rest, nextVariants),
-      activeVariant: nextActive,
-    });
+    const { next, mapping } = removeAndReorder(variants, id);
+    const activeRemoved = activeVariant === id;
+    const nextActive = activeRemoved ? next[0] : mapping[activeVariant];
+    update(
+      {
+        variants: next,
+        weights: normalize(remapKeys(state.weights, mapping), next),
+        activeVariant: nextActive,
+      },
+      { relabel: mapping },
+    );
     onVariantRemove?.(id);
-    if (nextActive !== activeVariant) onActiveVariantChange?.(nextActive);
+    if (Object.keys(mapping).some((k) => mapping[k] !== k))
+      onVariantsRelabel?.(mapping);
+    if (activeRemoved) onActiveVariantChange?.(nextActive);
   };
 
   const summary = useMemo(() => {
@@ -517,7 +615,7 @@ export default function ABTesting({
                 active={id === activeVariant}
                 canRemove={canRemove}
                 onSelect={() => selectVariant(id)}
-                onRemove={() => removeVariant(id)}
+                onRemove={() => setPendingRemove(id)}
               />
             ))}
           </InlineStack>
@@ -553,6 +651,14 @@ export default function ABTesting({
           onCancel={() => setSettingsOpen(false)}
           onStop={stopTest}
           onApply={commitSettings}
+        />
+      )}
+      {pendingRemove && (
+        <ConfirmRemoveModal
+          id={pendingRemove}
+          variants={variants}
+          onConfirm={() => removeVariant(pendingRemove)}
+          onCancel={() => setPendingRemove(null)}
         />
       )}
     </>
