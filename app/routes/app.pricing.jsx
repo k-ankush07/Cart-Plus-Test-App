@@ -22,6 +22,22 @@ import { authenticate } from "../shopify.server";
 import "../index.css";
 import { requireShopData } from "./components/shop.server";
 
+const "Up to 50 monthly store orders", ...ALL_FEATURES], = [
+  "Market visibility & Scheduling",
+  "One-tick upsell",
+  "Upsells & cross-sell",
+  "Announcements module",
+  "Progress bar",
+  "Add-ons module",
+  "Subscription upgrades",
+  "Age verification",
+  "A/B testing",
+  "Cart Activity",
+  "Full analytics",
+  "24/7 email and chat support",
+  "Video call support",
+];
+
 // ─── Plan definitions ─────────────────────────────────────────────────────────
 
 const popularBadge = (
@@ -67,7 +83,7 @@ const PLANS = [
     description: "Perfect for getting started",
     cta: "Current plan",
     tone: null,
-    features: ["Dev & Partner Only"],
+    features: ["Up to 50 monthly store orders", ...ALL_FEATURES],
   },
   {
     id: "starter",
@@ -78,16 +94,7 @@ const PLANS = [
     description: "Up to 250 orders/mo",
     cta: "Upgrade to Starter",
     tone: "success",
-    features: [
-      "Up to 200 monthly store orders",
-      "14 Day Trial",
-      "Design Settings",
-      "Announcements Module",
-      "Upsells & cross-sells",
-      "Reward Progress Bar",
-      "Add-Ons Module",
-      "Custom HTML and CSS",
-    ],
+    features: ["Up to 250 monthly store orders", "14 Day Trial", ...ALL_FEATURES],
   },
   {
     id: "advance",
@@ -98,16 +105,7 @@ const PLANS = [
     description: "Unlimited",
     cta: "Upgrade to Advance",
     tone: null,
-    features: [
-      "Up to 1000 monthly store orders",
-      "14 Day Trial",
-      "Design Settings",
-      "Announcements Module",
-      "Upsells & cross-sells",
-      "Reward Progress Bar",
-      "Add-Ons Module",
-      "Custom HTML and CSS",
-    ],
+    features: ["Unlimited monthly store orders", "14 Day Trial", ...ALL_FEATURES],
   },
 ];
 
