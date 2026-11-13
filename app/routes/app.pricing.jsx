@@ -22,7 +22,7 @@ import { authenticate } from "../shopify.server";
 import "../index.css";
 import { requireShopData } from "./components/shop.server";
 
-const "Up to 50 monthly store orders", ...ALL_FEATURES], = [
+const ALL_FEATURES = [
   "Market visibility & Scheduling",
   "One-tick upsell",
   "Upsells & cross-sell",
