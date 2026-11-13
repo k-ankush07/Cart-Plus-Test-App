@@ -281,7 +281,7 @@ function scopeCss(css, scope) {
   /* ────────────────────────────────────────────────────────────────────── */
 
   let _bound = false;
-  let _state = { count: 0, totalCents: 0, thumbs: [], progress: null };
+  let _state = { count: 0, totalCents: 0, thumbs: [], cart: null };
 
   const isMobileNow = () => window.matchMedia("(max-width: 768px)").matches;
 
@@ -308,8 +308,9 @@ function scopeCss(css, scope) {
   // null = no usable Progress Bar settings.
   function computeRewardProgress(cart) {
     const rewards = window.__HUB_ACTIVE_CART__?.rewardsSettings;
-    // `enabled` is an inverted flag in these settings: true means the Progress Bar is OFF
-    if (!rewards || rewards.enabled || !rewards.tiers?.length) return null;
+    // The ring is independent of the Progress Bar section: it only needs the tier goals, so it
+    // keeps working when that section is switched off in the cart.
+    if (!rewards || !rewards.tiers?.length) return null;
 
     const isQuantity = rewards.calculationType === "quantity";
     const tierValue = (t) => (isQuantity ? t.minQuantity || 0 : t.minAmount || 0);
@@ -351,7 +352,9 @@ function scopeCss(css, scope) {
 
   // 0..1 for the Progress ring. Uses the cart's progress bar if it exposes it.
   function getProgress() {
-    if (typeof _state.progress === "number") return _state.progress;
+    // computed at paint time, so it is right even if the cart settings load after /cart.js
+    const computed = _state.cart ? computeRewardProgress(_state.cart) : null;
+    if (typeof computed === "number") return computed;
     try {
       if (typeof window.hubGetRewardProgress === "function") {
         const v = Number(window.hubGetRewardProgress());
@@ -418,7 +421,7 @@ function scopeCss(css, scope) {
           .map((i) => i.featured_image?.url || i.image)
           .filter(Boolean)
           .slice(0, 3),
-        progress: computeRewardProgress(cart),
+        cart,
       };
       paint();
     } catch (_) {}

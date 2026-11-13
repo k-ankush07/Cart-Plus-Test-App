@@ -1498,9 +1498,10 @@ export default function StickyCart() {
 
                     {s.template === "ring" && (
                       <Banner tone="info">
-                        The ring mirrors your cart's progress-bar status, so it
-                        only works on carts that have the Progress Bar feature
-                        enabled.
+                        The ring fills towards the reward tiers set in your
+                        cart's Progress Bar settings. It works even if the
+                        Progress Bar section itself is switched off, but it
+                        needs at least one tier to be set.
                       </Banner>
                     )}
                   </BlockStack>
