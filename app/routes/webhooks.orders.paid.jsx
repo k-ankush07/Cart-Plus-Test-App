@@ -178,6 +178,64 @@ export const action = async ({ request }) => {
       console.error("[orders/paid] admin order fetch error:", e?.message);
     }
 
+    // Neither the webhook nor the REST order exposes the selling plan on a line item.
+    // Only GraphQL does (LineItem.sellingPlan), so lines still without one are filled from there.
+    try {
+      const accessToken = session?.accessToken;
+      if (accessToken && lineItems.some((li) => !li.selling_plan_allocation)) {
+        const gqlRes = await fetch(
+          `https://${shop}/admin/api/2025-10/graphql.json`,
+          {
+            method: "POST",
+            headers: {
+              "X-Shopify-Access-Token": accessToken,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              query: `query($id: ID!) {
+                order(id: $id) {
+                  lineItems(first: 100) {
+                    nodes { id sellingPlan { sellingPlanId name } }
+                  }
+                }
+              }`,
+              variables: { id: `gid://shopify/Order/${payload.id}` },
+            }),
+          },
+        );
+        if (gqlRes.ok) {
+          const gql = await gqlRes.json();
+          if (gql?.errors?.length) {
+            console.warn(
+              "[orders/paid] selling plan GraphQL errors:",
+              JSON.stringify(gql.errors).slice(0, 300),
+            );
+          }
+          const plans = new Map();
+          for (const n of gql?.data?.order?.lineItems?.nodes || []) {
+            if (!n?.sellingPlan) continue;
+            plans.set(String(n.id).split("/").pop(), {
+              selling_plan: {
+                id: String(n.sellingPlan.sellingPlanId || "").split("/").pop(),
+                name: n.sellingPlan.name,
+              },
+            });
+          }
+          lineItems = lineItems.map((li) => ({
+            ...li,
+            selling_plan_allocation:
+              li.selling_plan_allocation || plans.get(String(li.id)) || null,
+          }));
+        } else {
+          console.warn(
+            `[orders/paid] selling plan GraphQL fetch failed status=${gqlRes.status}`,
+          );
+        }
+      }
+    } catch (e) {
+      console.error("[orders/paid] selling plan GraphQL error:", e?.message);
+    }
+
     let upsellRevenue = 0;
     let addonRevenue = 0;
     let subscriptionRevenue = 0;
