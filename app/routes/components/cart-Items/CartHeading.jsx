@@ -89,12 +89,12 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                             src={
                                 headerSettings.logo && headerSettings.logo !== ""
                                     ? headerSettings.logo
-                                    : "https://cartplus.io/cartplus-img/Group%201707479942%20(1).png"
+                                    : "https://cdn.shopify.com/s/files/1/0875/3679/5938/files/image_926883ce-c31d-4644-b8cb-ef516f94c20b.png?v=1794606982"
                             }
                             alt="Logo"
                             onError={(e) => {
                                 e.target.src =
-                                    "https://cartplus.io/cartplus-img/Group%201707479942%20(1).png";
+                                    "https://cdn.shopify.com/s/files/1/0875/3679/5938/files/image_926883ce-c31d-4644-b8cb-ef516f94c20b.png?v=1794606982";
                             }}
                             style={{
                                 maxWidth: `${headerSettings.logoSize || 120}px`,

@@ -981,6 +981,11 @@ function CartItemRow({
             ...(opts.cardBackground
               ? { background: backgroundToCss(opts.cardBackground) }
               : {}),
+            // "Show card background" / "Show card border" switched off
+            ...(opts.showCardBackground === false
+              ? { background: "transparent" }
+              : {}),
+            ...(opts.showCardBorder === false ? { border: "none" } : {}),
           }}
         >
           {layout === "subscription" ? (
@@ -1068,7 +1073,7 @@ return (
       padding: "12px 16px",
       display: "flex",
       flexDirection: "column",
-      gap: "15px",
+      gap: `${getCartItemOptions(rest.cartSettings).itemGap ?? 15}px`,
     }}
   >
     <style>{`@keyframes cpRowIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}`}</style>

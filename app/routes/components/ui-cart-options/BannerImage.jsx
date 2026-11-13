@@ -10,11 +10,18 @@ import {
   DropZone,
   ProgressBar,
   RangeSlider,
-  InlineGrid 
+  InlineGrid,
+  TextField,
+  Checkbox,
 } from "@shopify/polaris";
 import { ImageIcon, DeleteIcon } from "@shopify/polaris-icons";
 import { uploadImage } from "../../../services/apiRoutes";
-import { getBanner, patchBanner, toggleBanner } from "../utils/banner";
+import {
+  getBanner,
+  patchBanner,
+  toggleBanner,
+  normalizeBannerLink,
+} from "../utils/banner";
 import "../../../index.css";
 
 const MAX_SIZE = 20 * 1024 * 1024; // 20 MB
@@ -198,6 +205,32 @@ export default function BannerImage({
             <Text as="p" variant="bodySm" tone="critical">
               {error}
             </Text>
+          )}
+        </BlockStack>
+      </LegacyCard>
+
+      <LegacyCard sectioned title="Link">
+        <BlockStack gap="200">
+          <TextField
+            label="Banner link (optional)"
+            labelHidden
+            autoComplete="off"
+            placeholder="https://example.com/sale"
+            value={banner.link}
+            onChange={(link) => update({ link })}
+            error={
+              banner.link.trim() && !normalizeBannerLink(banner.link)
+                ? "Enter a valid link, e.g. https://example.com or /collections/sale"
+                : undefined
+            }
+            helpText="Shoppers who click the banner go to this page."
+          />
+          {normalizeBannerLink(banner.link) && (
+            <Checkbox
+              label="Open in a new tab"
+              checked={!!banner.newTab}
+              onChange={(newTab) => update({ newTab })}
+            />
           )}
         </BlockStack>
       </LegacyCard>

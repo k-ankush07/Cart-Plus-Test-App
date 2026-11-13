@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { getBanner } from "../utils/banner";
+import { getBanner, normalizeBannerLink } from "../utils/banner";
 
 const clamp = (n) => Math.min(100, Math.max(0, n));
 
@@ -72,7 +72,12 @@ export default function BannerImage({ headerSettings, onReposition }) {
             maxWidth: "100%",
             aspectRatio: "700 / 200",
             borderRadius: `${banner.radius}px`,
-            cursor: repositioning ? "grab" : "default",
+            // preview only: the link itself is not followed inside the editor
+            cursor: repositioning
+              ? "grab"
+              : normalizeBannerLink(banner.link)
+                ? "pointer"
+                : "default",
             touchAction: repositioning ? "none" : "auto",
           }}
         >

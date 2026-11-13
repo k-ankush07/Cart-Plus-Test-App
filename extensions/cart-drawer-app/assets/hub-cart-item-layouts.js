@@ -26,6 +26,9 @@ window.cartPlusGetItemOptions = function (cartSettings) {
     deleteIcon: "trash",
     deleteColor: null,
     cardBackground: null,
+    itemGap: null,
+    showCardBackground: true,
+    showCardBorder: true,
     ...(cs.cartItem || {}),
   };
 };

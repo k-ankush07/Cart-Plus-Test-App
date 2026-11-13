@@ -158,7 +158,7 @@ window.injectCartHTML = function (blockId, root) {
 
     if (titleType === "logo") {
       const fallback =
-        "https://cartplus.io/cartplus-img/Group%201707479942%20(1).png";
+        "https://cdn.shopify.com/s/files/1/0875/3679/5938/files/image_926883ce-c31d-4644-b8cb-ef516f94c20b.png?v=1794606982";
       const src =
         headerSettings.logo && headerSettings.logo !== ""
           ? headerSettings.logo
@@ -272,6 +272,9 @@ window.injectCartHTML = function (blockId, root) {
   ].join("\n");
   bs.textContent = `
   ${cardBgCss ? `#hub-cart-drawer-${blockId} .hub-cart-item { background: ${cardBgCss} !important; }` : ""}
+  ${Number.isFinite(Number(itemOpts.itemGap)) && itemOpts.itemGap !== null ? `#hub-cart-drawer-${blockId} .hub-cart-items { gap: ${Math.max(0, Math.min(80, Number(itemOpts.itemGap)))}px !important; }` : ""}
+  ${itemOpts.showCardBackground === false ? `#hub-cart-drawer-${blockId} .hub-cart-item { background: transparent !important; }` : ""}
+  ${itemOpts.showCardBorder === false ? `#hub-cart-drawer-${blockId} .hub-cart-item { border: none !important; }` : ""}
   ${itemStyleCss}
   #hub-cart-drawer-${blockId} .hub-cart-checkout-btn {
     background: ${window.cartPlusBgCss(window.cartPlusGetCheckoutButton(cartSettings).background) || btnColor} !important;

@@ -16,7 +16,12 @@ export const CART_ITEM_DEFAULTS = {
   deleteColor: null, // null = icon colour of the design
   cardBackground: null, // BackgroundInput value
   sectionBackground: null, // BackgroundInput value
+  itemGap: null, // px between products, null = 15 (the default)
+  showCardBackground: true, // false = cards have no background
+  showCardBorder: true, // false = cards have no border
 };
+
+export const DEFAULT_ITEM_GAP = 15;
 
 export const getCartItemOptions = (cartSettings) => ({
   ...CART_ITEM_DEFAULTS,

@@ -175,10 +175,25 @@ window.cartPlusBannerHTML = function (headerSettings) {
   const padX = b.paddingX ?? b.padding ?? 0;
   // Same 700 × 200 crop + focal point as the editor preview.
   const pos = (n) => Math.min(100, Math.max(0, Number(n) || 0));
-  return `<div class="cart-plus-banner-image" style="padding:${padY}px ${padX}px;display:flex;justify-content:center;">
-    <div style="width:${b.width}%;max-width:100%;aspect-ratio:700 / 200;overflow:hidden;border-radius:${b.radius}px;">
+
+  // Optional click-through link. Same rules as the editor's normalizeBannerLink:
+  // http(s), mailto:, tel:, site-relative paths and #anchors only; a bare domain gets https://.
+  const rawLink = String(b.link ?? "").trim();
+  let link = "";
+  if (/^(https?:\/\/|mailto:|tel:)/i.test(rawLink)) link = rawLink;
+  else if (/^\/(?!\/)/.test(rawLink) || rawLink.startsWith("#")) link = rawLink;
+  else if (rawLink && !/^[a-z][a-z0-9+.-]*:/i.test(rawLink) && /^[^\s/]+\.[^\s/]{2,}/.test(rawLink)) link = `https://${rawLink}`;
+  link = link.replace(/["<>]/g, "");
+  const newTab = !!b.newTab && /^https?:\/\//i.test(link);
+
+  const box = `<div style="width:${b.width}%;max-width:100%;aspect-ratio:700 / 200;overflow:hidden;border-radius:${b.radius}px;">
       <img src="${b.image}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;object-position:${pos(b.posX)}% ${pos(b.posY)}%;">
-    </div>
+    </div>`;
+  const inner = link
+    ? `<a href="${link}"${newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="display:block;width:${b.width}%;max-width:100%;text-decoration:none;">${box.replace(`width:${b.width}%;max-width:100%;`, "width:100%;")}</a>`
+    : box;
+  return `<div class="cart-plus-banner-image" style="padding:${padY}px ${padX}px;display:flex;justify-content:center;">
+    ${inner}
   </div>`;
 };
 

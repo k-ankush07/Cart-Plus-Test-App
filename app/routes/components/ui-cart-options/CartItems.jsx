@@ -23,7 +23,11 @@ import {
   CartIcon, // Upsells
 } from "@shopify/polaris-icons";
 
-import { getCartItemOptions, patchCartItem } from "../utils/cartItemOptions";
+import {
+  getCartItemOptions,
+  patchCartItem,
+  DEFAULT_ITEM_GAP,
+} from "../utils/cartItemOptions";
 import ColorInput from "../ui/ColorInput";
 import BackgroundInput from "../ui/BackgroundInput";
 import DeleteGlyph, { DELETE_ICONS } from "../ui/DeleteGlyph";
@@ -329,6 +333,27 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
               onChange={(labelBackground) => setOpt({ labelBackground })}
             />
           </InlineGrid>
+          <RangeSlider
+            label="Space between products"
+            min={0}
+            max={40}
+            output
+            value={opts.itemGap ?? DEFAULT_ITEM_GAP}
+            suffix={<Text as="span">{opts.itemGap ?? DEFAULT_ITEM_GAP} px</Text>}
+            onChange={(itemGap) => setOpt({ itemGap })}
+          />
+          <BlockStack gap="100">
+            <Checkbox
+              label="Show card background"
+              checked={opts.showCardBackground !== false}
+              onChange={(v) => setOpt({ showCardBackground: v })}
+            />
+            <Checkbox
+              label="Show card border"
+              checked={opts.showCardBorder !== false}
+              onChange={(v) => setOpt({ showCardBorder: v })}
+            />
+          </BlockStack>
         </BlockStack>
       </Card>
 

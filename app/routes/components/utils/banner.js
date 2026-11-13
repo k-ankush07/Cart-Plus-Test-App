@@ -9,6 +9,20 @@ export const BANNER_DEFAULTS = {
   radius: 0, // px
   posX: 50, // % focal point (object-position x) set via "Reposition image"
   posY: 50, // % focal point (object-position y)
+  link: "", // optional URL the banner opens when clicked
+  newTab: false, // open the link in a new tab
+};
+
+// Only safe, navigable links: http(s), site-relative paths, mailto: and tel:.
+// A bare "example.com" becomes https://example.com. Anything else (javascript:, data: ...) is dropped.
+export const normalizeBannerLink = (value) => {
+  const v = String(value ?? "").trim();
+  if (!v) return "";
+  if (/^(https?:\/\/|mailto:|tel:)/i.test(v)) return v;
+  if (/^\/(?!\/)/.test(v) || v.startsWith("#")) return v;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(v)) return ""; // some other scheme
+  if (/^[^\s/]+\.[^\s/]{2,}/.test(v)) return `https://${v}`;
+  return "";
 };
 
 export const getBanner = (headerSettings) => {
