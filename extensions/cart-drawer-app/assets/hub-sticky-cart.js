@@ -281,7 +281,7 @@ function scopeCss(css, scope) {
   /* ────────────────────────────────────────────────────────────────────── */
 
   let _bound = false;
-  let _state = { count: 0, totalCents: 0, thumbs: [] };
+  let _state = { count: 0, totalCents: 0, thumbs: [], progress: null };
 
   const isMobileNow = () => window.matchMedia("(max-width: 768px)").matches;
 
@@ -302,8 +302,56 @@ function scopeCss(css, scope) {
     }
   }
 
+  // 0..1 progress towards the cart's reward tiers, computed straight from the cart + the
+  // Progress Bar settings (same maths as hubUtils.renderRewardsBar). It does not depend on
+  // the drawer having been opened, so the ring is right as soon as the page loads.
+  // null = no usable Progress Bar settings.
+  function computeRewardProgress(cart) {
+    const rewards = window.__HUB_ACTIVE_CART__?.rewardsSettings;
+    // `enabled` is an inverted flag in these settings: true means the Progress Bar is OFF
+    if (!rewards || rewards.enabled || !rewards.tiers?.length) return null;
+
+    const isQuantity = rewards.calculationType === "quantity";
+    const tierValue = (t) => (isQuantity ? t.minQuantity || 0 : t.minAmount || 0);
+
+    const rewardItems = (cart.items || []).filter((i) => i.properties?._hub_reward);
+    const deduction = isQuantity
+      ? rewardItems.reduce((n, i) => n + i.quantity, 0)
+      : rewardItems.reduce(
+          (n, i) =>
+            n + (rewards.usePreDiscount ? i.original_line_price : i.final_line_price),
+          0,
+        ) / 100;
+    const raw = isQuantity
+      ? cart.item_count
+      : (rewards.usePreDiscount
+          ? cart.original_total_price || cart.total_price
+          : cart.total_price) / 100;
+    const total = (raw || 0) - deduction;
+
+    const sorted = [...rewards.tiers].sort((a, b) => tierValue(a) - tierValue(b));
+    const n = sorted.length;
+    const step = (i) => (100 / n) * (i + 1);
+
+    let pct = 100;
+    if (total < tierValue(sorted[0])) {
+      pct = (total / (tierValue(sorted[0]) || 1)) * step(0);
+    } else {
+      for (let i = 0; i < n - 1; i++) {
+        const a = tierValue(sorted[i]);
+        const b = tierValue(sorted[i + 1]);
+        if (total >= a && total < b) {
+          pct = step(i) + ((total - a) / (b - a)) * (step(i + 1) - step(i));
+          break;
+        }
+      }
+    }
+    return Math.max(0, Math.min(1, pct / 100));
+  }
+
   // 0..1 for the Progress ring. Uses the cart's progress bar if it exposes it.
   function getProgress() {
+    if (typeof _state.progress === "number") return _state.progress;
     try {
       if (typeof window.hubGetRewardProgress === "function") {
         const v = Number(window.hubGetRewardProgress());
@@ -370,6 +418,7 @@ function scopeCss(css, scope) {
           .map((i) => i.featured_image?.url || i.image)
           .filter(Boolean)
           .slice(0, 3),
+        progress: computeRewardProgress(cart),
       };
       paint();
     } catch (_) {}

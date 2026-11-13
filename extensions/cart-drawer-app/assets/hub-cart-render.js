@@ -1402,6 +1402,17 @@ if (savedEl) {
           ? ` style="color:${hexOnly(addonsSettings.priceColor)};"`
           : "";
 
+        // Card colour + toggle colour from the editor (same fields the preview uses).
+        // A black toggle is the untouched default, so the theme colour keeps winning there.
+        const addonCardBg = window.cartPlusBgCss?.(addonsSettings.cardBackground) || "";
+        const addonToggle = hexOnly(addonsSettings.toggleColor);
+        const addonCardStyle =
+          (addonCardBg ? `background:${addonCardBg};` : "") +
+          (addonToggle && addonToggle.toLowerCase() !== "#000000"
+            ? `--cp-accent-bg:${addonToggle};`
+            : "");
+        const addonCardAttr = addonCardStyle ? ` style="${addonCardStyle}"` : "";
+
         if (isShipping) {
           const spTitle = truncateText(
             addonsSettings.title || "Shipping Protection",
@@ -1410,7 +1421,7 @@ if (savedEl) {
           const spDesc = truncateText(addonsSettings.description || "", 60);
 
           addonsEl.innerHTML = `
-            <div class="hub-addon-shipping-protection">
+            <div class="hub-addon-shipping-protection"${addonCardAttr}>
               <div class="upcart-internal-addons__image-wrapper">
                 <img src="https://cdn.shopify.com/s/files/1/0733/2531/4260/files/shipping-protection.png" alt="Shipping Protection" class="hub-addon-sp-img"/>
               </div>
@@ -1431,7 +1442,7 @@ if (savedEl) {
           const productTitle = truncateText(selected.title || "", 50);
 
           addonsEl.innerHTML = `
-    <div class="hub-addon-product cart-plus-public-addons cart-plus-addons">
+    <div class="hub-addon-product cart-plus-public-addons cart-plus-addons"${addonCardAttr}>
      ${selected.image ? `<div class="hub-addon-product-img-wrapper cart-plus-addons-image-wrapper cart-plus-public-addons__image-wrapper"><img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img"/></div>` : ""}
       <div class="hub-addon-product-info cart-plus-public-addons__content-wrapper">
         <p class="hub-addon-product-title cart-plus-public-addons__content-title-wrapper cart-plus-addons-title"${addonTextStyle}>${productTitle}</p>

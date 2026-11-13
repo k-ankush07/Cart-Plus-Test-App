@@ -22,17 +22,12 @@ const rgbToHex = (rgb) => {
   );
 };
 
-// the colour / size the saved html is already using (first styled element)
-function readStyle(html) {
+// the font size the saved html is already using (first styled element)
+function readFontSize(html) {
   const box = document.createElement("div");
   box.innerHTML = html || "";
-  const colored = box.querySelector("[style*='color']");
   const sized = box.querySelector("[style*='font-size']");
-  return {
-    color: (colored && rgbToHex(colored.style.color)) || DEFAULT_COLOR,
-    fontSize:
-      (sized && String(parseInt(sized.style.fontSize, 10))) || DEFAULT_SIZE,
-  };
+  return (sized && String(parseInt(sized.style.fontSize, 10))) || DEFAULT_SIZE;
 }
 
 // Drop wrappers that only carry the default colour / size, so choosing the original
@@ -61,15 +56,12 @@ function RichTextEditor({ value, onChange }) {
   const ref = useRef(null);
   const savedRange = useRef(null);
 
-  const [color, setColor] = useState(() => readStyle(value).color);
-  const [fontSize, setFontSize] = useState(() => readStyle(value).fontSize);
+  const [fontSize, setFontSize] = useState(() => readFontSize(value));
 
   useEffect(() => {
     if (ref.current && value !== ref.current.innerHTML) {
       ref.current.innerHTML = value || "";
-      const st = readStyle(value);
-      setColor(st.color);
-      setFontSize(st.fontSize);
+      setFontSize(readFontSize(value));
     }
   }, [value]);
 
@@ -104,7 +96,7 @@ function RichTextEditor({ value, onChange }) {
   };
 
   // nothing selected -> style the whole message through one wrapper <span>
-  const styleWholeText = (prop, value) => {
+  const styleWholeText = (prop, val) => {
     const editor = ref.current;
     let wrap =
       editor.childNodes.length === 1 && editor.firstChild.tagName === "SPAN"
@@ -117,11 +109,10 @@ function RichTextEditor({ value, onChange }) {
     }
     // inner spans would override the new value
     wrap.querySelectorAll("*").forEach((n) => n.style?.removeProperty(prop));
-    wrap.style.setProperty(prop, value);
+    wrap.style.setProperty(prop, val);
   };
 
   const applyColor = (hex) => {
-    setColor(hex);
     if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
 
     const range = selectedRange();
@@ -184,6 +175,9 @@ function RichTextEditor({ value, onChange }) {
         background: "#fff",
       }}
     >
+      {/* editor ke andar text hamesha black dikhe (saved html mein color rehta hai) */}
+      <style>{`.rte-editor, .rte-editor * { color: #000000 !important; }`}</style>
+
       {/* One compact toolbar row: B I U | colour | size */}
       <div
         style={{
@@ -227,7 +221,7 @@ function RichTextEditor({ value, onChange }) {
 
         {divider}
 
-        {/* colour swatch: the native picker sits invisibly on top of it */}
+        {/* colour swatch: always black, the native picker sits invisibly on top of it */}
         <label
           title="Text color"
           style={{
@@ -236,7 +230,7 @@ function RichTextEditor({ value, onChange }) {
             height: 20,
             borderRadius: 6,
             border: "1px solid #c9cccf",
-            background: color,
+            background: DEFAULT_COLOR,
             cursor: "pointer",
             overflow: "hidden",
             flexShrink: 0,
@@ -245,7 +239,7 @@ function RichTextEditor({ value, onChange }) {
           <input
             type="color"
             aria-label="Text color"
-            value={color}
+            defaultValue={DEFAULT_COLOR}
             onChange={(e) => applyColor(e.target.value)}
             style={{
               position: "absolute",
@@ -285,6 +279,7 @@ function RichTextEditor({ value, onChange }) {
 
       <div
         ref={ref}
+        className="rte-editor"
         contentEditable
         onInput={emit}
         onKeyUp={saveSelection}
@@ -297,6 +292,7 @@ function RichTextEditor({ value, onChange }) {
           fontSize: 14,
           lineHeight: 1.4,
           outline: "none",
+          color: "#000000",
         }}
       />
     </div>

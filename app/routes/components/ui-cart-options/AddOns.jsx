@@ -239,7 +239,13 @@ export default function AddOns({ addonsSettings, handleChange, currency }) {
                     <TextField
                       label="Price"
                       value={addonsSettings.price}
-                      onChange={(val) => update("price", val)}
+                      onChange={(val) => {
+                        const clean = val
+                          .replace(/[^0-9.]/g, "")
+                          .replace(/(\..*)\./g, "$1");
+                        update("price", clean);
+                      }}
+                      inputMode="decimal"
                       suffix={currency}
                       autoComplete="off"
                     />
@@ -345,7 +351,10 @@ export default function AddOns({ addonsSettings, handleChange, currency }) {
           <BackgroundInput
             title="Card color"
             value={
-              addonsSettings.cardBackground || { type: "plain", color: "#ffffff" }
+              addonsSettings.cardBackground || {
+                type: "plain",
+                color: "#ffffff",
+              }
             }
             onChange={(val) => update("cardBackground", val)}
           />
