@@ -29,6 +29,7 @@ import {
 } from "@shopify/polaris-icons";
 
 import BackgroundInput from "../ui/BackgroundInput";
+import ColorInput from "../ui/ColorInput";
 import { BadgeIcon, TRUST_ICONS, TrustIcon } from "../cart-Items/PaymentBadges";
 import { uploadImage } from "../../../services/apiRoutes";
 import {
@@ -306,6 +307,13 @@ export default function PaymentBadges({ cartSettings, handleChange, shop, access
                 max={56}
                 output
                 onChange={(val) => update({ size: val })}
+              />
+            )}
+            {showTrust && (
+              <ColorInput
+                label="Text color"
+                value={s.textColor || "#303030"}
+                onChange={(val) => update({ textColor: val })}
               />
             )}
             <ButtonGroup variant="segmented" fullWidth>

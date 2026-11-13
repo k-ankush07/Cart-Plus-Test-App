@@ -632,8 +632,7 @@ bs.textContent += `
         </a>
       </div>
       ${slot(renderCustomHTML(customHtmlBlocks.below_checkout))}
-      ${expressHTML}
-      ${continueHTML}`,
+      ${expressHTML}`,
     "Payment Badges": window.cartPlusPaymentBadgesHTML(cartSettings),
   };
 
@@ -725,6 +724,7 @@ bs.textContent += `
         <!-- Footer section rows, in the order set in the editor -->
        <div class="cart-plus-footer-stack">
           ${renderFooterRows(footerOrder, footerRows)}
+          ${continueHTML}
           ${trustHtml("bottom")}
         </div>
       </div>

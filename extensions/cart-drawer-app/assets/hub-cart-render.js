@@ -1393,6 +1393,15 @@ if (savedEl) {
             : text;
         };
 
+        // Text / Price colour from the editor (only valid hex is used; unset = cart defaults)
+        const hexOnly = (c) => (/^#[0-9a-f]{3,8}$/i.test(c || "") ? c : "");
+        const addonTextStyle = hexOnly(addonsSettings.textColor)
+          ? ` style="color:${hexOnly(addonsSettings.textColor)};"`
+          : "";
+        const addonPriceStyle = hexOnly(addonsSettings.priceColor)
+          ? ` style="color:${hexOnly(addonsSettings.priceColor)};"`
+          : "";
+
         if (isShipping) {
           const spTitle = truncateText(
             addonsSettings.title || "Shipping Protection",
@@ -1406,11 +1415,11 @@ if (savedEl) {
                 <img src="https://cdn.shopify.com/s/files/1/0733/2531/4260/files/shipping-protection.png" alt="Shipping Protection" class="hub-addon-sp-img"/>
               </div>
               <div class="hub-addon-sp-info">
-        <p class="hub-addon-sp-title">${spTitle}</p>
-        <p class="hub-addon-sp-desc">${spDesc}</p>
+        <p class="hub-addon-sp-title"${addonTextStyle}>${spTitle}</p>
+        <p class="hub-addon-sp-desc"${addonTextStyle}>${spDesc}</p>
       </div>
               <div class="hub-addon-sp-right">
-                <span class="hub-addon-sp-price">${price}</span>
+                <span class="hub-addon-sp-price"${addonPriceStyle}>${price}</span>
                 <label class="hub-addon-sp-toggle">
               <input type="checkbox" id="hub-sp-toggle-${blockId}" class="hub-sp-checkbox" data-variant="${variantId}" data-line-key="${addonLineKey}" data-price-cents="${addonPriceCents}" ${shouldBeChecked ? "checked" : ""}/>
               <span class="hub-addon-sp-slider"></span>
@@ -1425,8 +1434,8 @@ if (savedEl) {
     <div class="hub-addon-product cart-plus-public-addons cart-plus-addons">
      ${selected.image ? `<div class="hub-addon-product-img-wrapper cart-plus-addons-image-wrapper cart-plus-public-addons__image-wrapper"><img src="${selected.image}" alt="${selected.title}" class="hub-addon-product-img"/></div>` : ""}
       <div class="hub-addon-product-info cart-plus-public-addons__content-wrapper">
-        <p class="hub-addon-product-title cart-plus-public-addons__content-title-wrapper cart-plus-addons-title">${productTitle}</p>
-        <span class="hub-addon-product-price cart-plus-public-addons__content-price">${price}</span>
+        <p class="hub-addon-product-title cart-plus-public-addons__content-title-wrapper cart-plus-addons-title"${addonTextStyle}>${productTitle}</p>
+        <span class="hub-addon-product-price cart-plus-public-addons__content-price"${addonPriceStyle}>${price}</span>
       </div>
       <label class="hub-addon-sp-toggle cart-plus-addons-toggle upcart-public-addons__toggle-wrapper cart-plus-public-addons__toggle-wrapper">
         <input type="checkbox" id="hub-addon-toggle-${blockId}" class="hub-addon-checkbox" data-variant="${variantId}" data-line-key="${addonLineKey}" data-price-cents="${addonPriceCents}" ${shouldBeChecked ? "checked" : ""}/>

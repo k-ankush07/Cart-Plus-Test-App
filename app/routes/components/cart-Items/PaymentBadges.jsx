@@ -129,6 +129,8 @@ export default function PaymentBadges({ cartSettings }) {
             gap: "6px 16px",
             justifyContent: justify,
             fontSize: 13,
+            // empty = inherit the cart's own text colour
+            ...(s.textColor ? { color: s.textColor } : {}),
           }}
         >
           {trust.map((t) => (

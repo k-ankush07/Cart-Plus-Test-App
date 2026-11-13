@@ -310,6 +310,17 @@ export default function AgeVerification({
     update({ template: key, ...settings });
   };
   const isTpl = !!s.template && !!AGE_TEMPLATES[s.template];
+  // which settings the chosen template actually renders (mirrors the preview)
+  const layout = isTpl ? AGE_TEMPLATES[s.template].layout : null;
+  const uses = {
+    accentText: layout !== "toggle",
+    secondaryBg: ["inline", "badge-row", "badge-stack"].includes(layout),
+    secondaryText: ["inline", "badge-row", "badge-stack", "title"].includes(
+      layout,
+    ),
+    badge: ["inline", "toggle", "badge-row", "badge-stack"].includes(layout),
+    subtitle: layout !== "badge-stack",
+  };
 
   return (
     <div className="mainContent">
@@ -391,26 +402,34 @@ export default function AgeVerification({
                   value={s.accent ?? "#111827"}
                   onChange={(v) => update({ accent: v })}
                 />
-                <ColorInput
-                  label="Button text color"
-                  value={s.accentText ?? "#ffffff"}
-                  onChange={(v) => update({ accentText: v })}
-                />
-                <ColorInput
-                  label="Second button color"
-                  value={s.secondaryBg ?? "#f1f3f5"}
-                  onChange={(v) => update({ secondaryBg: v })}
-                />
-                <ColorInput
-                  label="Second button text"
-                  value={s.secondaryText ?? "#1a1a1a"}
-                  onChange={(v) => update({ secondaryText: v })}
-                />
-                <ColorInput
-                  label="18+ badge color"
-                  value={s.badgeColor ?? "#e5383b"}
-                  onChange={(v) => update({ badgeColor: v })}
-                />
+                {uses.accentText && (
+                  <ColorInput
+                    label="Button text color"
+                    value={s.accentText ?? "#ffffff"}
+                    onChange={(v) => update({ accentText: v })}
+                  />
+                )}
+                {uses.secondaryBg && (
+                  <ColorInput
+                    label="Second button color"
+                    value={s.secondaryBg ?? "#f1f3f5"}
+                    onChange={(v) => update({ secondaryBg: v })}
+                  />
+                )}
+                {uses.secondaryText && (
+                  <ColorInput
+                    label="Second button text"
+                    value={s.secondaryText ?? "#1a1a1a"}
+                    onChange={(v) => update({ secondaryText: v })}
+                  />
+                )}
+                {uses.badge && (
+                  <ColorInput
+                    label="18+ badge color"
+                    value={s.badgeColor ?? "#e5383b"}
+                    onChange={(v) => update({ badgeColor: v })}
+                  />
+                )}
               </InlineGrid>
               <Text variant="bodySm" tone="subdued">
                 Question, subtitle, background, border and radius use the fields
@@ -476,11 +495,13 @@ export default function AgeVerification({
               value={s.checkboxText}
               onChange={(val) => update({ checkboxText: val })}
             />
-            <Field
-              label="Subtitle field"
-              value={s.subtitle}
-              onChange={(val) => update({ subtitle: val })}
-            />
+            {(!isTpl || uses.subtitle) && (
+              <Field
+                label="Subtitle field"
+                value={s.subtitle}
+                onChange={(val) => update({ subtitle: val })}
+              />
+            )}
             <Field
               label="Error state"
               value={s.errorText}
@@ -523,11 +544,14 @@ export default function AgeVerification({
                 value={s.borderColor}
                 onChange={(val) => update({ borderColor: val })}
               />
-              <ColorInput
-                label="Toggle"
-                value={s.toggleColor}
-                onChange={(val) => update({ toggleColor: val })}
-              />
+              {/* templates use "Button / toggle color" above instead */}
+              {!isTpl && (
+                <ColorInput
+                  label="Toggle"
+                  value={s.toggleColor}
+                  onChange={(val) => update({ toggleColor: val })}
+                />
+              )}
               <ColorInput
                 label="Error state background"
                 value={s.errorBackground}

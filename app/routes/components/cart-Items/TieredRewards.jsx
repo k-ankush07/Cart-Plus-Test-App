@@ -80,12 +80,17 @@ const getIcon = (type) => {
   }
 };
 
-export default function TieredRewards({ rewardsSettings, currency }) {
+export default function TieredRewards({
+  rewardsSettings,
+  currency,
+  cartTotal = 0, 
+  cartQuantity = 0, 
+}) {
   const templateBg = useTemplateBackground();
   const tiers = rewardsSettings?.tiers || [];
 
-  const totalCart = 1400;
-  const totalMinProduct = 1400;
+  const totalCart = Number(cartTotal) || 0;
+  const totalMinProduct = Number(cartQuantity) || 0;
 
   const isQuantity = rewardsSettings.calculationType === "quantity";
 

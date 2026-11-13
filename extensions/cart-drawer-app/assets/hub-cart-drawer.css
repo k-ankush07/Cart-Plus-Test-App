@@ -1065,6 +1065,7 @@ span.hub-total-arrow svg {
   line-height: 12px;
   color: #2D2D2D;
   margin: 0;
+  line-height: 20px;
 }
 
 .hub-rewards-segments {
@@ -1246,10 +1247,11 @@ span.hub-total-arrow svg {
   color: #555;
   text-decoration: none;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 450;
   line-height: 20px;
   width: calc(100% - 40px);
   margin: 0 20px !important;
+  padding-bottom: 15px;
 }
 
 .hub-continue-shopping:hover {
@@ -1851,6 +1853,13 @@ display: flex;
     padding: 12px 16px;
 }
 
+/* Empty cart: no padding around the empty-cart UI */
+.hub-cart-is-empty .hub-cart-items,
+.hub-cart-items.footer-empty,
+.hub-cart-items:has(> .hub-cart-empty) {
+    padding: 0;
+}
+
 .hub-item-save {
   color: #16a34a;
   font-size: 10px;
@@ -1960,7 +1969,9 @@ display: flex;
   border-color: var(--icon-border-hover);
 }
 
-.cart-app--customFont * {
+/* The cart font applies everywhere EXCEPT inside Custom HTML blocks, so a block's
+   own font-family (e.g. a Google font it links itself) is not overridden. */
+.cart-app--customFont :not(.cart-custom-html *) {
   font-family: var(--cart-custom-font, "Poppins"), sans-serif !important;
 }
 
@@ -1984,8 +1995,11 @@ display: flex;
 .cart-app--customFont input,
 .cart-app--customFont textarea,
 .cart-app--customFont select {
-  font-family: var(--cart-custom-font, "Poppins"), sans-serif !important;
   margin: 0;
+}
+
+.cart-app--customFont {
+  font-family: var(--cart-custom-font, "Poppins"), sans-serif !important;
 }
 
 /* Parent */
@@ -3350,7 +3364,7 @@ select.hub-compact-variant {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
-.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) > :first-child:not(.cart-plus-discount-tpl),
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) > :first-child:not(.cart-plus-discount-tpl):not(.cart-plus-login-message),
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-additional-notes,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-addon-tile,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-addon-shipping-protection,
@@ -3358,7 +3372,6 @@ select.hub-compact-variant {
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-summary,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-discount-row,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-age-verification,
-.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-login-message,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-checkout-button-container-row,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-payment-badges {
   padding-top: 0 !important;
@@ -3441,6 +3454,10 @@ select.hub-compact-variant {
 }
 .hub-upsell-side-panel button.hub-add-btn.cart-plus-public-component__button.hub-side-add {
     width: 100%;
+}
+
+.hub-cart-empty.cart-plus-empty-cart {
+    padding: 12px 16px;
 }
 
 .hub-cart-right.hub-side-shifted + .hub-upsell-side-panel,

@@ -198,15 +198,20 @@ function TemplateAnnouncement({ s, currency, templateBg }) {
       </span>
     );
 
- if (["flash_sale", "free_gift"].includes(s.template) && buttonLabel?.trim())
+  if (["flash_sale", "free_gift"].includes(s.template) && buttonLabel?.trim())
     right = (
       <a
         href={s.link || "#"}
+        onClick={(e) => e.preventDefault()}
+        aria-disabled="true"
+        tabIndex={-1}
         style={{
           ...pill,
           background: accentBg,
           color: accentText,
           textDecoration: "none",
+          pointerEvents: "none",
+          cursor: "default",
         }}
       >
         {buttonLabel}
@@ -224,9 +229,16 @@ function TemplateAnnouncement({ s, currency, templateBg }) {
         padding: paddingMap[s.height] || paddingMap.normal,
         borderRadius: `${s.borderRadius ?? 12}px`,
         color,
+        // Default template follows the Template tab colour only (no own background)
         background:
-          (s.template === "default" && backgroundToCss(templateBg)) ||
-          (s.background ? backgroundToCss(s.background) : t.background),
+          s.template === "default"
+            ? backgroundToCss(templateBg) ||
+              backgroundToCss(t.backgroundGradient)
+            : s.background
+              ? backgroundToCss(s.background)
+              : t.backgroundGradient
+                ? backgroundToCss(t.backgroundGradient)
+                : t.background,
         fontSize: `${s.fontSize || 15}px`,
         lineHeight: 1.3,
         boxSizing: "border-box",
@@ -264,13 +276,16 @@ function TemplateAnnouncement({ s, currency, templateBg }) {
           {showClose && (
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              disabled
+              aria-disabled="true"
+              tabIndex={-1}
               aria-label="Close"
               style={{
                 background: "none",
                 border: 0,
                 color,
-                cursor: "pointer",
+                cursor: "default",
+                pointerEvents: "none",
                 fontSize: 18,
                 lineHeight: 1,
                 padding: 0,

@@ -82,6 +82,10 @@ export default function AddOns({ addonsSettings, currency, designSettings }) {
         return text.length > limit ? text.slice(0, limit).trim() + "..." : text;
     };
 
+    // unset = keep the cart's own colours
+    const textStyle = addonsSettings.textColor ? { color: addonsSettings.textColor } : undefined;
+    const priceStyle = addonsSettings.priceColor ? { color: addonsSettings.priceColor } : undefined;
+
     return (
         <div
             className="cart-addon-tile cart-plus-addons cart-plus-public-addons cart-plus-addons"
@@ -115,14 +119,14 @@ export default function AddOns({ addonsSettings, currency, designSettings }) {
             {/* INFO */}
             <div className="cart-addon-tile__info cart-plus-public-addons__content-wrapper">
                 <div className="cart-addon-tile__title-row cart-plus-public-addons__content-title-wrapper cart-plus-addons-title">
-                    <span className="cart-addon-tile__title cart-plus-addons-title cart-plus-public-addons__content-title">
+                    <span className="cart-addon-tile__title cart-plus-addons-title cart-plus-public-addons__content-title" style={textStyle}>
                         {isShipping ? (
                             <span dangerouslySetInnerHTML={{ __html: addonsSettings.title || "" }} />
                         ) : (
                             truncateText(product?.title || "Product add-on")
                         )}
                     </span>
-                    <span className="cart-addon-tile__price cart-plus-addons-price cart-plus-public-addons__price cart-plus-public-addons__content-price">
+                    <span className="cart-addon-tile__price cart-plus-addons-price cart-plus-public-addons__price cart-plus-public-addons__content-price" style={priceStyle}>
                         {isShipping ? (
                             ``
                         ) : (
@@ -136,7 +140,7 @@ export default function AddOns({ addonsSettings, currency, designSettings }) {
                     </span>
                 </div>
                 {(addonsSettings.showDescription ?? true) && (
-                    <p className="cart-addon-tile__desc cart-plus-addons-product-description cart-plus-public-addons__content-description">
+                    <p className="cart-addon-tile__desc cart-plus-addons-product-description cart-plus-public-addons__content-description" style={textStyle}>
                         {isShipping ? (
                             <span dangerouslySetInnerHTML={{ __html: addonsSettings.description || "" }} />
                         ) : (
@@ -146,7 +150,7 @@ export default function AddOns({ addonsSettings, currency, designSettings }) {
                 )}
             </div>
             {isShipping && (
-                <span className="cart-addon-tile__price cart-plus-addons-price cart-plus-public-addons__price">
+                <span className="cart-addon-tile__price cart-plus-addons-price cart-plus-public-addons__price" style={priceStyle}>
                     {addonsSettings.compareAtPrice && (
                         <span className="cart-plus-addons-compare-price" style={{ textDecoration: "line-through", opacity: 0.6, marginRight: 4 }}>{currency} {addonsSettings.compareAtPrice}</span>
                     )}

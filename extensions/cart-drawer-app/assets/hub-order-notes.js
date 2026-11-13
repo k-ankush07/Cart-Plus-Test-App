@@ -73,11 +73,14 @@ window.cartPlusNotesOpenSheet = function (blockId) {
     <div class="cart-plus-note-overlay" onclick="cartPlusNotesCloseSheet('${blockId}')" style="position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:100000;"></div>
     <div role="dialog" aria-label="Order note" style="position:absolute;left:0;right:0;bottom:0;z-index:100001;background:${sheetBg};padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -4px 16px rgba(0,0,0,.12);">
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:13px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;">${settings.heading ?? "Order note"}</div>
+        <div style="font-size:13px;font-weight:500;letter-spacing:.04em;">${settings.heading ?? "Order note"}</div>
         <button type="button" class="cp-close-btn" aria-label="Close" onclick="cartPlusNotesCloseSheet('${blockId}')" style="border:none;cursor:pointer;padding:4px;display:inline-flex;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
       <textarea id="cart-plus-note-text-${blockId}" class="cart-additional-notes__textarea cart-plus-public-notes__textarea" placeholder="${cartPlusNoteEsc(settings.placeholder || "Add instructions for your order")}" ${limit ? `maxlength="${CART_PLUS_NOTE_MAX}"` : ""} rows="4" oninput="cartPlusNotesInput('${blockId}')" style="width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid ${ds.accentBorder || "rgba(0,0,0,.3)"};font-size:14px;font-family:inherit;resize:vertical;"></textarea>
-      <button type="button" id="cart-plus-note-save-${blockId}" disabled onclick="cartPlusNotesSave('${blockId}')" style="border:none;cursor:not-allowed;opacity:.5;padding:10px 16px;border-radius:${ds.buttonRadius ?? 6}px;background:${saveBg};color:${ds.buttonTextColor || "#ffffff"};font-size:14px;align-self:flex-start;">${settings.saveLabel ?? "Save note"}</button>
+      <div style="display:flex;align-items:center;gap:8px;align-self:flex-start;">
+        <button type="button" id="cart-plus-note-save-${blockId}" disabled onclick="cartPlusNotesSave('${blockId}')" style="border:none;cursor:not-allowed;opacity:.5;padding:10px 16px;border-radius:${ds.buttonRadius ?? 6}px;background:${saveBg};color:${ds.buttonTextColor || "#ffffff"};font-size:14px;">${settings.saveLabel ?? "Save note"}</button>
+        <button type="button" id="cart-plus-note-clear-${blockId}" onclick="cartPlusNotesClear('${blockId}')" style="display:none;cursor:pointer;padding:10px 12px;border-radius:${ds.buttonRadius ?? 6}px;border:1px solid ${ds.accentBorder || "rgba(0,0,0,.3)"};background:transparent;color:inherit;font-size:14px;">Clear note</button>
+      </div>
     </div>`;
   drawer.appendChild(wrap);
 
@@ -102,6 +105,44 @@ window.cartPlusNotesInput = function (blockId) {
   save.disabled = !can;
   save.style.opacity = can ? "1" : ".5";
   save.style.cursor = can ? "pointer" : "not-allowed";
+  // "Clear note" shows while there is text to clear or a saved note to remove
+  const clear = document.getElementById(`cart-plus-note-clear-${blockId}`);
+  if (clear) clear.style.display = can || window._cartPlusNoteValue ? "" : "none";
+};
+
+// Empties the box; if a note was already saved on the cart it is removed from the cart too
+window.cartPlusNotesClear = async function (blockId) {
+  const ta = document.getElementById(`cart-plus-note-text-${blockId}`);
+  const clear = document.getElementById(`cart-plus-note-clear-${blockId}`);
+  if (!ta) return;
+  if (!window._cartPlusNoteValue) {
+    ta.value = "";
+    window.cartPlusNotesInput(blockId);
+    ta.focus();
+    return;
+  }
+  if (clear) {
+    clear.disabled = true;
+    clear.style.cursor = "progress";
+    clear.style.opacity = ".6";
+  }
+  try {
+    const res = await fetch("/cart/update.js", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note: "" }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    window.cartPlusNotesSync(blockId, "");
+    window.cartPlusNotesCloseSheet(blockId);
+  } catch (e) {
+    console.error("[CartPlus] Clearing the order note failed:", e);
+    if (clear) {
+      clear.disabled = false;
+      clear.style.cursor = "pointer";
+      clear.style.opacity = "1";
+    }
+  }
 };
 
 window.cartPlusNotesSave = async function (blockId) {
@@ -109,17 +150,35 @@ window.cartPlusNotesSave = async function (blockId) {
   const save = document.getElementById(`cart-plus-note-save-${blockId}`);
   if (!ta || !ta.value.trim() || save?.disabled) return;
   const note = ta.value.trim();
-  if (save) save.disabled = true;
+  // loading state: spinner in the button, locked until the request finishes
+  const idleHtml = save?.innerHTML;
+  if (save) {
+    save.disabled = true;
+    save.style.cursor = "progress";
+    save.style.opacity = "1";
+    save.style.display = "inline-flex";
+    save.style.alignItems = "center";
+    save.style.gap = "8px";
+    save.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9" opacity=".9"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur=".8s" repeatCount="indefinite"/></path></svg><span>${idleHtml}</span>`;
+  }
+  ta.disabled = true;
   try {
-    await fetch("/cart/update.js", {
+    const res = await fetch("/cart/update.js", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ note }),
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     window.cartPlusNotesSync(blockId, note);
     window.cartPlusNotesCloseSheet(blockId);
   } catch (e) {
     console.error("[CartPlus] Saving the order note failed:", e);
-    if (save) save.disabled = false;
+    // back to the normal button so the shopper can retry
+    ta.disabled = false;
+    if (save) {
+      save.innerHTML = idleHtml;
+      save.disabled = false;
+      save.style.cursor = "pointer";
+    }
   }
 };

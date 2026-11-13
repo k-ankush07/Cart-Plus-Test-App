@@ -39,6 +39,8 @@ export default function CartFooter({
   const [loading, setLoading] = useState(false);
   const [ageChecked, setAgeChecked] = useState(false);
   const [ageError, setAgeError] = useState(false);
+  // true only after the shopper actually pressed "No" (unchecked alone isn't a choice)
+  const [ageDeclined, setAgeDeclined] = useState(false);
 
   const totalPrice = Number(subtotal ?? 200);
   const totalLabel = totalPrice.toFixed(2);
@@ -126,8 +128,10 @@ export default function CartFooter({
         designSettings={designSettings}
         checked={ageChecked}
         error={ageError && !ageChecked}
+        declined={ageDeclined && !ageChecked}
         onChange={(v) => {
           setAgeChecked(v);
+          setAgeDeclined(!v);
           if (v) setAgeError(false);
         }}
       />

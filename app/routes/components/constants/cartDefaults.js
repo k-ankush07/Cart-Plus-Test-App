@@ -230,7 +230,7 @@ export const defaultCartSettings = {
   trafficAllocationPercent: 20,
   disableFixedFooter: false,
   openOnAddToCart: true,
-  goToCartPageOnCheckout: true,
+  goToCartPageOnCheckout: false,
   showSavingsBelowPrices: true,
   enableLoadingPreview: true,
   viewCartName:"View Cart",

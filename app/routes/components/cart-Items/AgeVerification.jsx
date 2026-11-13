@@ -41,6 +41,7 @@ export default function AgeVerification({
   designSettings,
   checked,
   error,
+  declined = false,
   onChange,
 }) {
   const s = getAgeVerification(cartSettings);
@@ -145,17 +146,6 @@ export default function AgeVerification({
 
   /* ---------------- TEMPLATES (Figma match) ---------------- */
 const accent = s.accent ?? "#111827";
-const templateDefaultAccent = AGE_TEMPLATES[s.template]?.accent;
-const accentCustomized =
-  !!templateDefaultAccent &&
-  accent.toLowerCase() !== templateDefaultAccent.toLowerCase();
-
-const themeAccent = accentCustomized
-  ? accent
-  : designSettings?.accentSolid ||
-    designSettings?.themeColor ||
-    designSettings?.buttonColor ||
-    accent;
   const accentText = s.accentText ?? "#ffffff";
   const secBg = s.secondaryBg ?? "#f1f3f5";
   const secText = s.secondaryText ?? "#1a1a1a";
@@ -206,7 +196,14 @@ const themeAccent = accentCustomized
     <button
       type="button"
       onClick={() => onChange(false)}
-      style={{ ...btnBase, background: secBg, color: secText, ...extra }}
+      style={{
+        ...btnBase,
+        background: secBg,
+        color: secText,
+        // same selected ring "Yes" gets, so the chosen "No" is visible
+        boxShadow: declined ? `0 0 0 2px #fff, 0 0 0 4px ${secText}` : "none",
+        ...extra,
+      }}
     >
       <span dangerouslySetInnerHTML={html(s.noText)} />
     </button>
@@ -224,6 +221,7 @@ const themeAccent = accentCustomized
         textDecoration: "underline",
         color: secText,
         padding: 0,
+        fontWeight: declined ? 700 : 400,
       }}
     >
       <span dangerouslySetInnerHTML={html(s.noText)} />
@@ -286,7 +284,8 @@ const themeAccent = accentCustomized
             display: "flex",
             alignItems: "center",
             justifyContent: checked ? "flex-end" : "flex-start",
-            background: checked ? themeAccent : "#d1d5db",
+            // same colour as the "Button / toggle color" field (and the storefront)
+            background: checked ? accent : "#d1d5db",
             transition: "background .15s",
             flexShrink: 0,
           }}

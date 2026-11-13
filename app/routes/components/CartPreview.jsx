@@ -152,7 +152,12 @@ const CartPreview = memo(function CartPreview({
     "Progress Bar": !rewardsSettings.enabled &&
       (emptyCart ? rewardsSettings.showOnEmptyCart : showTopRows) && (
         <SectionBg id="Progress Bar" cartSettings={cartSettings}>
-          <TieredReward rewardsSettings={rewardsSettings} currency={currency} />
+          <TieredReward
+            rewardsSettings={rewardsSettings}
+            currency={currency}
+            cartTotal={subtotal ?? 0}
+            cartQuantity={qty}
+          />
         </SectionBg>
       ),
   };

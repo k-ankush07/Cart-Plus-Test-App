@@ -244,7 +244,7 @@ export default function AddOns({ addonsSettings, handleChange, currency }) {
                       autoComplete="off"
                     />
                   </div>
-                  <div style={{ flex: 1 }}>
+                  {/* <div style={{ flex: 1 }}>
                     <TextField
                       label="Compare at price"
                       value={addonsSettings.compareAtPrice ?? ""}
@@ -252,7 +252,7 @@ export default function AddOns({ addonsSettings, handleChange, currency }) {
                       suffix={currency}
                       autoComplete="off"
                     />
-                  </div>
+                  </div> */}
                 </InlineStack>
 
                 <Checkbox
@@ -355,6 +355,21 @@ export default function AddOns({ addonsSettings, handleChange, currency }) {
               label="Toggle color"
               value={addonsSettings.toggleColor || "#000000"}
               onChange={(val) => update("toggleColor", val)}
+            />
+          </Box>
+          {/* empty = keep the cart's own colours */}
+          <Box paddingBlockStart="300">
+            <ColorInput
+              label="Text color"
+              value={addonsSettings.textColor || "#303030"}
+              onChange={(val) => update("textColor", val)}
+            />
+          </Box>
+          <Box paddingBlockStart="300">
+            <ColorInput
+              label="Price color"
+              value={addonsSettings.priceColor || "#0e0e0e"}
+              onChange={(val) => update("priceColor", val)}
             />
           </Box>
         </Card>

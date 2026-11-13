@@ -84,6 +84,18 @@ export default function AdditionalNotes({
 
   const canSave = text.trim().length > 0;
 
+  // empties the box; with a saved note, that note is removed and the sheet closes
+  const handleClear = () => {
+    if (saved) {
+      setSaved("");
+      setText("");
+      setSheetOpen(false);
+      return;
+    }
+    setText("");
+    textareaRef.current?.focus();
+  };
+
   // ── "Note" button (+ saved preview) ──
   const noteButton = (
     <div style={{ padding: "8px 0 0 0" }}>
@@ -163,7 +175,6 @@ export default function AdditionalNotes({
                     fontSize: 13,
                     fontWeight: 500,
                     letterSpacing: "0.04em",
-                    textTransform: "uppercase",
                   }}
                   dangerouslySetInnerHTML={{
                     __html: s.heading ?? "Order note",
@@ -223,23 +234,50 @@ export default function AdditionalNotes({
                   resize: "vertical",
                 }}
               />
-              <button
-                type="button"
-                disabled={!canSave}
-                onClick={handleSave}
+              <div
                 style={{
-                  border: "none",
-                  cursor: canSave ? "pointer" : "not-allowed",
-                  opacity: canSave ? 1 : 0.5,
-                  padding: "10px 16px",
-                  borderRadius: `${designSettings?.buttonRadius ?? 6}px`,
-                  background: saveBg,
-                  color: designSettings?.buttonTextColor || "#ffffff",
-                  fontSize: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
                   alignSelf: "flex-start",
                 }}
-                dangerouslySetInnerHTML={{ __html: s.saveLabel ?? "Save note" }}
-              />
+              >
+                <button
+                  type="button"
+                  disabled={!canSave}
+                  onClick={handleSave}
+                  style={{
+                    border: "none",
+                    cursor: canSave ? "pointer" : "not-allowed",
+                    opacity: canSave ? 1 : 0.5,
+                    padding: "10px 16px",
+                    borderRadius: `${designSettings?.buttonRadius ?? 6}px`,
+                    background: saveBg,
+                    color: designSettings?.buttonTextColor || "#ffffff",
+                    fontSize: 14,
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: s.saveLabel ?? "Save note",
+                  }}
+                />
+                {(canSave || saved) && (
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    style={{
+                      cursor: "pointer",
+                      padding: "10px 12px",
+                      borderRadius: `${designSettings?.buttonRadius ?? 6}px`,
+                      border: `1px solid ${designSettings?.accentBorder || "rgba(0,0,0,0.3)"}`,
+                      background: "transparent",
+                      color: "inherit",
+                      fontSize: 14,
+                    }}
+                  >
+                    Clear note
+                  </button>
+                )}
+              </div>
             </div>
           </>,
           portalTarget,

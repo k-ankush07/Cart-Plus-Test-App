@@ -478,6 +478,7 @@ export default function OneTickUpsell({
                       variant="plain"
                       tone="critical"
                       icon={DeleteIcon}
+                      disabled={offer.mode === "manual" && !title}
                       accessibilityLabel={`Delete offer ${index + 1}`}
                       onClick={() =>
                         update({

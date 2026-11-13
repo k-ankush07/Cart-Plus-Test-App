@@ -16,7 +16,13 @@ const fetchJsonRetry = async (url, options = {}, { timeoutMs = 12000, retries = 
     const label = url.split("?")[0].replace(/^https?:\/\/[^/]+/, "");
     try {
       const res = await fetch(url, { ...options, signal: controller.signal });
-      const body = await res.json();
+      const text = await res.text();
+      let body;
+      try {
+        body = JSON.parse(text);
+      } catch {
+        throw new Error(`non-JSON response from ${url.split("?")[0]} (HTTP ${res.status}): ${text.slice(0, 150).replace(/\s+/g, " ")}`);
+      }
       const ms = Date.now() - t0;
       if (ms > 2000 || !res.ok) {
         console.warn(`[api] ${label} -> ${res.status} in ${ms}ms (attempt ${attempt + 1})`);

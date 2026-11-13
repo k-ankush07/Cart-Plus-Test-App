@@ -76,7 +76,13 @@ export default function ColorInput({ label, value, onChange }) {
         setActive(false);
     }, []);
 
-    const hsb = rgbToHsb(hexToRgb(value));
+    // keep the picker's own HSB while dragging: rebuilding it from the hex
+    // loses the hue (and saturation) near black / white / gray, so it jumps
+    const [localHsb, setLocalHsb] = useState(null);
+    const hsb =
+        localHsb && hsbToHex(localHsb).toLowerCase() === String(value || "").toLowerCase()
+            ? localHsb
+            : rgbToHsb(hexToRgb(String(value || "")));
 
     const activator = (
         <div onClick={togglePopover}>
@@ -107,8 +113,8 @@ export default function ColorInput({ label, value, onChange }) {
                 <ColorPicker
                     color={hsb}
                     onChange={(newColor) => {
-                        const hex = hsbToHex(newColor);
-                        onChange(hex);
+                        setLocalHsb(newColor);
+                        onChange(hsbToHex(newColor));
                     }}
                 />
             </div>

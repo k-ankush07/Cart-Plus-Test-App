@@ -387,6 +387,15 @@ export default function TierSettings({ rewardsSettings, handleChange, products, 
                         />
                     </InlineGrid>
 
+                    {current?.type === "shipping" && (
+                        <Text as="p" variant="bodySm" tone="subdued">
+                            Note: Free shipping is applied on top of the shipping
+                            rates already set up in your store. Make sure your
+                            store has shipping rates configured for the customer's
+                            location.
+                        </Text>
+                    )}
+
                     {tiers.length === 1 && (
                         <Checkbox
                             label="Show reward icon"

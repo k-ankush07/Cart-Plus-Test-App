@@ -593,7 +593,7 @@ window.cartPlusAgeHTML = function (blockId, cartSettings) {
   const noBtn = (extra = "") =>
     `<button type="button" class="cp-age-no" onclick="${set(false)}" style="${btnBase}background:${secBg};color:${secText};${extra}">${f(s.noText)}</button>`;
   const noLink = () =>
-    `<button type="button" class="cp-age-no" onclick="${set(false)}" style="border:none;background:transparent;cursor:pointer;font-size:11px;text-decoration:underline;color:${secText};padding:0;">${f(s.noText)}</button>`;
+    `<button type="button" class="cp-age-no-link" onclick="${set(false)}" style="border:none;background:transparent;cursor:pointer;font-size:11px;text-decoration:underline;color:${secText};padding:0;">${f(s.noText)}</button>`;
   const column = (inner, gap = 10) =>
     `<div style="display:flex;flex-direction:column;align-items:center;gap:${gap}px;">${inner}</div>`;
 
@@ -657,6 +657,14 @@ window.cartPlusAgeSet = function (blockId, on) {
   root.querySelectorAll(".cp-age-yes").forEach((b) => {
     b.style.boxShadow = on ? `0 0 0 2px #fff, 0 0 0 4px ${accent}` : "none";
   });
+  // "No" gets the same selected ring (only buttons that call this with false are "No")
+  const secText = age.secondaryText ?? "#1a1a1a";
+  root.querySelectorAll(".cp-age-no").forEach((b) => {
+    b.style.boxShadow = on ? "none" : `0 0 0 2px #fff, 0 0 0 4px ${secText}`;
+  });
+  root.querySelectorAll(".cp-age-no-link").forEach((b) => {
+    b.style.fontWeight = on ? "400" : "700";
+  });
  root.querySelectorAll(".cp-age-switch").forEach((b) => {
   b.setAttribute("aria-checked", String(on));
   b.style.background = on ? accent : "#d1d5db";
@@ -700,6 +708,7 @@ window.cartPlusAgeAllowsCheckout = function (blockId) {
 
 // ── Announcement templates (same as the editor's ANNOUNCEMENT_TEMPLATES) ───
 const CART_PLUS_ANN_TEMPLATES = {
+  default: { text: "Free shipping on $50 | Free gift on $60", background: "linear-gradient(90deg,#2864df,#75a7f7)", color: "#ffffff", iconColor: "#ffffff" },
   free_shipping: { text: "<b>Free shipping</b> on orders over $50", background: "#111111", color: "#ffffff", iconColor: "#ffffff" },
   coupon: { text: "<b>10% OFF</b> your first order", background: "#fde8ec", color: "#7a1030", iconColor: "#7a1030", code: "WELCOME", accentBg: "#8a1538", accentText: "#ffffff" },
   progress: { text: "You're only <b>{remaining}</b> away from free shipping!", background: "#e6f6ec", color: "#14351f", iconColor: "#1a9a4a", current: 38, goal: 50, accentBg: "#1a9a4a" },
@@ -750,15 +759,20 @@ window.cartPlusAnnouncementTemplate = function (ann, cart) {
           window.__HUB_ACTIVE_CART__?.designSettings,
         )
       : undefined;
-  const bg = themedBackground
-    ? window.cartPlusBgCss(themedBackground)
-    : ann.background
+  // Default template ignores any saved background: it follows the Template tab colour
+  const bg =
+    ann.background && ann.template !== "default"
       ? window.cartPlusBgCss(ann.background)
-      : t.background;
+      : themedBackground
+        ? window.cartPlusBgCss(themedBackground)
+        : t.background;
   const pill = `background:#fff;color:#111;border-radius:999px;padding:4px 14px;font-size:12px;font-weight:700;white-space:nowrap;line-height:1.3;box-sizing:border-box;`;
 
+  const isDefault = ann.template === "default";
   const icon = ann.icon
     ? window.hubLibraryIconHTML?.(ann.icon, 22, iconColor) || ""
+    : isDefault
+    ? ""
     : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${CART_PLUS_ANN_ICONS[ann.template]}</svg>`;
 
   let right = "";
@@ -784,14 +798,14 @@ window.cartPlusAnnouncementTemplate = function (ann, cart) {
       : "";
   }
 
-  const closable = ann.showClose !== false && ann.template !== "progress" && ann.template !== "vip";
+  const closable = ann.showClose !== false && ann.template !== "progress" && ann.template !== "vip" && !isDefault;
   const close = closable
     ? `<button type="button" aria-label="Close" onclick="this.closest('.cart-plus-announcement').style.display='none'" style="background:none;border:0;color:${color};cursor:pointer;font-size:18px;line-height:1;padding:0;">×</button>`
     : "";
 
   return {
-    css: `display:flex;align-items:center;gap:12px;padding:${padding};border-radius:${ann.borderRadius ?? 12}px;color:${color};background:${bg};font-size:${ann.fontSize || 15}px;line-height:1.3;box-sizing:border-box;text-align:left;`,
-    html: `<span style="display:inline-flex;flex-shrink:0;">${icon}</span><span style="flex:1;min-width:0;">${text}</span><span style="display:inline-flex;align-items:center;gap:8px;flex-shrink:0;">${right}${close}</span>`,
+    css: `display:flex;align-items:center;${isDefault ? "justify-content:center;" : ""}gap:12px;padding:${padding};border-radius:${ann.borderRadius ?? 12}px;color:${color};background:${bg};font-size:${ann.fontSize || 15}px;line-height:1.3;box-sizing:border-box;text-align:left;`,
+    html: `<span style="display:inline-flex;flex-shrink:0;">${icon}</span><span style="${isDefault ? "" : "flex:1;"}min-width:0;${isDefault ? "text-align:center;" : ""}">${text}</span><span style="display:inline-flex;align-items:center;gap:8px;flex-shrink:0;">${right}${close}</span>`,
   };
 };
 
@@ -1413,7 +1427,7 @@ window.cartPlusPaymentBadgesHTML = function (cartSettings) {
     }
     ${
       trust.length
-        ? `<div class="cart-plus-trust-badges" style="display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:${justify};font-size:13px;">${trust
+        ? `<div class="cart-plus-trust-badges" style="display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:${justify};font-size:13px;${/^#[0-9a-f]{3,8}$/i.test(s.textColor || "") ? `color:${s.textColor};` : ""}">${trust
             .map(
               (t) =>
                 `<span style="display:inline-flex;align-items:center;gap:6px;"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" style="flex-shrink:0;">${icons[t.icon] || icons.lock || ""}</svg>${t.text}</span>`,

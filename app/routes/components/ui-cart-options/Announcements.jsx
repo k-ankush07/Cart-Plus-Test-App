@@ -49,7 +49,7 @@ const TEMPLATE_PREVIEWS = {
     mark: "♛",
     text: "VIP members get exclusive perks",
     action: "Learn more",
-    close: true,
+    // close: true,
   },
   countdown: {
     mark: "◷",
@@ -209,8 +209,13 @@ export default function Announcements({
       icon: null,
       text: t.text,
       iconColor: t.iconColor,
-      background: themedBackground ||
-        t.backgroundGradient || { type: "plain", color: t.background },
+      // Default template keeps no own background: it follows the Template tab
+      // colour until the Background card sets a custom one
+      background:
+        key === "default"
+          ? null
+          : themedBackground ||
+            t.backgroundGradient || { type: "plain", color: t.background },
       textColor: t.color,
       accentBg: t.accentBg,
       accentText: t.accentText,
@@ -490,11 +495,15 @@ export default function Announcements({
             suffix={<Text>40px</Text>}
             output
           />
-          <Checkbox
-            label="Show close (×) button"
-            checked={announcementSettings.showClose ?? true}
-            onChange={(val) => update("showClose", val)}
-          />
+          {!["progress", "vip", "default"].includes(
+            announcementSettings.template,
+          ) && (
+            <Checkbox
+              label="Show close (×) button"
+              checked={announcementSettings.showClose ?? true}
+              onChange={(val) => update("showClose", val)}
+            />
+          )}
           {/* <RangeSlider
             label="Font size"
             value={announcementSettings.fontSize || 10}
@@ -514,10 +523,12 @@ export default function Announcements({
         </LegacyStack>
       </LegacyCard>
 
-      <BackgroundInput
-        value={announcementSettings.background}
-        onChange={(background) => update("background", background)}
-      />
+      {announcementSettings.template !== "default" && (
+        <BackgroundInput
+          value={announcementSettings.background}
+          onChange={(background) => update("background", background)}
+        />
+      )}
     </div>
   );
 }

@@ -86,7 +86,10 @@ function TimerTemplatePreview({ template, selected, onSelect }) {
           alignItems: "center",
           gap: 7,
           borderRadius: 8,
-          background: settings.background,
+          // "text" style renders in the cart as a small centered pill, so the
+          // thumbnail shows the background on the pill only, not the full row
+          background: settings.style === "text" ? "transparent" : settings.background,
+          justifyContent: settings.style === "text" ? "center" : undefined,
           color: settings.textColor,
           fontSize: 9,
           lineHeight: 1.3,
@@ -111,7 +114,25 @@ function TimerTemplatePreview({ template, selected, onSelect }) {
             {preview.icon}
           </span>
         )}
-        <span style={{ flex: 1, minWidth: 0 }}>
+        <span
+          style={
+            settings.style === "text"
+              ? {
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "5px 10px",
+                  borderRadius: 999,
+                  background: settings.background,
+                }
+              : { flex: 1, minWidth: 0 }
+          }
+        >
+          {settings.style === "text" && (
+            <span aria-hidden="true" style={{ color: settings.iconColor }}>
+              {preview.icon}
+            </span>
+          )}
           {settings.eyebrow && (
             <span
               style={{
@@ -219,7 +240,7 @@ function TimerTemplatePreview({ template, selected, onSelect }) {
             </span>
           </span>
         )}
-        {["inline", "text"].includes(settings.style) && (
+        {settings.style === "inline" && (
           <span
             style={{
               ...timerPill,
@@ -376,11 +397,11 @@ export default function Timer({
             <Text as="h3" variant="headingSm">
               Duration
             </Text>
-            <Checkbox
+            {/* <Checkbox
               label="Remove the products once the timer is done"
               checked={timer.removeProducts}
               onChange={(removeProducts) => update({ removeProducts })}
-            />
+            /> */}
             <Checkbox
               label="Loop the timer (restart from the beginning when it reaches 0)"
               checked={timer.loop}
