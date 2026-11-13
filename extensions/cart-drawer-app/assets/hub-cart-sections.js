@@ -258,8 +258,8 @@ window.cartPlusTimerTemplate = function (timer, design, left, total) {
   const pad = (n) => String(n).padStart(2, "0");
   const s = Math.max(0, left);
   const parts = {
-    days: Math.floor(s / 86400),
-    hrs: Math.floor((s % 86400) / 3600),
+    days: 0, // no "days" unit: a full day shows as 24 hours
+    hrs: Math.floor(s / 3600),
     min: Math.floor((s % 3600) / 60),
     sec: s % 60,
   };
@@ -294,7 +294,6 @@ window.cartPlusTimerTemplate = function (timer, design, left, total) {
   // boxes: icon + heading + digit boxes
   if (timer.style === "boxes") {
     const cells = [
-      ...(parts.days ? [["days", parts.days]] : []),
       ["hrs", parts.hrs],
       ["min", parts.min],
       ["sec", parts.sec],
@@ -382,8 +381,8 @@ function cartPlusTimerPaint(blockId, left, total) {
   const pad = (n) => String(n).padStart(2, "0");
   const s = Math.max(0, left);
   const parts = {
-    days: Math.floor(s / 86400),
-    hrs: Math.floor((s % 86400) / 3600),
+    days: 0, // no "days" unit: a full day shows as 24 hours
+    hrs: Math.floor(s / 3600),
     min: Math.floor((s % 3600) / 60),
     sec: s % 60,
   };
@@ -413,7 +412,6 @@ function cartPlusTimerPaint(blockId, left, total) {
 
   if (timer.style === "digits") {
     const cells = [
-      ...(parts.days ? [["days", parts.days]] : []),
       ["hrs", parts.hrs],
       ["min", parts.min],
       ["sec", parts.sec],

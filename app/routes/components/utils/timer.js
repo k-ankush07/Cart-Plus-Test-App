@@ -40,9 +40,10 @@ export const toggleTimer = (prev) =>
 
 export const formatParts = (totalSeconds) => {
   const s = Math.max(0, totalSeconds);
+  // no "days" unit: a full day shows as 24 hours
   return {
-    days: Math.floor(s / 86400),
-    hrs: Math.floor((s % 86400) / 3600),
+    days: 0,
+    hrs: Math.floor(s / 3600),
     min: Math.floor((s % 3600) / 60),
     sec: s % 60,
   };

@@ -33,11 +33,11 @@ const quickIcons = [
 ];
 
 const TIMER_TEMPLATE_PREVIEWS = {
-  limited_offer: { icon: "ϟ", digits: ["02", "14", "36", "12"] },
+  limited_offer: { icon: "ϟ", digits: ["14", "36", "12"] },
   hurry_up: { icon: "◷", digits: ["14:36"] },
   same_day: { icon: "◷", digits: ["2h 14m 36s"] },
   special_discount: { icon: "◆", digits: ["14", "36", "12"] },
-  flash_sale: { icon: "ϟ", digits: ["02", "14", "36", "12"] },
+  flash_sale: { icon: "ϟ", digits: ["14", "36", "12"] },
   deal_bar: { icon: "⌛", digits: ["14:36"] },
   price_expires: { icon: "◷", digits: ["14:36"] },
   offer_progress: { icon: "◷", digits: ["14:36"] },
@@ -86,8 +86,6 @@ function TimerTemplatePreview({ template, selected, onSelect }) {
           alignItems: "center",
           gap: 7,
           borderRadius: 8,
-          // "text" style renders in the cart as a small centered pill, so the
-          // thumbnail shows the background on the pill only, not the full row
           background: settings.style === "text" ? "transparent" : settings.background,
           justifyContent: settings.style === "text" ? "center" : undefined,
           color: settings.textColor,
@@ -427,8 +425,8 @@ export default function Timer({
             <Text as="p" variant="bodySm" fontWeight="semibold">
               Timer Labels
             </Text>
-            <InlineGrid columns={4} gap="200">
-              {["days", "hrs", "min", "sec"].map((key) => (
+            <InlineGrid columns={3} gap="200">
+              {["hrs", "min", "sec"].map((key) => (
                 <TextField
                   key={key}
                   label={key}

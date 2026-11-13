@@ -169,7 +169,6 @@ export default function Timer({ headerSettings, designSettings }) {
   // 1) boxes: icon + heading + digit boxes (DAYS / HOURS / MINS / SECS)
   if (timer.style === "boxes") {
     const cells = [
-      ...(parts.days ? [["days", parts.days]] : []),
       ["hrs", parts.hrs],
       ["min", parts.min],
       ["sec", parts.sec],
