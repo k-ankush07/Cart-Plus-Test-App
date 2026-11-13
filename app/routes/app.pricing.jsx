@@ -111,36 +111,28 @@ const PLANS = [
 
 // Feature matrix rows for the "Compare plans" table. Each row maps a label
 // to either a per-plan boolean (✓ / —) or a per-plan display value (e.g. order limits).
+const allPlans = { free: true, starter: true, advance: true };
+
 const COMPARE_ROWS = [
   {
     label: "Monthly orders",
     values: { free: "50", starter: "250", advance: "Unlimited" },
   },
-  // { label: "14-day free trial", values: { free: true, starter: true, growth: true, advance: true } },
-  {
-    label: "Design settings",
-    values: { free: true, starter: true, growth: true, advance: true },
-  },
-  {
-    label: "Announcements module",
-    values: { free: true, starter: true, growth: true, advance: true },
-  },
-  {
-    label: "Upsells & cross-sells",
-    values: { free: true, starter: true, growth: true, advance: true },
-  },
-  {
-    label: "Reward progress bar",
-    values: { free: true, starter: true, growth: true, advance: true },
-  },
-  {
-    label: "Add-ons module",
-    values: { free: true, starter: true, growth: true, advance: true },
-  },
-  {
-    label: "Custom HTML & CSS",
-    values: { free: true, starter: true, growth: true, advance: true },
-  },
+  { label: "Design settings", values: allPlans },
+  { label: "Market visibility & Scheduling", values: allPlans },
+  { label: "One-tick upsell", values: allPlans },
+  { label: "Upsells & cross-sell", values: allPlans },
+  { label: "Announcements module", values: allPlans },
+  { label: "Progress bar", values: allPlans },
+  { label: "Add-ons module", values: allPlans },
+  { label: "Subscription upgrades", values: allPlans },
+  { label: "Age verification", values: allPlans },
+  { label: "A/B testing", values: allPlans },
+  { label: "Cart Activity", values: allPlans },
+  { label: "Full analytics", values: allPlans },
+  { label: "Custom HTML & CSS", values: allPlans },
+  { label: "24/7 email and chat support", values: allPlans },
+  { label: "Video call support", values: allPlans },
 ];
 
 const FAQ = [
