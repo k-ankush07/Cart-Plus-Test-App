@@ -5,5 +5,9 @@ import { getSectionBackground } from "../utils/sectionBackground";
 export default function SectionBg({ id, cartSettings, children }) {
   const bg = backgroundToCss(getSectionBackground(cartSettings, id));
   if (!bg) return children;
-  return <div style={{ background: bg }}>{children}</div>;
+  return (
+    <div className="cp-bg" style={{ background: bg }}>
+      {children}
+    </div>
+  );
 }

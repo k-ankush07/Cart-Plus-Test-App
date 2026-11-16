@@ -431,6 +431,7 @@ export default function UpsellsSettings({
         </Card>
       </Box>
 
+      {upsellsSettings.layout !== "compact" && (
       <Box paddingBlockStart="300">
         <Card>
           <BlockStack gap="300">
@@ -466,6 +467,7 @@ export default function UpsellsSettings({
           </BlockStack>
         </Card>
       </Box>
+      )}
 
       <Box paddingBlockStart="300">
         <BackgroundInput

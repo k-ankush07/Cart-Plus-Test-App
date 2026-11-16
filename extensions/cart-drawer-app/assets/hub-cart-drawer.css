@@ -1701,6 +1701,7 @@ span.hub-total-arrow svg {
   transition: transform 0.2s;
 }
 
+
 .hub-addon-sp-toggle input:checked+.hub-addon-sp-slider {
   background: var(--cp-accent-bg, #000);
 }
@@ -1716,7 +1717,6 @@ display: flex;
     justify-content: space-between;
     gap: 12px;
     padding: 15px 15px 12px;
-    border-top: 1px solid #e5e5e5;
 }
 
 .hub-addon-sp-info {
@@ -3361,20 +3361,43 @@ select.hub-compact-variant {
   margin-top: 0 !important;
 }
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) {
-  padding-top: 0 !important;
   margin-top: 0 !important;
 }
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) > :first-child:not(.cart-plus-discount-tpl):not(.cart-plus-login-message),
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-additional-notes,
-.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-addon-tile,
-.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-addon-shipping-protection,
-.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-addon-product,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-summary,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-discount-row,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-age-verification,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-checkout-button-container-row {
-  padding-top: 0 !important;
   margin-top: 0 !important;
+}
+/* Every footer section: exactly 5px padding above and 5px below */
+.cart-plus-footer-stack > .cp-sec .cart-additional-notes,
+.cart-plus-footer-stack > .cp-sec .cart-addon-tile,
+.cart-plus-footer-stack > .cp-sec .hub-addon-shipping-protection,
+.cart-plus-footer-stack > .cp-sec .hub-addon-product,
+.cart-plus-footer-stack > .cp-sec .cart-plus-summary,
+.cart-plus-footer-stack > .cp-sec .cart-discount-row,
+.cart-plus-footer-stack > .cp-sec .cart-plus-discount-tpl,
+.cart-plus-footer-stack > .cp-sec .cart-plus-age-verification,
+.cart-plus-footer-stack > .cp-sec .cart-plus-login-message,
+.cart-plus-footer-stack > .cp-sec .cart-plus-checkout-button-container-row {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+  box-sizing: border-box;
+}
+/* The very first footer section (top of the footer) gets 12px above */
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-additional-notes,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-addon-tile,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .hub-addon-shipping-protection,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .hub-addon-product,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-summary,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-discount-row,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-discount-tpl,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-age-verification,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-login-message,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-checkout-button-container-row {
+  padding-top: 12px !important;
 }
 /* ── Footer rhythm: every section gets the same space above and below ──
    The stack owns ALL vertical spacing (one gap between sections, equal space at
@@ -3383,8 +3406,8 @@ select.hub-compact-variant {
 .cart-plus-footer-stack {
   display: flex;
   flex-direction: column;
-  gap: var(--cp-footer-gap, 10px);
-  padding: var(--cp-footer-gap, 10px) 0;
+  gap: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 .cart-plus-footer-stack > :empty {
@@ -3406,11 +3429,22 @@ select.hub-compact-variant {
 /* payment badges keep their own padding (they can have a background colour) */
 /* (repeated class = higher specificity than the "first-child: padding-top 0" rule above) */
 .cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack > .cp-sec .cart-plus-payment-badges {
-  padding: 10px 16px !important;
+  padding: 5px 16px !important;
   box-sizing: border-box;
 }
+/* checkout button: 5px above/below (margins are zeroed above, so use padding) */
+.cart-plus-footer-stack > .cp-sec .cart-plus-checkout-btn-container {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+  box-sizing: border-box;
+}
+/* checkout button as the very first footer section: 12px above (same as the editor preview) */
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-checkout-btn-container {
+  padding-top: 12px !important;
+}
 .cart-plus-footer-stack .hub-continue-shopping {
-  padding-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 5px;
 }
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-cart-checkout-btn {
   margin-top: 0 !important;

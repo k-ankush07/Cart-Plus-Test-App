@@ -17,7 +17,7 @@ window.cartPlusBgCss = function (bg) {
 window.cartPlusSectionBg = function (cartSettings, key, html) {
   if (!html) return "";
   const css = window.cartPlusBgCss(cartSettings?.sectionBackgrounds?.[key]);
-  return css ? `<div style="background:${css};">${html}</div>` : html;
+  return css ? `<div class="cp-bg" style="background:${css};">${html}</div>` : html;
 };
 
 // saved order + rows missing from it (custom blocks keep their place)

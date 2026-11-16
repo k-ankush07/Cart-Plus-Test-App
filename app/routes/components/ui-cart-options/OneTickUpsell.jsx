@@ -708,6 +708,7 @@ export default function OneTickUpsell({
           </BlockStack>
         </LegacyCard>
 
+        {oneTick.trigger === "button" && (
         <LegacyCard sectioned>
           <BlockStack gap="300">
             <Text as="h3" variant="headingSm">
@@ -745,6 +746,7 @@ export default function OneTickUpsell({
             </InlineGrid>
           </BlockStack>
         </LegacyCard>
+        )}
 
         <BackgroundInput
           title="Card color"
