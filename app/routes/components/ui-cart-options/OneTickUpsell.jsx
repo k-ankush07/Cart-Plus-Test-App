@@ -363,12 +363,14 @@ export default function OneTickUpsell({
               showLabels
             />
 
-            <TextField
-              label="Button Label"
-              value={oneTick.buttonLabel}
-              onChange={(buttonLabel) => update({ buttonLabel })}
-              autoComplete="off"
-            />
+            {oneTick.trigger === "button" && (
+              <TextField
+                label="Button Label"
+                value={oneTick.buttonLabel}
+                onChange={(buttonLabel) => update({ buttonLabel })}
+                autoComplete="off"
+              />
+            )}
           </BlockStack>
         </LegacyCard>
 
