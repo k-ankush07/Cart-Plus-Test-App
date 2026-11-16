@@ -2369,8 +2369,7 @@ input.cart-plus-offers-code-input:focus {
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-summary,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-discount-row,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-age-verification,
-.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-checkout-button-container-row,
-.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-payment-badges {
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-checkout-button-container-row {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
