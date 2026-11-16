@@ -369,20 +369,23 @@ export default function Timer({
               value={timer.message}
               onChange={(message) => update({ message })}
             />
-            <BlockStack gap="100">
-              <Text as="p">Alignment</Text>
-              <ButtonGroup variant="segmented">
-                {["left", "center", "right"].map((val) => (
-                  <Button
-                    key={val}
-                    pressed={timer.alignment === val}
-                    onClick={() => update({ alignment: val })}
-                  >
-                    {val.charAt(0).toUpperCase() + val.slice(1)}
-                  </Button>
-                ))}
-              </ButtonGroup>
-            </BlockStack>
+            {/* Alignment only moves the "text" pill; the other templates fill the full width */}
+            {timer.style === "text" && (
+              <BlockStack gap="100">
+                <Text as="p">Alignment</Text>
+                <ButtonGroup variant="segmented">
+                  {["left", "center", "right"].map((val) => (
+                    <Button
+                      key={val}
+                      pressed={timer.alignment === val}
+                      onClick={() => update({ alignment: val })}
+                    >
+                      {val.charAt(0).toUpperCase() + val.slice(1)}
+                    </Button>
+                  ))}
+                </ButtonGroup>
+              </BlockStack>
+            )}
             <Text as="p" variant="bodySm" tone="subdued">
               Use {"{{timer}}"} where the countdown should appear.
             </Text>

@@ -2373,6 +2373,10 @@ input.cart-plus-offers-code-input:focus {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
+/* payment badges keep their own padding (they can have a background colour) */
+.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack > .cp-sec .cart-plus-payment-badges {
+  padding: 10px 16px !important;
+}
 
 .cart-plus-upsells-side-panel h3.cart-plus-internal-component-upsell-tile__title.cart-plus-public-component-upsell-tile__title {
     text-align: center;

@@ -3376,18 +3376,41 @@ select.hub-compact-variant {
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
-/* Payment badges keep their own padding (they can have a background colour) */
-.cart-plus-footer-stack > .cp-sec .cart-plus-payment-badges {
-  margin-top: 0 !important;
-  padding: 8px 16px !important;
+/* ── Footer rhythm: every section gets the same space above and below ──
+   The stack owns ALL vertical spacing (one gap between sections, equal space at
+   its top and bottom). Sections and their first/last children carry no vertical
+   margin of their own, so nothing doubles up or overlaps. */
+.cart-plus-footer-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cp-footer-gap, 10px);
+  padding: var(--cp-footer-gap, 10px) 0;
   box-sizing: border-box;
 }
-/* the checkout button's margin stays inside its box, so the next section never overlaps it */
-.cart-plus-checkout-btn-container {
+.cart-plus-footer-stack > :empty {
+  display: none;
+}
+.cart-plus-footer-stack > *,
+.cart-plus-footer-stack > .cp-sec > *,
+.cart-plus-footer-stack > .cp-sec > .cart-plus-checkout-btn-container > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.cart-plus-footer-stack > .cp-sec {
   display: flow-root;
 }
-.cart-plus-footer-stack > .cp-sec:has(+ .cp-sec .cart-plus-payment-badges) .hub-cart-checkout-btn {
-  margin-bottom: 8px !important;
+/* the checkout button keeps its side margins only */
+.cart-plus-footer-stack .hub-cart-checkout-btn {
+  margin: 0 15px !important;
+}
+/* payment badges keep their own padding (they can have a background colour) */
+/* (repeated class = higher specificity than the "first-child: padding-top 0" rule above) */
+.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack > .cp-sec .cart-plus-payment-badges {
+  padding: 10px 16px !important;
+  box-sizing: border-box;
+}
+.cart-plus-footer-stack .hub-continue-shopping {
+  padding-bottom: 0;
 }
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-cart-checkout-btn {
   margin-top: 0 !important;

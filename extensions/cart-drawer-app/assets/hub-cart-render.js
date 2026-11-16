@@ -320,7 +320,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       const subtotal = cart.items_subtotal_price || 0;
       const finalTotal = cart.total_price || 0;
       const shippingPrice = window._hubShippingPriceCents || 0;
-      const grandTotal = finalTotal + shippingPrice;  
+      const grandTotal = finalTotal + shippingPrice;
       const lineSaving = originalTotal - subtotal;
       const couponSaving = subtotal - finalTotal;
       const totalSaved = mrpTotal - finalTotal;
