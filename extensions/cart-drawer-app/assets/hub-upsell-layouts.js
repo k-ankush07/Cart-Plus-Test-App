@@ -139,7 +139,6 @@ window.cartPlusCompactEdges = function (track) {
   });
 };
 
-// "+" on a compact tile or a side-panel card: add the variant, drop the tile, refresh the cart
 window.cartPlusUpsellAdd = async function (variantId, tile) {
   try {
     const res = await fetch("/cart/add.js", {
@@ -150,11 +149,36 @@ window.cartPlusUpsellAdd = async function (variantId, tile) {
         quantity: 1,
         properties: { __upcartRecommendation: String(variantId) },
       }),
+      hubCartSkipItemRerender: true,
+      hubCartSkipOneTickRefresh: true,
+      hubCartSkipCartCountUpdate: true,
     });
     if (!res.ok && res.status !== 409) throw new Error("Add failed");
-    if (!window.__HUB_ACTIVE_CART__?.upsellsSettings?.showIfAlreadyInCart)
+
+    const cartRes = await fetch("/cart.js");
+    if (!cartRes.ok) {
+      throw new Error(`Upsell cart refresh failed (status ${cartRes.status})`);
+    }
+    const cart = await cartRes.json();
+    window.updateCartCount?.(cart);
+
+    const blockId = window.HUB_CART_BLOCK_ID;
+    const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+    if (drawer && window.hubCartRender) {
+      await window.hubCartRender(drawer, {
+        showSkeleton: false,
+        cart,
+        awaitOneTick: true,
+      });
+    } else {
+      document.dispatchEvent(
+        new CustomEvent("cart:updated", { detail: { cart } }),
+      );
+    }
+
+    if (!window.__HUB_ACTIVE_CART__?.upsellsSettings?.showIfAlreadyInCart) {
       tile?.remove();
-    document.dispatchEvent(new CustomEvent("cart:updated"));
+    }
   } catch (e) {
     console.error("[CartPlus] Cross-sell add failed:", e);
   }
@@ -346,7 +370,7 @@ if (!window._cartPlusSideBound) {
     btn.disabled = true;
     btn.setAttribute("aria-busy", "true");
     btn.innerHTML =
-      '<span style="display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:hubCompactSpin .6s linear infinite;vertical-align:middle;"></span>';
+      '<span style="display:inline-block;width:15px;height:15px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:hubCompactSpin .6s linear infinite;vertical-align:middle;"></span>';
     window
       .cartPlusUpsellAdd(select?.value || btn.dataset.variant, tile)
       .finally(() => {
