@@ -313,6 +313,12 @@ function initCartDrawerAfterData() {
   window.fetch = async function (...args) {
     let [input, init] = args;
     const url = typeof input === "string" ? input : input?.url || "";
+    const skipItemRerender = init?.hubCartSkipItemRerender === true;
+    if (skipItemRerender) {
+      init = { ...init };
+      delete init.hubCartSkipItemRerender;
+      args = [input, init];
+    }
 
     // ── Inject hub tracking properties on cart/add ──
     if (url.includes("/cart/add") && !window.__HUB_CART_INACTIVE__) {
@@ -426,12 +432,20 @@ function initCartDrawerAfterData() {
       }
       try {
         const data = await response.clone().json();
+        const detail =
+          skipItemRerender && data && typeof data === "object"
+            ? { ...data, skipItemRerender: true }
+            : skipItemRerender
+              ? { skipItemRerender: true }
+              : data;
         document.dispatchEvent(
-          new CustomEvent("cart:updated", { detail: data }),
+          new CustomEvent("cart:updated", { detail }),
         );
       } catch (_) {
         document.dispatchEvent(
-          new CustomEvent("cart:updated", { detail: null }),
+          new CustomEvent("cart:updated", {
+            detail: skipItemRerender ? { skipItemRerender: true } : null,
+          }),
         );
       }
     }
@@ -615,10 +629,17 @@ function initCartDrawerAfterData() {
       }, 100);
     }
 
-    window.updateCartCount = async function () {
+    window.updateCartCount = async function (cartData = null) {
       try {
-        const res = await fetch("/cart.js");
-        const cart = await res.json();
+        let cart = cartData?.items
+          ? cartData
+          : cartData?.cart?.items
+            ? cartData.cart
+            : null;
+        if (!cart) {
+          const res = await fetch("/cart.js");
+          cart = await res.json();
+        }
         window._hubLastCartHadItems = (cart.items?.length || 0) > 0;
 
         const includeAddonsInCount =
@@ -878,7 +899,7 @@ function initCartDrawerAfterData() {
         if (window.__HUB_CART_INACTIVE__) return;
         if (window._hubRewardUpdating) return;
 
-        window.updateCartCount();
+        window.updateCartCount(e?.detail);
 
         if (window._hubCommitingRemoval) return;
 

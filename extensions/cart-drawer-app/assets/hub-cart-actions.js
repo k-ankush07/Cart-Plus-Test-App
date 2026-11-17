@@ -141,11 +141,15 @@ async function updateQty(key, qty, btn = null) {
     const minusBtn = itemEl?.querySelector(".hub-qty-btn.minus");
     if (minusBtn) minusBtn.disabled = qty <= 1;
 
-    await fetch("/cart/change.js", {
+    const response = await fetch("/cart/change.js", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: key, quantity: qty }),
+      hubCartSkipItemRerender: true,
     });
+    if (!response.ok) {
+      throw new Error(`Quantity update failed (status ${response.status})`);
+    }
 
     await window.hubCartRender(getDrawer());
   } catch (err) {
