@@ -96,6 +96,13 @@
   transition: transform 0.3s ease;
 } {% endcomment %}
 
+/* closed drawer: fully hidden at rest (no sliver at the screen edge while the page loads),
+   but still visible for the 0.3s slide-out when it closes */
+#hub-cart-drawer-{{ block.id }}:not(.hub-visible-{{ block.id }}) {
+  visibility: hidden;
+  transition: transform 0.3s ease, visibility 0s linear 0.3s;
+}
+
 #hub-cart-drawer-{{ block.id }}.hub-visible-{{ block.id }} {
   transform: translateX(0);
   display: flex !important;

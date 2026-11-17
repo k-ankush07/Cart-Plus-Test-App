@@ -304,7 +304,19 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     panel.style[edge] = `${sideInset}px`;
     // only while the cart is open (see .hub-side-shifted in the css), so a closed cart stays off screen
     drawer.style.setProperty("--hub-side-offset", `${190 + sideInset}px`);
-    drawer.classList.add("hub-side-shifted");
+    if (
+      !drawer.classList.contains("hub-side-shifted") &&
+      !/hub-visible-/.test(drawer.className)
+    ) {
+      // closed cart: move it to its shifted off-screen spot without animating, otherwise it
+      // flashes onto the screen for a moment a few seconds after the page loads
+      drawer.style.transition = "none";
+      drawer.classList.add("hub-side-shifted");
+      void drawer.offsetWidth;
+      requestAnimationFrame(() => (drawer.style.transition = ""));
+    } else {
+      drawer.classList.add("hub-side-shifted");
+    }
   }
   // slide the panel exactly as far as the cart travels (and fade it), so both come and go together
   const travel = outer ? width : width + 190 + sideInset;
@@ -328,11 +340,22 @@ if (!window._cartPlusSideBound) {
     if (!btn || btn.disabled) return;
     const tile = btn.closest(".hub-rec-product");
     const select = tile?.querySelector(".hub-variant-select");
+    const originalContent = btn.innerHTML;
+    // keep the button size while the spinner shows
+    btn.style.minWidth = `${btn.offsetWidth}px`;
     btn.disabled = true;
+    btn.setAttribute("aria-busy", "true");
+    btn.innerHTML =
+      '<span style="display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:hubCompactSpin .6s linear infinite;vertical-align:middle;"></span>';
     window
       .cartPlusUpsellAdd(select?.value || btn.dataset.variant, tile)
       .finally(() => {
+        // the tile is removed after a successful add; only restore a button that is still on screen
+        if (!btn.isConnected) return;
         btn.disabled = false;
+        btn.removeAttribute("aria-busy");
+        btn.style.minWidth = "";
+        btn.innerHTML = originalContent;
       });
   });
   document.addEventListener("change", (e) => {

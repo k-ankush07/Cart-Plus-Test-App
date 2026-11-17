@@ -716,7 +716,11 @@ function initCartDrawerAfterData() {
 
           // ── NEW: show upsell skeleton immediately (don't wait for hubCartRender's awaits) ──
           const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
-          if (!upsellSettings?.enabled) {
+          // (not for the side panel layout: those cards are shown beside the cart)
+          if (
+            !upsellSettings?.enabled &&
+            window.cartPlusUpsellLayout?.(upsellSettings) !== "side"
+          ) {
             const position = upsellSettings?.position || "bottom";
             const upsellContainer =
               position === "top"
@@ -882,6 +886,12 @@ function initCartDrawerAfterData() {
 
         if (e?.detail?.skipItemRerender) {
           return;
+        }
+
+        // background update (not a customer action): refresh the drawer only if it is already open
+        if (e?.detail?.onlyIfOpen) {
+          const openEl = document.getElementById(`hub-cart-drawer-${blockId}`);
+          if (!openEl?.classList.contains(`hub-visible-${blockId}`)) return;
         }
 
         const shouldOpen =

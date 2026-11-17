@@ -212,7 +212,12 @@ window.hubCartRender = async function (drawer, opts = {}) {
       window._hubRewardUpdating = false; // FIX: guarantee flag reset
     }
 
-    if (isCartChanged) document.dispatchEvent(new CustomEvent("cart:updated"));
+    // Rewards changed the cart in the background (e.g. while the page is loading).
+    // Only refresh an already-open drawer; never pop it open by itself.
+    if (isCartChanged)
+      document.dispatchEvent(
+        new CustomEvent("cart:updated", { detail: { onlyIfOpen: true } }),
+      );
 
     if (window.cartPlusSetEmptyHeaderVisibility) {
       window.cartPlusSetEmptyHeaderVisibility(drawer, cart.items.length === 0);
@@ -1558,7 +1563,11 @@ if (savedEl) {
       const _hasCachedUpsell =
         !!window._upsellCache[productId] || _hasRenderedProducts;
 
-      if (upsellContainer && !_hasCachedUpsell) {
+      // Side panel layout: the cards live beside the cart, never show an inline skeleton for them
+      const _isSideLayout =
+        window.cartPlusUpsellLayout?.(upsellSettings) === "side";
+
+      if (upsellContainer && !_hasCachedUpsell && !_isSideLayout) {
         upsellContainer.classList.add("upsell-container");
         upsellContainer.classList.add(
           position === "bottom" ? "upsell-bottom" : "upsell-top",
