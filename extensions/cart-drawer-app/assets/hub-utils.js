@@ -23,12 +23,8 @@ window.cartPlusTextHtml = function (key, vars) {
   );
 };
 
-// Item savings badge ("Save ₹205.00"). A custom "You save {{amount_saved}}" text from
-// Edit translations wins; without one the old "<savingsText> <amount>" is kept.
 window.cartPlusSaveText = function (prefix, amount) {
-  // `prefix` is cartSettings.savingsText (Preferences → Edit copy and Edit translations
-  // edit the same value). With a {{amount_saved}} placeholder the amount goes there,
-  // otherwise it is appended: "Save" → "Save ₹205.00".
+ 
   const placeholder = /\{+\s*amount_saved\s*\}+/gi;
   const text = String(prefix ?? "");
   if (placeholder.test(text)) {
@@ -139,8 +135,19 @@ window.hubUtils = {
   },
 
   async getSellingPlans(handle, variantId) {
-    const res = await fetch(`/products/${handle}.js`);
-    const product = await res.json();
+    // product JSON is already loaded for the cart items on every render: reuse it
+    // instead of downloading it again for each item each time
+    window._hubProductJsonCache = window._hubProductJsonCache || {};
+    let product = window._hubProductDataByHandle?.[handle];
+    if (!product) {
+      let pending = window._hubProductJsonCache[handle];
+      if (!pending) {
+        pending = fetch(`/products/${handle}.js`).then((r) => r.json());
+        window._hubProductJsonCache[handle] = pending;
+        pending.catch(() => delete window._hubProductJsonCache[handle]);
+      }
+      product = await pending;
+    }
 
     const variant = product.variants?.find(
       (v) => String(v.id) === String(variantId),

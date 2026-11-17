@@ -286,7 +286,7 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
     (dsx.dark ? "var(--cp-card, #2a2a2d)" : "#ffffff");
   const isCarousel = oneTick.layout === "carousel";
   const title = oneTick.title
-    ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-weight:600;color:${oneTick.primaryTextColor};">${
+    ? `<div style="font-size:14px; display:flex;align-items:center;gap:6px;margin-bottom:8px;font-weight:600;color:${oneTick.primaryTextColor};">${
         window.hubLibraryIconHTML?.(oneTick.icon, 20, oneTick.iconColor) || ""
       }<span>${oneTick.title}</span></div>`
     : "";

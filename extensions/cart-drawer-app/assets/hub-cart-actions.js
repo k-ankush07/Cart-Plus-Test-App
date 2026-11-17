@@ -203,6 +203,30 @@ async function removeItem(key, title) {
     0;
   _applyBadgeCount(countBefore - removedQty);
 
+  // "Cart • N" in the drawer header changes the moment Remove is clicked (not after the undo window).
+  // Undo / the next render put the real count back.
+  {
+    const headerEl = document.querySelector(
+      ".upcart-header-text, .cart-plus-header-text",
+    );
+    if (headerEl) {
+      const hs = window.__HUB_ACTIVE_CART__?.headerSettings || {};
+      const remaining = Array.from(
+        drawer.querySelectorAll("[data-item-key]"),
+      ).reduce((total, row) => {
+        const rowKey = row.getAttribute("data-item-key");
+        if (String(rowKey) === String(key) || _hubPendingRemovals[rowKey])
+          return total;
+        if (row.getAttribute("data-is-reward") === "1") return total;
+        return total + Number(row.querySelector(".hub-qty-input")?.value || 0);
+      }, 0);
+      headerEl.innerText = (hs.titleText || "Cart • {{cart_quantity}}").replace(
+        "{{cart_quantity}}",
+        Math.max(0, remaining),
+      );
+    }
+  }
+
   const willEmpty =
     Array.from(drawer.querySelectorAll("[data-item-key]")).filter((row) => {
       const k = row.getAttribute("data-item-key");
@@ -243,7 +267,8 @@ async function removeItem(key, title) {
       isDirect: true,
     };
 
-    await new Promise((r) => setTimeout(r, 1500));
+    // short pause so the loader is seen, then remove right away
+    await new Promise((r) => setTimeout(r, 300));
     await _commitRemoval(key);
     return;
   }

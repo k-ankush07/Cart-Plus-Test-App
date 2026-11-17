@@ -16,6 +16,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
   window._subscriptionOpen = {};
   window._upsellCache = window._upsellCache || {};
   window._hubRenderInProgress = true;
+  // newest render wins: an older render that is still loading upsells must not block or overwrite it
+  const _gen = (window._hubRenderGen = (window._hubRenderGen || 0) + 1);
 
   const blockId = window.HUB_CART_BLOCK_ID;
 
@@ -1545,6 +1547,17 @@ if (savedEl) {
       }
     }
 
+    // Items, header, summary and totals are drawn. The upsell list below can take a while to load,
+    // so let a waiting render (the next add / remove) start now instead of queueing behind it.
+    if (window._hubRenderGen === _gen) {
+      window._hubRenderInProgress = false;
+      if (window._hubPendingRender) {
+        const _next = window._hubPendingRender;
+        window._hubPendingRender = null;
+        window.hubCartRender(_next.drawer, _next.opts);
+      }
+    }
+
     // ── UPSELLS ───────────────────────────────────────────────────────────
     const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
     let _hubUpsellHasProducts = false;
@@ -1590,7 +1603,18 @@ if (savedEl) {
 
       let upsellProducts;
 
-      if (window._upsellCache[productId]) {
+      // The cached list was filtered against the cart it was built for. If the set of products in
+      // the cart changed (something added or removed), rebuild it, otherwise a product that just
+      // left the cart would not come back into the upsell list. (The slow part is cached separately.)
+      const _cartSig = cart.items
+        .map((i) => i.product_id)
+        .sort()
+        .join(",");
+      window._upsellCacheSig = window._upsellCacheSig || {};
+      if (
+        window._upsellCache[productId] &&
+        window._upsellCacheSig[productId] === _cartSig
+      ) {
         upsellProducts = window._upsellCache[productId];
       } else if (window._hubUpsellPrefetch) {
         const pre = await window._hubUpsellPrefetch;
@@ -1611,6 +1635,9 @@ if (savedEl) {
       }
 
       window._upsellCache[productId] = upsellProducts;
+      window._upsellCacheSig[productId] = _cartSig;
+      // a newer render started while the upsells were loading: it draws them itself
+      if (window._hubRenderGen !== _gen) return;
       _hubUpsellHasProducts = upsellProducts.length > 0;
       const headingUpsell = upsellSettings.title;
       const textColor = designSettings?.textColor || "#000";
@@ -1798,13 +1825,16 @@ if (savedEl) {
     hubUtils.hideCartSkeleton(blockId);
     hubUtils.revealCartItems(blockId);
   } finally {
-    window._hubRenderInProgress = false;
-    window._hubRewardUpdating = false;
+    // only the newest render owns the lock (an older one may finish after a newer one has started)
+    if (window._hubRenderGen === _gen) {
+      window._hubRenderInProgress = false;
+      window._hubRewardUpdating = false;
 
-    if (window._hubPendingRender) {
-      const pending = window._hubPendingRender;
-      window._hubPendingRender = null;
-      window.hubCartRender(pending.drawer, pending.opts);
+      if (window._hubPendingRender) {
+        const pending = window._hubPendingRender;
+        window._hubPendingRender = null;
+        window.hubCartRender(pending.drawer, pending.opts);
+      }
     }
   }
 

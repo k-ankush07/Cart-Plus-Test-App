@@ -2639,9 +2639,9 @@ span.hub-item-discount-badge img.discount-code-img {
   justify-content: center;
 }
 
-.hub-cart-drawer.cart-app :empty:not(.hub-announcement):not([style*="display:none"]) {
+/* .hub-cart-drawer.cart-app :empty:not(.hub-announcement):not([style*="display:none"]) {
   display: block !important;
-}
+} */
 
 .hub-total-saved {
   display: none !important;
@@ -2988,6 +2988,14 @@ select.hub-variant-option-select {
   transition: opacity 0.25s ease;
 }
 .cart-plus-onetick-card--adding {
+  opacity: 0.72;
+}
+/* Stacked (deck) layout: a see-through front card shows the cards behind it (ghost text).
+   Keep the card itself opaque and fade only its content. */
+.cart-plus-drawer__ups-stack-item .cart-plus-onetick-card--adding {
+  opacity: 1;
+}
+.cart-plus-drawer__ups-stack-item .cart-plus-onetick-card--adding > * {
   opacity: 0.72;
 }
 .cart-plus-onetick-track {

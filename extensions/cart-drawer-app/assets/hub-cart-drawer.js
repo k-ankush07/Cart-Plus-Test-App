@@ -1620,6 +1620,25 @@ window.getUpsellProducts = async function (settings, productId) {
         ? "products"
         : null);
 
+    // Loading the candidate products is the slow part (it can download the whole catalogue),
+    // so keep the result for a few minutes. Cart filtering below still runs on every call.
+    window._hubUpsellSourceCache = window._hubUpsellSourceCache || {};
+    const _srcKey = JSON.stringify([
+      !!settings.useAiRecommended,
+      settings.useAiRecommended ? productId : null,
+      settings.recommendationAlgorithm || "",
+      sourceType,
+      selectedItems,
+    ]);
+    const _hit = window._hubUpsellSourceCache[_srcKey];
+    let _settle = null;
+    if (_hit && Date.now() - _hit.at < 5 * 60 * 1000) {
+      products = (await _hit.promise).slice();
+    } else {
+      const _p = new Promise((res, rej) => (_settle = { res, rej }));
+      _p.catch(() => {});
+      window._hubUpsellSourceCache[_srcKey] = { at: Date.now(), promise: _p };
+      try {
     if (settings.useAiRecommended) {
       let url = `/recommendations/products.json?product_id=${productId}`;
       if (settings.recommendationAlgorithm === "complementary")
@@ -1678,6 +1697,13 @@ window.getUpsellProducts = async function (settings, productId) {
           ),
         );
         products = colResults.flat();
+      }
+    }
+        _settle.res(products);
+      } catch (err) {
+        delete window._hubUpsellSourceCache[_srcKey];
+        _settle.rej(err);
+        throw err;
       }
     }
 
