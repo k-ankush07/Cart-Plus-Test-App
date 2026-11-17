@@ -223,7 +223,7 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
     </div>
     <div style="flex:1;min-width:0;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-        <div style="font-weight:400;font-size:13px;line-height:1.25;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
+        <div style="font-weight:500;font-size:13px;line-height:1.25;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
         ${savingHtml}
       </div>
       <div style="margin-top:2px;">${price}</div>
@@ -259,14 +259,22 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
     "#000000",
     dsx.textColor,
   );
+  // A render that was started with an older cart than the one already on screen must not redraw
+  // (it would bring a card back for a moment, then the newer render removes it again: a blink).
+  const _at = cart?._hubAt || Date.now();
+  if (_at < (window._cartPlusOneTickAt || 0)) return;
+  window._cartPlusOneTickAt = _at;
+
   if (!oneTick.enabled || !oneTick.offers.length || !cart?.items?.length) {
     el.style.display = "none";
     el.innerHTML = "";
+    delete el.dataset.sig;
     return;
   }
   window._cartPlusOneTickCart = cart;
 
   const products = await cartPlusLoadOfferProducts(oneTick, cart);
+  if (_at < (window._cartPlusOneTickAt || 0)) return; // a newer render started while loading
   const inCart = new Set(cart.items.map((i) => String(i.variant_id)));
   const cards = oneTick.offers
     .map((offer) => ({ offer, product: products[offer.id] }))
@@ -276,6 +284,7 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
   if (!cards.length) {
     el.style.display = "none";
     el.innerHTML = "";
+    delete el.dataset.sig;
     return;
   }
 
@@ -291,14 +300,22 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
 
   el.style.cssText = "padding:12px 16px;display:block;";
 
+  // only touch the DOM when something actually changed (re-writing identical HTML makes it blink)
+  const put = (html) => {
+    if (el.dataset.sig === html && el.firstChild) return false;
+    el.dataset.sig = html;
+    el.innerHTML = html;
+    return true;
+  };
+
   // Row layout with more than one offer: cards stacked like a deck (top card in front, two peeking behind)
   if (oneTick.layout === "row" && cards.length > 1) {
-    el.innerHTML = `${title}<div class="cart-plus-drawer__ups-stack">${cards
+    put(`${title}<div class="cart-plus-drawer__ups-stack">${cards
       .map(
         (c, i) =>
           `<div class="cart-plus-drawer__ups-stack-item" data-rapi-ups-stack-pos="${i}" aria-hidden="${i !== 0}">${cartPlusOneTickCard(blockId, oneTick, c.offer, c.product, cardBg)}</div>`,
       )
-      .join("")}</div>`;
+      .join("")}</div>`);
     return;
   }
 
@@ -317,11 +334,11 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
           .join("")}</div>`
       : "";
 
-  el.innerHTML = `${title}<div class="${isCarousel ? "cart-plus-onetick-track" : ""}" style="display:flex;flex-direction:${isCarousel ? "row" : "column"};gap:${isCarousel ? 10 : 8}px;${isCarousel ? "overflow-x:auto;scroll-snap-type:x mandatory;align-items:stretch;" : ""}">${cards
+  if (!put(`${title}<div class="${isCarousel ? "cart-plus-onetick-track" : ""}" style="display:flex;flex-direction:${isCarousel ? "row" : "column"};gap:${isCarousel ? 10 : 8}px;${isCarousel ? "overflow-x:auto;scroll-snap-type:x mandatory;align-items:stretch;" : ""}">${cards
     .map((c) =>
       cartPlusOneTickCard(blockId, oneTick, c.offer, c.product, cardBg),
     )
-    .join("")}</div>${dots}`;
+    .join("")}</div>${dots}`)) return;
 
   // scroll ke saath active dot update karo
   if (dots) {
@@ -430,6 +447,7 @@ window.cartPlusHideOneTick = function (blockId) {
   if (!el) return;
   el.style.display = "none";
   el.innerHTML = "";
+  delete el.dataset.sig;
 };
 
 // ── fast refresh ───────────────────────────────────────────────────────────

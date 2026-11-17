@@ -78,6 +78,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     // ── FETCH 1: cart (the only guaranteed fetch) ─────────────────────────
     const res = await fetch("/cart.js");
     let cart = await res.json();
+    cart._hubAt = Date.now();
 
     // Auto-remove orphan addons/rewards: if the only items left are
     // addons or gift/reward items (no paying products), drop them all.
