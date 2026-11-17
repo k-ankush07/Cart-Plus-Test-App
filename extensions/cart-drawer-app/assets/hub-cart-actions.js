@@ -530,6 +530,9 @@ async function _commitRemoval(key) {
 
     await networkDone;
 
+    // the removed product can come back in the One Tick section right away
+    window.cartPlusOneTickQuickRefresh?.();
+
     if (Object.keys(_hubPendingRemovals).length === 0) {
       try {
         if (typeof handleTriggeredRewards === "function") {

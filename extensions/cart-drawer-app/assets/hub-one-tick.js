@@ -270,7 +270,6 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
   const inCart = new Set(cart.items.map((i) => String(i.variant_id)));
   const cards = oneTick.offers
     .map((offer) => ({ offer, product: products[offer.id] }))
-    // an offer is hidden while its product is in the cart (back again when it is removed)
     .filter(
       (c) => c.product && !c.product.variants.some((v) => inCart.has(v.id)),
     );
@@ -280,7 +279,6 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
     return;
   }
 
-  // white unless a Card background is set in the editor
   const cardBg =
     window.cartPlusBgCss(oneTick.cardBackground) ||
     (dsx.dark ? "var(--cp-card, #2a2a2d)" : "#ffffff");
@@ -424,3 +422,26 @@ window.cartPlusHideOneTick = function (blockId) {
   el.style.display = "none";
   el.innerHTML = "";
 };
+
+// ── fast refresh ───────────────────────────────────────────────────────────
+// The full cart render does many things before it gets to the One Tick section, so after an add /
+// remove it showed up several seconds late. This redraws just this section from a fresh /cart.js
+// (the offer products are cached), so a product leaving or entering the cart shows up right away.
+window.cartPlusOneTickQuickRefresh = async function () {
+  const blockId = window.HUB_CART_BLOCK_ID;
+  if (!blockId || !document.getElementById(`cart-plus-onetick-${blockId}`)) return;
+  const seq = (window._cartPlusOneTickSeq = (window._cartPlusOneTickSeq || 0) + 1);
+  try {
+    const cart = await (await fetch("/cart.js")).json();
+    if (seq !== window._cartPlusOneTickSeq) return; // a newer refresh is on its way
+    await window.cartPlusRenderOneTick(blockId, cart);
+  } catch (_) {}
+};
+
+if (!window._cartPlusOneTickQuickBound) {
+  window._cartPlusOneTickQuickBound = true;
+  document.addEventListener("cart:updated", () => {
+    if (window.__HUB_CART_INACTIVE__) return;
+    window.cartPlusOneTickQuickRefresh();
+  });
+}
