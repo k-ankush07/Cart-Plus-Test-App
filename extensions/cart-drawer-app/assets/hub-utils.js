@@ -355,7 +355,8 @@ window.hubUtils = {
     const cardBorder =
       designSettings.accentBorder || "rgba(0, 0, 0, 0.08)";
     const imageBox = [
-      u.imageSize ? `width:${u.imageSize}px;` : "",
+      // the editor's image size, but never wider than the card it sits in (e.g. a 190px side panel)
+      u.imageSize ? `width:${u.imageSize}px;max-width:100%;` : "",
       u.radius !== null && u.radius !== undefined
         ? `border-radius:${u.radius}px;overflow:hidden;`
         : "",

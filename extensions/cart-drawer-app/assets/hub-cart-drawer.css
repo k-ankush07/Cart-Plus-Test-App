@@ -3515,6 +3515,25 @@ select.hub-compact-variant {
 /* Side panel touches the cart: no padding / seam on the side that faces it, cards never overflow */
 .hub-upsell-side-panel { overflow-x: hidden; }
 .hub-upsell-side-panel .hub-rec-product { box-sizing: border-box; max-width: 100%; }
+/* the product image (its width comes from the editor's "Image size") stays inside the card border */
+.hub-upsell-side-panel .upcart-internal-component-upsell-tile__info_count {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.hub-upsell-side-panel .upcart-internal-component-upsell-tile__image-container {
+  max-width: 100%;
+  min-width: 0;
+  flex-shrink: 1;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hub-upsell-side-panel .upcart-internal-component-upsell-tile__image-container img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
 .hub-upsell-side-panel .hub-rec-product select {
     max-width: 100%;
     box-sizing: border-box;
