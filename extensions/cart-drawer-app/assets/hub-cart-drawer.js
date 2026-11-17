@@ -2068,7 +2068,14 @@ window.hubApplyOfferCode = async function (blockId, btn) {
   const message = document.getElementById(`hub-offers-msg-${blockId}`);
   const code = input?.value?.trim();
   if (!code) {
-    if (message) showMessage(message, "Please enter a discount code", "red");
+    if (message) {
+      const emptyMsg =
+        window.__HUB_ACTIVE_CART__?.discountCodesSettings?.emptyCodeMessage ??
+        "Please enter a discount code";
+      if (window.cartPlusShowDiscountError)
+        window.cartPlusShowDiscountError(message, emptyMsg);
+      else showMessage(message, emptyMsg, "red");
+    }
     return;
   }
   if (btn && btn.classList.contains("loading")) return;

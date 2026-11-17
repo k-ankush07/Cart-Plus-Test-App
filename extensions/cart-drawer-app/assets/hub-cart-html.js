@@ -465,7 +465,6 @@ bs.textContent += `
           <input type="text" id="discount-code-input-${blockId}" placeholder="Discount code" class="hub-discount-input cart-plus-discount-code-text cart-plus-discount-code-input" />
           <button onclick="applyDiscountCode(this)" class="hub-discount-apply-btn cart-plus-public-discount-code__button cart-plus-discount-code-button">Apply</button>
           </div>
-          <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
          ${
            showOfferBox
              ? ` <div class="discount-offer-btn" style="background:${viewAllOffersBgColor}; color:${viewAllOffersColor}" onclick="hubOpenOffersPanel('${blockId}')">
@@ -477,6 +476,7 @@ bs.textContent += `
              : ""
          }
         </div>
+        <div class="error-discount"> <p id="discount-message" class="hub-discount-message"></p></div>
         </div>
   `;
   // The old "Estimated Total" box is gone; the Summary row replaces it. A hidden shipping row stays

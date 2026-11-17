@@ -227,6 +227,7 @@ export default function DiscountCode({
   const [loading, setLoading] = useState(false);
   const [applyingCode, setApplyingCode] = useState("");
   const [invalid, setInvalid] = useState(false);
+  const [emptyErr, setEmptyErr] = useState(false);
 
   const [discounts, setDiscounts] = useState([]);
   const [discountsLoading, setDiscountsLoading] = useState(false);
@@ -291,19 +292,29 @@ export default function DiscountCode({
     cs.invalidCodeMessage ??
     "This discount code isn't valid. Please check the code and try again.";
 
-  const invalidBox = invalid &&
-    invalidMessage.replace(/<[^>]*>|&nbsp;/g, "").trim() && (
+  const emptyMessage = cs.emptyCodeMessage ?? "Please enter a discount code";
+  const shownMessage = emptyErr ? emptyMessage : invalidMessage;
+
+  const invalidBox = (invalid || emptyErr) &&
+    shownMessage.replace(/<[^>]*>|&nbsp;/g, "").trim() && (
       <div
         role="alert"
         className="cart-plus-discount-invalid"
         style={{ color: T.invalidColor, fontSize: 12, marginTop: 6 }}
-        dangerouslySetInnerHTML={{ __html: invalidMessage }}
+        dangerouslySetInnerHTML={{ __html: shownMessage }}
       />
     );
 
   const applyDiscountCode = (value) => {
     const trimmed = (value || "").trim();
-    if (!trimmed) return;
+    if (!trimmed) {
+      // Apply clicked with an empty box: show the (editable) "empty code" message
+      setInvalid(false);
+      setEmptyErr(true);
+      setTimeout(() => setEmptyErr(false), 4000);
+      return;
+    }
+    setEmptyErr(false);
     setApplyingCode(trimmed);
     setInvalid(false);
     setLoading(true);

@@ -626,6 +626,12 @@ export default function DiscountCode({
             onChange={(v) => update("invalidCodeMessage", v)}
             helpText="Shown below the input when the customer enters a code that does not exist or cannot be applied."
           />
+          <Field
+            label="Empty code message"
+            value={s.emptyCodeMessage ?? "Please enter a discount code"}
+            onChange={(v) => update("emptyCodeMessage", v)}
+            helpText="Shown when the customer presses Apply without typing a code."
+          />
           {color("invalidColor", "Error text color", "#D72C0D")}
         </Section>
 

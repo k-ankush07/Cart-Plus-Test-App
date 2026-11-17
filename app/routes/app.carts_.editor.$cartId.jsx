@@ -45,17 +45,14 @@ const isSettingsEqual = (a, b) => {
     return a.every((value, index) => isSettingsEqual(value, b[index]));
   }
 
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
+  const aKeys = Object.keys(a).filter((k) => a[k] !== undefined);
+  const bKeys = Object.keys(b).filter((k) => b[k] !== undefined);
 
   if (aKeys.length !== bKeys.length) return false;
   return aKeys.every((key) => isSettingsEqual(a[key], b[key]));
 };
 
 // ---- A/B testing -------------------------------------------------------
-// Every variant is a full copy of the cart settings. The variant on screen is the live state;
-// the other variants are parked in a ref. The control (first variant) is what the cart's normal
-// fields hold when saved; the rest go to cartSettings.abTest.data.
 const AB_SNAP_KEYS = [
   "design",
   "header",
@@ -75,7 +72,6 @@ const AB_SNAP_KEYS = [
 const cloneJson = (v) => JSON.parse(JSON.stringify(v ?? null));
 const createVariantId = () => crypto.randomUUID();
 
-// cartSettings.abTest.data is parked variant data, not something the editor edits
 const splitAbData = (cs) => {
   if (!cs?.abTest) return { settings: cs, data: {} };
   const { data, ...config } = cs.abTest;
@@ -303,11 +299,9 @@ export default function CartEditor() {
       [initialAb.current.control]: cartToSnapshot(cart),
     },
   });
-  const [, setAbTick] = useState(0); // re-render once the saved A/B baseline changes
-  const [abKey, setAbKey] = useState(0); // remounts the A/B control after Discard / Reset
+  const [, setAbTick] = useState(0); 
+  const [abKey, setAbKey] = useState(0); 
 
-  // put a snapshot on screen. `ab` is the A/B config kept in cartSettings: left out, the
-  // newest one is kept (read from state itself, not from the last render), null drops it
   const loadSnapshot = (snap, ab) => {
     const pick = (k, fallback) => cloneJson(snap[k] ?? fallback);
     setDesignSettings(pick("design", defaultSettings));
@@ -809,6 +803,8 @@ export default function CartEditor() {
       setAbKey((k) => k + 1);
     }
     setIsDirty(false);
+    // hide the save bar right away; don't wait for the state effect
+    window.shopify?.saveBar?.hide("my-save-bar");
   };
 
   const [isResetting, setIsResetting] = useState(false);

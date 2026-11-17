@@ -204,6 +204,7 @@ export const defaultDiscountCodesSettings = {
   showOfferBgColor:"#6C4DFF",
   invalidCodeMessage:
     "This discount code isn't valid. Please check the code and try again.",
+  emptyCodeMessage: "Please enter a discount code",
 };
 
 export const defaultExpressPaymentsSettings = {

@@ -625,7 +625,14 @@ window.applyDiscountCode = async function (btn) {
   const code = input.value.trim();
 
   if (!code) {
-    showMessage(message, "Please enter a discount code", "red");
+    // same error style (colour/size) as the editor's "Error message" settings
+    // text comes from the saved cart settings (editor: Error message > Empty code message)
+    const emptyMsg =
+      window.__HUB_ACTIVE_CART__?.discountCodesSettings?.emptyCodeMessage ??
+      "Please enter a discount code";
+    if (window.cartPlusShowDiscountError)
+      window.cartPlusShowDiscountError(message, emptyMsg);
+    else showMessage(message, emptyMsg, "red");
     return;
   }
 
