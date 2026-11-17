@@ -403,13 +403,22 @@ window.cartPlusOneTickToggle = async function (
     }
   } catch (e) {
     console.error("[CartPlus] One Tick Upsell failed:", e);
-  } finally {
-    if (button?.isConnected) {
-      button.classList.remove("loading");
-      button.disabled = false;
-      button.removeAttribute("aria-busy");
-      button.innerHTML = originalButtonHTML;
+  }
+
+  // Start redrawing the cart list right now (the normal cart:updated path waits ~200ms before it
+  // even begins) and keep the button loading until the product is really shown in the cart.
+  try {
+    const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+    if (drawer && window.hubCartRender) {
+      await window.hubCartRender(drawer, { showSkeleton: false });
     }
+  } catch (_) {}
+
+  if (button?.isConnected) {
+    button.classList.remove("loading");
+    button.disabled = false;
+    button.removeAttribute("aria-busy");
+    button.innerHTML = originalButtonHTML;
   }
   document.dispatchEvent(new CustomEvent("cart:updated"));
 };
