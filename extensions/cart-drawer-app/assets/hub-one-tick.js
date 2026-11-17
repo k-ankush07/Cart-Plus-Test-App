@@ -97,6 +97,7 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
     oneTick.offers.map((o) => [o.id, o.mode, o.selected?.items?.variants]),
   );
   const cache = (window._cartPlusOneTickCache ||= {});
+  const autoCache = (cache.autoProducts ||= {});
   if (cache.key === key && cache.products) return cache.products;
 
   const products = {};
@@ -125,21 +126,34 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
   if (auto.length) {
     const first = (cart.items || [])[0];
     if (first) {
-      const data = await fetch(
-        `/recommendations/products.json?product_id=${first.product_id}&limit=${Math.max(auto.length, 4)}`,
-      )
-        .then((r) => r.json())
-        .catch(() => ({ products: [] }));
-      const list = (data.products || [])
-        .map((p) => cartPlusNormalizeProduct(p, true))
-        .filter((p) => p.variants.length);
-      auto.forEach((offer, i) => {
-        if (list[i] || list[0]) products[offer.id] = list[i] || list[0];
-      });
+      const autoCacheKey = `${key}:${first.product_id}`;
+      const cachedAuto = autoCache[autoCacheKey];
+      if (cachedAuto) {
+        Object.assign(products, cachedAuto);
+      } else {
+        const data = await fetch(
+          `/recommendations/products.json?product_id=${first.product_id}&limit=${Math.max(auto.length, 4)}`,
+        )
+          .then((r) => r.json())
+          .catch(() => ({ products: [] }));
+        const list = (data.products || [])
+          .map((p) => cartPlusNormalizeProduct(p, true))
+          .filter((p) => p.variants.length);
+        const autoProducts = {};
+        auto.forEach((offer, i) => {
+          if (list[i] || list[0]) {
+            autoProducts[offer.id] = list[i] || list[0];
+          }
+        });
+        Object.assign(products, autoProducts);
+        if (Object.keys(autoProducts).length) {
+          autoCache[autoCacheKey] = autoProducts;
+        }
+      }
     }
   }
 
-  // keep the result for later renders; auto picks depend on the cart, so only manual ones are reused
+  // Manual offers are stable; auto recommendations are cached by their source product.
   cache.key = key;
   cache.products = manual.length === oneTick.offers.length ? products : null;
   return products;
@@ -154,11 +168,11 @@ function cartPlusOneTickTrigger(blockId, oneTick, offer, variantId) {
     `cartPlusOneTickToggle('${blockId}','${offer.id}','${variantId}',${on}${button})`;
   if (oneTick.trigger === "checkbox") {
     return `<label class="cart-plus-onetick-check" aria-label="${oneTick.buttonLabel}">
-      <input type="checkbox" class="cart-plus-onetick-input" style="--cp-accent:${activeColor};--cp-tick:${oneTick.buttonTextColor || "#fff"};--cp-border:${oneTick.secondaryTextColor || "#8a8a8a"};" onchange="var c=this.checked;this.closest('.cart-plus-onetick-card')?.classList.toggle('cart-plus-onetick-card--adding',c);setTimeout(function(){${call("c")}},c?450:0)" />
+      <input type="checkbox" class="cart-plus-onetick-input" style="--cp-accent:${activeColor};--cp-tick:${oneTick.buttonTextColor || "#fff"};--cp-border:${oneTick.secondaryTextColor || "#8a8a8a"};" onchange="var c=this.checked;this.closest('.cart-plus-onetick-card')?.classList.toggle('cart-plus-onetick-card--adding',c);${call("c")}" />
     </label>`;
   }
   if (oneTick.trigger === "toggle") {
-    return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${activeColor};--cp-off:${design.accentBorder || "#c9cccf"};" onclick="this.setAttribute('aria-checked','true');this.closest('.cart-plus-onetick-card')?.classList.add('cart-plus-onetick-card--adding');setTimeout(function(){${call("true")}},450)"><span></span></button>`;
+    return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${activeColor};--cp-off:${design.accentBorder || "#c9cccf"};" onclick="this.setAttribute('aria-checked','true');this.closest('.cart-plus-onetick-card')?.classList.add('cart-plus-onetick-card--adding');${call("true")}"><span></span></button>`;
   }
   return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true", ",this")}" style="width:100%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border:none;cursor:pointer;padding:6px 8px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
 }
@@ -401,20 +415,54 @@ window.cartPlusOneTickToggle = async function (
           quantity: 1,
           properties: { _cart_plus_one_tick: offerId },
         }),
+        hubCartSkipItemRerender: true,
+        hubCartSkipOneTickRefresh: true,
+        hubCartSkipCartCountUpdate: true,
       });
       if (!response.ok) {
         throw new Error(`One Tick add failed with status ${response.status}`);
+      }
+      const cartResponse = await fetch("/cart.js");
+      if (!cartResponse.ok) {
+        throw new Error(`One Tick cart refresh failed with status ${cartResponse.status}`);
+      }
+      const cart = await cartResponse.json();
+      window.updateCartCount?.(cart);
+      const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+      if (drawer && window.hubCartRender) {
+        await window.hubCartRender(drawer, {
+          showSkeleton: false,
+          cart,
+          awaitOneTick: true,
+        });
       }
     } else {
       const latest = await (await fetch("/cart.js")).json();
       const match = latest.items.find(
         (i) => String(i.variant_id) === String(variantId),
       );
+      let cart = latest;
       if (match) {
-        await fetch("/cart/change.js", {
+        const response = await fetch("/cart/change.js", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: match.key, quantity: 0 }),
+          hubCartSkipItemRerender: true,
+          hubCartSkipOneTickRefresh: true,
+          hubCartSkipCartCountUpdate: true,
+        });
+        if (!response.ok) {
+          throw new Error(`One Tick removal failed with status ${response.status}`);
+        }
+        cart = await response.json();
+      }
+      window.updateCartCount?.(cart);
+      const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+      if (drawer && window.hubCartRender) {
+        await window.hubCartRender(drawer, {
+          showSkeleton: false,
+          cart,
+          awaitOneTick: true,
         });
       }
     }
@@ -422,22 +470,12 @@ window.cartPlusOneTickToggle = async function (
     console.error("[CartPlus] One Tick Upsell failed:", e);
   }
 
-  // Start redrawing the cart list right now (the normal cart:updated path waits ~200ms before it
-  // even begins) and keep the button loading until the product is really shown in the cart.
-  try {
-    const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
-    if (drawer && window.hubCartRender) {
-      await window.hubCartRender(drawer, { showSkeleton: false });
-    }
-  } catch (_) {}
-
   if (button?.isConnected) {
     button.classList.remove("loading");
     button.disabled = false;
     button.removeAttribute("aria-busy");
     button.innerHTML = originalButtonHTML;
   }
-  document.dispatchEvent(new CustomEvent("cart:updated"));
 };
 
 // the cart just became empty: drop the section right away instead of waiting for the next full render
@@ -467,8 +505,9 @@ window.cartPlusOneTickQuickRefresh = async function () {
 
 if (!window._cartPlusOneTickQuickBound) {
   window._cartPlusOneTickQuickBound = true;
-  document.addEventListener("cart:updated", () => {
+  document.addEventListener("cart:updated", (event) => {
     if (window.__HUB_CART_INACTIVE__) return;
+    if (event?.detail?.skipOneTickRefresh) return;
     window.cartPlusOneTickQuickRefresh();
   });
 }

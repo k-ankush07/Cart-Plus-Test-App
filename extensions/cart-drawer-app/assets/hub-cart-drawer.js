@@ -314,9 +314,13 @@ function initCartDrawerAfterData() {
     let [input, init] = args;
     const url = typeof input === "string" ? input : input?.url || "";
     const skipItemRerender = init?.hubCartSkipItemRerender === true;
-    if (skipItemRerender) {
+    const skipOneTickRefresh = init?.hubCartSkipOneTickRefresh === true;
+    const skipCartCountUpdate = init?.hubCartSkipCartCountUpdate === true;
+    if (skipItemRerender || skipOneTickRefresh || skipCartCountUpdate) {
       init = { ...init };
       delete init.hubCartSkipItemRerender;
+      delete init.hubCartSkipOneTickRefresh;
+      delete init.hubCartSkipCartCountUpdate;
       args = [input, init];
     }
 
@@ -432,20 +436,31 @@ function initCartDrawerAfterData() {
       }
       try {
         const data = await response.clone().json();
-        const detail =
-          skipItemRerender && data && typeof data === "object"
-            ? { ...data, skipItemRerender: true }
-            : skipItemRerender
-              ? { skipItemRerender: true }
-              : data;
+        let detail = data && typeof data === "object" ? { ...data } : data;
+        if (detail && typeof detail === "object") {
+          if (skipItemRerender) detail.skipItemRerender = true;
+          if (skipOneTickRefresh) detail.skipOneTickRefresh = true;
+          if (skipCartCountUpdate) detail.skipCartCountUpdate = true;
+        } else if (
+          skipItemRerender ||
+          skipOneTickRefresh ||
+          skipCartCountUpdate
+        ) {
+          detail = {};
+          if (skipItemRerender) detail.skipItemRerender = true;
+          if (skipOneTickRefresh) detail.skipOneTickRefresh = true;
+          if (skipCartCountUpdate) detail.skipCartCountUpdate = true;
+        }
         document.dispatchEvent(
           new CustomEvent("cart:updated", { detail }),
         );
       } catch (_) {
+        const detail = {};
+        if (skipItemRerender) detail.skipItemRerender = true;
+        if (skipOneTickRefresh) detail.skipOneTickRefresh = true;
+        if (skipCartCountUpdate) detail.skipCartCountUpdate = true;
         document.dispatchEvent(
-          new CustomEvent("cart:updated", {
-            detail: skipItemRerender ? { skipItemRerender: true } : null,
-          }),
+          new CustomEvent("cart:updated", { detail }),
         );
       }
     }
@@ -631,9 +646,11 @@ function initCartDrawerAfterData() {
 
     window.updateCartCount = async function (cartData = null) {
       try {
-        let cart = cartData?.items
+        const isCart = (value) =>
+          Array.isArray(value?.items) && typeof value.item_count === "number";
+        let cart = isCart(cartData)
           ? cartData
-          : cartData?.cart?.items
+          : isCart(cartData?.cart)
             ? cartData.cart
             : null;
         if (!cart) {
@@ -899,7 +916,9 @@ function initCartDrawerAfterData() {
         if (window.__HUB_CART_INACTIVE__) return;
         if (window._hubRewardUpdating) return;
 
-        window.updateCartCount(e?.detail);
+        if (!e?.detail?.skipCartCountUpdate) {
+          window.updateCartCount(e?.detail);
+        }
 
         if (window._hubCommitingRemoval) return;
 

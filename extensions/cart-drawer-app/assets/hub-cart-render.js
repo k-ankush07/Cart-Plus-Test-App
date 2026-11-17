@@ -76,8 +76,11 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
   try {
     // ── FETCH 1: cart (the only guaranteed fetch) ─────────────────────────
-    const res = await fetch("/cart.js");
-    let cart = await res.json();
+    let cart = opts.cart?.items ? opts.cart : null;
+    if (!cart) {
+      const res = await fetch("/cart.js");
+      cart = await res.json();
+    }
     cart._hubAt = Date.now();
 
     // Auto-remove orphan addons/rewards: if the only items left are
@@ -310,7 +313,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
     }
 
     // ── PRICE TOTALS ──────────────────────────────────────────────────────
-    (function () {
+    await (async function () {
       const fmt = hubUtils.formatMoney;
       const originalTotal = cart.original_total_price || 0;
       const mrpTotal = cart.items.reduce((sum, i) => {
@@ -448,7 +451,11 @@ if (savedEl) {
 
       // Summary from the editor (cartSettings.summary)
       window.cartPlusSummaryFromCart?.(blockId, cart);
-      window.cartPlusRenderOneTick?.(blockId, cart);
+      if (opts.awaitOneTick) {
+        await window.cartPlusRenderOneTick?.(blockId, cart);
+      } else {
+        window.cartPlusRenderOneTick?.(blockId, cart);
+      }
       window.cartPlusAgeUpdate?.(blockId, cart);
 
       const checkoutBtn = document.getElementById(
@@ -645,12 +652,13 @@ if (savedEl) {
         if (!btn || btn.disabled) return;
 
         const parent = btn.closest(".hub-rec-product");
-        const swipeSlide = parent.closest(".swiper-slide");
-        const select = parent.querySelector(".hub-variant-select");
+        const select = parent?.querySelector(".hub-variant-select");
         const variantId = select?.value || btn.dataset.variant;
+        if (!variantId) return;
 
         btn.disabled = true;
         btn.dataset.original = btn.innerHTML;
+        btn.setAttribute("aria-busy", "true");
         btn.innerHTML = `<span class="loader"></span>`;
 
         try {
@@ -662,35 +670,41 @@ if (savedEl) {
               quantity: 1,
               properties: { __upcartRecommendation: String(variantId) },
             }),
+            hubCartSkipItemRerender: true,
+            hubCartSkipOneTickRefresh: true,
+            hubCartSkipCartCountUpdate: true,
           });
           if (!addRes.ok && addRes.status !== 409)
-            throw new Error("Add failed");
+            throw new Error(`Upsell add failed (status ${addRes.status})`);
 
-          if (!settings.showIfAlreadyInCart) {
-            if (layout === "carousel") {
-              (swipeSlide || parent).remove();
-              const remaining =
-                container.querySelectorAll(".swiper-slide").length;
-              if (remaining === 0) container.style.display = "none";
-              else if (swiperInstance) {
-                swiperInstance.params.slidesPerView = remaining === 1 ? 1 : 1.2;
-                swiperInstance.update();
-              }
-            } else {
-              parent.remove();
-              if (container.querySelectorAll(".hub-rec-product").length === 0)
-                container.style.display = "none";
-            }
+          const cartRes = await fetch("/cart.js");
+          if (!cartRes.ok) {
+            throw new Error(`Upsell cart refresh failed (status ${cartRes.status})`);
           }
-          document.dispatchEvent(new CustomEvent("cart:updated"));
-        } catch (err) {
-          btn.innerHTML = btn.dataset.original || "Add";
-          btn.disabled = false;
-        }
+          const cart = await cartRes.json();
+          window.updateCartCount?.(cart);
 
-        if (settings.showIfAlreadyInCart) {
-          btn.innerHTML = btn.dataset.original || "Add";
-          btn.disabled = false;
+          const blockId = window.HUB_CART_BLOCK_ID;
+          const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+          if (drawer && window.hubCartRender) {
+            await window.hubCartRender(drawer, {
+              showSkeleton: false,
+              cart,
+              awaitOneTick: true,
+            });
+          } else {
+            document.dispatchEvent(
+              new CustomEvent("cart:updated", { detail: { cart } }),
+            );
+          }
+        } catch (err) {
+          console.error("[CartPlus] Upsell add failed:", err);
+        } finally {
+          if (btn.isConnected) {
+            btn.innerHTML = btn.dataset.original || "Add";
+            btn.disabled = false;
+            btn.removeAttribute("aria-busy");
+          }
         }
       });
 
