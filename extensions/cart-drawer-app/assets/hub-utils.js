@@ -1047,8 +1047,8 @@ window.hubUtils = {
             ${messageEl}${bar(fillPctNum)}
           </div>
           <div style="width:120px;flex-shrink:0;padding:16px 12px;text-align:center;border-left:${dashed};display:flex;flex-direction:column;align-items:center;gap:8px;">
-            <div style="${labelCss}">${nextLabel}</div>
-          <div style="font-size:40px; line-height:1;">🎁</div>    
+            <div style="${labelCss}">${cartTotal >= maxAmount ? "ALL UNLOCKED" : nextLabel}</div>
+          <div style="font-size:40px; line-height:1;">${cartTotal >= maxAmount ? "🎉" : "🎁"}</div>
           </div>
         </div>`);
       } else if (barStyle === "nextReward") {

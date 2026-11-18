@@ -588,8 +588,13 @@ export default function TieredRewards({
               gap: 8,
             }}
           >
-            <div style={labelStyle}>{nextLabel}</div>
-            <div style={{ fontSize: 40, lineHeight: 1 }}>🎁</div>
+            {/* every reward unlocked: nothing is "next" any more, so celebrate instead */}
+            <div style={labelStyle}>
+              {totalValue >= maxAmount ? "ALL UNLOCKED" : nextLabel}
+            </div>
+            <div style={{ fontSize: 40, lineHeight: 1 }}>
+              {totalValue >= maxAmount ? "🎉" : "🎁"}
+            </div>
           </div>
         </div>
       </div>

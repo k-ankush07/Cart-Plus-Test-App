@@ -67,7 +67,7 @@ export const defaultAnnouncementSettings = {
 
 export const defaultRewardsSettings = {
   enabled: true,
-  showOnEmptyCart: true,
+  showOnEmptyCart: false,
   backgroundColor: "#E2E2E2",
   textColor: "#000000",
   completeIconColor: "#ffffff",

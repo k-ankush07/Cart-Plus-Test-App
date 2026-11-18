@@ -352,7 +352,7 @@ export default function TieredOffers({
 
   return (
     <div className="mainContent">
-      <Box paddingBlockEnd="400">
+      <Box paddingBlockEnd="200">
         <BlockStack gap="400">
           <InlineStack gap="300" align="space-between" blockAlign="center">
             <InlineStack blockAlign="center" gap="100">
@@ -729,13 +729,13 @@ export default function TieredOffers({
       <LegacyCard sectioned title="General settings">
         <LegacyStack vertical spacing="tight">
           {/* Applies to every style */}
-          <InlineStack>
+          {/* <InlineStack>
             <Checkbox
               label="Show rewards on empty cart"
               checked={rewardsSettings.showOnEmptyCart}
               onChange={(val) => update("showOnEmptyCart", val)}
             />
-          </InlineStack>
+          </InlineStack> */}
 
           {/* Legacy color controls: only for non-themed styles */}
           {showLegacyStyling && (
