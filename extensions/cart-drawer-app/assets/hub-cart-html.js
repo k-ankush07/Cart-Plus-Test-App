@@ -79,8 +79,13 @@ window.injectCartHTML = function (blockId, root) {
     window.__HUB_ACTIVE_CART__?.discountCodesSettings || {};
 
   const showOfferBox = discountCodesSettings.showOfferBox ?? false;
+  const savedCouponHeadingColor = discountCodesSettings.couponHeadingColor;
   const couponHeadingColor =
-    discountCodesSettings.couponHeadingColor ?? "#000000";
+    designSettings.dark &&
+    (!savedCouponHeadingColor ||
+      String(savedCouponHeadingColor).toLowerCase() === "#000000")
+      ? designSettings.textColor || "#f3f3f3"
+      : savedCouponHeadingColor || "#000000";
   const couponHeadingText = discountCodesSettings.title ?? "Coupon Code";
   const showTitle = discountCodesSettings.showTitle ?? false;
   const iconsColor = designSettings?.iconColor || "#000000";

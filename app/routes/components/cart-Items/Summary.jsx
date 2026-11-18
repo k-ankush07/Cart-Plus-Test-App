@@ -80,6 +80,11 @@ export default function Summary({
   const total = Number(subtotal) || 0;
   const compare = Number(compareTotal) > total ? Number(compareTotal) : 0;
   const saved = compare - total;
+  const darkMode = !!designSettings?.dark;
+  const summaryCardBackground = darkMode
+    ? "var(--cp-card, #2b2b2d)"
+    : "#fff";
+  const mutedTextColor = darkMode ? "var(--cp-muted, #a8a8ad)" : "#667085";
   const money = (n) => `${currency} ${Number(n).toFixed(2)}`;
   const designTitles = {
     "bill-details": "Bill details",
@@ -186,17 +191,19 @@ export default function Summary({
         display: "flex",
         flexDirection: "column",
         gap: 8,
-        background: "#fff",
+        background: summaryCardBackground,
         borderRadius: 12,
         padding: 12,
-        boxShadow: "0 2px 12px rgba(20, 45, 80, 0.08)",
+        boxShadow: darkMode
+          ? "0 2px 12px rgba(0, 0, 0, 0.2)"
+          : "0 2px 12px rgba(20, 45, 80, 0.08)",
       },
       "bill-summary": {
         display: "flex",
         flexDirection: "column",
         gap: 8,
-        background: "#fff",
-        border: `1px solid ${themeBorder || "#e5e9f0"}`,
+        background: summaryCardBackground,
+        border: `1px solid ${themeBorder || (darkMode ? "var(--cp-line, rgba(255,255,255,0.14))" : "#e5e9f0")}`,
         borderRadius: 10,
         padding: 12,
       },
@@ -204,10 +211,12 @@ export default function Summary({
         display: "flex",
         flexDirection: "column",
         gap: 8,
-        background: "#fff",
+        background: summaryCardBackground,
         borderRadius: 10,
         padding: 12,
-        boxShadow: "0 2px 10px rgba(20, 45, 80, 0.06)",
+        boxShadow: darkMode
+          ? "0 2px 10px rgba(0, 0, 0, 0.2)"
+          : "0 2px 10px rgba(20, 45, 80, 0.06)",
       },
     }[design] || {};
   const itemStyle =
@@ -222,7 +231,7 @@ export default function Summary({
       "bill-details": row,
       "bill-summary": {
         ...row,
-        color: "#667085",
+        color: mutedTextColor,
         fontSize: 12,
       },
       "price-details": row,
@@ -254,7 +263,7 @@ export default function Summary({
       "bill-details": {
         ...row,
         fontWeight: 700,
-        borderTop: "1px dashed #9db8ec",
+        borderTop: `1px dashed ${themeBorder || (darkMode ? "var(--cp-line, rgba(255,255,255,0.14))" : "#9db8ec")}`,
         paddingTop: 10,
         marginTop: 2,
       },
@@ -262,7 +271,7 @@ export default function Summary({
         ...row,
         fontWeight: 700,
         color: s.textColor,
-        borderTop: "1px solid #e8ebf0",
+        borderTop: `1px solid ${themeBorder || (darkMode ? "var(--cp-line, rgba(255,255,255,0.14))" : "#e8ebf0")}`,
         paddingTop: 10,
         marginTop: 2,
       },
@@ -270,7 +279,7 @@ export default function Summary({
         ...row,
         fontWeight: 700,
         fontSize: 15,
-        borderTop: "1px solid #e8ebf0",
+        borderTop: `1px solid ${themeBorder || (darkMode ? "var(--cp-line, rgba(255,255,255,0.14))" : "#e8ebf0")}`,
         paddingTop: 10,
         marginTop: 2,
       },
