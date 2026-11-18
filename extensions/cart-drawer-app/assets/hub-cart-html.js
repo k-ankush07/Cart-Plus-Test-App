@@ -1,3 +1,7 @@
+const DEFAULT_LOGO = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="48" viewBox="0 0 160 48"><rect width="160" height="48" rx="4" fill="#f3f4f6"/><path d="M18 16h20v17H18zM15 16l3-6h20l3 6M23 33v-8h10v8" fill="none" stroke="#6b7280" stroke-width="2" stroke-linejoin="round"/><text x="48" y="29" fill="#6b7280" font-family="Arial,sans-serif" font-size="14">Your logo</text></svg>'
+)}`;
+
 function getFontWeight(weight) {
   const map = {
     thin: 100,
@@ -162,12 +166,8 @@ window.injectCartHTML = function (blockId, root) {
     const wrapperStyle = `flex:1;text-align:${textAlign}; line-height:1;`;
 
     if (titleType === "logo") {
-      const fallback =
-        "https://cdn.shopify.com/s/files/1/0875/3679/5938/files/image_926883ce-c31d-4644-b8cb-ef516f94c20b.png?v=1794606982";
       const src =
-        headerSettings.logo && headerSettings.logo !== ""
-          ? headerSettings.logo
-          : fallback;
+        headerSettings.logo || DEFAULT_LOGO;
       const marginStyle =
         alignment === "center"
           ? "margin:0 auto;"
@@ -180,9 +180,9 @@ window.injectCartHTML = function (blockId, root) {
             <img
               class="cart-plus-header-logo"
               src="${src}"
-              alt="Logo"
+              alt="Store logo"
               style="width:100%;"
-              onerror="this.src='${fallback}'"
+              onerror="this.onerror=null;this.src='${DEFAULT_LOGO}'"
             />
           </div>
         </div>`;

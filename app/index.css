@@ -201,6 +201,7 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
     display: flex;
     flex-direction: column;
     height: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .cart-app__heading {

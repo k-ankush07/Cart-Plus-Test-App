@@ -6,6 +6,10 @@ import {
     getBorderWidth,
 } from "../utils/helpers";
 
+const DEFAULT_LOGO = `data:image/svg+xml,${encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="48" viewBox="0 0 160 48"><rect width="160" height="48" rx="4" fill="#f3f4f6"/><path d="M18 16h20v17H18zM15 16l3-6h20l3 6M23 33v-8h10v8" fill="none" stroke="#6b7280" stroke-width="2" stroke-linejoin="round"/><text x="48" y="29" fill="#6b7280" font-family="Arial,sans-serif" font-size="14">Your logo</text></svg>'
+)}`;
+
 export default function CartHeading({ headerSettings, designSettings, onClose, qty }) {
 
     const CloseButton = ({ headerSettings }) => {
@@ -86,15 +90,11 @@ export default function CartHeading({ headerSettings, designSettings, onClose, q
                     {headerSettings.titleType === "logo" ? (
                         <img
                             className="cart-plus-header-logo"
-                            src={
-                                headerSettings.logo && headerSettings.logo !== ""
-                                    ? headerSettings.logo
-                                    : "https://cdn.shopify.com/s/files/1/0875/3679/5938/files/image_926883ce-c31d-4644-b8cb-ef516f94c20b.png?v=1794606982"
-                            }
-                            alt="Logo"
+                            src={headerSettings.logo || DEFAULT_LOGO}
+                            alt="Store logo"
                             onError={(e) => {
-                                e.target.src =
-                                    "https://cdn.shopify.com/s/files/1/0875/3679/5938/files/image_926883ce-c31d-4644-b8cb-ef516f94c20b.png?v=1794606982";
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = DEFAULT_LOGO;
                             }}
                             style={{
                                 maxWidth: `${headerSettings.logoSize || 120}px`,
