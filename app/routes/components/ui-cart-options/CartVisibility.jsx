@@ -106,7 +106,7 @@ export default function CartVisibility({ cartSettings, handleChange }) {
 
             {needsMarkets && (
               <BlockStack gap="200">
-                <Button fullWidth onClick={openPicker}>
+                <Button variant="primary" fullWidth onClick={openPicker}>
                   {actionLabel}
                 </Button>
                 {s.markets.length > 0 && (

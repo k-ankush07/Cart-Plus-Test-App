@@ -16,6 +16,10 @@ import {
 } from "./components/utils/ageVerification";
 import { oneTickProblem } from "./components/utils/oneTick";
 import {
+  getCustomBlocks,
+  isCustomBlockKey,
+} from "./components/utils/customBlocks";
+import {
   DEFAULT_PREVIEW_PRODUCT_QUERY,
   normalizePreviewProduct,
   pickDefaultPreviewProduct,
@@ -841,6 +845,17 @@ export default function CartEditor() {
       setBaselineFor(activeSnap, base.config);
       setAbKey((k) => k + 1);
     }
+    // A Custom HTML / CSS block added since the last save is gone after Discard. If it was the
+    // open tab, the panel would stay blank with nothing selected in the sidebar, so go to Template.
+    if (isCustomBlockKey(activeTab)) {
+      const restoredSettings =
+        activeSnap?.cartSettings ?? initialSettingsRef.current.cartSettings;
+      const stillThere = getCustomBlocks(restoredSettings).some(
+        (b) => b.id === activeTab,
+      );
+      if (!stillThere) setActiveTab("Template");
+    }
+
     setIsDirty(false);
     // hide the save bar right away; don't wait for the state effect
     window.shopify?.saveBar?.hide("my-save-bar");

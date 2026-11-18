@@ -13,10 +13,7 @@ import {
   RangeSlider,
 } from "@shopify/polaris";
 import ColorInput from "../ui/ColorInput";
-import {
-  backgroundToCss,
-  useTemplateBackground,
-} from "../utils/background";
+import { backgroundToCss, useTemplateBackground } from "../utils/background";
 
 import {
   RefreshIcon, // Subscription upgrades
@@ -54,7 +51,8 @@ export default function SubscriptionUpgrades({
     SUBSCRIPTION_TEMPLATES[activeKey].layout;
 
   // value of a template field: what the user set, else the template's own value
-  const tpl = SUBSCRIPTION_TEMPLATES[activeKey] || SUBSCRIPTION_TEMPLATES.default;
+  const tpl =
+    SUBSCRIPTION_TEMPLATES[activeKey] || SUBSCRIPTION_TEMPLATES.default;
   const field = (k) => subscriptionUpgradesSettings[k] ?? tpl[k];
   // Default template follows the theme (Template tab) until a colour is picked
   const themeBg = useTemplateBackground();
@@ -241,7 +239,9 @@ export default function SubscriptionUpgrades({
           )}
           <InlineGrid columns={2} gap="400">
             <ColorInput
-              label={activeLayout === "button" ? "Button color" : "Active color"}
+              label={
+                activeLayout === "button" ? "Button color" : "Active color"
+              }
               value={field("accent") ?? "#1a56db"}
               onChange={(val) => update("accent", val)}
             />
@@ -308,6 +308,7 @@ export default function SubscriptionUpgrades({
                 }
                 onChange={(val) => update("subscribeLabel", val)}
                 autoComplete="off"
+                maxLength={70}
               />
               <Text variant="bodySm" tone="subdued">
                 Use {`{{selling_plan_group_name}}`} for the plan name. The
@@ -336,6 +337,7 @@ export default function SubscriptionUpgrades({
                   value={subscriptionUpgradesSettings.planOptionsText}
                   onChange={(val) => update("planOptionsText", val)}
                   autoComplete="off"
+                  maxLength={70}
                 />
                 <Box paddingBlockEnd="400">
                   <Text variant="bodyMd" tone="subdued">
@@ -359,6 +361,7 @@ export default function SubscriptionUpgrades({
                     update("planOptionsOneTimePurchaseText", val)
                   }
                   autoComplete="off"
+                  maxLength={70}
                 />
                 <Text variant="bodySm" tone="subdued">
                   Customize the text that appears in the dropdown menu for
@@ -374,6 +377,7 @@ export default function SubscriptionUpgrades({
                   value={subscriptionUpgradesSettings.planFullPriceText}
                   onChange={(val) => update("planFullPriceText", val)}
                   autoComplete="off"
+                  maxLength={70}
                 />
                 <Text variant="bodySm" tone="subdued">
                   Text shown for the original subscription price before any
@@ -389,6 +393,7 @@ export default function SubscriptionUpgrades({
                   value={subscriptionUpgradesSettings.planHeadingText}
                   onChange={(val) => update("planHeadingText", val)}
                   autoComplete="off"
+                  maxLength={70}
                 />
                 <Box paddingBlockEnd="0">
                   <Text variant="bodyMd" tone="subdued">
