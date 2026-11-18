@@ -68,44 +68,45 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
 
     const isSelected = (id) => selectedVariants.includes(id);
 
+    const emitProductSelection = (updated) => {
+        const selectedProducts = localProducts.filter((p) =>
+            p.variants.some((v) => updated.includes(v.id))
+        );
+        const productIds = selectedProducts.map((p) => p.id);
+        const titles = selectedProducts.map((p) => p.title);
+        const images = selectedProducts.map((p) => p.image);
+
+        onSelect({
+            type: "products",
+            items: { variants: updated, products: productIds, titles, images }
+        });
+    };
+
     const toggleSelect = (variant) => {
         if (!variant.available) return; // out of stock variant, block selection
 
         setSelectedCollections([]);
 
-        setSelectedVariants((prev) => {
-            let updated;
-            if (prev.includes(variant.id)) {
-                updated = prev.filter((i) => i !== variant.id);
-            } else if (maxSelect === 1) {
-                updated = [variant.id];
-            } else if (singleProduct) {
-                // one product only: keep the ticked variants of this product, drop other products
-                const owner = localProducts.find((p) =>
-                    p.variants.some((v) => v.id === variant.id)
-                );
-                const sameProduct = prev.filter((id) =>
-                    owner?.variants.some((v) => v.id === id)
-                );
-                updated = [...sameProduct, variant.id];
-            } else {
-                updated = [...prev, variant.id];
-            }
-
-            const selectedProducts = localProducts.filter((p) =>
-                p.variants.some((v) => updated.includes(v.id))
+        let updated;
+        if (selectedVariants.includes(variant.id)) {
+            updated = selectedVariants.filter((id) => id !== variant.id);
+        } else if (maxSelect === 1) {
+            updated = [variant.id];
+        } else if (singleProduct) {
+            // one product only: keep the ticked variants of this product, drop other products
+            const owner = localProducts.find((p) =>
+                p.variants.some((v) => v.id === variant.id)
             );
-            const productIds = selectedProducts.map((p) => p.id);
-            const titles = selectedProducts.map((p) => p.title);
-            const images = selectedProducts.map((p) => p.image);
+            const sameProduct = selectedVariants.filter((id) =>
+                owner?.variants.some((v) => v.id === id)
+            );
+            updated = [...sameProduct, variant.id];
+        } else {
+            updated = [...selectedVariants, variant.id];
+        }
 
-            onSelect({
-                type: "products",
-                items: { variants: updated, products: productIds, titles, images }
-            });
-
-            return updated;
-        });
+        setSelectedVariants(updated);
+        emitProductSelection(updated);
     };
 
     const isProductSelected = (product) =>
@@ -125,37 +126,24 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
 
         if (variantIds.length === 0) return;
 
-        setSelectedVariants((prev) => {
-            const allSelected = variantIds.every((id) =>
-                prev.includes(id)
-            );
+        const allSelected = variantIds.every((id) =>
+            selectedVariants.includes(id)
+        );
 
-            let updated;
+        let updated;
 
-            if (allSelected) {
-                updated = prev.filter((id) => !variantIds.includes(id));
-            } else if (maxSelect === 1) {
-                updated = [variantIds[0]];
-            } else if (singleProduct) {
-                updated = variantIds; // replaces any other product
-            } else {
-                updated = [...new Set([...prev, ...variantIds])];
-            }
+        if (allSelected) {
+            updated = selectedVariants.filter((id) => !variantIds.includes(id));
+        } else if (maxSelect === 1) {
+            updated = [variantIds[0]];
+        } else if (singleProduct) {
+            updated = variantIds; // replaces any other product
+        } else {
+            updated = [...new Set([...selectedVariants, ...variantIds])];
+        }
 
-            const selectedProducts = localProducts.filter((p) =>
-                p.variants.some((v) => updated.includes(v.id))
-            );
-            const productIds = selectedProducts.map((p) => p.id);
-            const titles = selectedProducts.map((p) => p.title);
-            const images = selectedProducts.map((p) => p.image);
-
-            onSelect({
-                type: "products",
-                items: { variants: updated, products: productIds, titles, images }
-            });
-
-            return updated;
-        });
+        setSelectedVariants(updated);
+        emitProductSelection(updated);
     };
 
     const selectedProductCount = new Set(
@@ -314,24 +302,21 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
     const handleCollectionSelect = (id) => {
         setSelectedVariants([]);
 
-        setSelectedCollections((prev) => {
-            let updated;
-            if (multiSelectCollections) {
-                updated = prev.includes(id)
-                    ? prev.filter((i) => i !== id)
-                    : [...prev, id];
-            } else {
-                updated = prev.includes(id) ? [] : [id];
-            }
+        let updated;
+        if (multiSelectCollections) {
+            updated = selectedCollections.includes(id)
+                ? selectedCollections.filter((item) => item !== id)
+                : [...selectedCollections, id];
+        } else {
+            updated = selectedCollections.includes(id) ? [] : [id];
+        }
 
-            const selected = collections.filter((c) => updated.includes(c.id));
-            const titles = selected.map((c) => c.title);
-            const images = selected.map((c) => c.image);
+        setSelectedCollections(updated);
+        const selected = collections.filter((c) => updated.includes(c.id));
+        const titles = selected.map((c) => c.title);
+        const images = selected.map((c) => c.image);
 
-            onSelect({ type: "collections", items: updated, titles, images });
-
-            return updated;
-        });
+        onSelect({ type: "collections", items: updated, titles, images });
     };
 
     return (

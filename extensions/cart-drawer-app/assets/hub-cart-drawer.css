@@ -3298,6 +3298,9 @@ select.hub-compact-variant {
 .cart-app--dark .hub-discount-input-row {
   border-color: var(--cp-accent-border, var(--cp-line)) !important;
 }
+.cart-app--dark .hub-qty-control {
+  border-color: #d0d0d0 !important;
+}
 
 .hub-upsell.upsell-container {
     padding: 12px 16px;

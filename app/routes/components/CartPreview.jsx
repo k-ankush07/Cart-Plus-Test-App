@@ -359,9 +359,12 @@ const CartPreview = memo(function CartPreview({
           )}
         </div>
 
-        <div className="cart-plus-body-wrapper"  style={{
-              overflowY: cartSettings?.disableFixedFooter ? "unset" : "",
-            }}>
+        <div
+          className="cart-plus-body-wrapper"
+          style={
+            cartSettings?.disableFixedFooter ? { overflowY: "unset" } : undefined
+          }
+        >
           {headerOrder.map((key) => (
             <Fragment key={key}>{headerBlocks[key]}</Fragment>
           ))}
