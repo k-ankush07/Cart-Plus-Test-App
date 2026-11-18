@@ -432,6 +432,9 @@ export default function OneTickUpsell({
 
               const items = offer.selected?.items;
               const title = items?.titles?.[0];
+              // discount / label settings only make sense once a product source is set
+              const offerReady =
+                offer.mode === "auto" || (offer.mode === "manual" && !!title);
               const count = items?.variants?.length || 0;
               // the image key depends on the picker data, so several options are checked
               const image =
@@ -519,7 +522,9 @@ export default function OneTickUpsell({
                         <Text as="p" variant="bodySm" tone="subdued" truncate>
                           {offer.mode === "manual"
                             ? title || "No product selected"
-                            : "Auto-recommended"}
+                            : offer.mode === "auto"
+                              ? "Auto-recommended"
+                              : "Select a product first"}
                         </Text>
                       </div>
                       {!isOpen && offer.discountType !== "none" && (
@@ -661,6 +666,15 @@ export default function OneTickUpsell({
                           )}
                         </BlockStack>
 
+                        {!offerReady && (
+                          <Text as="p" variant="bodySm" tone="subdued">
+                            {offer.mode === "manual"
+                              ? "Select a product first. The discount and label settings appear after that."
+                              : "Choose Auto-recommend or Manual selection and select a product first. The discount and label settings appear after that."}
+                          </Text>
+                        )}
+                        {offerReady && (
+                          <>
                         <Divider />
 
                         {/* discount */}
@@ -724,6 +738,8 @@ export default function OneTickUpsell({
                             </>
                           )}
                         </BlockStack>
+                          </>
+                        )}
                       </BlockStack>
                     </div>
                   )}

@@ -60,6 +60,25 @@ export const patchOneTick = (patch) => (prev) => {
 export const toggleOneTick = (prev) =>
   patchOneTick({ enabled: !getOneTick(prev).enabled })(prev);
 
+// Every offer needs a product source, and a manual one needs a product picked.
+// Returns the message to show when the cart can't be saved yet, or null when it's fine.
+export const oneTickProblem = (cartSettings) => {
+  const t = getOneTick(cartSettings);
+  if (!t.enabled) return null;
+  for (let i = 0; i < t.offers.length; i++) {
+    const offer = t.offers[i];
+    if (offer.mode !== "auto" && offer.mode !== "manual")
+      return `One Tick Upsell, Offer ${i + 1}: choose "Auto-recommend" or "Manual selection" and select a product first.`;
+    const items = offer.selected?.items;
+    if (
+      offer.mode === "manual" &&
+      !(items?.variants?.length || items?.titles?.length)
+    )
+      return `One Tick Upsell, Offer ${i + 1}: select at least one product first.`;
+  }
+  return null;
+};
+
 // price after the offer's discount, plus what was saved
 export const applyDiscount = (offer, price) => {
   const base = Number(price) || 0;

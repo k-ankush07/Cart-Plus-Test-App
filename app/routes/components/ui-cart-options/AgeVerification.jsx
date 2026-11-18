@@ -14,7 +14,7 @@ import {
   Text,
   TextField,
 } from "@shopify/polaris";
-import { PersonIcon } from "@shopify/polaris-icons";
+import { CalendarCheckIcon } from "@shopify/polaris-icons";
 import { AGE_TEMPLATES, CLASSIC_BASE } from "../utils/ageTemplates";
 
 import RichTextEditor from "../ui/RichTextEditor";
@@ -328,7 +328,7 @@ export default function AgeVerification({
         <InlineStack align="space-between" blockAlign="center">
           <InlineStack blockAlign="center" gap="100">
             <Box>
-              <Icon source={PersonIcon} />
+              <Icon source={CalendarCheckIcon} />
             </Box>
             <Text variant="headingMd" as="h2">
             Age verification
@@ -366,78 +366,6 @@ export default function AgeVerification({
           </BlockStack>
         </Card>
 
-        {isTpl && (
-          <Card>
-            <BlockStack gap="300">
-              <Text variant="headingSm">Customize template</Text>
-              {["inline", "badge-row", "badge-stack", "title"].includes(
-                AGE_TEMPLATES[s.template].layout,
-              ) && (
-                <InlineGrid columns={2} gap="300">
-                  <TextField
-                    label="Yes button text"
-                    autoComplete="off"
-                    value={s.yesText ?? ""}
-                    onChange={(v) => update({ yesText: v })}
-                  />
-                  <TextField
-                    label="No button text"
-                    autoComplete="off"
-                    value={s.noText ?? ""}
-                    onChange={(v) => update({ noText: v })}
-                  />
-                </InlineGrid>
-              )}
-              {AGE_TEMPLATES[s.template].layout === "confirm" && (
-                <TextField
-                  label="Continue button text"
-                  autoComplete="off"
-                  value={s.continueText ?? ""}
-                  onChange={(v) => update({ continueText: v })}
-                />
-              )}
-              <InlineGrid columns={3} gap="300">
-                <ColorInput
-                  label="Button / toggle color"
-                  value={s.accent ?? "#111827"}
-                  onChange={(v) => update({ accent: v })}
-                />
-                {uses.accentText && (
-                  <ColorInput
-                    label="Button text color"
-                    value={s.accentText ?? "#ffffff"}
-                    onChange={(v) => update({ accentText: v })}
-                  />
-                )}
-                {uses.secondaryBg && (
-                  <ColorInput
-                    label="Second button color"
-                    value={s.secondaryBg ?? "#f1f3f5"}
-                    onChange={(v) => update({ secondaryBg: v })}
-                  />
-                )}
-                {uses.secondaryText && (
-                  <ColorInput
-                    label="Second button text"
-                    value={s.secondaryText ?? "#1a1a1a"}
-                    onChange={(v) => update({ secondaryText: v })}
-                  />
-                )}
-                {uses.badge && (
-                  <ColorInput
-                    label="18+ badge color"
-                    value={s.badgeColor ?? "#e5383b"}
-                    onChange={(v) => update({ badgeColor: v })}
-                  />
-                )}
-              </InlineGrid>
-              <Text variant="bodySm" tone="subdued">
-                Question, subtitle, background, border and radius use the fields
-                below.
-              </Text>
-            </BlockStack>
-          </Card>
-        )}
         <Card>
           <BlockStack gap="300">
             <BlockStack gap="100">
@@ -510,8 +438,84 @@ export default function AgeVerification({
             <Text variant="bodySm" tone="subdued">
               Use {"{{minimumAge}}"} to insert the minimum age.
             </Text>
+            {isTpl && (
+              <>
+              {["inline", "badge-row", "badge-stack", "title"].includes(
+                AGE_TEMPLATES[s.template].layout,
+              ) && (
+                <InlineGrid columns={2} gap="300">
+                  <TextField
+                    label="Yes button text"
+                    autoComplete="off"
+                    value={s.yesText ?? ""}
+                    onChange={(v) => update({ yesText: v })}
+                  />
+                  <TextField
+                    label="No button text"
+                    autoComplete="off"
+                    value={s.noText ?? ""}
+                    onChange={(v) => update({ noText: v })}
+                  />
+                </InlineGrid>
+              )}
+              {AGE_TEMPLATES[s.template].layout === "confirm" && (
+                <TextField
+                  label="Continue button text"
+                  autoComplete="off"
+                  value={s.continueText ?? ""}
+                  onChange={(v) => update({ continueText: v })}
+                />
+              )}
+              </>
+            )}
           </BlockStack>
         </Card>
+
+        {isTpl && (
+          <Card>
+            <BlockStack gap="300">
+              <Text variant="headingSm">Template colors</Text>
+              <InlineGrid columns={3} gap="300">
+                <ColorInput
+                  label="Button / toggle color"
+                  value={s.accent ?? "#111827"}
+                  onChange={(v) => update({ accent: v })}
+                />
+                {uses.accentText && (
+                  <ColorInput
+                    label="Button text color"
+                    value={s.accentText ?? "#ffffff"}
+                    onChange={(v) => update({ accentText: v })}
+                  />
+                )}
+                {uses.secondaryBg && (
+                  <ColorInput
+                    label="Second button color"
+                    value={s.secondaryBg ?? "#f1f3f5"}
+                    onChange={(v) => update({ secondaryBg: v })}
+                  />
+                )}
+                {uses.secondaryText && (
+                  <ColorInput
+                    label="Second button text"
+                    value={s.secondaryText ?? "#1a1a1a"}
+                    onChange={(v) => update({ secondaryText: v })}
+                  />
+                )}
+                {uses.badge && (
+                  <ColorInput
+                    label="18+ badge color"
+                    value={s.badgeColor ?? "#e5383b"}
+                    onChange={(v) => update({ badgeColor: v })}
+                  />
+                )}
+              </InlineGrid>
+              <Text variant="bodySm" tone="subdued">
+                Background, border and radius are set in the sections below.
+              </Text>
+            </BlockStack>
+          </Card>
+        )}
 
         <BackgroundInput
           title="Background"

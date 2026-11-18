@@ -271,6 +271,7 @@ export default function CartSummary({
               <RichTextEditor
                 value={s.title}
                 onChange={(val) => update({ title: val })}
+                maxLength={20}
               />
             </BlockStack>
 
@@ -285,6 +286,7 @@ export default function CartSummary({
                   label="Subtotal"
                   value={s.subtotalLabel}
                   disabled={!s.showSubtotal}
+                  maxLength={20}
                   onChange={(val) => update({ subtotalLabel: val })}
                   autoComplete="off"
                 />
@@ -299,6 +301,7 @@ export default function CartSummary({
                   label="Discounts row label"
                   value={s.discountsRowLabel}
                   disabled={!s.showDiscountsRow}
+                  maxLength={20}
                   onChange={(val) => update({ discountsRowLabel: val })}
                   autoComplete="off"
                 />
@@ -333,6 +336,7 @@ export default function CartSummary({
                   helpText="Use {amount} where the saved amount should appear"
                   value={s.savingsBannerText}
                   disabled={!s.showSavingsBanner}
+                  maxLength={20}
                   onChange={(val) => update({ savingsBannerText: val })}
                   autoComplete="off"
                 />
@@ -360,6 +364,7 @@ export default function CartSummary({
               label="Applied discounts label"
               value={s.appliedDiscountsLabel}
               disabled={!s.showAppliedDiscounts}
+              maxLength={20}
               onChange={(val) => update({ appliedDiscountsLabel: val })}
               autoComplete="off"
             />
@@ -374,6 +379,7 @@ export default function CartSummary({
                 label="Shipping label"
                 value={s.shippingLabel}
                 disabled={!s.showShipping}
+                maxLength={20}
                 onChange={(val) => update({ shippingLabel: val })}
                 autoComplete="off"
               />
@@ -383,6 +389,7 @@ export default function CartSummary({
                 disabled={!s.showShipping || !s.showShippingFree}
                 onChange={(val) => update({ shippingFreeLabel: val })}
                 autoComplete="off"
+                maxLength={10}
               />
             </InlineGrid>
             <Checkbox

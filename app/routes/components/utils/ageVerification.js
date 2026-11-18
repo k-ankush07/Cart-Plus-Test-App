@@ -64,6 +64,18 @@ export const patchAgeVerification = (patch) => (prev) => {
 export const toggleAgeVerification = (prev) =>
   patchAgeVerification({ enabled: !getAgeVerification(prev).enabled })(prev);
 
+// true when Age Verification is on for specific products / collections but none were picked
+// (the cart can't be saved like that: the check would apply to nothing)
+export const ageSelectionMissing = (cartSettings) => {
+  const s = getAgeVerification(cartSettings);
+  if (!s.enabled || s.applyTo === "all") return false;
+  const items = s.selected?.type === s.applyTo ? s.selected.items : null;
+  if (!items) return true;
+  return s.applyTo === "products"
+    ? !(items.products?.length || items.variants?.length)
+    : !items.length;
+};
+
 // "{{minimumAge}}" -> the configured age
 export const fillAge = (html, age) =>
   String(html ?? "").replace(/\{\{\s*minimumAge\s*\}\}/g, String(age));

@@ -11,6 +11,11 @@ import { archiveAbTest, getCart, updateCart } from "../services/apiRoutes";
 import { TEMPLATE_DEFAULTS } from "./components/utils/templateTheme";
 import { templateBackground } from "./components/utils/background";
 import {
+  ageSelectionMissing,
+  getAgeVerification,
+} from "./components/utils/ageVerification";
+import { oneTickProblem } from "./components/utils/oneTick";
+import {
   DEFAULT_PREVIEW_PRODUCT_QUERY,
   normalizePreviewProduct,
   pickDefaultPreviewProduct,
@@ -617,6 +622,31 @@ export default function CartEditor() {
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
+    // Age Verification on for specific products / collections, but none picked: don't save
+    if (ageSelectionMissing(cartSettings)) {
+      const what =
+        getAgeVerification(cartSettings).applyTo === "collections"
+          ? "collection"
+          : "product";
+      setActiveTab("Age Verification");
+      window.shopify?.toast?.show(
+        `Select at least one ${what} for Age Verification, or choose "All products", before saving.`,
+        { isError: true, duration: 5000 },
+      );
+      return;
+    }
+
+    // One Tick Upsell on, but an offer has no product source / product picked: don't save
+    const oneTickMessage = oneTickProblem(cartSettings);
+    if (oneTickMessage) {
+      setActiveTab("One Tick Upsell");
+      window.shopify?.toast?.show(oneTickMessage, {
+        isError: true,
+        duration: 5000,
+      });
+      return;
+    }
+
     const saveBtn = document.getElementById("save-btn");
 
     try {
