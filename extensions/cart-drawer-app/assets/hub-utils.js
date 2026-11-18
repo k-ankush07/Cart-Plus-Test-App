@@ -948,9 +948,13 @@ window.hubUtils = {
       window.__HUB_ACTIVE_CART__?.designSettings,
     );
     const trackColor =
-      window.cartPlusBgCss?.(rewards.barBackground) || rewards.backgroundColor || "#c1c1c1";
+      rewards.backgroundColor ||
+      window.cartPlusBgCss?.(rewards.barBackground) ||
+      "#c1c1c1";
     const fillColor =
-      window.cartPlusBgCss?.(rewards.barProgress || templateBg) || rewards.textColor || "#000000";
+      rewards.textColor ||
+      window.cartPlusBgCss?.(rewards.barProgress || templateBg) ||
+      "#000000";
     const barLength = rewards.barLength || 4;
     const barGap = rewards.barGap || 0;
     const dotSize = 28 + barLength;

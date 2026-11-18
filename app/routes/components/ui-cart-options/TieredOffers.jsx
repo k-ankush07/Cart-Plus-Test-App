@@ -327,6 +327,13 @@ export default function TieredOffers({
       [key]: value,
     }));
   };
+  const updateBarColor = (key, backgroundKey, value) => {
+    handleChange("rewardsSettings", (prev) => ({
+      ...prev,
+      [key]: value,
+      [backgroundKey]: { type: "plain", color: value },
+    }));
+  };
 
   return (
     <div className="mainContent">
@@ -721,25 +728,32 @@ export default function TieredOffers({
               <ColorInput
                 label="Bar background color"
                 value={rewardsSettings.backgroundColor}
-                onChange={(val) => update("backgroundColor", val)}
+                onChange={(val) =>
+                  updateBarColor("backgroundColor", "barBackground", val)
+                }
               />
 
               <ColorInput
                 label="Bar foreground color"
                 value={rewardsSettings.textColor}
-                onChange={(val) => update("textColor", val)}
+                onChange={(val) =>
+                  updateBarColor("textColor", "barProgress", val)
+                }
               />
-              <ColorInput
-                label="Complete reward tier icon color"
-                value={rewardsSettings.completeIconColor}
-                onChange={(val) => update("completeIconColor", val)}
-              />
-
-              <ColorInput
-                label="Incomplete reward tier icon color"
-                value={rewardsSettings.incompleteIconColor}
-                onChange={(val) => update("incompleteIconColor", val)}
-              />
+              {["icon", "milestone"].includes(barStyle) && (
+                <>
+                  <ColorInput
+                    label="Complete reward tier icon color"
+                    value={rewardsSettings.completeIconColor}
+                    onChange={(val) => update("completeIconColor", val)}
+                  />
+                  <ColorInput
+                    label="Incomplete reward tier icon color"
+                    value={rewardsSettings.incompleteIconColor}
+                    onChange={(val) => update("incompleteIconColor", val)}
+                  />
+                </>
+              )}
             </InlineGrid>
           )}
 
@@ -802,25 +816,6 @@ export default function TieredOffers({
         currency={currency}
       />
 
-      {showLegacyStyling && (
-        <>
-          <BackgroundInput
-            title="Bar background"
-            value={
-              rewardsSettings.barBackground || {
-                type: "plain",
-                color: rewardsSettings.backgroundColor,
-              }
-            }
-            onChange={(bg) => update("barBackground", bg)}
-          />
-          <BackgroundInput
-            title="Bar progress"
-            value={rewardsSettings.barProgress}
-            onChange={(bg) => update("barProgress", bg)}
-          />
-        </>
-      )}
     </div>
   );
 }

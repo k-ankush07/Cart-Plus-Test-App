@@ -170,11 +170,11 @@ export default function TieredRewards({
 
   // gradient-aware colours; fall back to the plain bar colours
   const trackBg =
-    backgroundToCss(rewardsSettings.barBackground) ||
-    rewardsSettings.backgroundColor;
+    rewardsSettings.backgroundColor ||
+    backgroundToCss(rewardsSettings.barBackground);
   const fillBg =
-    backgroundToCss(rewardsSettings.barProgress || templateBg) ||
-    rewardsSettings.textColor;
+    rewardsSettings.textColor ||
+    backgroundToCss(rewardsSettings.barProgress || templateBg);
   const barHeight = rewardsSettings.barLength || 5;
   const message = (
     <p
