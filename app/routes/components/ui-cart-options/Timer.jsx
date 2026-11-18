@@ -492,24 +492,6 @@ export default function Timer({
                     />
                   </>
                 )}
-                {(timer.style === "clock" || timer.style === "bar") && (
-                  <>
-                    <ColorInput
-                      label={timer.style === "bar" ? "Bar" : "Ring"}
-                      value={timer.barColor || "#1a56db"}
-                      onChange={(barColor) => update({ barColor })}
-                    />
-                    <ColorInput
-                      label={
-                        timer.style === "bar"
-                          ? "Bar background"
-                          : "Ring background"
-                      }
-                      value={timer.barBackground || "#c9d6f5"}
-                      onChange={(barBackground) => update({ barBackground })}
-                    />
-                  </>
-                )}
                 {(timer.style === "clock" ||
                   timer.style === "bar" ||
                   timer.style === "progress") && (

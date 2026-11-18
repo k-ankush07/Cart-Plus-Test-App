@@ -313,7 +313,7 @@ const CartPreview = memo(function CartPreview({
       )}
 
       <div
-        className="cart-app__container styles_CartPreview__card__"
+        className={`cart-app__container styles_CartPreview__card__ ${sidePanelOnRight ? "cart-app__container--side-panel-right" : ""}`}
         style={{
           position: "relative",
           ...(floating && sidePanelEnabled

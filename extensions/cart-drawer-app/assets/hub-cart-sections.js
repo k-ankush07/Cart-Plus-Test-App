@@ -670,7 +670,7 @@ window.cartPlusAgeHTML = function (blockId, cartSettings) {
     content = column(`${question(18, true, 700)}${sub(true)}${yesBtn("width:100%;")}${noLink()}`, 8);
   }
 
-  return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:5px 5px;${hidden}">
+  return `<div id="cart-plus-age-${blockId}" class="cart-plus-age-verification" style="padding:15px 15px;${hidden}">
     <div class="cart-plus-age-box" style="padding:14px;border-radius:${s.borderRadius}px;border:1px solid ${s.borderColor};--cp-age-edge:${s.borderColor};background:${window.cartPlusBgCss(s.background)};">
       ${content}${input}
       ${errorHtml}

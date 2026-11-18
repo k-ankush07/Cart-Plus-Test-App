@@ -215,6 +215,7 @@ export default function Header({
                 label="Text"
                 value={headerSettings.titleText}
                 onChange={(val) => updateHeader("titleText", val)}
+                maxLength={30}
                 helpText="Use {{cart_quantity}} for the # of items in cart"
               />
 
@@ -339,6 +340,10 @@ export default function Header({
                 </DropZone>
               )}
 
+              <Text as="p" variant="bodySm" tone="subdued">
+                Recommended logo size: 300 x 100 px.
+              </Text>
+
               {/* Alignment */}
               <BlockStack gap="100">
                 <Text as="p">Alignment</Text>
@@ -376,6 +381,7 @@ export default function Header({
                 label="Text"
                 value={headerSettings.titleText}
                 onChange={(val) => updateHeader("titleText", val)}
+                 maxLength={30}
                 helpText="Use {{cart_quantity}} for the # of items in cart"
               />
 

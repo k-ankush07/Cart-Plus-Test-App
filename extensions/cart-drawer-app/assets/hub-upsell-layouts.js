@@ -241,6 +241,7 @@ window.cartPlusRemoveSidePanel = function (blockId) {
   // the cart goes back to its own spot once the panel is gone
   const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
   drawer?.classList.remove("hub-side-shifted");
+  drawer?.classList.remove("hub-side-panel-right");
 };
 
 // cards stacked in a strip beside the cart, with the Cross-sell title on top (same as the editor)
@@ -253,7 +254,8 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     return;
   }
 
-  const { ds } = cartPlusUpsellColors();
+  const { ds, u, primary } = cartPlusUpsellColors();
+  const cfg = settings || u;
   const cards = products
     .map((p) =>
       hubUtils.getProductCardHTML(p, {
@@ -267,8 +269,6 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     .join("");
 
   // title + icon, like the other layouts
-  const { u, primary } = cartPlusUpsellColors();
-  const cfg = settings || u;
   const titleIcon =
     cfg.icon === undefined ? { type: "icon", name: "star" } : cfg.icon;
   const iconHtml = titleIcon
@@ -284,11 +284,12 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     window.cartPlusRemoveSidePanel(blockId);
     return;
   }
-  const signature = html;
+  const signature = `${cfg.sidePanelPosition || "left"}:${html}`;
   if (!panel) {
     panel = document.createElement("div");
     panel.id = `hub-upsell-side-${blockId}`;
     panel.className = "hub-upsell-side-panel upsell-products";
+    panel.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.15)";
     if (/hub-visible-/.test(drawer.className)) {
       panel.style.transition = "none";
       requestAnimationFrame(() =>
@@ -301,6 +302,16 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     panel.style.setProperty("--cp-surface", ds.backgroundColor || "#1c1c1e");
   } else {
     panel.style.removeProperty("--cp-surface");
+  }
+  // the panel is a sibling of the drawer (not inside it), so it has to get the cart's
+  // custom font class and variable itself
+  const usesCustomFont = drawer.classList.contains("cart-app--customFont");
+  panel.classList.toggle("cart-app--customFont", usesCustomFont);
+  const customFont = drawer.style.getPropertyValue("--cart-custom-font");
+  if (usesCustomFont && customFont) {
+    panel.style.setProperty("--cart-custom-font", customFont);
+  } else {
+    panel.style.removeProperty("--cart-custom-font");
   }
   if (panel.dataset.sig === signature) return;
   panel.dataset.sig = signature;
@@ -319,9 +330,8 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
   panel.style.top = `${floating ? 16 : 0}px`;
   // Editor "Left" / "Right" of the cart. Outer side: next to the drawer. Inner side: at the screen edge,
   // and the cart moves over to make room (same as the editor preview).
-  const wantRight =
-    (settings || window.__HUB_ACTIVE_CART__?.upsellsSettings || {})
-      .sidePanelPosition === "right";
+  const wantRight = cfg.sidePanelPosition === "right";
+  drawer.classList.toggle("hub-side-panel-right", wantRight);
   const outer = !wantRight !== drawerOnLeft;
   const edge = drawerOnLeft ? "left" : "right";
   panel.style.left = "";

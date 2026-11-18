@@ -639,9 +639,9 @@ export default function Upsells({
           display: "flex",
           flexDirection: "column",
           gap: 6,
+          zIndex: 1,
           padding: 6,
           boxSizing: "border-box",
-          zIndex: 5,
           background:
             designSettings?.bodyBackground ||
             designSettings?.backgroundColor ||
