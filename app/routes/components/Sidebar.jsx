@@ -558,7 +558,10 @@ const Sidebar = memo(function Sidebar({
               <Button
                 size="slim"
                 pressed={previewMode === "cart"}
-                onClick={() => changePreview("cart")}
+                onClick={() => {
+                  changePreview("cart");
+                  setActiveTab?.("Template");
+                }}
               >
                 Item in cart
               </Button>
