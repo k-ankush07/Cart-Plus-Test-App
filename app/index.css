@@ -34,7 +34,7 @@ span.sb-slot.main span.Polaris-Icon {
 
 .appLayout.appLayout-side-panel {
     width: 100%;
-    max-width: 1510px;
+    padding-right: 570px !important;
 }
 
 body.library-modal-open .Polaris-Modal-Dialog__Modal {

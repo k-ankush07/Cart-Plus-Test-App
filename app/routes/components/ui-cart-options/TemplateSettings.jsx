@@ -8,6 +8,7 @@ import {
   RadioButton,
   RangeSlider,
   Popover,
+  Select,
   TextField,
   ColorPicker,
   Button,
@@ -94,15 +95,11 @@ const hexToHsba = (hex) => {
 
 const hsbaToHex = (c) => toHex({ ...hsbToRgb(c), a: c.alpha });
 
-/* ---------- Polaris ColorPicker (area + hue + alpha), hex in / hex out ---------- */
 const HexColorPicker = ({ value, onChange }) => {
   const [hsba, setHsba] = useState(() => hexToHsba(value));
 
-  // hex bahar se badle (tab switch / fields / swap) to picker sync karo.
-  // Apna hi change ho to hue reset nahi hota.
   useEffect(() => {
     if (!sameColor(hsbaToHex(hsba), value)) setHsba(hexToHsba(value));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   return (
@@ -207,7 +204,6 @@ const ColorFields = ({ value, onChange }) => {
   );
 };
 
-/* ---------- angle dial (needle angle ke saath ghoomta hai, drag se set) ---------- */
 const AngleDial = ({ value, onChange }) => {
   const ref = useRef(null);
 
@@ -215,7 +211,7 @@ const AngleDial = ({ value, onChange }) => {
     const r = ref.current.getBoundingClientRect();
     const dx = e.clientX - (r.left + r.width / 2);
     const dy = e.clientY - (r.top + r.height / 2);
-    let deg = Math.round((Math.atan2(dx, -dy) * 180) / Math.PI); // 0deg = upar, CSS jaisa
+    let deg = Math.round((Math.atan2(dx, -dy) * 180) / Math.PI);
     if (deg < 0) deg += 360;
     onChange(deg);
   };
@@ -447,10 +443,9 @@ export default function TemplateSettings({
   setDesignSettings,
 }) {
   const [customOpen, setCustomOpen] = useState(false);
-  const [stop, setStop] = useState("gradientStart"); // gradient: konsa color edit ho raha hai
+  const [stop, setStop] = useState("gradientStart");
   const t = { ...TEMPLATE_DEFAULTS, ...designSettings };
 
-  // the first change also switches the cart over to the Template look
   const update = (patch) =>
     setDesignSettings((prev) => ({ ...TEMPLATE_DEFAULTS, ...prev, ...patch }));
 
@@ -481,24 +476,57 @@ export default function TemplateSettings({
       <BlockStack gap="400">
         {/* Layout */}
         <Card>
-          <BlockStack gap="300">
-            <Text as="h3" variant="headingSm">
-              Template
-            </Text>
-            <InlineStack gap="300">
-              <LayoutOption
-                value="sidebar"
-                label="Side bar"
-                selected={t.layout === "sidebar"}
-                onSelect={(layout) => update({ layout })}
-              />
-              <LayoutOption
-                value="floating"
-                label="Floating"
-                selected={t.layout === "floating"}
-                onSelect={(layout) => update({ layout })}
-              />
-            </InlineStack>
+          <BlockStack gap="400">
+            <BlockStack gap="300">
+              <Text as="h3" variant="headingSm">
+                Template
+              </Text>
+              <InlineStack gap="300">
+                <LayoutOption
+                  value="sidebar"
+                  label="Side bar"
+                  selected={t.layout === "sidebar"}
+                  onSelect={(layout) => update({ layout })}
+                />
+                <LayoutOption
+                  value="floating"
+                  label="Floating"
+                  selected={t.layout === "floating"}
+                  onSelect={(layout) => update({ layout })}
+                />
+              </InlineStack>
+            </BlockStack>
+            <Box paddingBlockStart="100">
+              <BlockStack gap="100">
+                <Text variant="headingSm" as="p">
+                  Cart width
+                </Text>
+                <InlineStack align="space-between" gap="300" wrap={false}>
+                  <div style={{ width: "100%" }}>
+                    <Select
+                      label="Desktop"
+                      options={[
+                        { label: "Default", value: "base" },
+                        { label: "Wide", value: "wide" },
+                      ]}
+                      value={designSettings.desktopWidth}
+                      onChange={(value) => update({ desktopWidth: value })}
+                    />
+                  </div>
+                  <div style={{ width: "100%" }}>
+                    <Select
+                      label="Mobile"
+                      options={[
+                        { label: "Full", value: "full" },
+                        { label: "Nearly full", value: "fullWithGap" },
+                      ]}
+                      value={designSettings.mobileWidth}
+                      onChange={(value) => update({ mobileWidth: value })}
+                    />
+                  </div>
+                </InlineStack>
+              </BlockStack>
+            </Box>
           </BlockStack>
         </Card>
 
@@ -686,7 +714,7 @@ export default function TemplateSettings({
               <Text as="p" variant="bodySm" fontWeight="semibold">
                 Appearance
               </Text>
-                <InlineStack gap="400">
+              <InlineStack gap="400">
                 <RadioButton
                   label="Light"
                   checked={t.appearance === "light"}

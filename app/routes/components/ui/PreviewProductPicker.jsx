@@ -167,10 +167,15 @@ export default function PreviewProductPicker({
         Previewing items
       </Text>
 
-      <Button fullWidth disclosure="select" textAlign="left" onClick={openModal}>
+      <Button
+        fullWidth
+        disclosure="select"
+        textAlign="left"
+        onClick={openModal}
+      >
         {label}
       </Button>
-
+      {/* 
       {selected.length > 1 && (
         <InlineStack gap="100">
           {selected.map((p) => (
@@ -179,7 +184,7 @@ export default function PreviewProductPicker({
             </Tag>
           ))}
         </InlineStack>
-      )}
+      )} */}
 
       <Modal
         open={open}

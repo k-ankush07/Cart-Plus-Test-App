@@ -9,11 +9,9 @@ import {
   InlineStack,
   BlockStack,
   Box,
-  Icon,
   RangeSlider,
   Card,
 } from "@shopify/polaris";
-import { PaintBrushFlatIcon } from "@shopify/polaris-icons";
 import ColorInput from "../ui/ColorInput";
 import { CUSTOM_FONTS, resolveCustomFont } from "../utils/fonts";
 import "../../../index.css";
@@ -32,27 +30,6 @@ export default function Appearance({
 
   return (
     <div className="mainContent">
-      {/* Page heading — matches reference HTML exactly */}
-      {!themed && (
-        <Box paddingBlockEnd="400">
-          <BlockStack gap="400">
-            <InlineStack align="space-between" blockAlign="center">
-              <InlineStack blockAlign="center" gap="100">
-                <Box>
-                  <Icon source={PaintBrushFlatIcon} />
-                </Box>
-                <InlineStack gap="200">
-                  <Text variant="headingMd" as="h2">
-                    Appearance
-                  </Text>
-                </InlineStack>
-              </InlineStack>
-              <InlineStack gap="200" />
-            </InlineStack>
-          </BlockStack>
-        </Box>
-      )}
-
       {/* CARD 1 — General + Cart width */}
       <Box paddingBlockEnd="400">
         <Card>
@@ -92,7 +69,7 @@ export default function Appearance({
               onChange={(value) => handleChange("showStrikethrough", value)}
             /> */}
             </BlockStack>
-            <BlockStack gap="100">
+            {/* <BlockStack gap="100">
               <Text variant="headingSm" as="p">
                 Cart width
               </Text>
@@ -120,7 +97,7 @@ export default function Appearance({
                   />
                 </div>
               </InlineStack>
-            </BlockStack>
+            </BlockStack> */}
           </BlockStack>
         </Card>
       </Box>
