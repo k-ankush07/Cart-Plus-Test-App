@@ -531,6 +531,16 @@ export default function Timer({
                   </>
                 )}
               </InlineGrid>
+              {timer.style === "bar" && (
+                <TextField
+                  label="Text inside bar"
+                  value={timer.barText || ""}
+                  placeholder="e.g. {percent} left"
+                  helpText="Use {percent} for the time left. Leave empty for a thin bar."
+                  autoComplete="off"
+                  onChange={(barText) => update({ barText })}
+                />
+              )}
             </BlockStack>
           </Card>
         )}

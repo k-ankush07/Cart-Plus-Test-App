@@ -360,15 +360,22 @@ window.cartPlusTimerTemplate = function (timer, design, left, total) {
     const pct = Math.max(0, Math.min(100, (s / total) * 100));
     return {
       css: `${wrapper}display:block;`,
-      html: `<div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;"><span style="display:inline-flex;align-items:center;gap:6px;">${icon(18)}<span>${title || "Offer expires soon"}</span></span><strong style="color:${digitsColor};">${clock}</strong></div><div style="height:4px;border-radius:4px;background:${track};margin-top:8px;"><div style="width:${pct}%;height:100%;border-radius:4px;background:${fill};transition:width 1s linear;"></div></div>`,
+      html: `<div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;"><span style="display:inline-flex;align-items:center;gap:6px;">${icon(18)}<span>${title || "Offer expires soon"}</span></span><strong style="color:${digitsColor};">${clock}</strong></div><div style="display:block !important;height:4px;border-radius:4px;background:${track};margin-top:8px;"><div data-cp-fill style="display:block !important;width:${pct}%;min-width:${s > 0 ? 8 : 0}px;height:100%;border-radius:4px;background:${fill};transition:width 1s linear;"></div></div>`,
     };
   }
 
+
   // bar (also the fallback): icon + title + progress bar + clock
   const pct = Math.max(0, Math.min(100, (s / total) * 100));
+  const barText = String(timer.barText || "").replace(/\{percent\}/gi, `${Math.round(pct)}%`);
+  const barH = barText ? 20 : 8;
+  // explicit font so the theme's CSS can't change the text inside the bar
+  const inner = barText
+    ? `<span style="display:block;padding:0 8px;font:600 11px/${barH}px system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:clip;">${barText}</span>`
+    : "";
   return {
     css: wrapper,
-    html: `${iconBubble}<span style="font-weight:700;font-size:15px;">${title}</span><div style="flex:1;height:8px;border-radius:4px;background:${track};"><div style="width:${pct}%;height:100%;border-radius:4px;background:${fill};transition:width 1s linear;"></div></div><strong style="color:${digitsColor};">${clock}</strong>`,
+    html: `${iconBubble}<span style="font-weight:700;font-size:15px;">${title}</span><div style="display:block !important;flex:1;height:${barH}px;border-radius:${barH / 2}px;background:${track};overflow:hidden;"><div data-cp-fill style="display:block !important;width:${pct}%;min-width:${s > 0 ? barH : 0}px;height:100%;border-radius:${barH / 2}px;background:${fill};transition:width 1s linear;overflow:hidden;">${inner}</div></div><strong style="color:${digitsColor};">${clock}</strong>`,
   };
 };
 
@@ -396,11 +403,23 @@ function cartPlusTimerPaint(blockId, left, total) {
     cartPlusTimerIconHTML(timer.icon, size, design.accentText || window.cartPlusDarkColor(timer.iconColor, "#000000", design.textColor));
 
   const tpl = window.cartPlusTimerTemplate(timer, design, left, total);
+  // the markup is rebuilt every second, so a new fill would jump to its width instead of
+  // animating: start it from the previous width, then let the CSS transition shrink it
+  const prevWidth = el.querySelector("[data-cp-fill]")?.style.width;
   el.style.cssText = tpl.css;
   el.innerHTML = tpl.html;
+  const fillEl = el.querySelector("[data-cp-fill]");
+  if (fillEl && prevWidth) {
+    const targetWidth = fillEl.style.width;
+    const transition = fillEl.style.transition;
+    fillEl.style.transition = "none";
+    fillEl.style.width = prevWidth;
+    void fillEl.offsetWidth; // flush so the browser registers the starting width
+    fillEl.style.transition = transition;
+    fillEl.style.width = targetWidth;
+  }
   return;
 
-  // only the background picked for the Timer; by default it has none
   el.style.cssText = `background:${
     timer.background ? window.cartPlusBgCss(timer.background) : "transparent"
   };color:${design.accentText || design.textColor || "inherit"};padding:10px 20px;text-align:${timer.alignment};font-size:14px;border-bottom:1px solid ${

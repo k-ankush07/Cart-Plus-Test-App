@@ -17,6 +17,7 @@ export const TIMER_DEFAULTS = {
   boxColor: null,
   barColor: null,
   barBackground: null,
+  barText: "", // text inside the bar fill ("{percent}" = time left %), "" = none
 };
 
 export const getTimer = (headerSettings) => ({

@@ -390,6 +390,7 @@ export default function Timer({ headerSettings, designSettings }) {
           <div
             style={{
               width: `${pctP}%`,
+              minWidth: left > 0 ? 8 : 0,
               height: "100%",
               borderRadius: 4,
               background: fill,
@@ -410,17 +411,51 @@ export default function Timer({ headerSettings, designSettings }) {
         style={{ fontWeight: 700, fontSize: 15 }}
         dangerouslySetInnerHTML={{ __html: title }}
       />
-      <div style={{ flex: 1, height: 8, borderRadius: 4, background: track }}>
-        <div
-          style={{
-            width: `${pct}%`,
-            height: "100%",
-            borderRadius: 4,
-            background: fill,
-            transition: "width 1s linear",
-          }}
-        />
-      </div>
+      {(() => {
+        const barText = String(timer.barText || "").replace(
+          /\{percent\}/gi,
+          `${Math.round(pct)}%`,
+        );
+        const barH = barText ? 20 : 8;
+        return (
+          <div
+            style={{
+              flex: 1,
+              height: barH,
+              borderRadius: barH / 2,
+              background: track,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${pct}%`,
+                minWidth: left > 0 ? barH : 0,
+                height: "100%",
+                borderRadius: barH / 2,
+                background: fill,
+                transition: "width 1s linear",
+                overflow: "hidden",
+              }}
+            >
+              {barText && (
+                <span
+                  style={{
+                    display: "block",
+                    padding: "0 8px",
+                    font: `600 11px/${barH}px system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`,
+                    color: "#fff",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                  }}
+                >
+                  {barText}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })()}
       <strong style={{ color: digitsColor }}>{clock}</strong>
     </div>
   );
