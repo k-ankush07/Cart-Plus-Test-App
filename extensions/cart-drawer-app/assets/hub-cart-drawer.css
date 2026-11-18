@@ -3272,6 +3272,10 @@ select.hub-compact-variant {
   --cp-line: rgba(255, 255, 255, 0.14);
   color-scheme: dark;
 }
+.cart-app--dark + .hub-upsell-side-panel .hub-rec-product select {
+  background: color-mix(in srgb, #ffffff 9%, var(--cp-surface, #1c1c1e));
+  border-color: rgba(255, 255, 255, 0.14);
+}
 /* cards */
 .cart-app--dark.cart-app--themed .hub-cart-item,
 .cart-app--dark .hub-rec-product,
@@ -3280,6 +3284,12 @@ select.hub-compact-variant {
 .cart-app--dark .hub-addon-sp-card,
 .cart-app--dark .hub-addons {
   background: var(--cp-card);
+}
+.cart-app--dark .hub-compact-track .hub-compact-tile {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+.hub-cart-drawer.cart-app--dark select.hub-compact-variant {
+  border-color: rgba(255, 255, 255, 0.14) !important;
 }
 /* quantity control, fields, selects */
 .cart-app--dark .hub-qty-control,

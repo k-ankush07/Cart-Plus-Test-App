@@ -285,7 +285,6 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     return;
   }
   const signature = html;
-  if (panel && panel.dataset.sig === signature) return;
   if (!panel) {
     panel = document.createElement("div");
     panel.id = `hub-upsell-side-${blockId}`;
@@ -298,6 +297,12 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     }
     drawer.insertAdjacentElement("afterend", panel);
   }
+  if (ds.dark) {
+    panel.style.setProperty("--cp-surface", ds.backgroundColor || "#1c1c1e");
+  } else {
+    panel.style.removeProperty("--cp-surface");
+  }
+  if (panel.dataset.sig === signature) return;
   panel.dataset.sig = signature;
 
   const bodyBg =
