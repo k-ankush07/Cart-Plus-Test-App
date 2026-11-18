@@ -263,6 +263,11 @@ export default function Timer({
   apiUrl,
 }) {
   const timer = getTimer(headerSettings);
+  const activeTemplate =
+    timer.template ||
+    Object.keys(TIMER_TEMPLATES).find(
+      (key) => TIMER_TEMPLATES[key].style === timer.style,
+    );
   const update = (patch) => handleChange("header", patchTimer(patch));
   const applyTemplate = (key) => {
     const settings = Object.fromEntries(
@@ -309,7 +314,7 @@ export default function Timer({
               <TimerTemplatePreview
                 key={key}
                 template={key}
-                selected={timer.template === key}
+                selected={activeTemplate === key}
                 onSelect={() => applyTemplate(key)}
               />
             ))}

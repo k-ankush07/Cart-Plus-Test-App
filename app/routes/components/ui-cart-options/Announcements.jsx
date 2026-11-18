@@ -258,7 +258,10 @@ export default function Announcements({
             <AnnouncementTemplatePreview
               key={key}
               template={key}
-              selected={announcementSettings.template === key}
+              selected={
+                announcementSettings.template === key ||
+                (!announcementSettings.template && key === "default")
+              }
               designSettings={designSettings}
               onSelect={() => applyTemplate(key)}
             />

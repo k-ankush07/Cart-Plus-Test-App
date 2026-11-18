@@ -53,6 +53,7 @@ export const defaultHeaderSettings = {
 
 export const defaultAnnouncementSettings = {
   enabled: true,
+  template: "default",
   height: "normal",
   position: "before",
   timer: "00:00",

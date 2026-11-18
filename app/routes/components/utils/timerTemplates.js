@@ -1,6 +1,19 @@
 const ic = (name) => ({ type: "icon", name });
 
 export const TIMER_TEMPLATES = {
+  price_expires: {
+    label: "Price expires",
+    style: "text",
+    eyebrow: "",
+    message: "This price expires in {{timer}}",
+    subText: "",
+    icon: ic("clock"),
+    iconColor: "#303030",
+    textColor: "#303030",
+    background: "#f1f1f1",
+    alignment: "center",
+    minutes: 10,
+  },
   limited_offer: {
     label: "Limited offer",
     style: "boxes",
@@ -99,19 +112,6 @@ export const TIMER_TEMPLATES = {
     barBackground: "#ddd0ff",
     alignment: "left",
     minutes: 15,
-  },
-    price_expires: {
-    label: "Price expires",
-    style: "text",
-    eyebrow: "",
-    message: "This price expires in {{timer}}",
-    subText: "",
-    icon: ic("clock"),
-    iconColor: "#303030",
-    textColor: "#303030",
-    background: "#f1f1f1",
-    alignment: "center",
-    minutes: 10,
   },
   offer_progress: {
     label: "Offer progress",
