@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { Navigation } from "swiper/modules";
@@ -38,9 +38,11 @@ export default function Upsells({
   designSettings,
   currency,
   cartSettings,
-  sidePanel = false, 
+  sidePanel = false,
+  onAddPreviewProduct,
+  previewProducts = [],
 }) {
-  const [products, setProducts] = useState([]);
+  const [fetchedProducts, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedVariants, setSelectedVariants] = useState({});
   const [navReady, setNavReady] = useState(false);
@@ -52,6 +54,8 @@ export default function Upsells({
   // compact layout: scroll track + arrow state
   const compactRef = useRef(null);
   const [edge, setEdge] = useState({ start: true, end: false });
+  // compact tiles: products whose "+" was just clicked (shows "…" until they are in the cart)
+  const [compactAdding, setCompactAdding] = useState({});
 
   const {
     useAiRecommended,
@@ -79,7 +83,20 @@ export default function Upsells({
     buttonBackground = null,
     buttonTextColor = null,
     cardBackground = null,
+    showIfAlreadyInCart = false,
   } = upsellsSettings || {};
+
+  // a product that was added to the preview cart is hidden from the list, unless
+  // "Show upsell for items already in cart" is ticked
+  const products = useMemo(() => {
+    if (showIfAlreadyInCart) return fetchedProducts;
+    const inCart = new Set(
+      (previewProducts || [])
+        .filter((p) => p.variants?.length)
+        .map((p) => String(p.id)),
+    );
+    return fetchedProducts.filter((p) => !inCart.has(String(p.id)));
+  }, [fetchedProducts, previewProducts, showIfAlreadyInCart]);
   const compactColumns = Math.min(4, Math.max(1, Number(compactColumnsSetting) || 3));
   const layout =
     upsellsSettings?.layout && upsellsSettings.layout !== "row"
@@ -301,7 +318,18 @@ export default function Upsells({
       setLoading(true);
       setTimeout(() => {
         setLoading(false);
-      }, 2000);
+        // the product now shows up in the preview's cart items (with the offer price, if any)
+        onAddPreviewProduct?.(
+          product,
+          hasOffer
+            ? {
+                ...selectedVariant,
+                price: discount.final.toFixed(2),
+                compareAtPrice: selectedVariant.price,
+              }
+            : selectedVariant,
+        );
+      }, 800);
     };
 
     // offer price + label from the Discount settings
@@ -948,6 +976,24 @@ export default function Upsells({
                 <button
                   type="button"
                   aria-label={buttonText}
+                  disabled={!!compactAdding[product.id]}
+                  onClick={() => {
+                    setCompactAdding((p) => ({ ...p, [product.id]: true }));
+                    setTimeout(() => {
+                      setCompactAdding((p) => ({ ...p, [product.id]: false }));
+                      // into the preview's cart items, at the offer price when there is one
+                      onAddPreviewProduct?.(
+                        product,
+                        hasOffer
+                          ? {
+                              ...v,
+                              price: discount.final.toFixed(2),
+                              compareAtPrice: String(v.price),
+                            }
+                          : v,
+                      );
+                    }, 800);
+                  }}
                   style={{
                     position: "absolute",
                     top: 2,
@@ -963,11 +1009,29 @@ export default function Upsells({
                       designSettings.buttonTextColor ||
                       "#fff",
                     fontSize: 14,
-                    lineHeight: "20px",
+                    lineHeight: 1,
                     padding: 0,
+                    // "+" and the spinner sit exactly in the middle of the circle
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  +
+                  {compactAdding[product.id] ? (
+                    <span
+                      className="loader"
+                      style={{
+                        width: 11,
+                        height: 11,
+                        display: "block",
+                        border: "2px solid rgba(255,255,255,0.35)",
+                        borderTop: "2px solid #fff",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  ) : (
+                    "+"
+                  )}
                 </button>
 
                 <a

@@ -220,6 +220,8 @@ const CartPreview = memo(function CartPreview({
           designSettings={designSettings}
           currency={currency}
           cartSettings={cartSettings}
+          onAddPreviewProduct={onAddPreviewProduct}
+          previewProducts={previewProducts}
         />
       </SectionBg>
     ),
@@ -285,6 +287,8 @@ const CartPreview = memo(function CartPreview({
           designSettings={designSettings}
           currency={currency}
           cartSettings={cartSettings}
+          onAddPreviewProduct={onAddPreviewProduct}
+          previewProducts={previewProducts}
         />
       )}
 

@@ -70,7 +70,7 @@ window.cartPlusNotesOpenSheet = function (blockId) {
   const wrap = document.createElement("div");
   wrap.id = `cart-plus-note-sheet-${blockId}`;
   wrap.innerHTML = `
-    <div class="cart-plus-note-overlay" onclick="cartPlusNotesCloseSheet('${blockId}')" style="position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:100000;"></div>
+    <div class="cart-plus-note-overlay" onclick="cartPlusNotesCloseSheet('${blockId}')" style="display:block; position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:100000;"></div>
     <div role="dialog" aria-label="Order note" style="position:absolute;left:0;right:0;bottom:0;z-index:100001;background:${sheetBg};padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -4px 16px rgba(0,0,0,.12);">
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div style="font-size:13px;font-weight:500;letter-spacing:.04em;">${settings.heading ?? "Order note"}</div>

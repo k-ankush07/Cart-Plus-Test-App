@@ -3413,6 +3413,7 @@ select.hub-compact-variant {
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-additional-notes,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-summary,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-discount-row,
+.cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-discount-input-row-items,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-age-verification,
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .cart-plus-checkout-button-container-row {
   margin-top: 0 !important;
@@ -3424,6 +3425,7 @@ select.hub-compact-variant {
 .cart-plus-footer-stack > .cp-sec .hub-addon-product,
 .cart-plus-footer-stack > .cp-sec .cart-plus-summary,
 .cart-plus-footer-stack > .cp-sec .cart-discount-row,
+.cart-plus-footer-stack > .cp-sec .hub-discount-input-row-items,
 .cart-plus-footer-stack > .cp-sec .cart-plus-discount-tpl,
 .cart-plus-footer-stack > .cp-sec .cart-plus-age-verification,
 .cart-plus-footer-stack > .cp-sec .cart-plus-login-message,
@@ -3439,6 +3441,7 @@ select.hub-compact-variant {
 .cart-plus-footer-stack > .cp-sec[data-cp-first] .hub-addon-product,
 .cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-summary,
 .cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-discount-row,
+.cart-plus-footer-stack > .cp-sec[data-cp-first] .hub-discount-input-row-items,
 .cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-discount-tpl,
 .cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-age-verification,
 .cart-plus-footer-stack > .cp-sec[data-cp-first] .cart-plus-login-message,
