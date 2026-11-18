@@ -52,13 +52,16 @@ const divider = (
   />
 );
 
-function RichTextEditor({ value, onChange }) {
+// maxLength (optional) counts the visible characters, not the html around them
+function RichTextEditor({ value, onChange, maxLength }) {
   const ref = useRef(null);
   const savedRange = useRef(null);
+  const lastValidHtml = useRef(value || "");
 
   const [fontSize, setFontSize] = useState(() => readFontSize(value));
 
   useEffect(() => {
+    lastValidHtml.current = value || "";
     if (ref.current && value !== ref.current.innerHTML) {
       ref.current.innerHTML = value || "";
       setFontSize(readFontSize(value));
@@ -67,8 +70,39 @@ function RichTextEditor({ value, onChange }) {
 
   const emit = () => {
     normalize(ref.current);
+    // safety net for anything that slipped past the limit: go back to the last good text
+    if (maxLength && ref.current.textContent.length > maxLength) {
+      ref.current.innerHTML = lastValidHtml.current;
+      return;
+    }
     const html = ref.current.innerHTML;
+    lastValidHtml.current = html;
     if (html !== value) onChange(html);
+  };
+
+  // how many characters can still be typed (the current selection gets replaced)
+  const roomLeft = () => {
+    const sel = window.getSelection();
+    const selected =
+      sel && sel.rangeCount && ref.current.contains(sel.anchorNode)
+        ? sel.toString().length
+        : 0;
+    return maxLength - ref.current.textContent.length + selected;
+  };
+
+  const handleBeforeInput = (e) => {
+    if (!maxLength || !e.inputType.startsWith("insert")) return;
+    if (e.inputType === "insertFromPaste") return; // handled in onPaste
+    const incoming = e.data ? e.data.length : 1;
+    if (incoming > roomLeft()) e.preventDefault();
+  };
+
+  const handlePaste = (e) => {
+    if (!maxLength) return;
+    e.preventDefault();
+    const text = e.clipboardData.getData("text/plain").replace(/\s+/g, " ");
+    const room = roomLeft();
+    if (room > 0) document.execCommand("insertText", false, text.slice(0, room));
   };
 
   const format = (command, arg = null) => {
@@ -282,6 +316,8 @@ function RichTextEditor({ value, onChange }) {
         className="rte-editor"
         contentEditable
         onInput={emit}
+        onBeforeInput={handleBeforeInput}
+        onPaste={handlePaste}
         onKeyUp={saveSelection}
         onMouseUp={saveSelection}
         onBlur={saveSelection}

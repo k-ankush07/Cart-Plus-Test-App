@@ -268,11 +268,13 @@ export default function Timer({
     Object.keys(TIMER_TEMPLATES).find(
       (key) => TIMER_TEMPLATES[key].style === timer.style,
     );
+  // every template has room for a different amount of text (see timerTemplates.js)
+  const messageMaxLength = TIMER_TEMPLATES[activeTemplate]?.maxLength ?? 30;
   const update = (patch) => handleChange("header", patchTimer(patch));
   const applyTemplate = (key) => {
     const settings = Object.fromEntries(
       Object.entries(TIMER_TEMPLATES[key]).filter(
-        ([setting]) => setting !== "label",
+        ([setting]) => setting !== "label" && setting !== "maxLength",
       ),
     );
     update({ template: key, ...settings });
@@ -340,12 +342,18 @@ export default function Timer({
               accessToken={accessToken}
               apiUrl={apiUrl}
             />
-            <InlineGrid columns={2} gap="200">
-              <ColorInput
-                label="Icon color"
-                value={timer.iconColor || "#000000"}
-                onChange={(iconColor) => update({ iconColor })}
-              />
+            <InlineGrid
+              columns={timer.icon?.type === "image" ? 1 : 2}
+              gap="200"
+            >
+              {/* uploaded images keep their own colours, so the tint doesn't apply */}
+              {timer.icon?.type !== "image" && (
+                <ColorInput
+                  label="Icon color"
+                  value={timer.iconColor || "#000000"}
+                  onChange={(iconColor) => update({ iconColor })}
+                />
+              )}
 
               <ColorInput
                 label="Icon background"
@@ -358,6 +366,7 @@ export default function Timer({
                 label="Small heading"
                 value={timer.eyebrow || ""}
                 autoComplete="off"
+                maxLength={30}
                 onChange={(eyebrow) => update({ eyebrow })}
               />
             )}
@@ -367,11 +376,13 @@ export default function Timer({
                 value={timer.subText || ""}
                 autoComplete="off"
                 helpText="Use {{minutes}} for remaining minutes"
+                 maxLength={30}
                 onChange={(subText) => update({ subText })}
               />
             )}
             <RichTextEditor
               value={timer.message}
+              maxLength={messageMaxLength}
               onChange={(message) => update({ message })}
             />
             {/* Alignment only moves the "text" pill; the other templates fill the full width */}
@@ -430,23 +441,29 @@ export default function Timer({
                 }
               />
             </div>
-            <Text as="p" variant="bodySm" fontWeight="semibold">
-              Timer Labels
-            </Text>
-            <InlineGrid columns={3} gap="200">
-              {["hrs", "min", "sec"].map((key) => (
-                <TextField
-                  key={key}
-                  label={key}
-                  labelHidden
-                  value={timer.labels[key]}
-                  autoComplete="off"
-                  onChange={(v) =>
-                    update({ labels: { ...timer.labels, [key]: v } })
-                  }
-                />
-              ))}
-            </InlineGrid>
+            {/* hrs / min / sec labels are only drawn by the boxes and rings styles */}
+            {["boxes", "rings"].includes(timer.style) && (
+              <>
+                <Text as="p" variant="bodySm" fontWeight="semibold">
+                  Timer Labels
+                </Text>
+                <InlineGrid columns={3} gap="200">
+                  {["hrs", "min", "sec"].map((key) => (
+                    <TextField
+                      key={key}
+                      label={key}
+                      labelHidden
+                      value={timer.labels[key]}
+                      autoComplete="off"
+                      maxLength={7}
+                      onChange={(v) =>
+                        update({ labels: { ...timer.labels, [key]: v } })
+                      }
+                    />
+                  ))}
+                </InlineGrid>
+              </>
+            )}
           </BlockStack>
         </Card>
         {/* Styles (digits + progress bar only) */}

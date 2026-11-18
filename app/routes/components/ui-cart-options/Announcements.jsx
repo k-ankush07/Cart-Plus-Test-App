@@ -93,7 +93,6 @@ function AnnouncementTemplatePreview({
       onClick={onSelect}
       style={{
         width: "100%",
-        minHeight: 82,
         padding: 8,
         border: `2px solid ${selected ? "#303030" : "#e1e3e5"}`,
         borderRadius: 10,
@@ -113,7 +112,6 @@ function AnnouncementTemplatePreview({
           alignItems: "center",
           justifyContent: template === "default" ? "center" : "flex-start",
           gap: 8,
-          borderRadius: 8,
           background,
           color: settings.color,
           fontSize: 11,
@@ -339,6 +337,7 @@ export default function Announcements({
                   ANNOUNCEMENT_TEMPLATES[announcementSettings.template]
                     .buttonText
                 }
+                 maxLength={15}
                 onChange={(v) => update("buttonText", v)}
               />
             )}
@@ -426,7 +425,7 @@ export default function Announcements({
               ))}
             </ButtonGroup>
           </BlockStack>
-          <BlockStack gap="100">
+          {/* <BlockStack gap="100">
             <Text as="p" variant="bodyMd">
               Position
             </Text>
@@ -445,7 +444,7 @@ export default function Announcements({
                 After products
               </Button>
             </ButtonGroup>
-          </BlockStack>
+          </BlockStack> */}
           <BlockStack gap="100">
             <Text variant="bodyMd" fontWeight="medium">
               Icon

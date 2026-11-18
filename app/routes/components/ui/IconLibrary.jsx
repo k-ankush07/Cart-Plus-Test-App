@@ -208,6 +208,8 @@ const DEFAULT_QUICK_ICONS = [
   "cart",
 ];
 
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // uploaded icon images: 2MB max
+
 const byName = Object.fromEntries(ICON_LIBRARY.map((i) => [i.name, i]));
 
 /**
@@ -327,6 +329,10 @@ export default function IconLibrary({
     e.target.value = "";
     if (!file) return;
     setError("");
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError("Image is too large. Please upload a file up to 2MB.");
+      return;
+    }
     try {
       setUploading(true);
       const data = await uploadImage(apiUrl, file, shop, accessToken);
@@ -395,6 +401,10 @@ export default function IconLibrary({
                 onChange={handleFile}
               />
             </InlineStack>
+
+            <Text as="p" variant="bodySm" tone="subdued">
+              Recommended image size: 50x50px. Max file size: 2MB.
+            </Text>
 
             <TextField
               label="Search icons"

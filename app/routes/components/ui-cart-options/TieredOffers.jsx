@@ -20,6 +20,7 @@ import ColorInput from "../ui/ColorInput";
 import RichTextEditor from "../ui/RichTextEditor";
 import RewardsCalculation from "../ui/Rewards-calculation";
 import BackgroundInput from "../ui/BackgroundInput";
+import { useTemplateBackground } from "../utils/background";
 
 /* ---------- mini previews  ---------- */
 const DARK = "#1a1a1a";
@@ -297,6 +298,20 @@ export default function TieredOffers({
   apiUrl,
 }) {
   const barStyle = rewardsSettings.barStyle || "icon";
+  const templateBackground = useTemplateBackground();
+  const getColorValue = (background) =>
+    typeof background === "string" ? background : background?.color;
+  const barBackgroundColor =
+    getColorValue(rewardsSettings.barBackground) ||
+    rewardsSettings.backgroundColor;
+  const hasCustomForegroundColor =
+    rewardsSettings.textColor &&
+    rewardsSettings.textColor.toLowerCase() !== "#000000";
+  const barForegroundColor =
+    getColorValue(rewardsSettings.barProgress) ||
+    (hasCustomForegroundColor
+      ? rewardsSettings.textColor
+      : templateBackground?.color || rewardsSettings.textColor);
 
   // Themed styles (card, gift, ring, unlock, striped, almost) are styled
   // through the "Customize this style" card, so the legacy color / bar /
@@ -727,7 +742,7 @@ export default function TieredOffers({
             <InlineGrid columns={2} gap="300">
               <ColorInput
                 label="Bar background color"
-                value={rewardsSettings.backgroundColor}
+                value={barBackgroundColor}
                 onChange={(val) =>
                   updateBarColor("backgroundColor", "barBackground", val)
                 }
@@ -735,7 +750,7 @@ export default function TieredOffers({
 
               <ColorInput
                 label="Bar foreground color"
-                value={rewardsSettings.textColor}
+                value={barForegroundColor}
                 onChange={(val) =>
                   updateBarColor("textColor", "barProgress", val)
                 }

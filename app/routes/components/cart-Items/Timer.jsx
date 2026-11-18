@@ -377,7 +377,16 @@ export default function Timer({ headerSettings, designSettings }) {
               }}
             />
           </span>
-          <strong style={{ color: digitsColor }}>{clock}</strong>
+          <strong
+        style={{
+          color: digitsColor,
+          fontVariantNumeric: "tabular-nums",
+          whiteSpace: "nowrap",
+          flexShrink: 0,
+        }}
+      >
+        {clock}
+      </strong>
         </div>
         <div
           style={{
@@ -456,7 +465,16 @@ export default function Timer({ headerSettings, designSettings }) {
           </div>
         );
       })()}
-      <strong style={{ color: digitsColor }}>{clock}</strong>
+      <strong
+        style={{
+          color: digitsColor,
+          fontVariantNumeric: "tabular-nums",
+          whiteSpace: "nowrap",
+          flexShrink: 0,
+        }}
+      >
+        {clock}
+      </strong>
     </div>
   );
 }

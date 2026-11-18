@@ -168,13 +168,18 @@ export default function TieredRewards({
             : `${currency}${getRemainingAmount(currentTier)}`,
         );
 
-  // gradient-aware colours; fall back to the plain bar colours
+  // Explicit bar colours win; untouched foreground colour follows the template theme.
   const trackBg =
-    rewardsSettings.backgroundColor ||
-    backgroundToCss(rewardsSettings.barBackground);
+    backgroundToCss(rewardsSettings.barBackground) ||
+    rewardsSettings.backgroundColor;
+  const hasCustomTextColor =
+    rewardsSettings.textColor &&
+    rewardsSettings.textColor.toLowerCase() !== "#000000";
   const fillBg =
-    rewardsSettings.textColor ||
-    backgroundToCss(rewardsSettings.barProgress || templateBg);
+    backgroundToCss(rewardsSettings.barProgress) ||
+    (hasCustomTextColor ? rewardsSettings.textColor : undefined) ||
+    backgroundToCss(templateBg) ||
+    rewardsSettings.textColor;
   const barHeight = rewardsSettings.barLength || 5;
   const message = (
     <p

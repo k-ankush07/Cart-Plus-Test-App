@@ -948,12 +948,17 @@ window.hubUtils = {
       window.__HUB_ACTIVE_CART__?.designSettings,
     );
     const trackColor =
-      rewards.backgroundColor ||
       window.cartPlusBgCss?.(rewards.barBackground) ||
+      rewards.backgroundColor ||
       "#c1c1c1";
+    const hasCustomTextColor =
+      rewards.textColor &&
+      rewards.textColor.toLowerCase() !== "#000000";
     const fillColor =
+      window.cartPlusBgCss?.(rewards.barProgress) ||
+      (hasCustomTextColor ? rewards.textColor : undefined) ||
+      window.cartPlusBgCss?.(templateBg) ||
       rewards.textColor ||
-      window.cartPlusBgCss?.(rewards.barProgress || templateBg) ||
       "#000000";
     const barLength = rewards.barLength || 4;
     const barGap = rewards.barGap || 0;
