@@ -21,6 +21,7 @@ import {
   PLAIN_COLORS,
   TEMPLATE_DEFAULTS,
 } from "../utils/templateTheme";
+import { CUSTOM_FONTS, resolveCustomFont } from "../utils/fonts";
 
 const HEX6 = /^#[0-9a-fA-F]{6}$/;
 const HEX_ANY = /^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/;
@@ -701,15 +702,7 @@ export default function TemplateSettings({
               </Popover>
             </InlineStack>
           </BlockStack>
-        </Card>
-
-        {/* Style */}
-        <Card>
-          <BlockStack gap="500">
-            <Text as="h3" variant="headingSm">
-              Style
-            </Text>
-
+          <Box paddingBlockStart="500">
             <BlockStack gap="100">
               <Text as="p" variant="bodySm" fontWeight="semibold">
                 Appearance
@@ -727,7 +720,15 @@ export default function TemplateSettings({
                 />
               </InlineStack>
             </BlockStack>
+          </Box>
+        </Card>
 
+        {/* Style */}
+        <Card>
+          <BlockStack gap="500">
+            <Text as="h3" variant="headingSm">
+              Style
+            </Text>
             <BlockStack gap="100">
               <Text as="p" variant="bodySm" fontWeight="semibold">
                 Surface tint
@@ -804,18 +805,52 @@ export default function TemplateSettings({
                 />
               </InlineStack>
             </BlockStack>
+
+            <BlockStack gap="100">
+              <Text as="p" variant="bodySm" fontWeight="semibold">
+                Fonts
+              </Text>
+              <InlineStack gap="400">
+                <RadioButton
+                  label="Use theme fonts"
+                  name="cart-font-mode"
+                  checked={!!designSettings.inheritFonts}
+                  onChange={() => update({ inheritFonts: true })}
+                />
+                <RadioButton
+                  label="Custom font"
+                  name="cart-font-mode"
+                  checked={!designSettings.inheritFonts}
+                  onChange={() => update({ inheritFonts: false })}
+                />
+              </InlineStack>
+              {!designSettings.inheritFonts && (
+                <Box paddingBlockStart="200">
+                  <Select
+                    label="Font family"
+                    labelHidden
+                    options={CUSTOM_FONTS.map((font) => ({
+                      label: font,
+                      value: font,
+                    }))}
+                    value={resolveCustomFont(designSettings.customFont)}
+                    onChange={(value) => update({ customFont: value })}
+                  />
+                </Box>
+              )}
+            </BlockStack>
           </BlockStack>
         </Card>
       </BlockStack>
 
-      {/* existing options: fonts, cart width, estimated line … */}
-      <Box paddingBlockStart="400">
-        <Appearance
-          designSettings={designSettings}
-          setDesignSettings={setDesignSettings}
-          themed={!!designSettings.colorMode}
-        />
-      </Box>
+      {!designSettings.colorMode && (
+        <Box paddingBlockStart="400">
+          <Appearance
+            designSettings={designSettings}
+            setDesignSettings={setDesignSettings}
+          />
+        </Box>
+      )}
     </div>
   );
 }

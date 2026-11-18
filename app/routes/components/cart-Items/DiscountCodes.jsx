@@ -284,6 +284,16 @@ export default function DiscountCode({
   const cs = discountCodesSettings || {};
   const T = resolveDiscountStyle(cs);
   const layout = T.layout; // "compact" | "chipbadges" | undefined (classic)
+  const defaultCouponHeadingColor = designSettings?.dark
+    ? designSettings.textColor || "#f3f3f3"
+    : "#000000";
+  const savedCouponHeadingColor = cs.couponHeadingColor;
+  const couponHeadingColor =
+    designSettings?.dark &&
+    (!savedCouponHeadingColor ||
+      savedCouponHeadingColor.toLowerCase() === "#000000")
+      ? defaultCouponHeadingColor
+      : savedCouponHeadingColor || defaultCouponHeadingColor;
 
   const placeholder = cs.placeholder || "Discount code";
   const buttonText = cs.buttonText || "Apply";
@@ -696,7 +706,7 @@ export default function DiscountCode({
             {cs.showTitle && (
               <div
                 className="cart-plus-discount-heading"
-                style={{ color: cs.couponHeadingColor || "#000000" }}
+                style={{ color: couponHeadingColor }}
                 dangerouslySetInnerHTML={{ __html: cs.title || "" }}
               ></div>
             )}
