@@ -694,7 +694,9 @@ export default function TieredOffers({
                   </>
                 )}
 
-                <Button onClick={resetCfg}>Reset to default</Button>
+                <Button onClick={resetCfg} variant="primary">
+                  Reset to default
+                </Button>
               </BlockStack>
             </LegacyCard>
           )}
@@ -830,7 +832,6 @@ export default function TieredOffers({
         handleChange={handleChange}
         currency={currency}
       />
-
     </div>
   );
 }

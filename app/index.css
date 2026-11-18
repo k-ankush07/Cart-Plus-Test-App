@@ -706,7 +706,7 @@ button.cart-app-item__qty-btn.cart-plus-product-quantity-minus.cart-plus-public-
 .cart-plus-internal-upsell__vertical-layout-wrapper {
     display: flex;
     flex-direction: column;
-    row-gap: 15px;
+    row-gap: 10px;
     justify-content: space-between;
 }
 
@@ -726,7 +726,7 @@ span.svg-wrapper {
 .cart-plus-internal-upsell__vertical-layout-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
 }
 
 .badge-orange .Polaris-Badge--toneInfo {
@@ -737,7 +737,7 @@ span.svg-wrapper {
 /* ===== CARD ===== */
 .cart-plus-internal-component-upsell-tile {
     border-radius: 5px;
-    padding: 15px;
+    padding: 10px 12px;
     width: 100%;
     box-sizing: border-box;
     border: 1px solid #E8E8E8
@@ -814,7 +814,7 @@ h3.cart-plus-compact-heading {
     gap: 10px;
     flex: 0 0 auto;
     justify-content: right;
-    margin-top: 10px;
+    margin-top: 6px;
 }
 
 .cart-plus-internal-component-upsell-tile__variant-row select {
@@ -2116,6 +2116,10 @@ input.cart-plus-offers-code-input:focus {
     outline: none;
 }
 
+p.price.cart-plus-public-component-upsell-tile__price-row {
+    margin-top: 4px;
+}
+
 .cart-plus-timer.cart-plus-timer--text {
     line-height: 1.2;
     flex-shrink: 0;
@@ -2439,4 +2443,30 @@ input.cart-plus-offers-code-input:focus {
     width: 100%;
     max-width: 2500px;
     margin: 0 auto;
+}
+/* Cross-sell LIST layout (editor preview): same compact grid as the storefront */
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 0;
+    align-items: start;
+}
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card > .cart-plus-internal-component-upsell-tile__info_count {
+    display: contents;
+}
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card .cart-plus-internal-component-upsell-tile__image-container {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+}
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card .cart-plus-internal-component-upsell-tile__info {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+}
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card > .cart-plus-internal-component-upsell-tile__variant-row {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: end;
+    margin-top: 6px;
 }

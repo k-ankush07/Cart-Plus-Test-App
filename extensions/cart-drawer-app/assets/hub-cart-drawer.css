@@ -1266,14 +1266,14 @@ span.hub-total-arrow svg {
   border-radius: 5px;
   width: 100%;
   box-sizing: border-box;
-  padding: 15px;
+  padding: 10px 12px;
   border: 1px solid #E8E8E8
 }
 
 .upcart-internal-upsell__vertical-layout-wrapper {
   display: flex;
   flex-direction: column;
-  row-gap: 15px;
+  row-gap: 10px;
   justify-content: space-between;
 }
 
@@ -1283,7 +1283,7 @@ span.hub-total-arrow svg {
   gap: 12px;
   width: 100%;
   flex-wrap: nowrap;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   text-align: left;
 }
 
@@ -3663,3 +3663,31 @@ select.hub-compact-variant {
 }
 
 @keyframes hubCompactSpin { to { transform: rotate(360deg); } }
+/* Cross-sell LIST layout: image on the left, the variant select + Add button sit under the
+   price (same column) instead of on a separate full-width row below the image. Removes the
+   empty band between the price and the controls. Carousel / compact / side panel keep their own layout. */
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 12px;
+  row-gap: 0;
+  align-items: start;
+}
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) > .upcart-internal-component-upsell-tile__info_count {
+  display: contents;
+}
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) .upcart-internal-component-upsell-tile__image-container {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) .upcart-internal-component-upsell-tile__info {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) > .upcart-internal-component-upsell-tile__variant-row {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  margin-top: 6px;
+}

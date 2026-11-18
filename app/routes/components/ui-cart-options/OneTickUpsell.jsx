@@ -16,6 +16,7 @@ import {
   Box,
   Icon,
   Divider,
+  Badge,
 } from "@shopify/polaris";
 import {
   CartIcon,
@@ -23,6 +24,9 @@ import {
   PlusIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  DuplicateIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
 } from "@shopify/polaris-icons";
 import IconLibrary from "../ui/IconLibrary";
 import RichTextEditor from "../ui/RichTextEditor";
@@ -292,6 +296,28 @@ export default function OneTickUpsell({
   const pickerOffer = oneTick.offers.find((o) => o.id === pickerFor);
   const [openOffers, setOpenOffers] = useState({});
 
+  const allOpen =
+    oneTick.offers.length > 0 &&
+    oneTick.offers.every((o, i) => openOffers[o.id] ?? i === 0);
+  const setAllOffers = (open) =>
+    setOpenOffers(Object.fromEntries(oneTick.offers.map((o) => [o.id, open])));
+
+  const moveOffer = (index, dir) => {
+    const next = [...oneTick.offers];
+    const to = index + dir;
+    if (to < 0 || to >= next.length) return;
+    [next[index], next[to]] = [next[to], next[index]];
+    update({ offers: next });
+  };
+
+  const duplicateOffer = (offer, index) => {
+    const copy = { ...structuredClone(offer), id: newOffer().id };
+    const next = [...oneTick.offers];
+    next.splice(index + 1, 0, copy);
+    update({ offers: next });
+    setOpenOffers((p) => ({ ...p, [copy.id]: true }));
+  };
+
   return (
     <div className="mainContent">
       <Box paddingBlockEnd="400">
@@ -325,6 +351,7 @@ export default function OneTickUpsell({
             <RichTextEditor
               value={oneTick.title}
               onChange={(title) => update({ title })}
+              maxLength={50}
             />
             <IconLibrary
               value={oneTick.icon}
@@ -368,6 +395,7 @@ export default function OneTickUpsell({
                 label="Button Label"
                 value={oneTick.buttonLabel}
                 onChange={(buttonLabel) => update({ buttonLabel })}
+                maxLength={15}
                 autoComplete="off"
               />
             )}
@@ -376,9 +404,19 @@ export default function OneTickUpsell({
 
         <LegacyCard sectioned>
           <BlockStack gap="400">
-            <Text as="h3" variant="headingSm">
-              Offers
-            </Text>
+            <InlineStack align="space-between" blockAlign="center">
+              <InlineStack gap="200" blockAlign="center">
+                <Text as="h3" variant="headingSm">
+                  Offers
+                </Text>
+                <Badge>{String(oneTick.offers.length)}</Badge>
+              </InlineStack>
+              {oneTick.offers.length > 1 && (
+                <Button variant="plain" onClick={() => setAllOffers(!allOpen)}>
+                  {allOpen ? "Collapse all" : "Expand all"}
+                </Button>
+              )}
+            </InlineStack>
 
             {oneTick.offers.map((offer, index) => {
               const isOpen = openOffers[offer.id] ?? index === 0;
@@ -391,7 +429,6 @@ export default function OneTickUpsell({
                   : offer.discountType === "amount"
                     ? `${currency || ""}${offer.discountValue} off`
                     : "No discount";
-              const summary = `${offer.mode === "manual" ? "Manual" : "Auto"} · ${discountSummary}`;
 
               const items = offer.selected?.items;
               const title = items?.titles?.[0];
@@ -408,13 +445,14 @@ export default function OneTickUpsell({
                 <div
                   key={offer.id}
                   style={{
-                    border: "1px solid #e1e3e5",
+                    border: isOpen
+                      ? "1.5px solid #303030"
+                      : "1px solid #c9cccf",
                     borderRadius: 12,
                     overflow: "hidden",
                     background: "#fff",
                   }}
                 >
-                  {/* header */}
                   {/* header */}
                   <div
                     style={{
@@ -422,8 +460,8 @@ export default function OneTickUpsell({
                       alignItems: "center",
                       justifyContent: "space-between",
                       gap: 8,
-                      padding: "8px 12px",
-                      background: "#f6f6f7",
+                      padding: "10px 12px",
+                      background: isOpen ? "#ececec" : "#f6f6f7",
                       borderBottom: isOpen ? "1px solid #e1e3e5" : "none",
                     }}
                   >
@@ -461,35 +499,70 @@ export default function OneTickUpsell({
                           source={isOpen ? ChevronUpIcon : ChevronDownIcon}
                         />
                       </span>
-                      <Text as="span" variant="bodyMd" fontWeight="semibold">
-                        Offer {index + 1}
-                      </Text>
-                      {!isOpen && (
-                        <Text
-                          as="span"
-                          variant="bodySm"
-                          tone="subdued"
-                          truncate
-                        >
-                          {summary}
+                      {image && (
+                        <img
+                          src={image}
+                          alt=""
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 6,
+                            objectFit: "cover",
+                            flexShrink: 0,
+                          }}
+                        />
+                      )}
+                      <div style={{ minWidth: 0 }}>
+                        <Text as="span" variant="bodyMd" fontWeight="semibold">
+                          Offer {index + 1}
                         </Text>
+                        <Text as="p" variant="bodySm" tone="subdued" truncate>
+                          {offer.mode === "manual"
+                            ? title || "No product selected"
+                            : "Auto-recommended"}
+                        </Text>
+                      </div>
+                      {!isOpen && offer.discountType !== "none" && (
+                        <Badge tone="success">{discountSummary}</Badge>
                       )}
                     </div>
 
-                    <Button
-                      variant="plain"
-                      tone="critical"
-                      icon={DeleteIcon}
-                      disabled={offer.mode === "manual" && !title}
-                      accessibilityLabel={`Delete offer ${index + 1}`}
-                      onClick={() =>
-                        update({
-                          offers: oneTick.offers.filter(
-                            (o) => o.id !== offer.id,
-                          ),
-                        })
-                      }
-                    />
+                    <InlineStack gap="050" wrap={false}>
+                      <Button
+                        variant="plain"
+                        icon={ArrowUpIcon}
+                        disabled={index === 0}
+                        accessibilityLabel={`Move offer ${index + 1} up`}
+                        onClick={() => moveOffer(index, -1)}
+                      />
+                      <Button
+                        variant="plain"
+                        icon={ArrowDownIcon}
+                        disabled={index === oneTick.offers.length - 1}
+                        accessibilityLabel={`Move offer ${index + 1} down`}
+                        onClick={() => moveOffer(index, 1)}
+                      />
+                      <Button
+                        variant="plain"
+                        icon={DuplicateIcon}
+                        accessibilityLabel={`Duplicate offer ${index + 1}`}
+                        onClick={() => duplicateOffer(offer, index)}
+                      />
+                      <Button
+                        variant="plain"
+                        tone="critical"
+                        icon={DeleteIcon}
+                        disabled={offer.mode === "manual" && !title}
+                        accessibilityLabel={`Delete offer ${index + 1}`}
+                        onClick={() =>
+                          update({
+                            offers: oneTick.offers.filter(
+                              (o) => o.id !== offer.id,
+                            ),
+                          })
+                        }
+                      />
+                    </InlineStack>
                   </div>
 
                   {/* body */}
@@ -642,6 +715,7 @@ export default function OneTickUpsell({
                                 onChange={(label) =>
                                   updateOffer(offer.id, { label })
                                 }
+                                maxLength={25}
                               />
                               <Text as="p" variant="bodySm" tone="subdued">
                                 Use {"{{saved_percentage}}"} or{" "}
@@ -659,6 +733,7 @@ export default function OneTickUpsell({
 
             <Button
               icon={PlusIcon}
+              variant="primary"
               fullWidth
               onClick={() => {
                 const offer = newOffer();
@@ -711,43 +786,43 @@ export default function OneTickUpsell({
         </LegacyCard>
 
         {oneTick.trigger === "button" && (
-        <LegacyCard sectioned>
-          <BlockStack gap="300">
-            <Text as="h3" variant="headingSm">
-              Button Style
-            </Text>
-            <InlineGrid columns={2} gap="400">
-              <RangeSlider
-                label="Border radius"
-                min={0}
-                max={24}
-                output
-                value={oneTick.buttonRadius}
-                onChange={(buttonRadius) => update({ buttonRadius })}
-              />
-              <RangeSlider
-                label="Font size"
-                min={10}
-                max={20}
-                output
-                value={oneTick.buttonFontSize}
-                onChange={(buttonFontSize) => update({ buttonFontSize })}
-              />
-              <ColorInput
-                label="Background"
-                value={oneTick.buttonBackground?.color || "#303030"}
-                onChange={(color) =>
-                  update({ buttonBackground: { type: "plain", color } })
-                }
-              />
-              <ColorInput
-                label="Text"
-                value={oneTick.buttonTextColor}
-                onChange={(buttonTextColor) => update({ buttonTextColor })}
-              />
-            </InlineGrid>
-          </BlockStack>
-        </LegacyCard>
+          <LegacyCard sectioned>
+            <BlockStack gap="300">
+              <Text as="h3" variant="headingSm">
+                Button Style
+              </Text>
+              <InlineGrid columns={2} gap="400">
+                <RangeSlider
+                  label="Border radius"
+                  min={0}
+                  max={24}
+                  output
+                  value={oneTick.buttonRadius}
+                  onChange={(buttonRadius) => update({ buttonRadius })}
+                />
+                <RangeSlider
+                  label="Font size"
+                  min={10}
+                  max={20}
+                  output
+                  value={oneTick.buttonFontSize}
+                  onChange={(buttonFontSize) => update({ buttonFontSize })}
+                />
+                <ColorInput
+                  label="Background"
+                  value={oneTick.buttonBackground?.color || "#303030"}
+                  onChange={(color) =>
+                    update({ buttonBackground: { type: "plain", color } })
+                  }
+                />
+                <ColorInput
+                  label="Text"
+                  value={oneTick.buttonTextColor}
+                  onChange={(buttonTextColor) => update({ buttonTextColor })}
+                />
+              </InlineGrid>
+            </BlockStack>
+          </LegacyCard>
         )}
 
         <BackgroundInput

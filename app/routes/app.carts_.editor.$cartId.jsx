@@ -596,12 +596,21 @@ export default function CartEditor() {
       setAnnouncementSettings(linkedAnnouncement);
     }
 
+    // The linking above runs on load and again after Discard, so compare against the SAVED
+    // announcement linked the same way. Otherwise the linking alone (no edit by the user)
+    // shows the save bar, and Discard brings it straight back.
+    const savedBackground = templateBackground(initialSettingsRef.current.design);
+    const initialAnnouncement = initialSettingsRef.current.announcement;
+    const linkedInitialAnnouncement =
+      initialAnnouncement?.template === "default" &&
+      savedBackground &&
+      !isSettingsEqual(initialAnnouncement.background, savedBackground)
+        ? { ...initialAnnouncement, background: savedBackground }
+        : initialAnnouncement;
+
     setIsDirty(
       !isSettingsEqual(initialSettingsRef.current.design, designSettings) ||
-        !isSettingsEqual(
-          initialSettingsRef.current.announcement,
-          linkedAnnouncement,
-        ),
+        !isSettingsEqual(linkedInitialAnnouncement, linkedAnnouncement),
     );
   }, [announcementSettings, designSettings]);
 

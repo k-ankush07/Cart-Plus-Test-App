@@ -18,6 +18,7 @@ import {
   LegacyStack,
   Box,
   Pagination,
+  InlineGrid,
 } from "@shopify/polaris";
 import { DeliveryIcon, ProductIcon, AppsIcon } from "@shopify/polaris-icons";
 import Products from "../ui/Products";
@@ -248,6 +249,7 @@ export default function AddOns({ addonsSettings, handleChange, currency }) {
                       inputMode="decimal"
                       suffix={currency}
                       autoComplete="off"
+                      maxLength={10}
                     />
                   </div>
                   {/* <div style={{ flex: 1 }}>
@@ -359,27 +361,26 @@ export default function AddOns({ addonsSettings, handleChange, currency }) {
             onChange={(val) => update("cardBackground", val)}
           />
 
-          <Box paddingBlockStart="300">
-            <ColorInput
-              label="Toggle color"
-              value={addonsSettings.toggleColor || "#000000"}
-              onChange={(val) => update("toggleColor", val)}
-            />
-          </Box>
-          {/* empty = keep the cart's own colours */}
-          <Box paddingBlockStart="300">
-            <ColorInput
-              label="Text color"
-              value={addonsSettings.textColor || "#303030"}
-              onChange={(val) => update("textColor", val)}
-            />
-          </Box>
-          <Box paddingBlockStart="300">
-            <ColorInput
-              label="Price color"
-              value={addonsSettings.priceColor || "#0e0e0e"}
-              onChange={(val) => update("priceColor", val)}
-            />
+          <Box paddingBlockStart="400">
+            <InlineGrid columns={3} gap="300">
+              <ColorInput
+                label="Toggle color"
+                value={addonsSettings.toggleColor || "#000000"}
+                onChange={(val) => update("toggleColor", val)}
+              />
+
+              <ColorInput
+                label="Text color"
+                value={addonsSettings.textColor || "#303030"}
+                onChange={(val) => update("textColor", val)}
+              />
+
+              <ColorInput
+                label="Price color"
+                value={addonsSettings.priceColor || "#0e0e0e"}
+                onChange={(val) => update("priceColor", val)}
+              />
+            </InlineGrid>
           </Box>
         </Card>
 

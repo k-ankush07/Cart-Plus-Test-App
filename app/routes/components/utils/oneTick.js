@@ -28,7 +28,7 @@ export const ONE_TICK_DEFAULTS = {
   trigger: "button",
   buttonLabel: "Add",
   offers: [DEFAULT_OFFER], // <-- ab ek offer default open rahega
-  imageSize: 120,
+  imageSize: 240,
   radius: 8,
   primaryTextColor: "#000000",
   secondaryTextColor: "#616161",
