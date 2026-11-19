@@ -733,6 +733,7 @@ export default function OneTickUpsell({
             style={{
               display: "flex",
               alignItems: "center",
+              justifyContent: "right",
               gap: 8,
               marginTop: 8,
             }}

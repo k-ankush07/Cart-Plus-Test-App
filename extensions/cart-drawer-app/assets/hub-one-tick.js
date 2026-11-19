@@ -241,7 +241,7 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
         ${savingHtml}
       </div>
       <div style="margin-top:2px;">${price}</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;justify-content:right">
         <div style="flex:1;min-width:0;">${select.replace("margin-top:4px;", "")}</div>
         ${isRow ? `<div style="flex-shrink:0; display:flex">${trigger}</div>` : ""}
       </div>
