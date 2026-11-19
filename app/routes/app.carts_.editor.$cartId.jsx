@@ -403,7 +403,15 @@ export default function CartEditor() {
         }
       : undefined,
     onChange: (state, meta) => {
-      if (!state.enabled) return; // stopping is handled by onStopTest
+      if (!state.enabled) {
+        if (meta?.clearAbTest) {
+          handleChange("cartSettings", (prev) => {
+            const { abTest: _abTest, ...settings } = prev || {};
+            return settings;
+          });
+        }
+        return; // stopping is handled by onStopTest
+      }
       // variants can be renamed after a delete (A, C -> A, B): new letter -> letter it had before
       const oldLetter = Object.fromEntries(
         Object.entries(meta?.relabel || {}).map(([from, to]) => [to, from]),
