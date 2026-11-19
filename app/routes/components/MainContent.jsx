@@ -311,7 +311,6 @@ const MainContent = memo(function MainContent({
         )
       )}
 
-      {/* Cross-sell: the same Background color that fills the cart body (.cart-app__body) */}
       {activeTab === "Cross-sell" && (
         <div style={{ marginTop: 16 }}>
           <BackgroundInput

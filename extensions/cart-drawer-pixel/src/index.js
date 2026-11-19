@@ -5,8 +5,9 @@ export default function register({ analytics, browser }) {
 
     const shopDomain = event.context?.document?.location?.hostname;
     if (!shopDomain) return;
-
     let upsellRevenue = 0;
+    let crossSellRevenue = 0;
+    let oneTickRevenue = 0;
     let addonRevenue = 0;
     let subscriptionRevenue = 0;
     let baseRevenue = 0;
@@ -21,7 +22,11 @@ export default function register({ analytics, browser }) {
 
       if (attrs._hub_addon || attrs.__upcartAddon) {
         addonRevenue += price;
+      } else if (attrs._cart_plus_one_tick) {
+        oneTickRevenue += price;
+        upsellRevenue += price;
       } else if (attrs.__upcartRecommendation) {
+        crossSellRevenue += price;
         upsellRevenue += price;
       } else if (item.sellingPlanAllocation) {
         subscriptionRevenue += price;
@@ -46,6 +51,8 @@ export default function register({ analytics, browser }) {
         currency: checkout.currencyCode || "USD",
         totalRevenue,
         upsellRevenue,
+        crossSellRevenue,
+        oneTickRevenue,
         addonRevenue,
         subscriptionRevenue,
         baseRevenue,

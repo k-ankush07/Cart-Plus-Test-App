@@ -167,6 +167,8 @@ CREATE TABLE IF NOT EXISTS order_revenue (
   "totalRevenue" DOUBLE PRECISION NOT NULL DEFAULT 0,
   "baseRevenue" DOUBLE PRECISION NOT NULL DEFAULT 0,
   "upsellRevenue" DOUBLE PRECISION NOT NULL DEFAULT 0,
+  "crossSellRevenue" DOUBLE PRECISION NOT NULL DEFAULT 0,
+  "oneTickRevenue" DOUBLE PRECISION NOT NULL DEFAULT 0,
   "addonRevenue" DOUBLE PRECISION NOT NULL DEFAULT 0,
   "subscriptionRevenue" DOUBLE PRECISION NOT NULL DEFAULT 0,
   items JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -227,6 +229,14 @@ CREATE TABLE IF NOT EXISTS cart_activity (
 CREATE INDEX IF NOT EXISTS cart_activity_shop_created_idx ON cart_activity (shop, "createdAt" DESC);
 CREATE INDEX IF NOT EXISTS cart_activity_shop_session_idx ON cart_activity (shop, "sessionId", "createdAt");
 CREATE INDEX IF NOT EXISTS cart_activity_created_idx ON cart_activity ("createdAt");
+ALTER TABLE order_revenue
+  ADD COLUMN IF NOT EXISTS "crossSellRevenue" DOUBLE PRECISION NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS "oneTickRevenue" DOUBLE PRECISION NOT NULL DEFAULT 0;
+UPDATE order_revenue
+SET "crossSellRevenue" = "upsellRevenue"
+WHERE "crossSellRevenue" = 0
+  AND "oneTickRevenue" = 0
+  AND "upsellRevenue" > 0;
 `;
 
 // ─── Init (tables auto-create) ───────────────────────────────────────────────

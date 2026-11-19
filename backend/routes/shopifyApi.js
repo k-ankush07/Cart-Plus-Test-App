@@ -1,6 +1,6 @@
 import express from "express";
 import { makeShopifyGraphQL, makeShopifyREST } from "../utils/shopifyFetch.js";
-
+const MARKET_API_VERSION = "2026-07";
 const router = express.Router();
 
 // ─── Product Ratings ─────────────────────────────────────────────────────────
@@ -370,80 +370,46 @@ router.post("/discounts", async (req, res, next) => {
 
 // ─── Shipping Zones (GraphQL) ───────────────────────────────────────────────
 
-router.get("/shipping-zones", async (req, res, next) => {
-  try {
-    const { shop } = req.query;
-
-    if (!shop) {
-      return res.status(400).json({
-        error: "shop is required",
-      });
-    }
-
-    // ─── GraphQL Query ──────────────────────────────────────────────────────
-
-    const query = `
-      {
-        deliveryProfiles(first: 10) {
-          edges {
-            node {
-              id
-              name
-
-              profileLocationGroups {
-                locationGroup {
-                  locations(first: 10) {
+const LEGACY_QUERY = `
+  {
+    deliveryProfiles(first: 10) {
+      edges {
+        node {
+          id
+          name
+          profileLocationGroups {
+            locationGroup {
+              locations(first: 10) {
+                edges { node { id name } }
+              }
+            }
+            locationGroupZones(first: 20) {
+              edges {
+                node {
+                  zone {
+                    id
+                    name
+                    countries {
+                      code { countryCode }
+                      name
+                    }
+                  }
+                  methodDefinitions(first: 20) {
                     edges {
                       node {
                         id
                         name
-                      }
-                    }
-                  }
-                }
-
-                locationGroupZones(first: 20) {
-                  edges {
-                    node {
-                      zone {
-                        id
-                        name
-
-                        countries {
-                          code {
-                            countryCode
+                        active
+                        rateProvider {
+                          ... on DeliveryRateDefinition {
+                            price { amount currencyCode }
                           }
-                          name
                         }
-                      }
-
-                      methodDefinitions(first: 20) {
-                        edges {
-                          node {
-                            id
-                            name
-                            active
-
-                            rateProvider {
-                              ... on DeliveryRateDefinition {
-                                price {
-                                  amount
-                                  currencyCode
-                                }
-                              }
-                            }
-
-                            methodConditions {
-                              field
-                              operator
-
-                              conditionCriteria {
-                                ... on MoneyV2 {
-                                  amount
-                                  currencyCode
-                                }
-                              }
-                            }
+                        methodConditions {
+                          field
+                          operator
+                          conditionCriteria {
+                            ... on MoneyV2 { amount currencyCode }
                           }
                         }
                       }
@@ -455,100 +421,374 @@ router.get("/shipping-zones", async (req, res, next) => {
           }
         }
       }
-    `;
+    }
+  }
+`;
 
-    // ─── Shopify GraphQL Request ───────────────────────────────────────────
 
-    const graphqlData = await makeShopifyGraphQL(shop, query);
+const marketsQuery = (after) => `
+  {
+    markets(first: 50${after ? `, after: "${after}"` : ""}) {
+      pageInfo { hasNextPage endCursor }
+      nodes {
+        id
+        name
+        conditions {
+          regionsCondition {
+            regions(first: 250) {
+              nodes {
+                ... on MarketRegionCountry { code name }
+              }
+            }
+          }
+        }
+        delivery {
+          shipping {
+            isEnabled
+            optionDefinitions(first: 20) {
+              nodes {
+                __typename
+                currency
+                isActive
+                freeDeliveryMinimumValue { amount currencyCode }
 
-    const profiles = graphqlData?.data?.deliveryProfiles?.edges ?? [];
-
-    const shipping = profiles.map((profileEdge) => {
-      const profile = profileEdge.node;
-
-      const locations =
-        profile.profileLocationGroups?.flatMap(
-          (group) =>
-            group.locationGroup?.locations?.edges?.map((loc) => ({
-              id: loc.node.id,
-              name: loc.node.name,
-            })) || [],
-        ) || [];
-
-      const zones =
-        profile.profileLocationGroups?.flatMap(
-          (group) =>
-            group.locationGroupZones?.edges?.map((zoneEdge) => {
-              const zoneNode = zoneEdge.node;
-
-              const countries =
-                zoneNode.zone.countries?.map((country) => ({
-                  name: country.name,
-                  code: country.code.countryCode,
-                })) || [];
-
-              const shipping_rates =
-                zoneNode.methodDefinitions?.edges?.map((method) => {
-                  const node = method.node;
-
-                  return {
-                    id: node.id,
-                    name: node.name,
-                    active: node.active,
-
-                    price: node.rateProvider?.price?.amount || "0",
-
-                    currency: node.rateProvider?.price?.currencyCode || "INR",
-
-                    conditions:
-                      node.methodConditions?.map((condition) => ({
-                        field: condition.field,
-                        operator: condition.operator,
-
-                        amount: condition.conditionCriteria?.amount || null,
-
-                        currency:
-                          condition.conditionCriteria?.currencyCode || null,
-                      })) || [],
-                  };
-                }) || [];
-
-              // ─── Check India or International ─────────────────────────────
-
-              const isIndia = countries.some(
-                (country) => country.code === "IN",
-              );
-
-              // ─── Console Logs ────────────────────────────────────────────
-
-              shipping_rates.forEach((rate) => {
-                // ─── Conditions ─────────────────────────────────────────
-
-                if (rate.conditions.length > 0) {
-                  rate.conditions.forEach((condition) => {});
-                } else {
+                ... on DeliveryFlatRateOptionDefinition {
+                  name
+                  rateGroups(first: 10) {
+                    nodes {
+                      rate { price { amount currencyCode } }
+                    }
+                  }
                 }
-              });
 
-              return {
-                zone_id: zoneNode.zone.id,
-                zone_name: zoneNode.zone.name,
-                countries,
-                shipping_rates,
-              };
-            }) || [],
-        ) || [];
+                ... on DeliveryValueBasedOptionDefinition {
+                  name
+                  rateGroups(first: 10) {
+                    nodes {
+                      rates {
+                        price { amount currencyCode }
+                        minValue { amount currencyCode }
+                        maxValue { amount currencyCode }
+                      }
+                    }
+                  }
+                }
 
-      return {
-        profile_id: profile.id,
-        profile_name: profile.name,
-        locations,
-        zones,
-      };
+                ... on DeliveryWeightBasedOptionDefinition {
+                  name
+                  rateGroups(first: 10) {
+                    nodes {
+                      rates {
+                        price { amount currencyCode }
+                        minWeight { value unit }
+                        maxWeight { value unit }
+                      }
+                    }
+                  }
+                }
+
+                ... on DeliveryCarrierCalculatedOptionDefinition {
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const FEATURES_QUERY = `{ shop { features { marketDrivenShipping } } }`;
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+async function isMarketDrivenShop(shop) {
+  try {
+    const res = await makeShopifyGraphQL(shop, FEATURES_QUERY, {}, MARKET_API_VERSION);
+    if (res?.errors?.length) return false; 
+    return res?.data?.shop?.features?.marketDrivenShipping === true;
+  } catch (e) {
+    return false;
+  }
+}
+
+const money = (m) => (m ? { amount: m.amount, currency: m.currencyCode } : null);
+
+function mapLegacy(graphqlData) {
+  const profiles = graphqlData?.data?.deliveryProfiles?.edges ?? [];
+
+  return profiles.map((profileEdge) => {
+    const profile = profileEdge.node;
+
+    const locations =
+      profile.profileLocationGroups?.flatMap(
+        (group) =>
+          group.locationGroup?.locations?.edges?.map((loc) => ({
+            id: loc.node.id,
+            name: loc.node.name,
+          })) || [],
+      ) || [];
+
+    const zones =
+      profile.profileLocationGroups?.flatMap(
+        (group) =>
+          group.locationGroupZones?.edges?.map((zoneEdge) => {
+            const zoneNode = zoneEdge.node;
+
+            const countries =
+              zoneNode.zone.countries?.map((country) => ({
+                name: country.name,
+                code: country.code.countryCode,
+              })) || [];
+
+            const shipping_rates =
+              zoneNode.methodDefinitions?.edges?.map((method) => {
+                const node = method.node;
+                return {
+                  id: node.id,
+                  name: node.name,
+                  active: node.active,
+                  type: "legacy",
+                  price: node.rateProvider?.price?.amount || "0",
+                  currency: node.rateProvider?.price?.currencyCode || "INR",
+                  conditions:
+                    node.methodConditions?.map((condition) => ({
+                      field: condition.field,
+                      operator: condition.operator,
+                      amount: condition.conditionCriteria?.amount || null,
+                      currency: condition.conditionCriteria?.currencyCode || null,
+                    })) || [],
+                };
+              }) || [];
+
+            return {
+              zone_id: zoneNode.zone.id,
+              zone_name: zoneNode.zone.name,
+              countries,
+              shipping_rates,
+            };
+          }) || [],
+      ) || [];
+
+    return {
+      profile_id: profile.id,
+      profile_name: profile.name,
+      locations,
+      zones,
+    };
+  });
+}
+
+// ─── Market mapper ──────────────────────────────────────────────────────────
+
+function mapOptionToRates(opt, marketId, idx) {
+  const rates = [];
+  const active = opt.isActive !== false;
+  const baseId = `${marketId}#opt${idx}`;
+  const cur = opt.currency || "INR";
+
+  const priceCond = (min, max) => {
+    const c = [];
+    if (min && Number(min.amount) > 0) {
+      c.push({
+        field: "TOTAL_PRICE",
+        operator: "GREATER_THAN_OR_EQUAL_TO",
+        amount: min.amount,
+        currency: min.currencyCode,
+      });
+    }
+    if (max) {
+      c.push({
+        field: "TOTAL_PRICE",
+        operator: "LESS_THAN_OR_EQUAL_TO",
+        amount: max.amount,
+        currency: max.currencyCode,
+      });
+    }
+    return c;
+  };
+
+  const weightCond = (min, max) => {
+    const c = [];
+    if (min && Number(min.value) > 0) {
+      c.push({
+        field: "TOTAL_WEIGHT",
+        operator: "GREATER_THAN_OR_EQUAL_TO",
+        amount: String(min.value),
+        currency: min.unit,
+      });
+    }
+    if (max) {
+      c.push({
+        field: "TOTAL_WEIGHT",
+        operator: "LESS_THAN_OR_EQUAL_TO",
+        amount: String(max.value),
+        currency: max.unit,
+      });
+    }
+    return c;
+  };
+
+  switch (opt.__typename) {
+    case "DeliveryFlatRateOptionDefinition":
+      (opt.rateGroups?.nodes || []).forEach((g, i) => {
+        rates.push({
+          id: `${baseId}-g${i}`,
+          name: opt.name,
+          active,
+          type: "flat",
+          price: g.rate?.price?.amount || "0",
+          currency: g.rate?.price?.currencyCode || cur,
+          conditions: [],
+        });
+      });
+      break;
+
+    case "DeliveryValueBasedOptionDefinition":
+      (opt.rateGroups?.nodes || []).forEach((g, i) => {
+        (g.rates || []).forEach((r, j) => {
+          rates.push({
+            id: `${baseId}-g${i}-r${j}`,
+            name: opt.name,
+            active,
+            type: "value_based",
+            price: r.price?.amount || "0",
+            currency: r.price?.currencyCode || cur,
+            conditions: priceCond(r.minValue, r.maxValue),
+          });
+        });
+      });
+      break;
+
+    case "DeliveryWeightBasedOptionDefinition":
+      (opt.rateGroups?.nodes || []).forEach((g, i) => {
+        (g.rates || []).forEach((r, j) => {
+          rates.push({
+            id: `${baseId}-g${i}-r${j}`,
+            name: opt.name,
+            active,
+            type: "weight_based",
+            price: r.price?.amount || "0",
+            currency: r.price?.currencyCode || cur,
+            conditions: weightCond(r.minWeight, r.maxWeight),
+          });
+        });
+      });
+      break;
+
+    case "DeliveryCarrierCalculatedOptionDefinition":
+   
+      rates.push({
+        id: baseId,
+        name: opt.name,
+        active,
+        type: "carrier_calculated",
+        price: null,
+        currency: cur,
+        conditions: [],
+      });
+      break;
+
+    default:
+      break;
+  }
+
+  if (opt.freeDeliveryMinimumValue) {
+    rates.push({
+      id: `${baseId}-free`,
+      name: `${opt.name || "Shipping"} (Free)`,
+      active,
+      type: "free_threshold",
+      price: "0",
+      currency: opt.freeDeliveryMinimumValue.currencyCode || cur,
+      conditions: [
+        {
+          field: "TOTAL_PRICE",
+          operator: "GREATER_THAN_OR_EQUAL_TO",
+          amount: opt.freeDeliveryMinimumValue.amount,
+          currency: opt.freeDeliveryMinimumValue.currencyCode,
+        },
+      ],
     });
+  }
+
+  return rates;
+}
+
+function mapMarkets(markets) {
+  return markets.map((market) => {
+    const countries = (market.conditions?.regionsCondition?.regions?.nodes || [])
+      .filter((r) => r?.code)
+      .map((r) => ({ name: r.name, code: r.code }));
+
+    const shipping = market.delivery?.shipping; 
+    const enabled = shipping ? shipping.isEnabled !== false : false;
+
+    const shipping_rates = enabled
+      ? (shipping.optionDefinitions?.nodes || []).flatMap((opt, idx) =>
+          mapOptionToRates(opt, market.id, idx),
+        )
+      : [];
+
+    return {
+      profile_id: market.id,
+      profile_name: market.name,
+      locations: [],
+      zones: [
+        {
+          zone_id: market.id,
+          zone_name: market.name,
+          countries,
+          shipping_rates,
+          shipping_enabled: enabled,
+          inherits_parent: shipping === null, 
+        },
+      ],
+    };
+  });
+}
+
+async function fetchAllMarkets(shop) {
+  const all = [];
+  let after = null;
+  for (let page = 0; page < 10; page++) {
+    const res = await makeShopifyGraphQL(shop, marketsQuery(after), {}, MARKET_API_VERSION);
+    if (res?.errors?.length) {
+      throw new Error(`Markets query failed: ${JSON.stringify(res.errors)}`);
+    }
+    const conn = res?.data?.markets;
+    all.push(...(conn?.nodes || []));
+    if (!conn?.pageInfo?.hasNextPage) break;
+    after = conn.pageInfo.endCursor;
+  }
+  return all;
+}
+
+// ─── Route ──────────────────────────────────────────────────────────────────
+
+router.get("/shipping-zones", async (req, res, next) => {
+  try {
+    const { shop } = req.query;
+
+    if (!shop) {
+      return res.status(400).json({ error: "shop is required" });
+    }
+
+    const marketDriven = await isMarketDrivenShop(shop);
+
+    let shipping;
+    if (marketDriven) {
+      const markets = await fetchAllMarkets(shop);
+      shipping = mapMarkets(markets);
+    } else {
+      const graphqlData = await makeShopifyGraphQL(shop, LEGACY_QUERY);
+      shipping = mapLegacy(graphqlData);
+    }
 
     return res.json({
       success: true,
+      model: marketDriven ? "market_driven" : "legacy",
       shipping,
     });
   } catch (err) {

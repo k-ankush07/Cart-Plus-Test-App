@@ -237,6 +237,8 @@ export const action = async ({ request }) => {
     }
 
     let upsellRevenue = 0;
+    let crossSellRevenue = 0;
+    let oneTickRevenue = 0;
     let addonRevenue = 0;
     let subscriptionRevenue = 0;
     let baseRevenue = 0;
@@ -268,9 +270,14 @@ export const action = async ({ request }) => {
       if (props._hub_addon || props.__upcartAddon) {
         addonRevenue += lineTotal;
         track("Add-ons");
-      } else if (props.__upcartRecommendation) {
+      } else if (props._cart_plus_one_tick) {
+        oneTickRevenue += lineTotal;
         upsellRevenue += lineTotal;
-        track("Upsell");
+        track("One-tick upsell");
+      } else if (props.__upcartRecommendation) {
+        crossSellRevenue += lineTotal;
+        upsellRevenue += lineTotal;
+        track("Cross-sell");
       } else if (isSubscription) {
         subscriptionRevenue += lineTotal;
         track("Subscriptions");
@@ -299,6 +306,8 @@ export const action = async ({ request }) => {
         cartToken: payload.cart_token || String(payload.id),
         totalRevenue,
         upsellRevenue,
+        crossSellRevenue,
+        oneTickRevenue,
         addonRevenue,
         subscriptionRevenue,
         baseRevenue,

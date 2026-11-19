@@ -97,6 +97,10 @@ const pillStyles = {
     active: { background: "#CAE6FE", color: "#01679B" },
     inactive: { background: "#F6F6F7", color: "#6D7175" },
   },
+  oneticks: {
+    active: { background: "#F5A623", color: "#FFFFFF" },
+    inactive: { background: "#F6F6F7", color: "#6D7175" },
+  },
   subscriptions: {
     active: { background: "#E4FFE5", color: "#0B710E" },
     inactive: { background: "#F6F6F7", color: "#6D7175" },
@@ -528,7 +532,8 @@ export default function Analytics() {
 
   const [filters, setFilters] = useState({
     addons: true,
-    upsells: true,
+    crosssells: true,
+    oneticks: true,
     subscriptions: true,
   });
   const toggleFilter = (key) =>
@@ -580,7 +585,8 @@ export default function Analytics() {
 
   // Sales by source (only sources the backend tracks)
   const salesSegments = [
-    { label: "Upsell", value: totals.upsellRevenue ?? 0, color: "#01679B" },
+    { label: "Cross-sell", value: totals.crossSellRevenue ?? totals.upsellRevenue ?? 0, color: "#01679B" },
+    { label: "One-tick upsell", value: totals.oneTickRevenue ?? 0, color: "#F5A623" },
     { label: "Add-ons", value: totals.addonRevenue ?? 0, color: "#93319B" },
     { label: "Subscriptions", value: totals.subscriptionRevenue ?? 0, color: "#0B710E" },
   ];
@@ -590,13 +596,15 @@ export default function Analytics() {
     const day = dayMap[l] ?? {};
     return (
       sum +
-      (filters.upsells ? (day.upsellRevenue ?? 0) : 0) +
+      (filters.crosssells ? (day.crossSellRevenue ?? day.upsellRevenue ?? 0) : 0) +
+      (filters.oneticks ? (day.oneTickRevenue ?? 0) : 0) +
       (filters.addons ? (day.addonRevenue ?? 0) : 0) +
       (filters.subscriptions ? (day.subscriptionRevenue ?? 0) : 0)
     );
   }, 0);
 
-  const upsellSeries = labels.map((l) => dayMap[l]?.upsellRevenue ?? 0);
+  const crossSellSeries = labels.map((l) => dayMap[l]?.crossSellRevenue ?? dayMap[l]?.upsellRevenue ?? 0);
+  const oneTickSeries = labels.map((l) => dayMap[l]?.oneTickRevenue ?? 0);
   const addonSeries = labels.map((l) => dayMap[l]?.addonRevenue ?? 0);
   const subSeries = labels.map((l) => dayMap[l]?.subscriptionRevenue ?? 0);
 
@@ -617,7 +625,8 @@ export default function Analytics() {
 
   const hasRevenueData =
     totalRevenue > 0 ||
-    upsellSeries.some(Boolean) ||
+    crossSellSeries.some(Boolean) ||
+    oneTickSeries.some(Boolean) ||
     addonSeries.some(Boolean) ||
     subSeries.some(Boolean);
 
@@ -627,9 +636,9 @@ export default function Analytics() {
   const revenueChartData = {
     labels: shortLabels,
     datasets: [
-      filters.upsells && {
-        label: "Upsells",
-        data: upsellSeries,
+      filters.crosssells && {
+        label: "Cross-sell",
+        data: crossSellSeries,
         borderColor: "#01679B",
         backgroundColor: "rgba(1,103,155,0.12)",
         fill: true,
@@ -637,6 +646,17 @@ export default function Analytics() {
         pointRadius: 0,
         borderWidth: 2,
         order: 1,
+      },
+      filters.oneticks && {
+        label: "One-tick upsell",
+        data: oneTickSeries,
+        borderColor: "#F5A623",
+        backgroundColor: "rgba(245,166,35,0.10)",
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        borderWidth: 2,
+        order: 2,
       },
       filters.subscriptions && {
         label: "Subscriptions",
@@ -744,7 +764,8 @@ export default function Analytics() {
       day: "numeric",
       year: "numeric",
     }),
-    fmt(o.upsellRevenue, o.currency),
+    fmt(o.crossSellRevenue ?? o.upsellRevenue, o.currency),
+    fmt(o.oneTickRevenue, o.currency),
     fmt(o.addonRevenue, o.currency),
     fmt(o.subscriptionRevenue, o.currency),
     fmt(o.totalRevenue, o.currency),
@@ -937,9 +958,15 @@ export default function Analytics() {
                         />
                         <FilterPill
                           type="upsells"
-                          label="Upsells"
-                          active={filters.upsells}
-                          onToggle={() => toggleFilter("upsells")}
+                          label="Cross-sell"
+                          active={filters.crosssells}
+                          onToggle={() => toggleFilter("crosssells")}
+                        />
+                        <FilterPill
+                          type="oneticks"
+                          label="One-tick upsell"
+                          active={filters.oneticks}
+                          onToggle={() => toggleFilter("oneticks")}
                         />
                         <FilterPill
                           type="subscriptions"
@@ -1048,8 +1075,8 @@ export default function Analytics() {
               </Box>
             ) : (
               <DataTable
-                columnContentTypes={["text", "text", "numeric", "numeric", "numeric", "numeric"]}
-                headings={["Order", "Date", "Upsell", "Add-ons", "Subscriptions", "Order revenue"]}
+                columnContentTypes={["text", "text", "numeric", "numeric", "numeric", "numeric", "numeric"]}
+                headings={["Order", "Date", "Cross-sell", "One-tick upsell", "Add-ons", "Subscriptions", "Order revenue"]}
                 rows={recentOrderRows}
               />
             )}

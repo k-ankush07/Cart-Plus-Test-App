@@ -18,13 +18,18 @@ function isAuthError(status, errors = []) {
 
 // ─── GraphQL helper ──────────────────────────────────────────────────────────
 
-export async function makeShopifyGraphQL(shop, query, variables = {}) {
+export async function makeShopifyGraphQL(
+  shop,
+  query,
+  variables = {},
+  apiVersion = API_VERSION,
+) {
   const normalizedShop = normalizeShopDomain(shop);
 
   const token = await getValidAccessToken(normalizedShop);
 
   const res = await fetch(
-    `https://${normalizedShop}/admin/api/${API_VERSION}/graphql.json`,
+    `https://${normalizedShop}/admin/api/${apiVersion}/graphql.json`,
     {
       method: "POST",
       headers: {
