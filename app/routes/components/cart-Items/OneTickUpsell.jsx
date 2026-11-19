@@ -16,7 +16,7 @@ const ARMED_MS = 450;
 
 /* Stack CSS: pos 0 = top card, 1 & 2 = peeking layers, 3+ = hidden */
 const STACK_CSS = `
-.cart-plus-drawer__ups-stack{position:relative;padding-bottom:14px}
+.cart-plus-drawer__ups-stack{position:relative;}
 .cart-plus-drawer__ups-stack-item{transition:transform .25s ease,opacity .25s ease;transform-origin:top center}
 .cart-plus-drawer__ups-stack-item[data-rapi-ups-stack-pos="0"]{position:relative;z-index:3}
 .cart-plus-drawer__ups-stack-item:not([data-rapi-ups-stack-pos="0"]){position:absolute;top:0;left:0;right:0;pointer-events:none}
