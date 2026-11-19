@@ -422,7 +422,7 @@ window.hubUtils = {
     }
 
     return `
-    <div class="hub-rec-product ${layoutClass || ""} upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" style="background:${cardBg};border:1px solid ${cardBorder};">
+    <div class="hub-rec-product ${layoutClass || ""} upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" data-product-handle="${product.handle}" style="background:${cardBg};border:1px solid ${cardBorder};">
       <div class="upcart-internal-component-upsell-tile__info_count cart-plus-public-component-upsell-tile">
         <div class="upcart-internal-component-upsell-tile__image-container cart-plus-public-component-upsell-tile__image-container" style="${imageBox}">
           <img class="hub-product-img cart-plus-public-component-upsell-tile__image"
@@ -598,21 +598,24 @@ window.hubUtils = {
 
       // ─── STEP 2: Shipping-zone rate calculation ────────────────────────
       if (!window._hubShippingZonesCache) {
-        if (window._hubShippingZonesPromise) {
-          await window._hubShippingZonesPromise;
-        } else {
+        if (!window._hubShippingZonesPromise) {
           const url = `${ratingsUrl}/api/shipping-zones?shop=${shop}`;
-          const res = await fetch(url, {
+          window._hubShippingZonesPromise = fetch(url, {
             headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }),
+          }).then(async (res) => {
+            if (!res.ok) return null;
+            const data = await res.json();
+            window._hubShippingZonesCache = data;
+            return data;
           });
-          if (!res.ok) {
-            // FIX: hide row instead of leaving stale state
-            window._hubShippingPriceCents = 0;
-            shippingRow.style.display = "none";
-            updateGrandTotalAndCheckout(0);
-            return;
-          }
-          window._hubShippingZonesCache = await res.json();
+        }
+        const data = await window._hubShippingZonesPromise;
+        window._hubShippingZonesPromise = null;
+        if (!data) {
+          window._hubShippingPriceCents = 0;
+          shippingRow.style.display = "none";
+          updateGrandTotalAndCheckout(0);
+          return;
         }
       }
 
@@ -717,6 +720,7 @@ window.hubUtils = {
       updateGrandTotalAndCheckout(shippingCents);
     } catch (err) {
       // FIX: error case mein bhi row ko hide/reset karo, stale state mat chhodo
+      window._hubShippingZonesPromise = null;
       window._hubShippingPriceCents = 0;
       if (shippingRow) shippingRow.style.display = "none";
       updateGrandTotalAndCheckout(0);
@@ -1220,21 +1224,44 @@ window.hubUtils = {
     if (!ratingsUrl || !shop)
       return { allDiscountCodes: [], activeDiscountCodes: [] };
 
-    try {
+    const cacheKey = `${ratingsUrl}|${shop}`;
+    window._hubDiscountsCache = window._hubDiscountsCache || {};
+    window._hubDiscountsRequests = window._hubDiscountsRequests || {};
+    const cached = window._hubDiscountsCache[cacheKey];
+    if (cached && cached.expiresAt > Date.now()) return cached.value;
+    if (window._hubDiscountsRequests[cacheKey]) {
+      return window._hubDiscountsRequests[cacheKey];
+    }
+
+    const request = (async () => {
       const res = await fetch(`${ratingsUrl}/api/discounts`, {
         method: "POST",
         headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }),
         body: JSON.stringify({ shop }),
       });
+      if (!res.ok) throw new Error(`Discount lookup failed (${res.status})`);
       const data = await res.json();
-      return {
+      const value = {
         allDiscountCodes: data.allDiscountCodes || [],
         activeDiscountCodes: data.activeDiscountCodes || [],
         total: data.total || 0,
         activeCount: data.activeCount || 0,
       };
+      window._hubDiscountsCache[cacheKey] = {
+        value,
+        expiresAt: Date.now() + 300_000,
+      };
+      return value;
+    })();
+    window._hubDiscountsRequests[cacheKey] = request;
+
+    try {
+      return await request;
     } catch (err) {
+      console.error("[CartPlus] Discount lookup failed:", err);
       return { allDiscountCodes: [], activeDiscountCodes: [] };
+    } finally {
+      delete window._hubDiscountsRequests[cacheKey];
     }
   },
 

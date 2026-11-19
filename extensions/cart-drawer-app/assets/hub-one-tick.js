@@ -62,11 +62,11 @@ function cartPlusNormalizeProduct(p, pricesInCents) {
     p.images?.[0] ||
     "";
   return {
-    id: String(p.id),
+    id: cartPlusIdOf(p.id),
     title: p.title,
     image: typeof image === "string" ? image : image?.src || "",
     variants: (p.variants || []).map((v) => ({
-      id: String(v.id),
+      id: cartPlusIdOf(v.id),
       title: v.title,
       price: toCents(v.price),
       image: v.featured_image?.src || "",
@@ -107,20 +107,44 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
   const auto = oneTick.offers.filter((o) => !manual.includes(o));
 
   if (manual.length) {
-    const all = await cartPlusLoadAllProducts();
     manual.forEach((offer) => {
       const wanted = offer.selected.items.variants.map(cartPlusIdOf);
-      const product = all.find((p) =>
-        p.variants.some((v) => wanted.includes(v.id)),
+      const savedProducts = offer.selected.items.productData || [];
+      const savedProduct = savedProducts.find((product) =>
+        product.variants?.some((variant) =>
+          wanted.includes(cartPlusIdOf(variant.id)),
+        ),
       );
-      if (!product) return;
-      // only the variants ticked in the picker
-      const chosen = product.variants.filter((v) => wanted.includes(v.id));
-      products[offer.id] = {
-        ...product,
-        variants: chosen.length ? chosen : product.variants,
-      };
+      if (savedProduct) {
+        const product = cartPlusNormalizeProduct(savedProduct, false);
+        const chosen = product.variants.filter((variant) =>
+          wanted.includes(cartPlusIdOf(variant.id)),
+        );
+        products[offer.id] = {
+          ...product,
+          variants: chosen.length ? chosen : product.variants,
+        };
+        return;
+      }
     });
+
+    const unresolvedManual = manual.filter((offer) => !products[offer.id]);
+    if (unresolvedManual.length) {
+      const all = await cartPlusLoadAllProducts();
+      unresolvedManual.forEach((offer) => {
+        const wanted = offer.selected.items.variants.map(cartPlusIdOf);
+        const product = all.find((p) =>
+          p.variants.some((v) => wanted.includes(v.id)),
+        );
+        if (!product) return;
+        // only the variants ticked in the picker
+        const chosen = product.variants.filter((v) => wanted.includes(v.id));
+        products[offer.id] = {
+          ...product,
+          variants: chosen.length ? chosen : product.variants,
+        };
+      });
+    }
   }
 
   if (auto.length) {
@@ -129,25 +153,35 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
       const autoCacheKey = `${key}:${first.product_id}`;
       const cachedAuto = autoCache[autoCacheKey];
       if (cachedAuto) {
-        Object.assign(products, cachedAuto);
+        Object.assign(
+          products,
+          typeof cachedAuto.then === "function" ? await cachedAuto : cachedAuto,
+        );
       } else {
-        const data = await fetch(
-          `/recommendations/products.json?product_id=${first.product_id}&limit=${Math.max(auto.length, 4)}`,
-        )
-          .then((r) => r.json())
-          .catch(() => ({ products: [] }));
-        const list = (data.products || [])
-          .map((p) => cartPlusNormalizeProduct(p, true))
-          .filter((p) => p.variants.length);
-        const autoProducts = {};
-        auto.forEach((offer, i) => {
-          if (list[i] || list[0]) {
-            autoProducts[offer.id] = list[i] || list[0];
-          }
-        });
+        const request = (async () => {
+          const data = await fetch(
+            `/recommendations/products.json?product_id=${first.product_id}&limit=${Math.max(auto.length, 4)}`,
+          )
+            .then((r) => r.json())
+            .catch(() => ({ products: [] }));
+          const list = (data.products || [])
+            .map((p) => cartPlusNormalizeProduct(p, true))
+            .filter((p) => p.variants.length);
+          const autoProducts = {};
+          auto.forEach((offer, i) => {
+            if (list[i] || list[0]) {
+              autoProducts[offer.id] = list[i] || list[0];
+            }
+          });
+          return autoProducts;
+        })();
+        autoCache[autoCacheKey] = request;
+        const autoProducts = await request;
         Object.assign(products, autoProducts);
         if (Object.keys(autoProducts).length) {
           autoCache[autoCacheKey] = autoProducts;
+        } else {
+          delete autoCache[autoCacheKey];
         }
       }
     }
@@ -164,15 +198,15 @@ function cartPlusOneTickTrigger(blockId, oneTick, offer, variantId) {
   const accent = window.cartPlusBgCss(oneTick.buttonBackground) || "#303030";
   const design = window.__HUB_ACTIVE_CART__?.designSettings || {};
   const activeColor = design.accentSolid || design.themeColor || accent;
-  const call = (on, button = "") =>
-    `cartPlusOneTickToggle('${blockId}','${offer.id}','${variantId}',${on}${button})`;
+  const call = (on, button = "", trigger = "") =>
+    `cartPlusOneTickToggle('${blockId}','${offer.id}','${variantId}',${on}${button}${trigger})`;
   if (oneTick.trigger === "checkbox") {
     return `<label class="cart-plus-onetick-check" aria-label="${oneTick.buttonLabel}">
-      <input type="checkbox" class="cart-plus-onetick-input" style="--cp-accent:${activeColor};--cp-tick:${oneTick.buttonTextColor || "#fff"};--cp-border:${oneTick.secondaryTextColor || "#8a8a8a"};" onchange="var c=this.checked;this.closest('.cart-plus-onetick-card')?.classList.toggle('cart-plus-onetick-card--adding',c);${call("c")}" />
+      <input type="checkbox" class="cart-plus-onetick-input" style="--cp-accent:${activeColor};--cp-tick:${oneTick.buttonTextColor || "#fff"};--cp-border:${oneTick.secondaryTextColor || "#8a8a8a"};" onchange="var c=this.checked;${call("c", ",null,this")}" />
     </label>`;
   }
   if (oneTick.trigger === "toggle") {
-    return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${activeColor};--cp-off:${design.accentBorder || "#c9cccf"};" onclick="this.setAttribute('aria-checked','true');this.closest('.cart-plus-onetick-card')?.classList.add('cart-plus-onetick-card--adding');${call("true")}"><span></span></button>`;
+    return `<button type="button" role="switch" aria-checked="false" aria-label="${oneTick.buttonLabel}" class="cart-plus-onetick-switch" style="--cp-accent:${activeColor};--cp-off:${design.accentBorder || "#c9cccf"};" onclick="this.setAttribute('aria-checked','true');${call("true", ",null,this")}"><span></span></button>`;
   }
   return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true", ",this")}" style="width:100%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border:none;cursor:pointer;padding:6px 8px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
 }
@@ -250,9 +284,49 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
   </div>`;
 }
 
+async function cartPlusCollapseSection(el, section, renderAt) {
+  const hide = () => {
+    if (renderAt !== window._cartPlusOneTickAt) return;
+    section.style.display = "none";
+    el.style.display = "none";
+    el.innerHTML = "";
+    delete el.dataset.sig;
+  };
+
+  if (
+    !section.isConnected ||
+    section.style.display === "none" ||
+    !section.offsetHeight ||
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+  ) {
+    hide();
+    return;
+  }
+
+  section.style.overflow = "hidden";
+  section.style.transition = "none";
+  section.style.maxHeight = `${section.scrollHeight}px`;
+  section.style.opacity = "1";
+  void section.offsetHeight;
+  section.style.transition =
+    "max-height 220ms ease, opacity 180ms ease, padding 220ms ease";
+
+  requestAnimationFrame(() => {
+    if (renderAt !== window._cartPlusOneTickAt) return;
+    section.style.maxHeight = "0px";
+    section.style.opacity = "0";
+    section.style.paddingTop = "0";
+    section.style.paddingBottom = "0";
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 240));
+  hide();
+}
+
 window.cartPlusRenderOneTick = async function (blockId, cart) {
   const el = document.getElementById(`cart-plus-onetick-${blockId}`);
   if (!el) return;
+  const section = el.closest(".cp-bg") || el;
   const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
   const oneTick = cartPlusGetOneTick(cartSettings);
   // Appearance: Dark -> the saved light text colours become the dark theme's
@@ -279,6 +353,16 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
   if (_at < (window._cartPlusOneTickAt || 0)) return;
   window._cartPlusOneTickAt = _at;
 
+  [el, section].forEach((target) => {
+    target.style.maxHeight = "";
+    target.style.opacity = "";
+    target.style.overflow = "";
+    target.style.transition = "";
+    target.style.paddingTop = "";
+    target.style.paddingBottom = "";
+  });
+  if (section !== el) section.style.display = "";
+
   if (!oneTick.enabled || !oneTick.offers.length || !cart?.items?.length) {
     el.style.display = "none";
     el.innerHTML = "";
@@ -296,9 +380,7 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
       (c) => c.product && !c.product.variants.some((v) => inCart.has(v.id)),
     );
   if (!cards.length) {
-    el.style.display = "none";
-    el.innerHTML = "";
-    delete el.dataset.sig;
+    await cartPlusCollapseSection(el, section, _at);
     return;
   }
 
@@ -307,11 +389,12 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
     (dsx.dark ? "var(--cp-card, #2a2a2d)" : "#ffffff");
   const isCarousel = oneTick.layout === "carousel";
   const title = oneTick.title
-    ? `<div style="font-size:14px; display:flex;align-items:center;gap:6px;margin-bottom:8px;font-weight:600;color:${oneTick.primaryTextColor};">${
+    ? `<div style="line-height:15px; font-size:14px; display:flex;align-items:center;gap:6px;margin-bottom:5px;font-weight:600;color:${oneTick.primaryTextColor};">${
         window.hubLibraryIconHTML?.(oneTick.icon, 20, oneTick.iconColor) || ""
       }<span>${oneTick.title}</span></div>`
     : "";
 
+  section.style.display = "";
   el.style.cssText = "padding:12px 16px;display:block;";
 
   // only touch the DOM when something actually changed (re-writing identical HTML makes it blink)
@@ -382,6 +465,30 @@ window.cartPlusOneTickGoTo = function (blockId, i) {
   track.scrollTo({ left: child.offsetLeft - track.offsetLeft, behavior: "smooth" });
 };
 
+function cartPlusWaitForItemInDrawer(drawer, itemKey) {
+  const isRendered = () =>
+    Array.from(drawer.querySelectorAll("[data-item-key]")).some(
+      (row) =>
+        row.getAttribute("data-item-key") === String(itemKey) &&
+        row.querySelector(".hub-cart-item"),
+    );
+  if (isRendered()) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const observer = new MutationObserver(() => {
+      if (!isRendered()) return;
+      clearTimeout(timeout);
+      observer.disconnect();
+      resolve();
+    });
+    const timeout = setTimeout(() => {
+      observer.disconnect();
+      reject(new Error("Timed out waiting for the One Tick item to render"));
+    }, 10000);
+    observer.observe(drawer, { childList: true, subtree: true });
+  });
+}
+
 window.cartPlusOneTickVariant = function (blockId, offerId, variantId) {
   (window._cartPlusOneTickVariant ||= {})[offerId] = variantId;
   if (window._cartPlusOneTickCart)
@@ -395,9 +502,12 @@ window.cartPlusOneTickToggle = async function (
   variantId,
   on,
   button,
+  trigger,
 ) {
   if (on && button?.classList.contains("loading")) return;
+  const card = (trigger || button)?.closest(".cart-plus-onetick-card");
   const originalButtonHTML = button?.innerHTML;
+  if (on) card?.classList.add("cart-plus-onetick-card--adding");
   if (on && button) {
     button.classList.add("loading");
     button.disabled = true;
@@ -428,6 +538,14 @@ window.cartPlusOneTickToggle = async function (
       }
       const cart = await cartResponse.json();
       window.updateCartCount?.(cart);
+      const addedItem = cart.items.find(
+        (item) =>
+          String(item.variant_id) === String(variantId) &&
+          String(item.properties?._cart_plus_one_tick) === String(offerId),
+      );
+      if (!addedItem) {
+        throw new Error("One Tick item was not found in the refreshed cart");
+      }
       const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
       if (drawer && window.hubCartRender) {
         await window.hubCartRender(drawer, {
@@ -435,6 +553,7 @@ window.cartPlusOneTickToggle = async function (
           cart,
           awaitOneTick: true,
         });
+        await cartPlusWaitForItemInDrawer(drawer, addedItem.key);
       }
     } else {
       const latest = await (await fetch("/cart.js")).json();
@@ -457,6 +576,7 @@ window.cartPlusOneTickToggle = async function (
         cart = await response.json();
       }
       window.updateCartCount?.(cart);
+      await new Promise((resolve) => setTimeout(resolve, 220));
       const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
       if (drawer && window.hubCartRender) {
         await window.hubCartRender(drawer, {
@@ -476,6 +596,7 @@ window.cartPlusOneTickToggle = async function (
     button.removeAttribute("aria-busy");
     button.innerHTML = originalButtonHTML;
   }
+  card?.classList.remove("cart-plus-onetick-card--adding");
 };
 
 // the cart just became empty: drop the section right away instead of waiting for the next full render

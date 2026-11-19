@@ -765,14 +765,11 @@ function initCartDrawerAfterData() {
                 ? document.getElementById(`hub-upsell-top-${blockId}`)
                 : document.getElementById(`hub-upsell-bottom-${blockId}`);
 
-            // Only show if we don't already have resolved data for the current product
-            const cartHandles =
-              window._hubUpsellPrefetch || window._upsellCache;
-            const hasAnyCache =
-              window._upsellCache &&
-              Object.keys(window._upsellCache).length > 0;
+            const hasRealUpsellCards =
+              !!upsellContainer?.querySelector(".hub-rec-product") &&
+              !upsellContainer?.querySelector(".hub-rec-skeleton-card");
 
-            if (upsellContainer && !hasAnyCache) {
+            if (upsellContainer && !hasRealUpsellCards) {
               upsellContainer.classList.add("upsell-container");
               upsellContainer.classList.add(
                 position === "bottom" ? "upsell-bottom" : "upsell-top",
@@ -1342,12 +1339,17 @@ window.startAnnTimer = function (blockId, timeStr) {
               const cart = await cartRes.json();
               if (!cart.items?.length) return null;
               const productId = cart.items[0].product_id;
+              const cartSig = cart.items
+                .map((item) => item.product_id)
+                .sort()
+                .join(",");
               const products = await window.getUpsellProducts(
                 activeCart.upsellsSettings,
                 productId,
+                cart,
               );
               window._upsellCache[productId] = products;
-              return { productId, products };
+              return { productId, cartSig, products };
             } catch (e) {
               console.error(" upsell prefetch failed:", e);
               return null;
@@ -1630,7 +1632,7 @@ function debounce(fn, delay) {
   };
 }
 
-window.getUpsellProducts = async function (settings, productId) {
+window.getUpsellProducts = async function (settings, productId, currentCart) {
   try {
     let products = [];
     const selectedItems = settings?.selectedItems || {};
@@ -1685,23 +1687,46 @@ window.getUpsellProducts = async function (settings, productId) {
       const ids =
         selectedItems.products?.map((gid) => gid.split("/").pop()) || [];
       if (ids.length) {
-        let allProducts = [],
-          page = 1,
-          done = false;
-        while (!done) {
-          const results = await Promise.all(
-            [page, page + 1, page + 2].map((p) =>
-              fetch(`/products.json?limit=250&page=${p}`)
-                .then((r) => r.json())
-                .catch(() => ({ products: [] })),
-            ),
-          );
-          for (const data of results)
-            allProducts.push(...(data.products || []));
-          if (!results[2].products?.length) done = true;
-          else page += 3;
+        if (selectedItems.productData?.length) {
+          products = selectedItems.productData.map((product) => {
+            const image = product.image || "";
+            const variants = (product.variants || []).map((variant) => ({
+              id: variant.id.split("/").pop(),
+              title: variant.title,
+              price: String(variant.price || "0"),
+              compare_at_price: variant.compareAtPrice || null,
+              available: variant.available !== false,
+              featured_image: variant.image ? { src: variant.image } : null,
+            }));
+            return {
+              id: product.id.split("/").pop(),
+              title: product.title,
+              handle: product.handle,
+              available: variants.some((variant) => variant.available),
+              featured_image: image,
+              images: image ? [{ src: image }] : [],
+              variants,
+            };
+          });
+        } else {
+          let allProducts = [],
+            page = 1,
+            done = false;
+          while (!done) {
+            const results = await Promise.all(
+              [page, page + 1, page + 2].map((p) =>
+                fetch(`/products.json?limit=250&page=${p}`)
+                  .then((r) => r.json())
+                  .catch(() => ({ products: [] })),
+              ),
+            );
+            for (const data of results)
+              allProducts.push(...(data.products || []));
+            if (!results[2].products?.length) done = true;
+            else page += 3;
+          }
+          products = allProducts.filter((p) => ids.includes(String(p.id)));
         }
-        products = allProducts.filter((p) => ids.includes(String(p.id)));
       }
     } else if (sourceType === "collections") {
       const rawColIds = Array.isArray(selectedItems)
@@ -1735,8 +1760,8 @@ window.getUpsellProducts = async function (settings, productId) {
 
     if (!settings.showIfAlreadyInCart) {
       try {
-        const cartRes = await fetch(`/cart.js?_=${Date.now()}`);
-        const cart = await cartRes.json();
+        const cart =
+          currentCart || (await (await fetch(`/cart.js?_=${Date.now()}`)).json());
         const cartProductIds = new Set(
           cart.items.map((i) => String(i.product_id)),
         );

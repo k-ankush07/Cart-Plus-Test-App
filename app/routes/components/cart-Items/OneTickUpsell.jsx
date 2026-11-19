@@ -771,7 +771,7 @@ export default function OneTickUpsell({
             display: "flex",
             alignItems: "center",
             gap: 6,
-            marginBottom: 15,
+            marginBottom: 5,
             fontWeight: 600,
             color: oneTick.primaryTextColor,
           }}

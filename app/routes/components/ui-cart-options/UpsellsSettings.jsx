@@ -771,6 +771,7 @@ export default function UpsellsSettings({
               <div>
                 <ProductItemCollections
                   currency={currency}
+                  includeProductData
                   onSelect={(data) => {
                     setSelected(data);
                   }}

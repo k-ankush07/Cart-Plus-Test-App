@@ -21,7 +21,7 @@ import {
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 
-const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null, singleProduct = false, multiSelectCollections = false, onPaginationChange }, ref) => {
+const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null, singleProduct = false, multiSelectCollections = false, onPaginationChange, includeProductData = false }, ref) => {
 
     const authenticatedFetch = useAuthenticatedFetch();
     const [cursorStack, setCursorStack] = useState([]);
@@ -75,10 +75,34 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
         const productIds = selectedProducts.map((p) => p.id);
         const titles = selectedProducts.map((p) => p.title);
         const images = selectedProducts.map((p) => p.image);
+        const productData = includeProductData
+            ? selectedProducts.map((product) => ({
+                id: product.id,
+                title: product.title,
+                handle: product.handle,
+                image: product.image,
+                variants: product.variants
+                    .filter((variant) => updated.includes(variant.id))
+                    .map((variant) => ({
+                        id: variant.id,
+                        title: variant.title,
+                        price: variant.price,
+                        compareAtPrice: variant.compareAtPrice,
+                        available: variant.available,
+                        image: variant.image,
+                    })),
+            }))
+            : undefined;
 
         onSelect({
             type: "products",
-            items: { variants: updated, products: productIds, titles, images }
+            items: {
+                variants: updated,
+                products: productIds,
+                titles,
+                images,
+                ...(productData ? { productData } : {}),
+            }
         });
     };
 
@@ -225,6 +249,7 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
                     id: v.node.id,
                     title: v.node.title,
                     price: v.node.price,
+                    compareAtPrice: v.node.compareAtPrice,
                     available: v.node.availableForSale,
                     image: v.node.image?.url || null,
                 }))

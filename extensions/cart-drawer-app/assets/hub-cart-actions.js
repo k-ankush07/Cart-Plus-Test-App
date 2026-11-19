@@ -205,6 +205,99 @@ async function updateQty(key, qty, btn = null) {
 const _hubPendingRemovals = {};
 const UNDO_DURATION_MS = 4000;
 
+function _hubRemovalFooterChange(key, itemEl) {
+  const item = window._hubLastRenderedCart?.items?.find(
+    (cartItem) => String(cartItem.key) === String(key),
+  );
+  const isAddon = !!(
+    item?.properties?._hub_addon || item?.properties?.__upcartAddon
+  );
+  const compareAt = isAddon
+    ? 0
+    : window._hubCompareCache?.[`${item?.handle}_${item?.variant_id}`] || 0;
+  const unitMrp = Math.max(compareAt, Number(item?.original_price) || 0);
+  const itemSubtotal =
+    Number(item?.final_line_price) || Number(itemEl.dataset.linePrice) || 0;
+  const cartSubtotal = Number(window._hubLastRenderedCart?.items_subtotal_price);
+  const cartTotal = Number(window._hubLastRenderedCart?.total_price);
+  const linePrice =
+    cartSubtotal > 0 && Number.isFinite(cartTotal)
+      ? Math.round((itemSubtotal / cartSubtotal) * cartTotal)
+      : itemSubtotal;
+
+  return {
+    linePrice,
+    lineMrp: item
+      ? unitMrp * (Number(item.quantity) || 0)
+      : Number(itemEl.dataset.linePrice) || 0,
+  };
+}
+
+function _hubAdjustRemovalFooter(removal, direction) {
+  if (!removal?.footerChange) return;
+
+  const blockId = window.HUB_CART_BLOCK_ID;
+  const change = removal.footerChange;
+  const summary = window._cartPlusSummaryData;
+  const currentTotal =
+    Number(window._hubCartFinalTotal ?? summary?.finalTotal) || 0;
+  const nextTotal = Math.max(0, currentTotal + direction * change.linePrice);
+  const shippingPrice =
+    Number(summary?.shippingPrice ?? window._hubShippingPriceCents) || 0;
+  const grandTotal = nextTotal + shippingPrice;
+
+  window._hubCartFinalTotal = nextTotal;
+
+  const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
+  if (totalEl) totalEl.textContent = hubUtils.formatMoney(nextTotal);
+
+  const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
+  if (grandEl) grandEl.textContent = hubUtils.formatMoney(grandTotal);
+
+  const checkoutBtn = document.getElementById(
+    `hub-checkout-btn-${blockId}`,
+  );
+  if (checkoutBtn) {
+    const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+    checkoutBtn.textContent = hubUtils.getCheckoutButtonText(
+      cartSettings,
+      hubUtils.formatMoney(nextTotal),
+    );
+  }
+
+  if (summary) {
+    summary.finalTotal = nextTotal;
+    summary.grandTotal = grandTotal;
+    summary.mrpTotal = Math.max(
+      0,
+      (Number(summary.mrpTotal) || 0) + direction * change.lineMrp,
+    );
+    window.cartPlusRenderSummary?.(blockId, summary);
+  }
+}
+
+function _hubAnimateCartItemRemoval(itemEl) {
+  if (!itemEl?.isConnected) return Promise.resolve();
+
+  itemEl.style.maxHeight = `${itemEl.offsetHeight}px`;
+  itemEl.style.overflow = "hidden";
+  void itemEl.offsetHeight;
+  itemEl.classList.add("hub-cart-item-removing");
+
+  return new Promise((resolve) => {
+    let timeout;
+    const finish = (event) => {
+      if (event && event.target !== itemEl) return;
+      clearTimeout(timeout);
+      itemEl.removeEventListener("animationend", finish);
+      resolve();
+    };
+
+    itemEl.addEventListener("animationend", finish);
+    timeout = window.setTimeout(finish, 260);
+  });
+}
+
 async function removeItem(key, title) {
   const deleteBehavior =
     window.__HUB_ACTIVE_CART__?.cartSettings?.deleteBehavior || "undo";
@@ -216,8 +309,6 @@ async function removeItem(key, title) {
     clearTimeout(_hubPendingRemovals[key].timer);
     _hubPendingRemovals[key].toastEl?.remove();
   }
-
-  const inner = el.querySelector(".hub-cart-item");
 
   const removedQty = Number(el.querySelector(".hub-qty-input")?.value || 1);
   const badgeText = document.querySelector(
@@ -271,59 +362,28 @@ async function removeItem(key, title) {
     }
   }
 
-  const willEmpty =
-    Array.from(drawer.querySelectorAll("[data-item-key]")).filter((row) => {
-      const k = row.getAttribute("data-item-key");
-      if (String(k) === String(key) || _hubPendingRemovals[k]) return false;
-      if (row.getAttribute("data-is-reward") === "1") return false;
-      return true;
-    }).length === 0;
-
-  let fadedRewardInners = [];
-  if (willEmpty) {
-    fadedRewardInners = Array.from(
-      drawer.querySelectorAll('[data-item-key][data-is-reward="1"]'),
-    )
-      .map((row) => row.querySelector(".hub-cart-item"))
-      .filter(Boolean);
-    fadedRewardInners.forEach((rInner) => {
-      rInner.style.transition = "opacity 0.25s ease";
-      rInner.style.opacity = "0.4";
-      rInner.style.pointerEvents = "none";
-    });
-  }
-
-  // ── Direct: loader only, no fade, no toast ───────────────────────────────
+  // ── Direct: no toast or button animation ─────────────────────────────────
   if (deleteBehavior === "direct") {
     const deleteBtn = el.querySelector(".hub-delete-btn");
     if (deleteBtn) {
-      deleteBtn.innerHTML = `<span class="loader"></span>`;
       deleteBtn.disabled = true;
     }
 
     _hubPendingRemovals[key] = {
       toastEl: null,
       itemEl: el,
-      innerEl: inner,
-      fadedRewardInners,
       removedQty,
       timer: null,
       isDirect: true,
+      footerChange: _hubRemovalFooterChange(key, el),
     };
 
-    // short pause so the loader is seen, then remove right away
-    await new Promise((r) => setTimeout(r, 300));
+    _hubAdjustRemovalFooter(_hubPendingRemovals[key], -1);
     await _commitRemoval(key);
     return;
   }
 
-  // ── Undo toast: fade inner, show toast ───────────────────────────────────
-  if (inner) {
-    inner.style.opacity = "0.4";
-    inner.style.transition = "opacity 0.25s ease";
-    inner.style.pointerEvents = "none";
-  }
-
+  // ── Undo toast ──────────────────────────────────────────────────────────
   const toastEl = _createUndoToast(key, title || "item");
   el.appendChild(toastEl);
 
@@ -340,11 +400,11 @@ async function removeItem(key, title) {
   _hubPendingRemovals[key] = {
     toastEl,
     itemEl: el,
-    innerEl: inner,
-    fadedRewardInners,
     removedQty,
+    footerChange: _hubRemovalFooterChange(key, el),
     timer: setTimeout(() => _commitRemoval(key), UNDO_DURATION_MS),
   };
+  _hubAdjustRemovalFooter(_hubPendingRemovals[key], -1);
 }
 
 async function _commitRemoval(key) {
@@ -398,18 +458,9 @@ async function _commitRemoval(key) {
       updates[otherKey] = 0;
       delete _hubPendingRemovals[otherKey];
     });
-
-    _hubHideAllCartSections(blockId);
-    const rewardsSettings = window.__HUB_ACTIVE_CART__?.rewardsSettings;
-    if (rewardsSettings) {
-      hubUtils.renderRewardsBar(
-        blockId,
-        { items: [], item_count: 0, total_price: 0 },
-        rewardsSettings,
-      );
-    }
   }
 
+  window._hubRemovalCommitCount = (window._hubRemovalCommitCount || 0) + 1;
   window._hubCommitingRemoval = true;
   try {
     const networkDone = fetch("/cart/update.js", {
@@ -419,12 +470,20 @@ async function _commitRemoval(key) {
     });
 
     if (cartWillBeEmpty) {
-      // Render empty UI INSTANTLY — items are already faded from removeItem.
-      // Skip toast-hide + slide-out animations entirely.
       if (p.toastEl) p.toastEl.remove();
 
-      // _hubHideAllCartSections faded the cart body + items container — restore
-      // them immediately so the empty UI we're about to inject is visible.
+      p.itemEl?.remove();
+
+      _hubHideAllCartSections(blockId);
+      const rewardsSettings = window.__HUB_ACTIVE_CART__?.rewardsSettings;
+      if (rewardsSettings) {
+        hubUtils.renderRewardsBar(
+          blockId,
+          { items: [], item_count: 0, total_price: 0 },
+          rewardsSettings,
+        );
+      }
+
       const cartBody = document.getElementById("hub-upcart-cart-body");
       if (cartBody) {
         cartBody.style.transition = "";
@@ -483,7 +542,7 @@ async function _commitRemoval(key) {
       return;
     }
 
-    // Non-empty case: keep the original toast-hide + slide-out animations
+    // Hide the undo toast, then animate the item out.
     if (p.toastEl) {
       p.toastEl.classList.add("hub-toast-hiding");
       await new Promise((r) => setTimeout(r, 220));
@@ -522,54 +581,8 @@ async function _commitRemoval(key) {
         ).replace("{{cart_quantity}}", Math.max(0, remainingCount));
       }
 
-      // ── UPDATE FOOTER PRICES OPTIMISTICALLY ─────────────
-      const removedLinePrice = Number(el.dataset.linePrice) || 0;
-      if (removedLinePrice > 0) {
-        const currentTotal = Number(window._hubCartFinalTotal) || 0;
-        const newTotal = Math.max(0, currentTotal - removedLinePrice);
-        window._hubCartFinalTotal = newTotal;
-        const newTotalFmt = hubUtils.formatMoney(newTotal);
-
-        const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
-        if (totalEl) totalEl.textContent = newTotalFmt;
-
-        const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
-        if (grandEl) grandEl.textContent = newTotalFmt;
-
-        const checkoutBtn = document.getElementById(
-          `hub-checkout-btn-${blockId}`,
-        );
-        if (checkoutBtn) {
-          const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
-          const goToCartPageOnCheckout =
-            cartSettings.goToCartPageOnCheckout === true ||
-            cartSettings.goToCartPageOnCheckout === "true";
-
-          const rawText = goToCartPageOnCheckout
-            ? cartSettings.viewCartName || "View cart"
-            : cartSettings.checkoutButtonText || "Proceed to checkout";
-
-          checkoutBtn.textContent = hubUtils.getCheckoutButtonText(
-            cartSettings,
-            newTotalFmt,
-          );
-        }
-      }
-
-      el.style.overflow = "hidden";
-      el.style.maxHeight = el.offsetHeight + "px";
-      void el.offsetHeight;
-      el.style.transition =
-        "transform 0.3s ease, opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease";
-      el.style.transform = "translateX(-100%)";
-      el.style.opacity = "0";
-      el.style.maxHeight = "0px";
-      el.style.marginTop = "0px";
-      el.style.marginBottom = "0px";
-      el.style.paddingTop = "0px";
-      el.style.paddingBottom = "0px";
-
-      await new Promise((r) => setTimeout(r, 300));
+      await _hubAnimateCartItemRemoval(el);
+      el.remove();
     }
 
     await networkDone;
@@ -584,12 +597,19 @@ async function _commitRemoval(key) {
 
       window._hubRenderInProgress = false;
       window._hubRewardUpdating = false;
-      await window.hubCartRender(drawer, { awaitOneTick: true });
+      await window.hubCartRender(drawer, {
+        awaitOneTick: true,
+        preserveCartItemNodes: true,
+      });
     } else {
       await window.cartPlusOneTickQuickRefresh?.();
     }
   } finally {
-    window._hubCommitingRemoval = false;
+    window._hubRemovalCommitCount = Math.max(
+      0,
+      (window._hubRemovalCommitCount || 1) - 1,
+    );
+    window._hubCommitingRemoval = window._hubRemovalCommitCount > 0;
     window._hubRenderInProgress = false;
     window._hubRewardUpdating = false;
   }
@@ -600,23 +620,12 @@ function _undoRemoval(key) {
   if (!p) return;
 
   clearTimeout(p.timer);
+  _hubAdjustRemovalFooter(p, 1);
   const drawer = getDrawer();
   if (window.cartPlusSetEmptyHeaderVisibility) {
     window.cartPlusSetEmptyHeaderVisibility(drawer, false);
   } else {
     drawer.classList.remove("hub-cart-is-empty");
-  }
-
-  if (p.innerEl) {
-    p.innerEl.style.opacity = "1";
-    p.innerEl.style.pointerEvents = "";
-  }
-
-  if (p.fadedRewardInners?.length) {
-    p.fadedRewardInners.forEach((rInner) => {
-      rInner.style.opacity = "1";
-      rInner.style.pointerEvents = "";
-    });
   }
 
   p.toastEl?.classList.add("hub-toast-hiding");
@@ -849,6 +858,23 @@ window.hubCheckoutClick = function (e, blockId, btn) {
     window.location.href = url;
   },100);
 };
+
+if (!window._hubCheckoutPageShowBound) {
+  window._hubCheckoutPageShowBound = true;
+  window.addEventListener("pageshow", () => {
+    document
+      .querySelectorAll(".hub-cart-checkout-btn.loading")
+      .forEach((btn) => {
+        if (btn.dataset.original !== undefined) {
+          btn.innerHTML = btn.dataset.original;
+          delete btn.dataset.original;
+        }
+        btn.classList.remove("loading");
+        btn.style.pointerEvents = "";
+        btn.removeAttribute("aria-busy");
+      });
+  });
+}
 
 if (!window._hubNotesClickBound) {
   window._hubNotesClickBound = true;

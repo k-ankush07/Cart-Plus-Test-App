@@ -8,10 +8,6 @@ window.hubRefreshEstimatedTotal = function (blockId) {
   totalEl.textContent = hubUtils.formatMoney(total);
 };
 
-// Changes the selling plan of ONE cart line (sellingPlanId null = one-time purchase) and returns
-// the updated cart. The line key and quantity come from the drawer markup, and /cart/change.js
-// already answers with the new cart, so a plan switch is a single request. Only when the key
-// is missing or stale does it fall back to looking the line up in /cart.js first.
 window.hubSetSellingPlan = async function ({
   itemKey,
   variantId,
@@ -56,6 +52,23 @@ window.hubSetSellingPlan = async function ({
   return res.json();
 };
 
+function _hubAnimateReturningUpsells(container, handles) {
+  const enteringHandles = new Set(handles || []);
+  if (!enteringHandles.size) return;
+
+  container
+    .querySelectorAll(".hub-rec-product[data-product-handle]")
+    .forEach((card) => {
+      if (!enteringHandles.has(card.dataset.productHandle)) return;
+      card.classList.add("hub-rec-product-entering");
+      card.addEventListener(
+        "animationend",
+        () => card.classList.remove("hub-rec-product-entering"),
+        { once: true },
+      );
+    });
+}
+
 window.hubCartRender = async function (drawer, opts = {}) {
   if (window._hubRenderInProgress) {
     window._hubPendingRender = { drawer, opts };
@@ -66,6 +79,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
   window._hubRenderInProgress = true;
   // newest render wins: an older render that is still loading upsells must not block or overwrite it
   const _gen = (window._hubRenderGen = (window._hubRenderGen || 0) + 1);
+  let oneTickRender;
+  let earlyUpsellLoad;
 
   const blockId = window.HUB_CART_BLOCK_ID;
 
@@ -88,7 +103,13 @@ window.hubCartRender = async function (drawer, opts = {}) {
         : "none";
   }
 
+  const _renderedItemKeys = new Set(window._hubRenderedCartItemKeys || []);
   const _itemsContainer = drawer?.querySelector(`#hub-cart-items-${blockId}`);
+  _itemsContainer
+    ?.querySelectorAll(".hub-cart-for-item[data-item-key]")
+    .forEach((itemEl) =>
+      _renderedItemKeys.add(itemEl.getAttribute("data-item-key")),
+    );
   const _hasRenderedItems = !!_itemsContainer?.querySelector(".hub-cart-item");
   const _hasEmptyUI = !!_itemsContainer?.querySelector(".hub-cart-empty");
 
@@ -154,6 +175,30 @@ window.hubCartRender = async function (drawer, opts = {}) {
       });
       const refreshed = await fetch("/cart.js");
       cart = await refreshed.json();
+    }
+    window._hubLastRenderedCart = cart;
+
+    // Load One Tick offers before the drawer's other product and reward requests.
+    oneTickRender = window.cartPlusRenderOneTick?.(blockId, cart);
+
+    const earlyUpsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
+    if (!earlyUpsellSettings?.enabled && cart.items.length > 0) {
+      const productId = cart.items[0].product_id;
+      const cartSig = cart.items
+        .map((item) => item.product_id)
+        .sort()
+        .join(",");
+      const cachedProducts = window._upsellCache[productId];
+      const cachedSig = window._upsellCacheSig?.[productId];
+
+      if (!(cachedProducts && cachedSig === cartSig)) {
+        const promise = window.getUpsellProducts(
+          earlyUpsellSettings,
+          productId,
+          cart,
+        );
+        earlyUpsellLoad = { productId, cartSig, promise };
+      }
     }
 
     // ── PRE-FILL COMPARE-AT CACHE (needed for MRP) ───────────────────────
@@ -503,11 +548,6 @@ if (savedEl) {
 
       // Summary from the editor (cartSettings.summary)
       window.cartPlusSummaryFromCart?.(blockId, cart);
-      if (opts.awaitOneTick) {
-        await window.cartPlusRenderOneTick?.(blockId, cart);
-      } else {
-        window.cartPlusRenderOneTick?.(blockId, cart);
-      }
       window.cartPlusAgeUpdate?.(blockId, cart);
 
       const checkoutBtn = document.getElementById(
@@ -674,9 +714,17 @@ if (savedEl) {
             ${indicator === "buttons" ? `<div class="hub-swiper-next" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>` : ""}
             ${indicator === "progressBar" ? `<div class="hub-progress-bar"><div class="hub-progress-bar-fill" style = "background-color:${btnColor}"></div></div>` : ""}
           </div>`;
+        _hubAnimateReturningUpsells(
+          container,
+          settings.enteringProductHandles,
+        );
       } else {
         container.style.display = "";
         container.innerHTML = `<div class="upcart-internal-upsell__vertical-layout-wrapper">${html}</div>`;
+        _hubAnimateReturningUpsells(
+          container,
+          settings.enteringProductHandles,
+        );
       }
 
       hubUtils.applyRatings(container);
@@ -708,6 +756,7 @@ if (savedEl) {
         const variantId = select?.value || btn.dataset.variant;
         if (!variantId) return;
 
+        parent?.classList.add("hub-rec-product--adding");
         btn.disabled = true;
         btn.dataset.original = btn.innerHTML;
         btn.setAttribute("aria-busy", "true");
@@ -752,6 +801,9 @@ if (savedEl) {
         } catch (err) {
           console.error("[CartPlus] Upsell add failed:", err);
         } finally {
+          if (parent?.isConnected) {
+            parent.classList.remove("hub-rec-product--adding");
+          }
           if (btn.isConnected) {
             btn.innerHTML = btn.dataset.original || "Add";
             btn.disabled = false;
@@ -809,8 +861,143 @@ if (savedEl) {
       }
     };
 
+    const upsellSettings =
+      window.__HUB_ACTIVE_CART__?.upsellsSettings || {};
+    const upsellPosition = upsellSettings?.position || "bottom";
+    const upsellContainer =
+      upsellPosition === "top"
+        ? document.getElementById(`hub-upsell-top-${blockId}`)
+        : document.getElementById(`hub-upsell-bottom-${blockId}`);
+    const paintUpsellProducts = (products) => {
+      if (!upsellContainer) return;
+      if (!products.length) {
+        upsellContainer.style.display = "none";
+        upsellContainer.innerHTML = "";
+        upsellContainer.dataset.renderedHandles = "";
+        delete upsellContainer.dataset.renderingHandles;
+        return;
+      }
+
+      const layout = window.cartPlusUpsellLayout(upsellSettings);
+      const handles = products
+        .map((product) => product.handle)
+        .sort()
+        .join(",");
+      const alreadyShowingRealCards =
+        !!upsellContainer.querySelector(".hub-rec-product") &&
+        !upsellContainer.querySelector(".hub-rec-skeleton-card");
+      if (
+        upsellContainer.dataset.renderedHandles === handles &&
+        (alreadyShowingRealCards ||
+          upsellContainer.dataset.renderingHandles === handles)
+      ) {
+        return;
+      }
+
+      upsellContainer.classList.add("upsell-container");
+      upsellContainer.classList.add(
+        upsellPosition === "bottom" ? "upsell-bottom" : "upsell-top",
+      );
+      if (layout === "side") {
+        upsellContainer.style.display = "none";
+        window.cartPlusRenderSidePanel?.(blockId, products, upsellSettings);
+        upsellContainer.dataset.renderedHandles = handles;
+        delete upsellContainer.dataset.renderingHandles;
+        return;
+      }
+
+      window.cartPlusRemoveSidePanel?.(blockId);
+      upsellContainer.style.display = "";
+      upsellContainer.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.className = "upsell-inner";
+      const heading = document.createElement("h3");
+      heading.className = "upsell-heading";
+      const titleIcon =
+        upsellSettings.icon === undefined
+          ? { type: "icon", name: "star" }
+          : upsellSettings.icon;
+      const iconHtml = titleIcon
+        ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, upsellSettings.iconColor || undefined) || ""}</span>`
+        : "";
+      if (layout === "compact") {
+        heading.style.display = "flex";
+        heading.style.alignItems = "center";
+        heading.style.justifyContent = "space-between";
+        heading.style.gap = "8px";
+        heading.innerHTML = `<div>${iconHtml}${upsellSettings.title}</div>${window.cartPlusCompactArrowsHTML?.() || ""}`;
+      } else {
+        heading.innerHTML = iconHtml + upsellSettings.title;
+      }
+      heading.style.color =
+        upsellSettings.primaryTextColor || designSettings?.textColor || "#000";
+      const productsEl = document.createElement("div");
+      productsEl.className = "upsell-products";
+      wrapper.appendChild(heading);
+      wrapper.appendChild(productsEl);
+      upsellContainer.appendChild(wrapper);
+
+      if (layout === "compact") {
+        window._cartPlusUpsellOverride = upsellSettings;
+        productsEl.innerHTML = window.cartPlusCompactHTML(products);
+        hubUtils.applyRatings(productsEl);
+        window._cartPlusUpsellOverride = null;
+        const track = productsEl.querySelector(".hub-compact-track");
+        if (track) setTimeout(() => window.cartPlusCompactEdges(track), 0);
+        delete upsellContainer.dataset.renderingHandles;
+      } else {
+        upsellContainer.dataset.renderingHandles = handles;
+        window.renderProducts(productsEl, products, {
+          layout: layout === "carousel" ? "carousel" : "block",
+          upsellLayout: layout,
+          showReviews: upsellSettings.showReviews,
+          carouselIndicator: upsellSettings.carouselIndicator,
+          showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,
+        }).then(
+          () => {
+            if (upsellContainer.dataset.renderingHandles === handles) {
+              delete upsellContainer.dataset.renderingHandles;
+            }
+          },
+          (error) => {
+            delete upsellContainer.dataset.renderingHandles;
+            console.error("[CartPlus] Upsell cards failed to render:", error);
+          },
+        );
+      }
+      upsellContainer.dataset.renderedHandles = handles;
+    };
+
+    if (!upsellSettings?.enabled && cart.items.length > 0) {
+      const productId = cart.items[0].product_id;
+      const cartSig = cart.items
+        .map((item) => item.product_id)
+        .sort()
+        .join(",");
+      const cachedProducts = window._upsellCache[productId];
+      if (
+        cachedProducts &&
+        window._upsellCacheSig?.[productId] === cartSig
+      ) {
+        paintUpsellProducts(cachedProducts);
+      } else if (earlyUpsellLoad) {
+        earlyUpsellLoad.promise
+          .then((products) => {
+            if (window._hubRenderGen !== _gen) return;
+            window._upsellCache[productId] = products;
+            window._upsellCacheSig = window._upsellCacheSig || {};
+            window._upsellCacheSig[productId] = cartSig;
+            paintUpsellProducts(products);
+          })
+          .catch((error) =>
+            console.error("[CartPlus] Upsell rendering failed:", error),
+          );
+      }
+    }
+
     // ── EMPTY CART ────────────────────────────────────────────────────────
     if (cart.items.length === 0) {
+      window._hubRenderedCartItemKeys = new Set();
       const _suggestedEl = document.getElementById(
         `hub-suggested-product-${blockId}`,
       );
@@ -1329,9 +1516,77 @@ if (savedEl) {
       }),
     );
 
-    container.innerHTML = itemsHTML.join("");
+    const previousItems = Array.from(
+      container.querySelectorAll(".hub-cart-for-item[data-item-key]"),
+    ).filter((itemEl) => itemEl.parentElement === container);
+    const previousItemKeys = new Set([
+      ..._renderedItemKeys,
+      ...previousItems.map((itemEl) => itemEl.getAttribute("data-item-key")),
+    ]);
+    const preserveCartItemNodes =
+      window._hubCommitingRemoval || opts.preserveCartItemNodes === true;
+
+    if (preserveCartItemNodes) {
+      const existingItems = new Map(
+        previousItems.map((itemEl) => [
+          itemEl.getAttribute("data-item-key"),
+          itemEl,
+        ]),
+      );
+      const renderedItems = document.createElement("div");
+      renderedItems.innerHTML = itemsHTML.join("");
+      const fragment = document.createDocumentFragment();
+
+      Array.from(renderedItems.childNodes).forEach((node) => {
+        const key =
+          node.nodeType === 1 &&
+          node.matches(".hub-cart-for-item[data-item-key]")
+            ? node.getAttribute("data-item-key")
+            : null;
+        const existingItem = key && existingItems.get(key);
+        if (existingItem) {
+          existingItems.delete(key);
+          existingItem.dataset.linePrice = node.dataset.linePrice;
+          if (node.hasAttribute("data-is-reward")) {
+            existingItem.setAttribute("data-is-reward", "1");
+          } else {
+            existingItem.removeAttribute("data-is-reward");
+          }
+          fragment.appendChild(existingItem);
+        } else {
+          fragment.appendChild(node);
+        }
+      });
+
+      container.innerHTML = "";
+      container.appendChild(fragment);
+    } else {
+      container.innerHTML = itemsHTML.join("");
+    }
+
+    container
+      .querySelectorAll(".hub-cart-for-item[data-item-key]")
+      .forEach((itemEl) => {
+        if (preserveCartItemNodes) {
+          itemEl.classList.remove("hub-cart-item-entering");
+        } else if (
+          !previousItemKeys.has(itemEl.getAttribute("data-item-key"))
+        ) {
+          itemEl.classList.add("hub-cart-item-entering");
+        }
+      });
+
+    window._hubRenderedCartItemKeys = new Set(
+      Array.from(
+        container.querySelectorAll(".hub-cart-for-item[data-item-key]"),
+        (itemEl) => itemEl.getAttribute("data-item-key"),
+      ),
+    );
     hubUtils.hideCartSkeleton(blockId);
     hubUtils.revealCartItems(blockId);
+    if (opts.awaitOneTick) {
+      await oneTickRender;
+    }
 
     if (_shouldShowBelow) {
       const alreadyRendered = belowEl?.querySelector(".hub-additional-notes");
@@ -1585,16 +1840,11 @@ if (savedEl) {
     }
 
     // ── UPSELLS ───────────────────────────────────────────────────────────
-    const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
     let _hubUpsellHasProducts = false;
     if (!upsellSettings?.enabled && cart.items.length > 0) {
       const productId = cart.items[0].product_id;
 
       const position = upsellSettings.position || "bottom";
-      const upsellContainer =
-        position === "top"
-          ? document.getElementById(`hub-upsell-top-${blockId}`)
-          : document.getElementById(`hub-upsell-bottom-${blockId}`);
 
       const _hasRenderedProducts =
         !!upsellContainer?.querySelector(".hub-rec-product") &&
@@ -1642,21 +1892,33 @@ if (savedEl) {
         window._upsellCacheSig[productId] === _cartSig
       ) {
         upsellProducts = window._upsellCache[productId];
+      } else if (
+        earlyUpsellLoad &&
+        String(earlyUpsellLoad.productId) === String(productId) &&
+        earlyUpsellLoad.cartSig === _cartSig
+      ) {
+        upsellProducts = await earlyUpsellLoad.promise;
       } else if (window._hubUpsellPrefetch) {
         const pre = await window._hubUpsellPrefetch;
         window._hubUpsellPrefetch = null;
-        if (pre && String(pre.productId) === String(productId)) {
+        if (
+          pre &&
+          String(pre.productId) === String(productId) &&
+          pre.cartSig === _cartSig
+        ) {
           upsellProducts = pre.products;
         } else {
           upsellProducts = await window.getUpsellProducts(
             upsellSettings,
             productId,
+            cart,
           );
         }
       } else {
         upsellProducts = await window.getUpsellProducts(
           upsellSettings,
           productId,
+          cart,
         );
       }
 
@@ -1674,14 +1936,22 @@ if (savedEl) {
           .sort()
           .join(",");
         const prevHandles = upsellContainer.dataset.renderedHandles || "";
+        const previousHandleSet = new Set(
+          prevHandles.split(",").filter(Boolean),
+        );
+        const returningHandles = newHandles
+          .split(",")
+          .filter((handle) => handle && !previousHandleSet.has(handle));
         const _alreadyShowingRealCards =
           !!upsellContainer.querySelector(".hub-rec-product") &&
           !upsellContainer.querySelector(".hub-rec-skeleton-card");
+        const _alreadyRenderingCards =
+          upsellContainer.dataset.renderingHandles === newHandles;
 
         if (
           newHandles === prevHandles &&
           upsellContainer.children.length > 0 &&
-          _alreadyShowingRealCards
+          (_alreadyShowingRealCards || _alreadyRenderingCards)
         ) {
           // genuinely already rendered with real cards — skip re-render
         } else {
@@ -1730,6 +2000,7 @@ if (savedEl) {
             if (upLayout === "compact") {
               window._cartPlusUpsellOverride = upsellSettings;
               productsDiv.innerHTML = window.cartPlusCompactHTML(upsellProducts);
+              _hubAnimateReturningUpsells(productsDiv, returningHandles);
               hubUtils.applyRatings(productsDiv); 
               window._cartPlusUpsellOverride = null;
               const track = productsDiv.querySelector(".hub-compact-track");
@@ -1741,6 +2012,7 @@ if (savedEl) {
                 showReviews: upsellSettings.showReviews,
                 carouselIndicator: upsellSettings.carouselIndicator,
                 showIfAlreadyInCart: upsellSettings.showIfAlreadyInCart,
+                enteringProductHandles: returningHandles,
               });
             }
           } else {

@@ -880,6 +880,7 @@ export default function OneTickUpsell({
               currency={currency}
               singleProduct
               showCollections={false}
+              includeProductData
               onSelect={(data) => setPicked(data)}
               initialSelected={pickerOffer.selected}
               onPaginationChange={(p) => setPagination(p)}

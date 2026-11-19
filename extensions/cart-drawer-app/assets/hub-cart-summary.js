@@ -206,7 +206,7 @@ window.cartPlusRenderSummary = function (blockId, data) {
       : open === "true";
   if (!s.expandable) open = true;
 
-  const chevron = `<svg width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="${s.textColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="cart-plus-summary__chevron" style="transform:${open ? "rotate(180deg)" : "rotate(0deg)"}"><path d="M1 1L6 6L11 1"/></svg>`;
+  const chevron = `<svg width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="${s.textColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="cart-plus-summary__chevron" aria-hidden="true"><path d="M1 1L6 6L11 1"/></svg>`;
 
   el.dataset.open = String(open);
   el.style.cssText = `color:${s.textColor};background:${cartPlusBackgroundCss(s.background)};`;
@@ -218,15 +218,22 @@ window.cartPlusRenderSummary = function (blockId, data) {
           ? `<div class="cart-plus-summary__title">${titleInner}</div>`
           : ""
     }
-    ${open ? `<div class="cart-plus-summary__rows">${rows}${savingsBanner}</div>` : ""}`;
+    <div class="cart-plus-summary__content" aria-hidden="${!open}">
+      <div class="cart-plus-summary__content-inner">
+        <div class="cart-plus-summary__rows">${rows}${savingsBanner}</div>
+      </div>
+    </div>`;
 };
 
 window.cartPlusToggleSummary = function (blockId) {
   const el = document.getElementById(`cart-plus-summary-${blockId}`);
   if (!el) return;
-  el.dataset.open = String(el.dataset.open !== "true");
-  const last = window._cartPlusSummaryData;
-  if (last) window.cartPlusRenderSummary(blockId, last);
+  const open = el.dataset.open !== "true";
+  el.dataset.open = String(open);
+  const toggle = el.querySelector(".cart-plus-summary__toggle");
+  if (toggle) toggle.setAttribute("aria-expanded", String(open));
+  const content = el.querySelector(".cart-plus-summary__content");
+  if (content) content.setAttribute("aria-hidden", String(!open));
 };
 
 // Works the summary out from a /cart.js response (same maths as the footer totals) and paints it
