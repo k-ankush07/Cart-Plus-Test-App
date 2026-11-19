@@ -350,7 +350,7 @@ window.cartPlusTimerTemplate = function (timer, design, left, total) {
   if (timer.style === "text") {
     const msg = String(timer.message || "").replace(TOKEN, `<strong>${clock}</strong>`);
     return {
-      css: `${wrapper}background:transparent;padding:10px 16px;margin:12px 12px 0;`,
+      css: `${wrapper}background:transparent;padding:10px 16px;margin:0;`,
       html: `<span style="display:inline-flex;align-items:center;gap:6px;background:${bg};padding:6px 14px;border-radius:999px;font-size:13px;">${icon(16)}<span>${msg}</span></span>`,
     };
   }

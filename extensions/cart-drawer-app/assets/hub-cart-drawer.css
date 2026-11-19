@@ -3338,6 +3338,7 @@ select.hub-compact-variant {
 .cart-app--dark .hub-cart-close,
 .cart-app--dark .hub-qty-btn,
 .cart-app--dark input.hub-qty-input,
+.cart-app--dark .hub-rewards-title,
 .cart-app--dark .hub-price,
 .cart-app--dark h3.styles_CartPreview__empty__,
 .cart-app--dark .hub-cart-total-label,
@@ -3448,6 +3449,11 @@ select.hub-compact-variant {
 .cart-plus-login-message {
     line-height: 18px;
 }
+
+.cp-reward-progress-fill {
+    display: block !important;
+}
+
 .cart-plus-footer-stack {
   display: flex;
   flex-direction: column;

@@ -2120,12 +2120,12 @@ p.price.cart-plus-public-component-upsell-tile__price-row {
     margin-top: 4px;
 }
 
-.cart-plus-timer.cart-plus-timer--text {
+/* .cart-plus-timer.cart-plus-timer--text {
     line-height: 1.2;
     flex-shrink: 0;
     border-bottom: 1px solid rgba(0, 0, 0, .08);
     transition: background .15s, color .1s, font-size .1s;
-}
+} */
 
 .sb-row { cursor: pointer; outline: none; }
 .sb-row:hover > .Polaris-Box { background: var(--p-color-bg-surface-hover); }

@@ -323,7 +323,7 @@ export default function Timer({ headerSettings, designSettings }) {
           ...wrapper,
           background: "transparent",
           padding: "10px 16px",
-          margin: "12px 12px 0",
+          margin: "0",
         }}
       >
         <span
