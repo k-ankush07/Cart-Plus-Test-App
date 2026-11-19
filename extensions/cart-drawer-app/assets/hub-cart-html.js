@@ -709,13 +709,13 @@ bs.textContent += `
           ? `<div class="cart-app__divider"><p style="display:none;">&nbsp;</p></div>`
           : ""
       }
-
+      <div id="hub-upcart-cart-body" class="cart-plus-body-wrapper" ${disableFixedFooter ? "scroll-auto" : "scroll-unset"} " style="${bodyBackground ? "background:" + bodyBackground + ";" : ""}">
       <!-- Header section rows, in the order set in the editor -->
       ${renderRows(headerOrder, headerRows)}
       ${slot(renderCustomHTML(customHtmlBlocks.below_header))}
 
       <!-- BODY (scrollable) -->
-      <div id="hub-upcart-cart-body" class="hub-cart-items-CartPreview ${disableFixedFooter ? "scroll-auto" : "scroll-unset"} cart-plus-body" style="${bodyBackground ? "background:" + bodyBackground + ";" : ""}">
+      <div class="hub-cart-items-CartPreview cart-plus-body">
         ${slot(renderCustomHTML(customHtmlBlocks.above_announcements))}
         ${trustHtml("top")}
 
@@ -724,6 +724,7 @@ bs.textContent += `
         ${on(annSettings) && annSettings.position === "after" ? `<div id="hub-announcement-after-${blockId}" class="hub-announcement" style="display:none;"></div>` : ""}
         ${slot(renderCustomHTML(customHtmlBlocks.above_footer))}
       </div>
+   </div>
 
       <!-- FOOTER (fixed bottom) -->
       <div class="hub-cart-footer cart-app__footer cart-plus-footer" style="background:${footerBackground};">
