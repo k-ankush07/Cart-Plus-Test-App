@@ -480,6 +480,7 @@ export default function Announcements({
 
             <RichTextEditor
               value={announcementSettings.text}
+              maxLength={60}
               onChange={(val) => update("text", val)}
             />
           </BlockStack>

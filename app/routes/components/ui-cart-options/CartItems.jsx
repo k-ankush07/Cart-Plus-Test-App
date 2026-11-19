@@ -265,6 +265,21 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
             onChange={(v) => setOpt({ showQuantity: v })}
           />
           <Checkbox
+            label="Show an error when the available quantity is reached"
+            checked={opts.showQuantityError}
+            onChange={(v) => setOpt({ showQuantityError: v })}
+          />
+          {opts.showQuantityError && (
+            <TextField
+              label="Quantity limit error message"
+              value={opts.quantityErrorMessage}
+              onChange={(quantityErrorMessage) =>
+                setOpt({ quantityErrorMessage })
+              }
+              autoComplete="off"
+            />
+          )}
+          <Checkbox
             label="Show compare-at price"
             checked={opts.showCompareAt}
             onChange={(v) => setOpt({ showCompareAt: v })}

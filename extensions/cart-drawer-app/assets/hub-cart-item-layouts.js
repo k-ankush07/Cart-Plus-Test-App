@@ -13,6 +13,9 @@ window.cartPlusGetItemOptions = function (cartSettings) {
   return {
     showVariants: true,
     showQuantity: true,
+    showQuantityError: false,
+    quantityErrorMessage:
+      "Sorry, the available quantity for this product has been reached.",
     showCompareAt: true,
     showDiscountTag: true,
     showSavings: null, // null = follow the Preferences setting
