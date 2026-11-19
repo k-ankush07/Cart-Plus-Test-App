@@ -1321,10 +1321,13 @@ span.hub-total-arrow svg {
   font-weight: 600;
   color: #000;
   margin: 0;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-bottom: 5px;
+  margin-bottom: 5px;
   letter-spacing: 0px !important;
   text-transform: capitalize;
   line-height: 13px;
@@ -1338,13 +1341,6 @@ span.hub-total-arrow svg {
   font-size: 13px;
   margin: 4px 0 0;
   color: #333;
-}
-
-.upcart-internal-component-upsell-tile__info .price {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-wrap: wrap;
 }
 
 .cp-close-btn {
@@ -3655,6 +3651,7 @@ select.hub-compact-variant {
     align-items: center;
     gap: 5px;
     flex-wrap: wrap;
+    margin-top: 5px;
 }
 
 .hub-upsell-side-panel.upsell-products .price.cart-plus-public-component-upsell-tile__price-row {

@@ -237,6 +237,11 @@ export default function UpsellsSettings({
         ? "carousel"
         : "list"
       : upsellsSettings.layout;
+  const imageSizeMax = 140;
+  const imageSize = Math.min(
+    Number(upsellsSettings.imageSize) || 70,
+    imageSizeMax,
+  );
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState({
     type: upsellsSettings.sourceType || "products",
@@ -376,8 +381,7 @@ export default function UpsellsSettings({
           <BlockStack gap="300">
             <Text variant="headingSm">Styles</Text>
             <InlineGrid columns={2} gap="400">
-              {upsellsSettings.layout === "compact" ? (
-                // Compact: the image always fills its tile, so choose how many tiles share a row
+              {upsellsSettings.layout === "compact" && (
                 <BlockStack gap="100">
                   <Text as="p" variant="bodyMd">
                     Products per row
@@ -394,19 +398,18 @@ export default function UpsellsSettings({
                     ))}
                   </ButtonGroup>
                 </BlockStack>
-              ) : (
-                <RangeSlider
-                  label="Image size"
-                  min={40}
-                  max={200}
-                  output
-                  value={upsellsSettings.imageSize ?? 72}
-                  suffix={
-                    <Text as="span">{upsellsSettings.imageSize ?? 72} px</Text>
-                  }
-                  onChange={(val) => update("imageSize", val)}
-                />
               )}
+              <RangeSlider
+                label="Image size"
+                min={60}
+                max={imageSizeMax}
+                output
+                value={imageSize}
+                suffix={
+                  <Text as="span">{imageSize} px</Text>
+                }
+                onChange={(val) => update("imageSize", val)}
+              />
               <RangeSlider
                 label="Radius"
                 min={0}

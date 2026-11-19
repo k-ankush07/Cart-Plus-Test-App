@@ -373,11 +373,20 @@ window.hubUtils = {
       window.cartPlusBgCss?.(u.cardBackground) || designSettings.accentColor || "";
     const cardBorder =
       designSettings.accentBorder || "rgba(0, 0, 0, 0.08)";
+    const layout = settings.upsellLayout || settings.layout;
+    const imageScale = 1;
+    const scaledImageSize = Math.min(Number(u.imageSize) || 70, 140);
+    const sidePanelRadius = (Number(u.radius) / scaledImageSize) * 100;
+    const imageRadius =
+      layout === "side"
+        ? `${sidePanelRadius}%`
+        : `${u.radius * imageScale}px`;
     const imageBox = [
-      // the editor's image size, but never wider than the card it sits in (e.g. a 190px side panel)
-      u.imageSize ? `width:${u.imageSize}px;max-width:100%;` : "",
+      layout === "side"
+        ? `width:${scaledImageSize}px;max-width:100%;box-sizing:border-box;`
+        : `width:${scaledImageSize * imageScale}px;max-width:100%;`,
       u.radius !== null && u.radius !== undefined
-        ? `border-radius:${u.radius}px;overflow:hidden;`
+        ? `border-radius:${imageRadius};overflow:hidden;`
         : "",
     ].join("");
     const offerLabel =
@@ -397,7 +406,7 @@ window.hubUtils = {
       carousel: "hub-rec-product-carousel",
       compact: "hub-rec-product-compact",
       side: "hub-rec-product-side-panel",
-    }[settings.upsellLayout || settings.layout];
+    }[layout];
 
     // Button, Checkbox or Toggle; all three go through the same ".hub-add-btn" add-to-cart handler
     let trigger;

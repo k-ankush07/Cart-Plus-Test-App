@@ -142,7 +142,7 @@ export const defaultUpsellsSettings = {
   discountValue: 10,
   showLabel: true,
   labelText: "Save {{saved_percentage}}",
-  imageSize: null,
+  imageSize: 85,
   radius: null,
   primaryTextColor: null,
   secondaryTextColor: null,

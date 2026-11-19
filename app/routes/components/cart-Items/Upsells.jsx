@@ -73,7 +73,7 @@ export default function Upsells({
     discountValue = 10,
     showLabel = true,
     labelText = "Save {{saved_percentage}}",
-    imageSize = null,
+    imageSize = 200,
     compactColumns: compactColumnsSetting = 3,
     radius = null,
     primaryTextColor = null,
@@ -97,7 +97,10 @@ export default function Upsells({
     );
     return fetchedProducts.filter((p) => !inCart.has(String(p.id)));
   }, [fetchedProducts, previewProducts, showIfAlreadyInCart]);
-  const compactColumns = Math.min(4, Math.max(1, Number(compactColumnsSetting) || 3));
+  const compactColumns = Math.min(
+    4,
+    Math.max(1, Number(compactColumnsSetting) || 3),
+  );
   const layout =
     upsellsSettings?.layout && upsellsSettings.layout !== "row"
       ? upsellsSettings.layout
@@ -116,20 +119,29 @@ export default function Upsells({
       ? { type: "icon", name: "star" }
       : upsellsSettings.icon;
 
+  const imageScale = 1;
+  const scaledImageSize = Math.min(Number(imageSize) || 70, 140);
   const imageBox = {
-    width: imageSize || 70,
-    minWidth: imageSize || 70,
+    width: scaledImageSize,
+    minWidth: scaledImageSize,
     flexShrink: 0,
     aspectRatio: "1 / 1",
-    ...(radius !== null ? { borderRadius: radius, overflow: "hidden" } : {}),
+    ...(radius !== null
+      ? { borderRadius: radius * imageScale, overflow: "hidden" }
+      : {}),
   };
   const sidePanelImageBox = {
     ...imageBox,
-    // follows Styles > Image size, limited only by the panel's width
-    width: imageSize || 70,
+    width: scaledImageSize,
     minWidth: 0,
     maxWidth: "100%",
     alignSelf: "center",
+    boxSizing: "border-box",
+    ...(radius !== null
+      ? {
+          borderRadius: `${((radius / scaledImageSize) * 100).toFixed(2)}%`,
+        }
+      : {}),
   };
 
   const updateProgress = (swiper) => {
@@ -156,7 +168,7 @@ export default function Upsells({
     const el = compactRef.current;
     if (!el) return;
     const tileW = el.firstElementChild?.getBoundingClientRect().width || 96;
-    el.scrollBy({ left: dir * (tileW + 8) * 2, behavior: "smooth" }); // 2 tiles per click
+    el.scrollBy({ left: dir * (tileW + 8) * 2, behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -678,9 +690,7 @@ export default function Upsells({
           height: isFloating ? "100%" : "100vh",
           ...(isFloating
             ? {
-                borderRadius: panelOnLeft
-                  ? "14px 0 0 14px"
-                  : "0 14px 14px 0",
+                borderRadius: panelOnLeft ? "14px 0 0 14px" : "0 14px 14px 0",
               }
             : {}),
         }}
@@ -934,7 +944,9 @@ export default function Upsells({
               ? Number(v?.price) || 0
               : Number(v?.compareAtPrice) || 0;
             const hasCompare = shownCompare > shownPrice;
-            const compactLabel = String(labelText || "Save {{saved_percentage}}")
+            const compactLabel = String(
+              labelText || "Save {{saved_percentage}}",
+            )
               .replace(/\{\{saved_percentage\}\}/gi, `${discount.percent}%`)
               .replace(
                 /\{\{saved_amount\}\}/gi,
@@ -1070,7 +1082,13 @@ export default function Upsells({
                       width: "100%",
                     }}
                   >
-                    <span style={{ color: primary, fontWeight: 600, overflowWrap: "anywhere" }}>
+                    <span
+                      style={{
+                        color: primary,
+                        fontWeight: 600,
+                        overflowWrap: "anywhere",
+                      }}
+                    >
                       {currency} {money(shownPrice)}
                     </span>
                     {hasCompare && (
@@ -1101,8 +1119,8 @@ export default function Upsells({
                             overflowWrap: "anywhere",
                           }}
                         >
-                          {cartSettings?.savingsText || "Save"}{" "}
-                          {currency} {money(shownCompare - shownPrice)}
+                          {cartSettings?.savingsText || "Save"} {currency}{" "}
+                          {money(shownCompare - shownPrice)}
                         </span>
                       </>
                     )}

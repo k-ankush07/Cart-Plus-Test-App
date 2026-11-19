@@ -75,6 +75,7 @@ window.cartPlusCompactHTML = function (products) {
   const btnBg =
     window.cartPlusBgCss(u.buttonBackground) || ds.buttonColor || "#000";
   const btnText = u.buttonTextColor || ds.buttonTextColor || "#fff";
+  const imageSize = Number(u.imageSize) || 72;
   // N tiles share one row (8px gaps); the image fills the tile width
   const cols = Math.min(4, Math.max(1, Number(u.compactColumns) || 3));
   const tileW = `calc((100% - ${8 * (cols - 1)}px) / ${cols})`;
@@ -97,7 +98,7 @@ window.cartPlusCompactHTML = function (products) {
               .join("")}</select>`
           : "";
       return `<div class="hub-rec-product hub-rec-product-compact hub-compact-tile" style="position:relative;flex:0 0 auto;scroll-snap-align:start;width:${tileW};min-width:0;background:${bg};border:1px solid ${cardBorder};border-radius:${radius}px;padding:8px;box-sizing:border-box;display:flex;flex-direction:column;gap:5px;">
-        <img class="hub-compact-img" src="${imgOf(v) || cartPlusFirstImage(p)}" alt="${p.title}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${u.radius ?? 6}px;display:block;">
+        <img class="hub-compact-img" src="${imgOf(v) || cartPlusFirstImage(p)}" alt="${p.title}" style="width:${imageSize}px;max-width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${u.radius ?? 6}px;display:block;align-self:center;">
         <button type="button" class="hub-compact-add" data-variant="${v.id}" aria-label="${u.buttonText || "Add"}" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;cursor:pointer;background:${btnBg};color:${btnText};font-size:14px;line-height:20px;padding:0;">+</button>
         <a href="/products/${p.handle}" class="cart-plus-internal-component-upsell-tile__title-link" style="text-decoration:none;"><h3 class="cart-plus-internal-component-upsell-tile__title cart-plus-public-component-upsell-tile__title" style="color:${primary};font-size:13px;line-height:1.3;margin:0;text-decoration:none;font-weight:600; display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${p.title}</h3></a>
        ${u.showReviews ? `<div class="hub-rating-slot" data-pid="${p.id}" style="font-size:11px;line-height:1;"></div>` : ""}
@@ -298,6 +299,7 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     }
     drawer.insertAdjacentElement("afterend", panel);
   }
+  panel.style.width = "190px";
   if (ds.dark) {
     panel.style.setProperty("--cp-surface", ds.backgroundColor || "#1c1c1e");
   } else {

@@ -770,7 +770,7 @@ export default function OneTickUpsell({
               <RangeSlider
                 label="Image size"
                 min={60}
-                max={240}
+                max={200}
                 output
                 value={oneTick.imageSize}
                 suffix={<Text as="span">{oneTick.imageSize} px</Text>}
