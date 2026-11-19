@@ -3,7 +3,7 @@
 client_id = "0741db22a559208f286f8afcfb6dcc65"
 name = "Cart Plus Testing"
 handle = "cart-plus-app"
-application_url = "https://badge-development-scan-convergence.trycloudflare.com"
+application_url = "https://daily-exploration-median-trout.trycloudflare.com"
 embedded = true
 
 [build]
@@ -38,10 +38,10 @@ scopes = "read_discounts,read_locations,read_markets,read_orders,read_pixels,rea
 
 [auth]
 redirect_urls = [
-  "https://badge-development-scan-convergence.trycloudflare.com/api/auth"
+  "https://daily-exploration-median-trout.trycloudflare.com/api/auth"
 ]
 
 [app_proxy]
-url = "https://badge-development-scan-convergence.trycloudflare.com/api/proxy-order-track"
+url = "https://daily-exploration-median-trout.trycloudflare.com/api/proxy-order-track"
 subpath = "hub-track"
 prefix = "apps"
