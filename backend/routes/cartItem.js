@@ -1236,9 +1236,20 @@ router.post("/order-revenue", async (req, res) => {
       ...(validVariantAssignment ? { variantId, variantKey } : {}),
     };
 
-    await orderRevenueModel.upsertByOrderId(revenueRecord);
+    const savedRevenue = await orderRevenueModel.upsertByOrderId(revenueRecord);
 
-    return res.json({ success: true, counted: true, revenueSaved: true });
+    return res.json({
+      success: true,
+      counted: !alreadyCounted,
+      revenueSaved: true,
+      revenue: {
+        total: savedRevenue.totalRevenue,
+        upsell: savedRevenue.upsellRevenue,
+        addons: savedRevenue.addonRevenue,
+        subscriptions: savedRevenue.subscriptionRevenue,
+        base: savedRevenue.baseRevenue,
+      },
+    });
   } catch (error) {
     console.error("ORDER REVENUE ERROR:", error);
     return res
@@ -1611,13 +1622,7 @@ router.get("/revenue-stats", async (req, res) => {
     const rangeStart = startDate
       ? new Date(startDate)
       : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    let rangeEnd;
-    if (endDate) {
-      rangeEnd = new Date(endDate);
-      rangeEnd.setHours(23, 59, 59, 999);
-    } else {
-      rangeEnd = new Date();
-    }
+    const rangeEnd = endDate ? new Date(endDate) : new Date();
     const P = [cleanShop, rangeStart, rangeEnd];
     const RANGE = `shop = $1 AND "createdAt" >= $2 AND "createdAt" <= $3`;
 

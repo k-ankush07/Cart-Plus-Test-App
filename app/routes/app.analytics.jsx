@@ -418,8 +418,12 @@ export default function Analytics() {
     ...extra,
   });
 
-  const startISO = range.start.toISOString();
-  const endISO = range.end.toISOString();
+  const rangeStart = new Date(range.start);
+  rangeStart.setHours(0, 0, 0, 0);
+  const rangeEnd = new Date(range.end);
+  rangeEnd.setHours(23, 59, 59, 999);
+  const startISO = rangeStart.toISOString();
+  const endISO = rangeEnd.toISOString();
 
   useEffect(() => {
     let cancelled = false;
@@ -508,12 +512,9 @@ export default function Analytics() {
   const daily = stats?.revenue?.daily ?? [];
   const dailyAnalytics = stats?.dailyAnalytics ?? {};
 
-  const labels = getLabelsFromRange(range.start, range.end);
+  const labels = getLabelsFromRange(rangeStart, rangeEnd);
   const dayMap = buildDailyMap(daily);
 
-  // FIX: Normalise dailyAnalytics keys to YYYY-MM-DD (zero-padded) so they
-  // always match the labels produced by getLabelsFromRange.
-  // The API may return keys like "2026-5-3" — normalise them here.
   const normalisedDailyAnalytics = Object.fromEntries(
     Object.entries(dailyAnalytics).map(([key, val]) => {
       const parts = key.split("-");
