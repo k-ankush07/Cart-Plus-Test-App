@@ -8,6 +8,54 @@ window.hubRefreshEstimatedTotal = function (blockId) {
   totalEl.textContent = hubUtils.formatMoney(total);
 };
 
+// Changes the selling plan of ONE cart line (sellingPlanId null = one-time purchase) and returns
+// the updated cart. The line key and quantity come from the drawer markup, and /cart/change.js
+// already answers with the new cart, so a plan switch is a single request. Only when the key
+// is missing or stale does it fall back to looking the line up in /cart.js first.
+window.hubSetSellingPlan = async function ({
+  itemKey,
+  variantId,
+  currentPlanId,
+  sellingPlanId,
+  qty,
+}) {
+  const change = (id, quantity) =>
+    fetch("/cart/change.js", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id,
+        quantity,
+        selling_plan: sellingPlanId || null,
+      }),
+    });
+
+  const quantity = Number(qty) || 0;
+  if (itemKey && quantity > 0) {
+    const res = await change(itemKey, quantity);
+    if (res.ok) return res.json();
+  }
+
+  // fallback: find the line in the cart
+  const cart = await (await fetch("/cart.js")).json();
+  const line = cart.items.find((i) =>
+    itemKey
+      ? i.key === itemKey
+      : String(i.variant_id) === String(variantId) &&
+        String(i.selling_plan_allocation?.selling_plan?.id || "") ===
+          String(currentPlanId || ""),
+  );
+  if (!line) throw new Error("Cart line not found for the selling plan change");
+  const res = await change(line.key, line.quantity);
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => null);
+    throw new Error(
+      errBody?.message || errBody?.description || `Failed (status ${res.status})`,
+    );
+  }
+  return res.json();
+};
+
 window.hubCartRender = async function (drawer, opts = {}) {
   if (window._hubRenderInProgress) {
     window._hubPendingRender = { drawer, opts };
@@ -129,6 +177,10 @@ window.hubCartRender = async function (drawer, opts = {}) {
         try {
           const r = await fetch(`/products/${handle}.js`);
           const data = await r.json();
+          // keep the whole product too: the selling plans are read from it later in this
+          // render, which would otherwise download the same /products/<handle>.js again
+          window._hubProductDataByHandle = window._hubProductDataByHandle || {};
+          window._hubProductDataByHandle[handle] = data;
           (data.variants || []).forEach((v) => {
             window._hubCompareCache[`${handle}_${v.id}`] =
               v.compare_at_price || 0;
@@ -944,31 +996,33 @@ if (savedEl) {
         if (!currentPlanId) return;
         wrapper.style.opacity = "0.6";
         wrapper.style.pointerEvents = "none";
+        // spinner on the clicked option while the plan is removed
+        const optSpinner = document.createElement("span");
+        optSpinner.className = "loader hub-sp-opt-loader";
+        optSpinner.style.cssText =
+          "width:12px;height:12px;margin-left:6px;vertical-align:middle;";
+        opt.appendChild(optSpinner);
         try {
-          const currentCart = await (await fetch("/cart.js")).json();
-          const line = currentCart.items.find(
-            (i) =>
-              String(i.variant_id) === String(select.dataset.variantId) &&
-              String(i.selling_plan_allocation?.selling_plan?.id || "") ===
-                currentPlanId,
-          );
-          if (!line) throw new Error("Cart line not found");
-          const res = await fetch("/cart/change.js", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id: line.key,
-              quantity: line.quantity,
-              selling_plan: null,
-            }),
+          const updatedCart = await window.hubSetSellingPlan({
+            itemKey: itemKey,
+            variantId: select.dataset.variantId,
+            currentPlanId,
+            sellingPlanId: null,
+            qty: wrapper.closest(".hub-cart-item")?.querySelector(".hub-qty-input")
+              ?.value,
           });
-          if (!res.ok) throw new Error(`Failed (status ${res.status})`);
           const drawer = wrapper.closest(
             `.hub-cart-block-${window.HUB_CART_BLOCK_ID}`,
           );
-          if (drawer) await window.hubCartRender(drawer);
+          if (drawer) await window.hubCartRender(drawer, { cart: updatedCart });
+          document.dispatchEvent(
+            new CustomEvent("cart:updated", {
+              detail: { cart: updatedCart, skipItemRerender: true },
+            }),
+          );
         } catch (err) {
           console.error("Remove selling plan error:", err);
+          optSpinner.remove();
           wrapper.style.opacity = "";
           wrapper.style.pointerEvents = "";
         }
@@ -1001,31 +1055,8 @@ if (savedEl) {
     }
 
     // ── UPGRADE BUTTON HANDLER (attach once, not inside item loop) ────────
-    if (!window._hubUpgradeBtnListenerAttached) {
-      window._hubUpgradeBtnListenerAttached = true;
-      document.addEventListener("click", (e) => {
-        const btn = e.target.closest(".hub-upgrade-btn");
-        if (!btn) return;
-        const wrapper = btn.closest(".hub-selling-plan-wrapper");
-        if (!wrapper) return;
-        const text = btn.querySelector(".btn-text");
-        let loader = btn.querySelector(".loader");
-        if (!loader) {
-          loader = document.createElement("span");
-          loader.className = "loader";
-          loader.innerText = "";
-          btn.appendChild(loader);
-        }
-        wrapper.classList.remove("show-subscription");
-        if (text) text.style.display = "none";
-        loader.style.display = "inline-block";
-        setTimeout(() => {
-          loader.style.display = "none";
-          if (text) text.style.display = "inline-block";
-          wrapper.classList.add("show-subscription");
-        }, 3000);
-      });
-    }
+    // (the old handler here only faked a 3 second wait on the upgrade button; the real work
+    // and its spinner now live in the .hub-upgrade-btn click handler in hub-cart-drawer.js)
 
     if (!window._hubSellingPlanListenerAttached) {
       window._hubSellingPlanListenerAttached = true;
@@ -1052,9 +1083,9 @@ if (savedEl) {
         if (wrapper && !spinner) {
           spinner = document.createElement("span");
           spinner.className = "hub-plan-loading-indicator";
-          spinner.innerHTML = ``;
+          spinner.innerHTML = `<span class="loader"></span>`;
           spinner.style.cssText =
-            "display:flex;align-items:center;gap:6px;font-size:12px;opacity:0.8;margin-top:4px;";
+            "display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;opacity:0.8;margin-top:4px;";
           wrapper.appendChild(spinner);
         }
 
@@ -1063,44 +1094,24 @@ if (savedEl) {
             throw new Error("Selling plan select is missing data-variant-id");
           }
 
-          const currentCart = await (await fetch("/cart.js")).json();
-          const currentItem = currentCart.items.find((i) => {
-            if (String(i.variant_id) !== String(variantId)) return false;
-            const itemPlanId = i.selling_plan_allocation
-              ? String(i.selling_plan_allocation.selling_plan.id)
-              : "";
-            return itemPlanId === currentPlanId;
+          const updatedCart = await window.hubSetSellingPlan({
+            itemKey: wrapper?.dataset.itemKey,
+            variantId,
+            currentPlanId,
+            sellingPlanId: Number(sellingPlanId),
+            qty: itemEl?.querySelector(".hub-qty-input")?.value,
           });
-
-          if (!currentItem) {
-            throw new Error(
-              `No matching cart line for variant ${variantId} / plan "${currentPlanId}" — cart changed`,
-            );
-          }
-
-          const res = await fetch("/cart/change.js", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id: currentItem.key,
-              quantity: currentItem.quantity,
-              selling_plan: Number(sellingPlanId),
-            }),
-          });
-
-          if (!res.ok) {
-            const errBody = await res.json().catch(() => null);
-            throw new Error(
-              errBody?.message ||
-                errBody?.description ||
-                `Failed (status ${res.status})`,
-            );
-          }
 
           const drawer = select.closest(
             `.hub-cart-block-${window.HUB_CART_BLOCK_ID}`,
           );
-          if (drawer) await window.hubCartRender(drawer);
+          // the cart returned by change.js is rendered directly (no extra /cart.js round trip)
+          if (drawer) await window.hubCartRender(drawer, { cart: updatedCart });
+          document.dispatchEvent(
+            new CustomEvent("cart:updated", {
+              detail: { cart: updatedCart, skipItemRerender: true },
+            }),
+          );
         } catch (err) {
           console.error("Selling plan apply error:", err);
           select.disabled = false;

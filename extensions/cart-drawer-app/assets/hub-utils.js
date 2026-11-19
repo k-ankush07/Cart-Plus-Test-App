@@ -135,6 +135,18 @@ window.hubUtils = {
   },
 
   async getSellingPlans(handle, variantId) {
+    // the selling plans of a variant never change while the page is open: answer from memory
+    window._hubSellingPlanCache = window._hubSellingPlanCache || {};
+    const planKey = `${handle}::${variantId}`;
+    if (window._hubSellingPlanCache[planKey]) {
+      return window._hubSellingPlanCache[planKey];
+    }
+    const groups = await hubUtils._loadSellingPlans(handle, variantId);
+    window._hubSellingPlanCache[planKey] = groups;
+    return groups;
+  },
+
+  async _loadSellingPlans(handle, variantId) {
     // product JSON is already loaded for the cart items on every render: reuse it
     // instead of downloading it again for each item each time
     window._hubProductJsonCache = window._hubProductJsonCache || {};

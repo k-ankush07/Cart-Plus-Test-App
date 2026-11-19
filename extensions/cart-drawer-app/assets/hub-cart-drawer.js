@@ -1586,8 +1586,17 @@ document.addEventListener("click", (e) => {
   if (upgradeBtn) {
     const wrapper = upgradeBtn.closest(".hub-selling-plan-wrapper");
     const select = wrapper.querySelector(".hub-selling-plan-select");
-    const key = select?.dataset.key;
+    const key = wrapper.dataset.itemKey;
+    window._subscriptionOpen = window._subscriptionOpen || {};
     if (key) window._subscriptionOpen[key] = true;
+    // spinner on the button while the first plan is being applied (cart gets re-rendered after)
+    const btnText = upgradeBtn.querySelector(".btn-text");
+    if (btnText && !upgradeBtn.querySelector(".loader")) {
+      const loader = document.createElement("span");
+      loader.className = "loader";
+      btnText.style.display = "none";
+      upgradeBtn.appendChild(loader);
+    }
     wrapper.classList.add("show-subscription");
     if (select) {
       const firstOption = select.querySelector("option:not([disabled])");
@@ -1607,33 +1616,10 @@ document.addEventListener("click", (e) => {
   }
 });
 
-document.addEventListener("change", async (e) => {
-  const select = e.target.closest(".hub-selling-plan-select");
-  if (!select) return;
-  const key = select.dataset.key;
-  const selling_plan = select.value;
-  try {
-    const cartRes = await fetch("/cart.js");
-    const cart = await cartRes.json();
-    const existingItem = cart.items.find((i) => i.key === key);
-    const existingProps = existingItem?.properties || {};
-    await fetch("/cart/change.js", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: key,
-        quantity: 1,
-        selling_plan: selling_plan || null,
-        properties: selling_plan
-          ? { ...existingProps, _hub_subscription: "true" }
-          : (({ _hub_subscription, ...rest }) => rest)(existingProps),
-      }),
-    });
-    document.dispatchEvent(new CustomEvent("cart:updated"));
-  } catch (err) {
-    console.error("Selling plan update error:", err);
-  }
-});
+// The selling plan <select> "change" is handled ONCE, by the listener in hub-cart-render.js
+// (window.hubSetSellingPlan). A second listener used to live here: it read a data-key the select
+// never had, so it fired a failing /cart/change.js plus an extra cart:updated re-render for the
+// same change, and it reset the quantity to 1.
 
 // ── UPSELL PRODUCTS ───────────────────────────────────────────────────────────
 function debounce(fn, delay) {

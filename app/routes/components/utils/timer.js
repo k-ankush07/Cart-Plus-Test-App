@@ -17,6 +17,7 @@ export const TIMER_DEFAULTS = {
   boxColor: null,
   barColor: null,
   barBackground: null,
+  eyebrowColor: null, // small heading above the message, null = follow the text color
   barText: "", // text inside the bar fill ("{percent}" = time left %), "" = none
 };
 

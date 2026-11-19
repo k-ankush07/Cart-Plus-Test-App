@@ -154,6 +154,7 @@ export default function Timer({ headerSettings, designSettings }) {
             textTransform: "uppercase",
             opacity: 0.85,
             marginBottom: 2,
+            ...(timer.eyebrowColor ? { color: timer.eyebrowColor } : {}),
           }}
         >
           {eyebrow}

@@ -287,7 +287,7 @@ window.cartPlusTimerTemplate = function (timer, design, left, total) {
   const iconBubble = `<span style="width:44px;height:44px;border-radius:50%;background:${timer.iconBg || "rgba(0,0,0,0.06)"};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${icon(22)}</span>`;
   const heading = `<div style="flex:1;min-width:0;text-align:left;">${
     eyebrow
-      ? `<div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;opacity:.85;margin-bottom:2px;">${eyebrow}</div>`
+      ? `<div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;opacity:.85;margin-bottom:2px;${timer.eyebrowColor ? `color:${timer.eyebrowColor};` : ""}">${eyebrow}</div>`
       : ""
   }<div style="font-size:17px;font-weight:700;">${title}</div></div>`;
 

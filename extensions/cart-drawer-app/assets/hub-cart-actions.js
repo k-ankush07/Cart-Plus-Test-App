@@ -807,7 +807,7 @@ window.hubCheckoutClick = function (e, blockId, btn) {
 
   setTimeout(() => {
     window.location.href = url;
-  }, 500);
+  },100);
 };
 
 if (!window._hubNotesClickBound) {

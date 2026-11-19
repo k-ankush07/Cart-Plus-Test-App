@@ -362,13 +362,20 @@ export default function Timer({
               />
             </InlineGrid>
             {showSmallHeading && (
-              <TextField
-                label="Small heading"
-                value={timer.eyebrow || ""}
-                autoComplete="off"
-                maxLength={30}
-                onChange={(eyebrow) => update({ eyebrow })}
-              />
+              <>
+                <TextField
+                  label="Small heading"
+                  value={timer.eyebrow || ""}
+                  autoComplete="off"
+                  maxLength={30}
+                  onChange={(eyebrow) => update({ eyebrow })}
+                />
+                <ColorInput
+                  label="Small heading color"
+                  value={timer.eyebrowColor || timer.textColor || "#000000"}
+                  onChange={(eyebrowColor) => update({ eyebrowColor })}
+                />
+              </>
             )}
             {showSubText && (
               <TextField
