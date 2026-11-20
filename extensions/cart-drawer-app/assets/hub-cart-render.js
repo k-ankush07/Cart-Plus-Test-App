@@ -81,6 +81,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
   const _gen = (window._hubRenderGen = (window._hubRenderGen || 0) + 1);
   let oneTickRender;
   let earlyUpsellLoad;
+  const signalCoreReady = () => {
+    if (window._hubRenderGen === _gen) opts.onCoreReady?.();
+  };
 
   const blockId = window.HUB_CART_BLOCK_ID;
 
@@ -222,8 +225,9 @@ window.hubCartRender = async function (drawer, opts = {}) {
     await Promise.all(
       _mrpUncached.map(async (handle) => {
         try {
-          const r = await fetch(`/products/${handle}.js`);
-          const data = await r.json();
+          const data = window.hubLoadProductData
+            ? await window.hubLoadProductData(handle)
+            : await (await fetch(`/products/${handle}.js`)).json();
           // keep the whole product too: the selling plans are read from it later in this
           // render, which would otherwise download the same /products/<handle>.js again
           window._hubProductDataByHandle = window._hubProductDataByHandle || {};
@@ -671,19 +675,39 @@ if (savedEl) {
 
     // ── SWIPER LOADER ─────────────────────────────────────────────────────
     function loadSwiper() {
-      return new Promise((resolve) => {
-        if (window.Swiper) return resolve();
+      if (window.Swiper) return Promise.resolve(true);
+      if (window._hubSwiperLoadPromise) return window._hubSwiperLoadPromise;
+
+      const styleReady = new Promise((resolve) => {
         const css = document.createElement("link");
         css.rel = "stylesheet";
         css.href =
           "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css";
+        css.onload = () => resolve(true);
+        css.onerror = () => resolve(false);
         document.head.appendChild(css);
+      });
+      const scriptReady = new Promise((resolve) => {
         const script = document.createElement("script");
         script.src =
           "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js";
-        script.onload = resolve;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
         document.head.appendChild(script);
       });
+
+      window._hubSwiperLoadPromise = Promise.all([
+        styleReady,
+        scriptReady,
+      ]).then(([styleLoaded, scriptLoaded]) => {
+        if (styleLoaded && scriptLoaded && window.Swiper) return true;
+        console.warn(
+          "[CartPlus] Swiper assets failed to load; keeping the scrollable carousel fallback.",
+        );
+        delete window._hubSwiperLoadPromise;
+        return false;
+      });
+      return window._hubSwiperLoadPromise;
     }
 
     // ── RENDER PRODUCTS (unchanged) ───────────────────────────────────────
@@ -694,6 +718,9 @@ if (savedEl) {
     ) {
       const layout = settings.layout || "block";
       let swiperInstance = null;
+      let swiperReady = null;
+      const renderToken = (container._hubProductRenderToken || 0) + 1;
+      container._hubProductRenderToken = renderToken;
 
       const rendered = products
         .map((p) => ({
@@ -714,19 +741,24 @@ if (savedEl) {
       const html = rendered.map(({ html }) => html).join("");
 
       if (layout === "carousel") {
-        await loadSwiper();
+        swiperReady = loadSwiper();
         const indicator = settings.carouselIndicator || "progressBar";
         const btnColor = designSettings.buttonColor || "#000000";
         const iconColor = designSettings.iconColor || "#000000";
+        const slideWidth = rendered.length === 1 ? "100%" : "83.333%";
 
         const slidesHTML = rendered
-          .map(({ html }) => `<div class="swiper-slide">${html}</div>`)
+          .map(
+            ({ html }) =>
+              `<div class="swiper-slide" style="flex:0 0 ${slideWidth};max-width:${slideWidth};">${html}</div>`,
+          )
           .join("");
         container.style.display = "";
+        container.classList.add("hub-swiper-loading");
         container.innerHTML = `
           <div class="hub-swiper-wrapper">
             ${indicator === "buttons" ? `<div class="hub-swiper-prev" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></div>` : ""}
-            <div class="hub-swiper swiper"><div class="swiper-wrapper">${slidesHTML}</div></div>
+            <div class="hub-swiper swiper"><div class="swiper-wrapper" style="display:flex;gap:12px;">${slidesHTML}</div></div>
             ${indicator === "buttons" ? `<div class="hub-swiper-next" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>` : ""}
             ${indicator === "progressBar" ? `<div class="hub-progress-bar"><div class="hub-progress-bar-fill" style = "background-color:${btnColor}"></div></div>` : ""}
           </div>`;
@@ -829,51 +861,74 @@ if (savedEl) {
       });
 
       if (layout === "carousel") {
-        const indicator = settings.carouselIndicator || "progressBar";
-        const swiperEl = container.querySelector(".hub-swiper");
-        const fillEl = container.querySelector(".hub-progress-bar-fill");
-        const prevEl = container.querySelector(".hub-swiper-prev");
-        const nextEl = container.querySelector(".hub-swiper-next");
+        swiperReady
+          .then((swiperLoaded) => {
+            if (
+              !container.isConnected ||
+              container._hubProductRenderToken !== renderToken ||
+              !swiperLoaded ||
+              !window.Swiper
+            )
+              return;
 
-        function updateProgress(swiper) {
-          if (!fillEl) return;
-          const total = swiper.slides.length;
-          if (!total) return;
-          const perView = swiper.params.slidesPerView || 1;
-          const visibleRatio = perView / total;
-          const fill =
-            (visibleRatio + swiper.progress * (1 - visibleRatio)) * 100;
-          fillEl.style.width = Math.min(100, fill) + "%";
-        }
+            container.classList.remove("hub-swiper-loading");
+            const swiperWrapper = container.querySelector(".swiper-wrapper");
+            swiperWrapper?.style.removeProperty("display");
+            swiperWrapper?.style.removeProperty("gap");
+            container.querySelectorAll(".swiper-slide").forEach((slide) => {
+              slide.style.removeProperty("flex");
+              slide.style.removeProperty("max-width");
+            });
 
-        function updateArrows(swiper) {
-          if (!prevEl || !nextEl) return;
-          prevEl.style.opacity = swiper.isBeginning ? "0.6" : "1";
-          prevEl.style.pointerEvents = swiper.isBeginning ? "none" : "auto";
-          nextEl.style.opacity = swiper.isEnd ? "0.6" : "1";
-          nextEl.style.pointerEvents = swiper.isEnd ? "none" : "auto";
-        }
+            const indicator = settings.carouselIndicator || "progressBar";
+            const swiperEl = container.querySelector(".hub-swiper");
+            const fillEl = container.querySelector(".hub-progress-bar-fill");
+            const prevEl = container.querySelector(".hub-swiper-prev");
+            const nextEl = container.querySelector(".hub-swiper-next");
 
-        const swiper = new Swiper(swiperEl, {
-          slidesPerView: rendered.length === 1 ? 1 : 1.2,
-          spaceBetween: 12,
-          on: {
-            init(swiper) {
-              updateProgress(swiper);
-              updateArrows(swiper);
-            },
-            slideChange(swiper) {
-              updateProgress(swiper);
-              updateArrows(swiper);
-            },
-          },
-        });
-        swiperInstance = swiper;
+            function updateProgress(swiper) {
+              if (!fillEl) return;
+              const total = swiper.slides.length;
+              if (!total) return;
+              const perView = swiper.params.slidesPerView || 1;
+              const visibleRatio = perView / total;
+              const fill =
+                (visibleRatio + swiper.progress * (1 - visibleRatio)) * 100;
+              fillEl.style.width = Math.min(100, fill) + "%";
+            }
 
-        if (indicator === "buttons" && prevEl && nextEl) {
-          prevEl.addEventListener("click", () => swiper.slidePrev());
-          nextEl.addEventListener("click", () => swiper.slideNext());
-        }
+            function updateArrows(swiper) {
+              if (!prevEl || !nextEl) return;
+              prevEl.style.opacity = swiper.isBeginning ? "0.6" : "1";
+              prevEl.style.pointerEvents = swiper.isBeginning ? "none" : "auto";
+              nextEl.style.opacity = swiper.isEnd ? "0.6" : "1";
+              nextEl.style.pointerEvents = swiper.isEnd ? "none" : "auto";
+            }
+
+            const swiper = new window.Swiper(swiperEl, {
+              slidesPerView: rendered.length === 1 ? 1 : 1.2,
+              spaceBetween: 12,
+              on: {
+                init(swiper) {
+                  updateProgress(swiper);
+                  updateArrows(swiper);
+                },
+                slideChange(swiper) {
+                  updateProgress(swiper);
+                  updateArrows(swiper);
+                },
+              },
+            });
+            swiperInstance = swiper;
+
+            if (indicator === "buttons" && prevEl && nextEl) {
+              prevEl.addEventListener("click", () => swiper.slidePrev());
+              nextEl.addEventListener("click", () => swiper.slideNext());
+            }
+          })
+          .catch((error) =>
+            console.error("[CartPlus] Carousel initialization failed:", error),
+          );
       }
     };
 
@@ -1062,6 +1117,7 @@ if (savedEl) {
       hubUtils.revealCartItems(blockId);
       const bottomOfCartEl = drawer.querySelector(".hub-bottom-of-cart");
       if (bottomOfCartEl) bottomOfCartEl.style.display = "none";
+      signalCoreReady();
       return;
     }
 
@@ -1129,7 +1185,9 @@ if (savedEl) {
       await Promise.all(
         uncachedHandles.map(async (handle) => {
           try {
-            const data = await safeFetchJson(`/products/${handle}.js`);
+            const data = window.hubLoadProductData
+              ? await window.hubLoadProductData(handle)
+              : await safeFetchJson(`/products/${handle}.js`);
             _productDataByHandle[handle] = data;
             (data.variants || []).forEach((v) => {
               window._hubCompareCache[`${handle}_${v.id}`] =
@@ -1852,6 +1910,7 @@ if (savedEl) {
     // so let a waiting render (the next add / remove) start now instead of queueing behind it.
     if (window._hubRenderGen === _gen) {
       window._hubRenderInProgress = false;
+      signalCoreReady();
       if (window._hubPendingRender) {
         const _next = window._hubPendingRender;
         window._hubPendingRender = null;

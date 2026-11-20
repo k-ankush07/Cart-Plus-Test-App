@@ -3317,6 +3317,16 @@ select.hub-compact-variant {
   box-sizing: border-box;
 }
 
+.hub-swiper-loading .swiper-wrapper {
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+
+.hub-swiper-loading .swiper-slide {
+  scroll-snap-align: start;
+}
+
 /* Empty cart fills the whole body, so the content stays centred and the Cross-sell sits at the bottom */
 .hub-cart-items-CartPreview.hub-cart-empty-layout {
   display: flex;

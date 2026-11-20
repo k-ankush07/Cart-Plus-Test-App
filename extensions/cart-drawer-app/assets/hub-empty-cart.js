@@ -97,22 +97,48 @@ window.cartPlusEmptyCartHTML = function (blockId) {
 
 // products for the empty cart's Cross-sell: the picked ones, else a few store products
 async function cartPlusEmptyUpsellProducts(s) {
+  const cacheKey = JSON.stringify(s);
+  window._hubEmptyUpsellProductsCache =
+    window._hubEmptyUpsellProductsCache || {};
+  const cachedRequest = window._hubEmptyUpsellProductsCache[cacheKey];
+  if (cachedRequest) return cachedRequest;
+
   const selected = s.selectedItems;
   const nothingPicked =
     s.sourceType === "products"
       ? !selected?.variants?.length && !selected?.products?.length
       : !selected?.length;
-  if (!s.useAiRecommended && !nothingPicked && window.getUpsellProducts) {
-    return window.getUpsellProducts({ ...s, useAiRecommended: false }, null);
-  }
-  const limit = s.limitUpsellsInCart ? s.maxUpsellsInCart || 3 : 3;
-  const data = await fetch(`/products.json?limit=${Math.max(limit, 3)}`)
-    .then((r) => r.json())
-    .catch(() => ({ products: [] }));
-  return (data.products || [])
-    .filter((p) => (p.variants || []).some((v) => v.available !== false))
-    .slice(0, limit);
+  const request = (async () => {
+    if (!s.useAiRecommended && !nothingPicked && window.getUpsellProducts) {
+      return window.getUpsellProducts({ ...s, useAiRecommended: false }, null);
+    }
+    const limit = s.limitUpsellsInCart ? s.maxUpsellsInCart || 3 : 3;
+    const response = await fetch(`/products.json?limit=${Math.max(limit, 3)}`);
+    if (!response.ok) {
+      throw new Error(
+        `Empty-cart product request failed (status ${response.status})`,
+      );
+    }
+    const data = await response.json();
+    return (data.products || [])
+      .filter((p) => (p.variants || []).some((v) => v.available !== false))
+      .slice(0, limit);
+  })();
+
+  window._hubEmptyUpsellProductsCache[cacheKey] = request;
+  request.catch(() => {
+    if (window._hubEmptyUpsellProductsCache[cacheKey] === request) {
+      delete window._hubEmptyUpsellProductsCache[cacheKey];
+    }
+  });
+  return request;
 }
+
+window.cartPlusPrefetchEmptyUpsell = function (cartSettings) {
+  const settings = window.cartPlusGetEmptyUpsells(cartSettings);
+  if (settings.enabled !== false) return Promise.resolve([]);
+  return cartPlusEmptyUpsellProducts(settings);
+};
 
 window.cartPlusRenderEmptyUpsell = async function (blockId) {
   window.cartPlusSetBodyUpsellVisibility(blockId, true);

@@ -298,7 +298,75 @@ function initCartDrawerAfterData() {
   document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
   document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
   window.injectCartHTML(blockId, root);
+  const emptyUpsellPrefetch = window.cartPlusPrefetchEmptyUpsell?.(
+    window.__HUB_ACTIVE_CART__?.cartSettings,
+  );
+  emptyUpsellPrefetch?.catch((error) => {
+    console.error("[CartPlus] Empty-cart product prefetch failed:", error);
+  });
 }
+
+window.hubLoadProductData = function (handle) {
+  if (!handle) return Promise.resolve(null);
+
+  const productHandle = String(handle);
+  window._hubProductDataByHandle = window._hubProductDataByHandle || {};
+  const cachedProduct = window._hubProductDataByHandle[productHandle];
+  if (cachedProduct) return Promise.resolve(cachedProduct);
+
+  window._hubProductJsonCache = window._hubProductJsonCache || {};
+  const cachedRequest = window._hubProductJsonCache[productHandle];
+  if (cachedRequest) return cachedRequest;
+
+  const request = window
+    .fetch(`/products/${encodeURIComponent(productHandle)}.js`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Product data request failed for ${productHandle} (${response.status})`,
+        );
+      }
+      return response.json();
+    })
+    .then((product) => {
+      if (!Array.isArray(product?.variants)) {
+        throw new Error(`Invalid product data returned for ${productHandle}`);
+      }
+
+      window._hubProductDataByHandle[productHandle] = product;
+      window._hubCompareCache = window._hubCompareCache || {};
+      product.variants.forEach((variant) => {
+        window._hubCompareCache[`${productHandle}_${variant.id}`] =
+          variant.compare_at_price || 0;
+      });
+      return product;
+    });
+
+  window._hubProductJsonCache[productHandle] = request;
+  request.catch(() => {
+    if (window._hubProductJsonCache[productHandle] === request) {
+      delete window._hubProductJsonCache[productHandle];
+    }
+  });
+  return request;
+};
+
+(function warmCurrentProductData() {
+  const match = window.location.pathname.match(/\/products\/([^/]+)/);
+  if (!match) return;
+
+  let handle;
+  try {
+    handle = decodeURIComponent(match[1]);
+  } catch (error) {
+    console.warn("[CartPlus] Could not read the current product handle:", error);
+    return;
+  }
+
+  window.hubLoadProductData(handle).catch((error) => {
+    console.warn("[CartPlus] Current product data prefetch failed:", error);
+  });
+})();
 
 // ── FETCH INTERCEPTOR (defined ONCE) ─────────────────────────────────────────
 
@@ -437,6 +505,21 @@ function initCartDrawerAfterData() {
       try {
         const data = await response.clone().json();
         let detail = data && typeof data === "object" ? { ...data } : data;
+        if (url.includes("/cart/add")) {
+          const addedItems = Array.isArray(detail?.items)
+            ? detail.items
+            : [detail];
+          addedItems.forEach((item) => {
+            if (item?.handle) {
+              window.hubLoadProductData?.(item.handle).catch((error) => {
+                console.warn(
+                  "[CartPlus] Added product data prefetch failed:",
+                  error,
+                );
+              });
+            }
+          });
+        }
         if (detail && typeof detail === "object") {
           if (skipItemRerender) detail.skipItemRerender = true;
           if (skipOneTickRefresh) detail.skipOneTickRefresh = true;
@@ -644,14 +727,17 @@ function initCartDrawerAfterData() {
       }, 100);
     }
 
-    function renderLatestCart(drawer) {
+    function renderLatestCart(drawer, renderOptions = {}) {
       if (!window.hubCartRender) return Promise.resolve();
       if (window._hubRenderInProgress) {
         window._hubRenderGen = (window._hubRenderGen || 0) + 1;
         window._hubRenderInProgress = false;
         window._hubPendingRender = null;
       }
-      return window.hubCartRender(drawer, { showSkeleton: false });
+      return window.hubCartRender(drawer, {
+        ...renderOptions,
+        showSkeleton: false,
+      });
     }
 
     window.updateCartCount = async function (cartData = null) {
@@ -876,27 +962,43 @@ function initCartDrawerAfterData() {
 
         const shouldOpen =
           window.__HUB_ACTIVE_CART__?.cartSettings?.openOnAddToCart !== false;
+        const drawerBeforeUpdate = document.getElementById(
+          `hub-cart-drawer-${blockId}`,
+        );
+        const drawerIsOpen = !!drawerBeforeUpdate?.classList.contains(
+          `hub-visible-${blockId}`,
+        );
+        const updateDelay = shouldOpen && !drawerIsOpen ? 0 : 100;
         _cartUpdateTimer = setTimeout(() => {
           const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
           if (!drawer) return;
           const isOpen = drawer.classList.contains(`hub-visible-${blockId}`);
-          const render = renderLatestCart(drawer);
           if (shouldOpen && !isOpen) {
+            let opened = false;
+            const openWhenReady = () => {
+              if (opened) return;
+              opened = true;
+              openDrawer(true);
+            };
+            const render = renderLatestCart(drawer, {
+              onCoreReady: openWhenReady,
+            });
             render
-              .then(() => openDrawer(true))
+              .then(openWhenReady)
               .catch((error) => {
                 console.error(
-                  "[CartPlus] Could not pre-render cart before opening:",
+                  "[CartPlus] Cart render failed while preparing drawer:",
                   error,
                 );
-                openDrawer(true);
+                openWhenReady();
               });
           } else {
+            const render = renderLatestCart(drawer);
             render.catch((error) => {
               console.error("[CartPlus] Cart background render failed:", error);
             });
           }
-        }, 100);
+        }, updateDelay);
       });
     }
   }

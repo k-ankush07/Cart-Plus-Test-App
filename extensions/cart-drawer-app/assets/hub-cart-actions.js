@@ -547,12 +547,16 @@ async function _commitRemoval(key) {
     return true;
   });
   const cartWillBeEmpty = remainingItemEls.length === 0;
+  let didFinalRender = false;
+
+  // Prevent a render started before this removal from restoring the deleted row.
+  window._hubRenderGen = (window._hubRenderGen || 0) + 1;
+  window._hubRenderInProgress = false;
+  window._hubPendingRender = null;
 
   const updates = { [key]: 0 };
 
   if (cartWillBeEmpty) {
-    window._hubRenderGen = (window._hubRenderGen || 0) + 1;
-    window._hubPendingRender = null;
     if (window.cartPlusSetEmptyHeaderVisibility) {
       window.cartPlusSetEmptyHeaderVisibility(drawer, true);
     } else {
@@ -663,10 +667,16 @@ async function _commitRemoval(key) {
 
       try {
         await networkDone;
-        window._hubRenderInProgress = false;
-        window._hubRewardUpdating = false;
-        window._hubPendingRender = null;
-        await window.hubCartRender(drawer);
+        if (
+          Object.keys(_hubPendingRemovals).length === 0 &&
+          window._hubRemovalCommitCount === 1
+        ) {
+          window._hubRenderInProgress = false;
+          window._hubRewardUpdating = false;
+          window._hubPendingRender = null;
+          await window.hubCartRender(drawer);
+          didFinalRender = true;
+        }
       } catch (error) {
         console.error(
           "[CartPlus] Failed to refresh the empty cart after removal:",
@@ -723,7 +733,10 @@ async function _commitRemoval(key) {
 
     await networkDone;
 
-    if (Object.keys(_hubPendingRemovals).length === 0) {
+    if (
+      Object.keys(_hubPendingRemovals).length === 0 &&
+      window._hubRemovalCommitCount === 1
+    ) {
       try {
         if (typeof handleTriggeredRewards === "function") {
           const latestCart = await (await fetch("/cart.js")).json();
@@ -737,17 +750,37 @@ async function _commitRemoval(key) {
         awaitOneTick: true,
         preserveCartItemNodes: true,
       });
+      didFinalRender = true;
     } else {
       await window.cartPlusOneTickQuickRefresh?.();
     }
   } finally {
+    if (
+      window._hubRemovalCommitCount === 1 &&
+      Object.keys(_hubPendingRemovals).length === 0 &&
+      !didFinalRender
+    ) {
+      window._hubRenderInProgress = false;
+      window._hubRewardUpdating = false;
+      try {
+        await window.hubCartRender(drawer, {
+          awaitOneTick: true,
+          preserveCartItemNodes: true,
+        });
+      } catch (error) {
+        console.error("[CartPlus] Final cart render after removals failed:", error);
+      }
+    }
+
     window._hubRemovalCommitCount = Math.max(
       0,
       (window._hubRemovalCommitCount || 1) - 1,
     );
     window._hubCommitingRemoval = window._hubRemovalCommitCount > 0;
-    window._hubRenderInProgress = false;
-    window._hubRewardUpdating = false;
+    if (!window._hubCommitingRemoval) {
+      window._hubRenderInProgress = false;
+      window._hubRewardUpdating = false;
+    }
   }
 }
 
