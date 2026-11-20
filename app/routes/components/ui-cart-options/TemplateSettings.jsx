@@ -553,7 +553,15 @@ export default function TemplateSettings({
             <Text as="p" variant="bodySm" fontWeight="semibold">
               {isGradient ? "Default gradients" : "Default colors"}
             </Text>
-            <InlineStack gap="300" blockAlign="center">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, 28px)",
+                gap: 12,
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
               {isGradient
                 ? GRADIENTS.map((g) => (
                     <Swatch
@@ -578,129 +586,133 @@ export default function TemplateSettings({
                       onClick={() => update({ themeColor: c })}
                     />
                   ))}
-              <Popover
-                active={customOpen}
-                autofocusTarget="none"
-                activator={
-                  <Swatch
-                    label={isGradient ? "Custom gradient" : "Custom color"}
-                    selected={customSelected}
-                    onClick={() => setCustomOpen((v) => !v)}
-                    background="conic-gradient(red, yellow, lime, aqua, blue, magenta, red)"
-                  />
-                }
-                onClose={() => setCustomOpen(false)}
-                preferredAlignment="left"
-              >
-                <Box
-                  padding="300"
-                  width="400px"
-                  minWidth="250px"
-                  maxWidth="320px"
+              <div className="cp-custom-swatch" style={{ width: 28, height: 28 }}>
+                <Popover
+                  active={customOpen}
+                  autofocusTarget="none"
+                  activator={
+                    <Swatch
+                      label={isGradient ? "Custom gradient" : "Custom color"}
+                      selected={customSelected}
+                      onClick={() => setCustomOpen((v) => !v)}
+                      background="conic-gradient(red, yellow, lime, aqua, blue, magenta, red)"
+                    />
+                  }
+                  onClose={() => setCustomOpen(false)}
+                  preferredAlignment="left"
                 >
-                  <BlockStack gap="300">
-                    {isGradient ? (
-                      <>
-                        {/* Title + angle dial + angle + swap */}
-                        <InlineStack
-                          align="space-between"
-                          blockAlign="center"
-                          gap="200"
-                          wrap={false}
-                        >
-                          <Text as="h4" variant="headingSm">
-                            Custom gradient
-                          </Text>
+                  <Box
+                    padding="300"
+                    width="400px"
+                    minWidth="250px"
+                    maxWidth="320px"
+                  >
+                    <BlockStack gap="300">
+                      {isGradient ? (
+                        <div className="cp-gradient">
+                          {/* Title + angle dial + angle + swap */}
                           <InlineStack
-                            gap="150"
+                            align="space-between"
                             blockAlign="center"
+                            gap="200"
                             wrap={false}
                           >
-                            <AngleDial
-                              value={t.gradientAngle}
-                              onChange={(deg) => update({ gradientAngle: deg })}
-                            />
-                            <div style={{ width: 80 }}>
-                              <TextField
-                                label="Angle"
-                                labelHidden
-                                type="number"
-                                suffix="°"
-                                min={0}
-                                max={360}
-                                value={String(t.gradientAngle)}
-                                autoComplete="off"
-                                onChange={(v) =>
-                                  update({
-                                    gradientAngle: clamp(
-                                      Number(v) || 0,
-                                      0,
-                                      360,
-                                    ),
-                                  })
+                            <Text as="h4" variant="headingSm">
+                              Custom gradient
+                            </Text>
+                            <InlineStack
+                              gap="150"
+                              blockAlign="center"
+                              wrap={false}
+                            >
+                              <AngleDial
+                                value={t.gradientAngle}
+                                onChange={(deg) =>
+                                  update({ gradientAngle: deg })
                                 }
                               />
-                            </div>
-                            <Button
-                              icon={RefreshIcon}
-                              accessibilityLabel="Swap start and end colors"
-                              onClick={swapStops}
+                              <div style={{ width: 80 }}>
+                                <TextField
+                                  label="Angle"
+                                  labelHidden
+                                  type="number"
+                                  suffix="°"
+                                  min={0}
+                                  max={360}
+                                  value={String(t.gradientAngle)}
+                                  autoComplete="off"
+                                  onChange={(v) =>
+                                    update({
+                                      gradientAngle: clamp(
+                                        Number(v) || 0,
+                                        0,
+                                        360,
+                                      ),
+                                    })
+                                  }
+                                />
+                              </div>
+                              <Button
+                                icon={RefreshIcon}
+                                accessibilityLabel="Swap start and end colors"
+                                onClick={swapStops}
+                              />
+                            </InlineStack>
+                          </InlineStack>
+
+                          {/* Gradient bar */}
+                          <GradientBar
+                            start={t.gradientStart}
+                            end={t.gradientEnd}
+                            active={stop}
+                            onSelect={setStop}
+                          />
+
+                          {/* Start / End tabs */}
+                          <InlineStack gap="150" wrap={false}>
+                            <StopTab
+                              label="Start"
+                              color={t.gradientStart}
+                              active={stop === "gradientStart"}
+                              onClick={() => setStop("gradientStart")}
+                            />
+                            <StopTab
+                              label="End"
+                              color={t.gradientEnd}
+                              active={stop === "gradientEnd"}
+                              onClick={() => setStop("gradientEnd")}
                             />
                           </InlineStack>
-                        </InlineStack>
 
-                        {/* Gradient bar */}
-                        <GradientBar
-                          start={t.gradientStart}
-                          end={t.gradientEnd}
-                          active={stop}
-                          onSelect={setStop}
-                        />
-
-                        {/* Start / End tabs */}
-                        <InlineStack gap="150" wrap={false}>
-                          <StopTab
-                            label="Start"
-                            color={t.gradientStart}
-                            active={stop === "gradientStart"}
-                            onClick={() => setStop("gradientStart")}
+                          <HexColorPicker
+                            value={t[stop]}
+                            onChange={(hex) => update({ [stop]: hex })}
                           />
-                          <StopTab
-                            label="End"
-                            color={t.gradientEnd}
-                            active={stop === "gradientEnd"}
-                            onClick={() => setStop("gradientEnd")}
+                          <ColorFields
+                            value={t[stop]}
+                            onChange={(hex) => update({ [stop]: hex })}
                           />
-                        </InlineStack>
-
-                        <HexColorPicker
-                          value={t[stop]}
-                          onChange={(hex) => update({ [stop]: hex })}
-                        />
-                        <ColorFields
-                          value={t[stop]}
-                          onChange={(hex) => update({ [stop]: hex })}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <Text as="h4" variant="headingSm">
-                          Custom color
-                        </Text>
-                        <HexColorPicker
-                          value={t.themeColor}
-                          onChange={(hex) => update({ themeColor: hex })}
-                        />
-                        <ColorFields
-                          value={t.themeColor}
-                          onChange={(hex) => update({ themeColor: hex })}
-                        />
-                      </>
-                    )}
-                  </BlockStack>
-                </Box>
-              </Popover>
-            </InlineStack>
+                        </div>
+                      ) : (
+                        <div className="cp-plain">
+                          <Text as="h4" variant="headingSm">
+                            Custom color
+                          </Text>
+                          <HexColorPicker
+                            value={t.themeColor}
+                            onChange={(hex) => update({ themeColor: hex })}
+                          />
+                          <ColorFields
+                            value={t.themeColor}
+                            onChange={(hex) => update({ themeColor: hex })}
+                          />
+                        </div>
+                      )}
+                    </BlockStack>
+                  </Box>
+                </Popover>
+              </div>
+            </div>
           </BlockStack>
           <Box paddingBlockStart="500">
             <BlockStack gap="100">
