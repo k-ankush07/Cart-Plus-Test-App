@@ -129,7 +129,7 @@ const CartPreview = memo(function CartPreview({
   const showTopRows = !emptyCart && activeTab !== "Recommended Products";
   const headerBlocks = {
     ...blockNodes,
-    "Banner Image": (
+    "Banner Image": !emptyCart && (
       <SectionBg id="Banner Image" cartSettings={cartSettings}>
         <BannerImage
           headerSettings={headerSettings}

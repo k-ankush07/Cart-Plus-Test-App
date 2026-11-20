@@ -1011,6 +1011,8 @@ if (savedEl) {
       }
     }
 
+    if (window._hubRenderGen !== _gen) return;
+
     // ── EMPTY CART ────────────────────────────────────────────────────────
     if (cart.items.length === 0) {
       window._hubRenderedCartItemKeys = new Set();

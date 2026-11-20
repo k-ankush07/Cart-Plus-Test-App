@@ -644,6 +644,16 @@ function initCartDrawerAfterData() {
       }, 100);
     }
 
+    function renderLatestCart(drawer) {
+      if (!window.hubCartRender) return Promise.resolve();
+      if (window._hubRenderInProgress) {
+        window._hubRenderGen = (window._hubRenderGen || 0) + 1;
+        window._hubRenderInProgress = false;
+        window._hubPendingRender = null;
+      }
+      return window.hubCartRender(drawer, { showSkeleton: false });
+    }
+
     window.updateCartCount = async function (cartData = null) {
       try {
         const isCart = (value) =>
@@ -695,116 +705,49 @@ function initCartDrawerAfterData() {
       } catch (_) {}
     };
 
-    function openDrawer(showSkeleton = false) {
+    function openDrawer(alreadyRendered = false) {
       if (_drawerOpening) return;
       _drawerOpening = true;
-      ensureDrawerReady(() => {
-        drawer.classList.add(`hub-visible-${blockId}`);
-        bg.classList.add(`hub-visible-${blockId}`);
-        trackCartImpressionUnique();
-        document.body.classList.add("no-scroll", "overflow-hidden");
-        document.documentElement.classList.add("overflow-hidden");
-        document.body.style.overflow = "hidden";
-
-        const drawerIsOpen = drawer.classList.contains(
-          `hub-visible-${blockId}`,
-        );
-        const itemsEl = document.getElementById(`hub-cart-items-${blockId}`);
-        const hasRenderedItems = !!itemsEl?.querySelector(".hub-cart-item");
-        const shouldShowSkeleton =
-          showSkeleton &&
-          window._hubLastCartHadItems !== false &&
-          (!drawerIsOpen || !hasRenderedItems);
-
-        if (shouldShowSkeleton) {
-          const itemsEl = document.getElementById(`hub-cart-items-${blockId}`);
-          if (itemsEl) {
-            itemsEl.innerHTML = `
-          <div class="hub-skeleton-inject" style="padding:16px;">
-            <div style="display:flex;gap:12px;margin-bottom:16px;">
-              <div class="hub-skeleton" style="width:72px;height:72px;flex-shrink:0;border-radius:8px;">&nbsp;</div>
-              <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
-                <div class="hub-skeleton hub-skeleton-line" style="width:80%;height:14px;">&nbsp;</div>
-                <div class="hub-skeleton hub-skeleton-line" style="width:50%;height:12px;">&nbsp;</div>
-                <div class="hub-skeleton hub-skeleton-line" style="width:40%;height:12px;">&nbsp;</div>
-                <div class="hub-skeleton hub-skeleton-line" style="width:60%;height:28px;border-radius:4px;">&nbsp;</div>
-              </div>
-            </div>
-          </div>`;
-            itemsEl.style.visibility = "visible";
-            itemsEl.classList.remove("footer-empty");
-          }
-
-          const footerSkel = document.getElementById(
-            `hub-footer-skeleton-${blockId}`,
-          );
-          const footer = document.querySelector(
-            `#hub-cart-drawer-${blockId} .hub-cart-footer`,
-          );
-          if (footerSkel) footerSkel.style.display = "flex";
-          if (footer) {
-            footer.classList.add("hub-footer-loading");
-            footer.classList.remove("hub-empty-footer");
-          }
-
-          const footerRec = document.getElementById(
-            `hub-footer-rec-${blockId}`,
-          );
-          if (footerRec) footerRec.innerHTML = "";
-
-          // ── NEW: show upsell skeleton immediately (don't wait for hubCartRender's awaits) ──
-          const upsellSettings = window.__HUB_ACTIVE_CART__?.upsellsSettings;
-          // (not for the side panel layout: those cards are shown beside the cart)
-          if (
-            !upsellSettings?.enabled &&
-            window.cartPlusUpsellLayout?.(upsellSettings) !== "side"
-          ) {
-            const position = upsellSettings?.position || "bottom";
-            const upsellContainer =
-              position === "top"
-                ? document.getElementById(`hub-upsell-top-${blockId}`)
-                : document.getElementById(`hub-upsell-bottom-${blockId}`);
-
-            const hasRealUpsellCards =
-              !!upsellContainer?.querySelector(".hub-rec-product") &&
-              !upsellContainer?.querySelector(".hub-rec-skeleton-card");
-
-            if (upsellContainer && !hasRealUpsellCards) {
-              upsellContainer.classList.add("upsell-container");
-              upsellContainer.classList.add(
-                position === "bottom" ? "upsell-bottom" : "upsell-top",
-              );
-              upsellContainer.style.display = "";
-              upsellContainer.innerHTML = `
-            <div class="upsell-inner">
-              <div class="hub-rec-product hub-rec-skeleton-card" style="display:flex;gap:12px;align-items:flex-start;padding:20px;border:1px solid #e5e5e5;border-radius:8px;">
-                <div class="hub-skeleton hub-skeleton-img" style="width:60px;height:60px;flex-shrink:0;border-radius:8px;">&nbsp;</div>
-                <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
-                  <div class="hub-skeleton hub-skeleton-line" style="width:85%;height:14px;">&nbsp;</div>
-                  <div class="hub-skeleton hub-skeleton-line" style="width:40%;height:12px;">&nbsp;</div>
-                  <div class="hub-skeleton hub-skeleton-line" style="width:70px;height:28px;border-radius:4px;margin-top:4px;">&nbsp;</div>
-                </div>
-              </div>
-            </div>`;
+      ensureDrawerReady(async () => {
+        try {
+          if (!alreadyRendered) {
+            const itemsEl = document.getElementById(
+              `hub-cart-items-${blockId}`,
+            );
+            const hasItems = !!itemsEl?.querySelector(".hub-cart-item");
+            const hasEmptyState = !!itemsEl?.querySelector(
+              ".hub-cart-empty, .cart-plus-empty-cart",
+            );
+            const expectedHasItems = window._hubLastCartHadItems;
+            const contentMatchesCart =
+              expectedHasItems === true
+                ? hasItems
+                : expectedHasItems === false
+                  ? hasEmptyState
+                  : hasItems || hasEmptyState;
+            if (window._hubRenderInProgress || !contentMatchesCart) {
+              await renderLatestCart(drawer);
             }
           }
-        }
 
-        if (window.hubCartRender && !window._hubRenderInProgress) {
-          window.hubCartRender(drawer, { showSkeleton: false });
-        } else if (window.hubCartRender && window._hubRenderInProgress) {
-          window._hubPendingRender = { drawer, opts: { showSkeleton: false } };
-        }
+          drawer.classList.add(`hub-visible-${blockId}`);
+          bg.classList.add(`hub-visible-${blockId}`);
+          trackCartImpressionUnique();
+          document.body.classList.add("no-scroll", "overflow-hidden");
+          document.documentElement.classList.add("overflow-hidden");
+          document.body.style.overflow = "hidden";
 
-        if (!window._hubRecLoaded && window.__HUB_ACTIVE_CART__) {
-          window._hubRecLoaded = true;
-          window.loadCartRecommendations?.(
-            window.__HUB_ACTIVE_CART__.recommendationsSettings,
-          );
-        }
+          if (!window._hubRecLoaded && window.__HUB_ACTIVE_CART__) {
+            window._hubRecLoaded = true;
+            window.loadCartRecommendations?.(
+              window.__HUB_ACTIVE_CART__.recommendationsSettings,
+            );
+          }
 
-        updateCartCount();
-        _drawerOpening = false;
+          updateCartCount();
+        } finally {
+          _drawerOpening = false;
+        }
       });
     }
 
@@ -895,7 +838,7 @@ function initCartDrawerAfterData() {
           if (cartLink) {
             if (!window.__HUB_ACTIVE_CART__) return;
             e.preventDefault();
-            openDrawer(true);
+            openDrawer();
             return;
           }
           const closeBtn = e.target.closest(`#hub-close-${blockId}`);
@@ -934,21 +877,25 @@ function initCartDrawerAfterData() {
         const shouldOpen =
           window.__HUB_ACTIVE_CART__?.cartSettings?.openOnAddToCart !== false;
         _cartUpdateTimer = setTimeout(() => {
-          if (shouldOpen) {
-            openDrawer(true);
-            return;
-          }
-
           const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
-          if (!drawer || !window.hubCartRender) return;
-          if (window._hubRenderInProgress) {
-            window._hubPendingRender = {
-              drawer,
-              opts: { showSkeleton: false },
-            };
-            return;
+          if (!drawer) return;
+          const isOpen = drawer.classList.contains(`hub-visible-${blockId}`);
+          const render = renderLatestCart(drawer);
+          if (shouldOpen && !isOpen) {
+            render
+              .then(() => openDrawer(true))
+              .catch((error) => {
+                console.error(
+                  "[CartPlus] Could not pre-render cart before opening:",
+                  error,
+                );
+                openDrawer(true);
+              });
+          } else {
+            render.catch((error) => {
+              console.error("[CartPlus] Cart background render failed:", error);
+            });
           }
-          window.hubCartRender(drawer, { showSkeleton: false });
         }, 100);
       });
     }
@@ -1379,7 +1326,7 @@ window.startAnnTimer = function (blockId, timeStr) {
                 `hub-cart-drawer-${window.HUB_CART_BLOCK_ID}`,
               );
               if (drawerEl && window.hubCartRender) {
-                window.hubCartRender(drawerEl, { showSkeleton: true });
+                window.hubCartRender(drawerEl, { showSkeleton: false });
               }
             });
           }
