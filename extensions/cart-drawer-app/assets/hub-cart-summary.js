@@ -95,6 +95,9 @@ window.cartPlusRenderSummary = function (blockId, data) {
   const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
   const s = window.cartPlusGetSummary(cartSettings);
   s.textColor = window.cartPlusDarkColor(s.textColor, "#303030", window.__HUB_ACTIVE_CART__?.designSettings?.textColor);
+  // icons follow the Template theme colour (untouched carts keep the text colour)
+  const themedDs = window.cartPlusApplyTemplateTheme?.(window.__HUB_ACTIVE_CART__?.designSettings);
+  const iconColor = themedDs?.themed && themedDs.iconColor ? themedDs.iconColor : s.textColor;
   if (!s.enabled) {
     el.style.display = "none";
     return;
@@ -107,7 +110,7 @@ window.cartPlusRenderSummary = function (blockId, data) {
 
   const row = (icon, label, value, extraClass = "") =>
     `<div class="cart-plus-summary__row ${extraClass}">
-       <span class="cart-plus-summary__label">${s.showIcons ? cartPlusSummaryIcon(icon, s.textColor) : ""}${label}</span>
+       <span class="cart-plus-summary__label">${s.showIcons ? cartPlusSummaryIcon(icon, iconColor) : ""}${label}</span>
        <span class="cart-plus-summary__value">${value}</span>
      </div>`;
 
@@ -192,7 +195,7 @@ window.cartPlusRenderSummary = function (blockId, data) {
   const hasTitle = displayTitle.replace(/<[^>]*>|&nbsp;/g, "").trim();
   const titleIcon =
     (s.showTitleIcon ?? s.showIcons) && s.titleIcon
-      ? window.hubLibraryIconHTML?.(s.titleIcon, 18, s.textColor) || ""
+      ? window.hubLibraryIconHTML?.(s.titleIcon, 18, iconColor) || ""
       : "";
   const titleInner = `<span class="cart-plus-summary__title-text">${titleIcon}<span>${displayTitle}</span></span>`;
 
@@ -206,7 +209,7 @@ window.cartPlusRenderSummary = function (blockId, data) {
       : open === "true";
   if (!s.expandable) open = true;
 
-  const chevron = `<svg width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="${s.textColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="cart-plus-summary__chevron" aria-hidden="true"><path d="M1 1L6 6L11 1"/></svg>`;
+  const chevron = `<svg width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="${iconColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="cart-plus-summary__chevron" aria-hidden="true"><path d="M1 1L6 6L11 1"/></svg>`;
 
   el.dataset.open = String(open);
   el.style.cssText = `color:${s.textColor};background:${cartPlusBackgroundCss(s.background)};`;

@@ -18,32 +18,62 @@ router.get("/product-ratings", async (req, res, next) => {
 
     const parseNumeric = (raw) => {
       if (raw === null || raw === undefined || raw === "") return null;
-      try {
-        const parsed = JSON.parse(raw);
-        const num = parseFloat(parsed?.value ?? parsed);
-        return Number.isNaN(num) ? null : num;
-      } catch {
-        const num = parseFloat(raw);
-        return Number.isNaN(num) ? null : num;
+      if (typeof raw === "number") return Number.isFinite(raw) ? raw : null;
+
+      let value = raw;
+      for (let depth = 0; depth < 3; depth++) {
+        if (typeof value !== "string") break;
+        const trimmed = value.trim();
+        if (!trimmed) return null;
+        try {
+          value = JSON.parse(trimmed);
+        } catch {
+          const num = parseFloat(trimmed);
+          return Number.isNaN(num) ? null : num;
+        }
       }
+
+      if (typeof value === "number") return Number.isFinite(value) ? value : null;
+      if (typeof value === "object" && value !== null) {
+        const candidates = [
+          value.value,
+          value.rating,
+          value.average,
+          value.avg,
+          value.average_rating,
+          value.score,
+        ];
+        for (const candidate of candidates) {
+          const num = parseNumeric(candidate);
+          if (num !== null) return num;
+        }
+      }
+      return null;
     };
 
     const RATING_KEY_PATTERNS = [
       /^rating$/i,
+      /average[_-]?score/i,
+      /reviews?_average/i,
+      /aggregate[_-]?rating/i,
       /avg[_-]?rating/i,
       /rating[_-]?avg/i,
       /average[_-]?rating/i,
       /reviews?[_-]?avg/i,
       /reviews?_avg_score/i,
       /star[_-]?rating/i,
+      /score/i,
     ];
 
     const COUNT_KEY_PATTERNS = [
       /^rating[_-]?count$/i,
       /^review[_-]?count$/i,
       /^reviews?[_-]?count$/i,
+      /^reviews?_count$/i,
+      /^reviews?$/i,
       /num[_-]?reviews?/i,
       /total[_-]?reviews?/i,
+      /review[_-]?number/i,
       /count/i,
     ];
 
@@ -51,7 +81,19 @@ router.get("/product-ratings", async (req, res, next) => {
       for (const pattern of patterns) {
         const match = metafields.find((m) => pattern.test(m.key));
         if (match) {
-          const val = parseNumeric(match.value);
+          let val = parseNumeric(match.value);
+          if (val === null && typeof match.value === "string") {
+            try {
+              const parsed = JSON.parse(match.value);
+              const candidate =
+                parsed?.count ??
+                parsed?.review_count ??
+                parsed?.reviews_count ??
+                parsed?.total ??
+                parsed?.total_reviews;
+              val = parseNumeric(candidate);
+            } catch {}
+          }
           if (val !== null) return val;
         }
       }
@@ -88,8 +130,29 @@ router.get("/product-ratings", async (req, res, next) => {
 
         hasNextPage = product.metafields?.pageInfo?.hasNextPage ?? false;
         cursor = edges.length ? edges[edges.length - 1].cursor : null;
-
         if (!cursor) break;
+      }
+
+      // Some review apps expose app-owned metafields through REST even when
+      // the GraphQL product connection does not return them.
+      if (!all.length) {
+        try {
+          const legacyId = gid.split("/").pop();
+          const rest = await makeShopifyREST(
+            shop,
+            `metafields.json?metafield[owner_id]=${legacyId}&metafield[owner_resource]=product&limit=250`,
+          );
+          all = (rest?.metafields || []).map((m) => ({
+            namespace: m.namespace,
+            key: m.key,
+            value: m.value,
+          }));
+        } catch (err) {
+          console.warn(
+            "[CartPlus ratings] REST metafield fallback failed:",
+            err?.message || err,
+          );
+        }
       }
 
       return { legacyResourceId: gid, metafields: all };

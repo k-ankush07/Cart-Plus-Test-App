@@ -20,6 +20,7 @@ import { patchOneTick, ONE_TICK_DEFAULTS } from "./components/utils/oneTick";
 import { themeTimerSettings } from "./components/utils/timerTemplates";
 import { AGE_TEMPLATES, themeAgeSettings } from "./components/utils/ageTemplates";
 import { patchAgeVerification } from "./components/utils/ageVerification";
+import { themeAnnouncementSettings } from "./components/utils/announcementTemplates";
 import {
   getCustomBlocks,
   isCustomBlockKey,
@@ -590,6 +591,14 @@ export default function CartEditor() {
         ...prev,
         accent: null,
         trackBg: null,
+      }));
+    }
+    // Announcement template: the themed bar background + button colours follow the new theme
+    const annTpl = announcementSettings?.template;
+    if (annTpl && annTpl !== "default") {
+      handleChange("announcement", (prev) => ({
+        ...prev,
+        ...themeAnnouncementSettings(annTpl, themeBg),
       }));
     }
     // Age verification template: re-base its colours on the new theme

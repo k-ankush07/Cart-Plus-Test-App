@@ -1410,7 +1410,11 @@ span.hub-total-arrow svg {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  margin-top: 4px;
 }
+
 
 .hub-stars {
   --percent: calc(var(--rating) / 5 * 100%);

@@ -97,6 +97,13 @@ export default function OneTickUpsell({
     dark && (!value || String(value).toLowerCase() === lightDefault)
       ? fallback
       : value;
+  // untouched icon colour (#000000) follows the theme colour
+  const themedIconColor =
+    templateBg?.color &&
+    (!oneTickSaved.iconColor ||
+      String(oneTickSaved.iconColor).toLowerCase() === "#000000")
+      ? templateBg.color
+      : oneTickSaved.iconColor;
   const oneTick = dark
     ? {
         ...oneTickSaved,
@@ -116,7 +123,7 @@ export default function OneTickUpsell({
           designSettings.textColor,
         ),
       }
-    : oneTickSaved;
+    : { ...oneTickSaved, iconColor: themedIconColor };
   const offersKey = JSON.stringify(
     oneTick.offers.map((o) => [o.id, o.mode, o.selected?.items?.variants]),
   );

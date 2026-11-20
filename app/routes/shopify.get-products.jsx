@@ -8,6 +8,11 @@ const PRODUCT_FIELDS = `
   title
   status
   featuredImage { url }
+  metafields(first: 250) {
+    edges {
+      node { namespace key value }
+    }
+  }
   variants(first: 100) {
     edges {
       node {
@@ -22,6 +27,99 @@ const PRODUCT_FIELDS = `
   }
 `;
 
+const parseReviewNumber = (raw) => {
+  if (raw === null || raw === undefined || raw === "") return null;
+  if (typeof raw === "number") return Number.isFinite(raw) ? raw : null;
+
+  let value = raw;
+  for (let depth = 0; depth < 3; depth++) {
+    if (typeof value !== "string") break;
+    try {
+      value = JSON.parse(value);
+    } catch {
+      const num = parseFloat(value);
+      return Number.isNaN(num) ? null : num;
+    }
+  }
+
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "object" && value !== null) {
+    for (const key of [
+      "value",
+      "rating",
+      "average",
+      "avg",
+      "average_rating",
+      "score",
+      "count",
+      "review_count",
+      "reviews_count",
+      "total",
+    ]) {
+      const num = parseReviewNumber(value[key]);
+      if (num !== null) return num;
+    }
+  }
+  return null;
+};
+
+const getProductReviewData = (node) => {
+  const metafields = (node.metafields?.edges || [])
+    .map((edge) => edge.node)
+    .filter(Boolean);
+
+  const ratingPatterns = [
+    /^rating$/i,
+    /average[_-]?score/i,
+    /reviews?_average/i,
+    /aggregate[_-]?rating/i,
+    /avg[_-]?rating/i,
+    /rating[_-]?avg/i,
+    /average[_-]?rating/i,
+    /reviews?[_-]?avg/i,
+    /reviews?_avg_score/i,
+    /star[_-]?rating/i,
+    /score/i,
+  ];
+  const countPatterns = [
+    /^rating[_-]?count$/i,
+    /^review[_-]?count$/i,
+    /^reviews?[_-]?count$/i,
+    /^reviews?_count$/i,
+    /^reviews?$/i,
+    /num[_-]?reviews?/i,
+    /total[_-]?reviews?/i,
+    /review[_-]?number/i,
+    /count/i,
+  ];
+
+  let rating = null;
+  for (const pattern of ratingPatterns) {
+    const field = metafields.find((item) => pattern.test(item.key));
+    if (field) {
+      rating = parseReviewNumber(field.value);
+      if (rating !== null) break;
+    }
+  }
+
+  let reviewCount = 0;
+  for (const pattern of countPatterns) {
+    const field = metafields.find((item) => pattern.test(item.key));
+    if (field) {
+      const count = parseReviewNumber(field.value);
+      if (count !== null) {
+        reviewCount = Math.round(count);
+        break;
+      }
+    }
+  }
+
+  return {
+    rating: rating === null ? null : Math.min(5, Math.max(0, rating)),
+    reviewCount,
+  };
+};
+
 const buildProduct = (node, variants) => {
   if (!variants.length) return null;
 
@@ -31,6 +129,7 @@ const buildProduct = (node, variants) => {
   );
 
   const fallbackImage = node.featuredImage?.url || null;
+  const reviewData = getProductReviewData(node);
 
   return {
     id: node.id,
@@ -38,8 +137,8 @@ const buildProduct = (node, variants) => {
     image: fallbackImage,
     price: minPrice.toFixed(2),
     compareAtPrice: maxCompareAt > 0 ? maxCompareAt.toFixed(2) : null,
-    rating: null,
-    reviewCount: 0,
+    rating: reviewData.rating,
+    reviewCount: reviewData.reviewCount,
     variants: variants.map((v) => ({
       id: v.id,
       title: v.title,

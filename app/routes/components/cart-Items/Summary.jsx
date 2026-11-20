@@ -69,6 +69,11 @@ export default function Summary({
     String(savedSummary.textColor).toLowerCase() === "#303030"
       ? { ...savedSummary, textColor: designSettings.textColor }
       : savedSummary;
+  // icons follow the Template theme colour (untouched carts keep the text colour)
+  const iconColor =
+    designSettings?.themed && designSettings.iconColor
+      ? designSettings.iconColor
+      : s.textColor;
   const [open, setOpen] = useState(s.expandable ? !s.collapsedByDefault : true);
 
   useEffect(() => {
@@ -164,7 +169,7 @@ export default function Summary({
 
   const label = (icon, text) => (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-      {s.showIcons && <SummaryIcon name={icon} color={s.textColor} />}
+      {s.showIcons && <SummaryIcon name={icon} color={iconColor} />}
       {text}
     </span>
   );
@@ -375,7 +380,7 @@ export default function Summary({
 
   // icon picked in the Summary settings, shown before the title
   const titleIcon = s.showTitleIcon && s.titleIcon && (
-    <LibraryIcon value={s.titleIcon} size={18} color={s.textColor} />
+    <LibraryIcon value={s.titleIcon} size={18} color={iconColor} />
   );
   const titleRow = { display: "inline-flex", alignItems: "center", gap: 8 };
 
@@ -418,7 +423,7 @@ export default function Summary({
             height="8"
             viewBox="0 0 12 8"
             fill="none"
-            stroke={s.textColor}
+            stroke={iconColor}
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"

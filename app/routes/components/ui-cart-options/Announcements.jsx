@@ -20,7 +20,10 @@ import RichTextEditor from "../ui/RichTextEditor";
 import ColorInput from "../ui/ColorInput";
 import IconLibrary from "../ui/IconLibrary";
 import BackgroundInput from "../ui/BackgroundInput";
-import { ANNOUNCEMENT_TEMPLATES } from "../utils/announcementTemplates";
+import {
+  ANNOUNCEMENT_TEMPLATES,
+  themeAnnouncementSettings,
+} from "../utils/announcementTemplates";
 import { backgroundToCss, templateBackground } from "../utils/background";
 
 import "../../../index.css";
@@ -223,6 +226,8 @@ export default function Announcements({
       textColor: t.background === "transparent" ? "#ffffff" : t.color,
       accentBg: t.accentBg,
       accentText: t.accentText,
+      // button colours (and the bar background) re-based on the theme
+      ...themeAnnouncementSettings(key, themedBackground),
     });
   };
 

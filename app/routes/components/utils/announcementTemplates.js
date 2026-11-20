@@ -63,3 +63,18 @@ export const ANNOUNCEMENT_TEMPLATES = {
     accentText: "#2b2100",
   },
 };
+// Theme-based parts of a template: the bar background (for "transparent"
+// templates) and the button colours. The button is white with the theme colour
+// as its text, so it stays readable on the themed bar.
+export const themeAnnouncementSettings = (key, themeBg) => {
+  const t = ANNOUNCEMENT_TEMPLATES[key];
+  const color = themeBg?.color;
+  if (!t || key === "default" || !color) return {};
+  const out = {};
+  if (t.background === "transparent") out.background = themeBg;
+  if (t.accentBg) {
+    out.accentBg = "#ffffff";
+    out.accentText = color;
+  }
+  return out;
+};

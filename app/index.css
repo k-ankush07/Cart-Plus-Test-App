@@ -924,7 +924,10 @@ h3.cart-plus-compact-heading {
     align-items: center;
     gap: 4px;
     margin-top: 2px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
+
 
 .stars {
     color: #f5a623;

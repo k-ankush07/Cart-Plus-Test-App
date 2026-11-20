@@ -285,7 +285,7 @@ window.cartPlusRenderSidePanel = async function (blockId, products, settings) {
     const titleIcon =
       cfg.icon === undefined ? { type: "icon", name: "star" } : cfg.icon;
     const iconHtml = titleIcon
-      ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, cfg.iconColor || undefined) || ""}</span>`
+      ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, cfg.iconColor || window.cartPlusTemplateBackground?.(window.__HUB_ACTIVE_CART__?.designSettings)?.color || undefined) || ""}</span>`
       : "";
     const titleHtml = cfg.title
       ? `<div class="hub-side-title upcart-internal-style__title-large" style="color:${primary};text-align:left;flex-shrink:0;font-weight:450;font-size:14px;">${iconHtml}${cfg.title}</div>`

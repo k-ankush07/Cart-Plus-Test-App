@@ -553,7 +553,13 @@ window.hubUtils = {
       window.__SHOPIFY_SHOP__?.myshopify_domain ||
       window.__SHOPIFY_SHOP__?.permanent_domain ||
       window.__SHOPIFY_SHOP__?.domain;
-    if (!ratingsUrl || !shop) return;
+    if (!ratingsUrl || !shop) {
+      console.warn("[CartPlus ratings] skipped: missing", {
+        ratingsUrl,
+        shop,
+      });
+      return;
+    }
 
     window._hubRatingsCache = window._hubRatingsCache || {};
 
@@ -566,7 +572,7 @@ window.hubUtils = {
       if (cached?.rating) {
         slot.innerHTML = `
         <span class="hub-stars" style="--rating: ${cached.rating};" aria-label="Rating: ${cached.rating} out of 5"></span>
-        ${cached.count ? `<span class="hub-rating-count">(${cached.count})</span>` : ""}
+        ${cached.count !== null && cached.count !== undefined ? `<span class="hub-rating-count">(${cached.count})</span>` : ""}
       `;
       }
     });
@@ -585,7 +591,21 @@ window.hubUtils = {
         `${ratingsUrl}/api/product-ratings?shop=${shop}&ids=${ids}`,
         { headers: this.authHeaders({ "ngrok-skip-browser-warning": "true" }) },
       );
+      if (!res.ok) {
+        console.warn("[CartPlus ratings] request failed", res.status, ratingsUrl);
+        return;
+      }
       const { ratings } = await res.json();
+      // tell why a slot stays empty (no review metafield on the product, or API unreachable)
+      uniqueMissing.forEach((id) => {
+        if (!ratings?.[id]?.rating) {
+          console.warn(
+            `[CartPlus ratings] product ${id}: no rating found (response:`,
+            ratings?.[id],
+            ") - the product has no review metafield (rating / avg_rating / reviews_count ...)",
+          );
+        }
+      });
 
       // cache update karo
       Object.entries(ratings || {}).forEach(([pid, r]) => {
@@ -597,7 +617,7 @@ window.hubUtils = {
         if (!r?.rating) return;
         slot.innerHTML = `
         <span class="hub-stars" style="--rating: ${r.rating};" aria-label="Rating: ${r.rating} out of 5"></span>
-        ${r.count ? `<span class="hub-rating-count">(${r.count})</span>` : ""}
+        ${r.count !== null && r.count !== undefined ? `<span class="hub-rating-count">(${r.count})</span>` : ""}
       `;
       });
     } catch (err) {

@@ -80,8 +80,12 @@ window.cartPlusApplyTemplateTheme = function (ds) {
       ? `linear-gradient(${angle}deg, ${mix(t.gradientStart, pct, surface)}, ${mix(t.gradientEnd, pct, surface)})`
       : mix(t.themeColor, pct, surface);
 
+  // icons follow the theme colour unless the merchant picked their own icon colour
+  const defaultIcon = ["", "#ababab", "#637381"].includes(String(ds.iconColor || "").toLowerCase());
+
   return {
     ...ds,
+    iconColor: defaultIcon ? (gradient ? t.gradientStart : t.themeColor) : ds.iconColor,
     themed: true,
     dark, // Appearance: Dark
     backgroundColor: surface,

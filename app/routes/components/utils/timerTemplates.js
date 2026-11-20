@@ -15,7 +15,8 @@ export const themeTimerSettings = (key, themeBg) => {
   const isNeutral = (v) => !v || NEUTRAL.includes(String(v).toLowerCase());
   const isTint = (v) => v && !isNeutral(v) && !String(v).includes("gradient");
 
-  if (base.iconColor && !isNeutral(base.iconColor)) out.iconColor = color;
+  // the icon always follows the theme colour (also for the neutral templates)
+  if (base.iconColor) out.iconColor = color;
   if (base.iconBg && !isNeutral(base.iconBg)) out.iconBg = mixWithWhite(color, 28);
   if (base.barColor) out.barColor = color;
   if (base.barBackground && key !== "hurry_up")

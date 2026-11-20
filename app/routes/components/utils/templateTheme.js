@@ -72,8 +72,15 @@ export function applyTemplateTheme(ds) {
     surface,
   );
 
+  // icons follow the theme colour unless the merchant picked their own icon colour
+  const solid = gradient ? t.gradientStart : t.themeColor;
+  const defaultIcon = ["", "#ababab", "#637381"].includes(
+    String(ds.iconColor || "").toLowerCase(),
+  );
+
   return {
     ...ds,
+    iconColor: defaultIcon ? solid : ds.iconColor,
     themed: true,
     dark, // Appearance: Dark -> sections pick dark defaults (see .cart-app--dark in index.css)
     backgroundColor: surface,

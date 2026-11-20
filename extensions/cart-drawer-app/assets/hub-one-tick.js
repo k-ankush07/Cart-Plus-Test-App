@@ -399,6 +399,12 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
     "#000000",
     dsx.textColor,
   );
+  // untouched icon colour (#000000) follows the Template theme colour
+  {
+    const themeIcon = window.cartPlusTemplateBackground?.(dsx)?.color;
+    const c = String(oneTick.iconColor || "").toLowerCase();
+    if (themeIcon && (!c || c === "#000000")) oneTick.iconColor = themeIcon;
+  }
   // A render that was started with an older cart than the one already on screen must not redraw
   // (it would bring a card back for a moment, then the newer render removes it again: a blink).
   const _at = cart?._hubAt || Date.now();

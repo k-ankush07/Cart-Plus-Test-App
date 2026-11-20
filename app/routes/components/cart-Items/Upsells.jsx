@@ -176,6 +176,8 @@ export default function Upsells({
 
   // Untouched button colour follows the selected template theme.
   const templateBg = useTemplateBackground();
+  // title / icons follow the theme colour until an icon colour is picked
+  const themeIconColor = upsellsSettings?.iconColor || templateBg?.color || undefined;
   const themeButtonBg =
     buttonBackground ||
     backgroundToCss(templateBg) ||
@@ -733,7 +735,7 @@ export default function Upsells({
       <NoProductPlaceholder
         title={title}
         icon={titleIcon}
-        iconColor={upsellsSettings?.iconColor || undefined}
+        iconColor={themeIconColor}
         titleColor={primary}
         textColor={primary}
         cardBackground={
@@ -820,7 +822,7 @@ export default function Upsells({
                   <LibraryIcon
                     value={titleIcon}
                     size={18}
-                    color={upsellsSettings.iconColor || undefined}
+                    color={themeIconColor}
                   />
                 </span>
               )}
@@ -870,7 +872,7 @@ export default function Upsells({
                 <LibraryIcon
                   value={titleIcon}
                   size={18}
-                  color={upsellsSettings.iconColor || undefined}
+                  color={themeIconColor}
                 />
               </span>
             )}
@@ -1167,6 +1169,46 @@ export default function Upsells({
                     {product.title}
                   </h3>
                 </a>
+
+                {showReviews && (
+                  <div
+                    className="rating cart-plus-public-component-upsell-tile__rating-row"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 3,
+                      fontSize: 10,
+                      lineHeight: 1,
+                      width: "100%",
+                    }}
+                  >
+                    <span
+                      className="stars cart-plus-public-component-upsell-tile__stars"
+                      aria-label={`${product.rating || 0} out of 5`}
+                    >
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <span
+                          key={n}
+                          style={{
+                            color:
+                              n <= Math.round(Number(product.rating) || 0)
+                                ? "#f5a623"
+                                : "#d0d0d0",
+                          }}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </span>
+                    <span
+                      className="rating-text cart-plus-public-component-upsell-tile__reviews"
+                      style={{ color: secondary }}
+                    >
+                      ({product.reviewCount || 0})
+                    </span>
+                  </div>
+                )}
 
                 <div
                   className="cart-plus-compact-price"
