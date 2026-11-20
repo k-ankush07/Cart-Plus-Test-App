@@ -171,6 +171,13 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
       deleteBehavior: behavior,
     }));
 
+  const removedItemOpacity = cartSettings.removedItemOpacity ?? 40;
+  const onRemovedItemOpacityChange = (value) =>
+    handleChange("cartSettings", (prev) => ({
+      ...prev,
+      removedItemOpacity: value,
+    }));
+
 
   const opts = getCartItemOptions(cartSettings);
   const setOpt = (patch) => handleChange("cartSettings", patchCartItem(patch));
@@ -248,6 +255,20 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
               </Button>
             </ButtonGroup>
           </div>
+          {deleteBehavior === "undo" && (
+            <Box paddingBlockStart="300">
+              <RangeSlider
+                label="Removed item opacity"
+                value={removedItemOpacity}
+                min={10}
+                max={100}
+                step={5}
+                output
+                suffix={<Text variant="bodySm" tone="subdued">{removedItemOpacity}%</Text>}
+                onChange={onRemovedItemOpacityChange}
+              />
+            </Box>
+          )}
         </Box>
       </Card>
 

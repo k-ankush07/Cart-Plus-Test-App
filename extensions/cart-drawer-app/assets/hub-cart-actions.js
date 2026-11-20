@@ -428,8 +428,15 @@ async function removeItem(key, title) {
   if (!el) return;
 
   if (_hubPendingRemovals[key]) {
-    clearTimeout(_hubPendingRemovals[key].timer);
-    _hubPendingRemovals[key].toastEl?.remove();
+    const pending = _hubPendingRemovals[key];
+    clearTimeout(pending.timer);
+    pending.toastEl?.remove();
+    if (pending.itemInner) {
+      pending.itemInner.style.opacity = pending.originalOpacity ?? "";
+      pending.itemInner.style.pointerEvents = pending.originalPointerEvents ?? "";
+      pending.itemInner.style.transition = pending.originalTransition ?? "";
+    }
+    if (pending.deleteBtn) pending.deleteBtn.disabled = false;
   }
 
   const removedQty = Number(el.querySelector(".hub-qty-input")?.value || 1);
@@ -506,6 +513,22 @@ async function removeItem(key, title) {
   }
 
   // ── Undo toast ──────────────────────────────────────────────────────────
+  const itemInner = el.querySelector(".hub-cart-item") || el;
+  const deleteBtn = el.querySelector(".hub-delete-btn");
+  const opacitySetting = Number(
+    window.__HUB_ACTIVE_CART__?.cartSettings?.removedItemOpacity ?? 40,
+  );
+  const removedOpacity = Math.min(100, Math.max(10, opacitySetting || 40)) / 100;
+
+  const originalOpacity = itemInner.style.opacity;
+  const originalPointerEvents = itemInner.style.pointerEvents;
+  const originalTransition = itemInner.style.transition;
+
+  itemInner.style.transition = "opacity 0.3s ease";
+  itemInner.style.opacity = String(removedOpacity);
+  itemInner.style.pointerEvents = "none";
+  if (deleteBtn) deleteBtn.disabled = true;
+
   const toastEl = _createUndoToast(key, title || "item");
   el.appendChild(toastEl);
 
@@ -525,6 +548,11 @@ async function removeItem(key, title) {
     removedQty,
     footerChange: _hubRemovalFooterChange(key, el),
     timer: setTimeout(() => _commitRemoval(key), UNDO_DURATION_MS),
+    itemInner,
+    originalOpacity,
+    originalPointerEvents,
+    originalTransition,
+    deleteBtn,
   };
   _hubAdjustRemovalFooter(_hubPendingRemovals[key], -1);
 }
@@ -789,6 +817,12 @@ function _undoRemoval(key) {
   if (!p) return;
 
   clearTimeout(p.timer);
+  if (p.itemInner) {
+    p.itemInner.style.opacity = p.originalOpacity ?? "";
+    p.itemInner.style.pointerEvents = p.originalPointerEvents ?? "";
+    p.itemInner.style.transition = p.originalTransition ?? "";
+  }
+  if (p.deleteBtn) p.deleteBtn.disabled = false;
   _hubAdjustRemovalFooter(p, 1);
   const drawer = getDrawer();
   if (window.cartPlusSetEmptyHeaderVisibility) {

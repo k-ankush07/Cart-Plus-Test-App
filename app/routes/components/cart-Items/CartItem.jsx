@@ -833,6 +833,8 @@ function CartItemRow({
 
   const layout = cartSettings.cartItemLayout || "classic";
   const deleteBehavior = cartSettings.deleteBehavior || "undo";
+  const removedItemOpacity =
+    Math.min(100, Math.max(10, Number(cartSettings.removedItemOpacity) || 40)) / 100;
 
   const undoTimerRef = useRef(null);
 
@@ -970,7 +972,7 @@ function CartItemRow({
         <div
           className="cart-plus-products-section cart-app__items cart-plus-public-cart-item cart-plus-product-item"
           style={{
-            opacity: isRemoved ? 0.4 : 1,
+            opacity: isRemoved ? removedItemOpacity : 1,
             pointerEvents: isRemoved ? "none" : "auto",
             transition: "opacity 0.3s ease",
             // Template theme: the card border follows the theme colour
