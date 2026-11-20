@@ -175,15 +175,15 @@ const Mini = ({ bg, children }) => (
   </div>
 );
 
-const PreviewCard = () => (
-  <Mini bg="#fff">
-    <Line w="50%" h={2} />
-    <Line h={3} color={DARK} w="70%" />
+const PreviewCard = ({ c }) => (
+  <Mini bg={c.bg}>
+    <Line w="50%" h={2} color={c.track} />
+    <Line h={3} color={c.accent} w="70%" />
   </Mini>
 );
-const PreviewGift = () => (
-  <Mini bg="#e6f6ec">
-    <Line w="45%" h={2} color="#1a9a4a" />
+const PreviewGift = ({ c }) => (
+  <Mini bg={c.bg}>
+    <Line w="45%" h={2} color={c.accent} />
     <div style={{ display: "flex", gap: 14, justifyContent: "center" }}>
       {[0, 1, 2].map((i) => (
         <div
@@ -192,20 +192,20 @@ const PreviewGift = () => (
             width: 8,
             height: 8,
             borderRadius: "50%",
-            background: i === 0 ? "#1a9a4a" : "#c4e8d1",
+            background: i === 0 ? c.accent : c.track,
           }}
         />
       ))}
     </div>
   </Mini>
 );
-const PreviewRing = () => (
+const PreviewRing = ({ c }) => (
   <div
     style={{
       display: "flex",
       alignItems: "center",
       gap: 6,
-      background: "#efeaff",
+      background: c.bg,
       borderRadius: 6,
       padding: 6,
     }}
@@ -215,13 +215,13 @@ const PreviewRing = () => (
         width: 16,
         height: 16,
         borderRadius: "50%",
-        border: "3px solid #4b2fc0",
-        borderRightColor: "#d8cfff",
+        border: `3px solid ${c.accent}`,
+        borderRightColor: c.track,
       }}
     />
     <div style={{ flex: 1, display: "grid", gap: 3 }}>
-      <Line h={2} color="#4b2fc0" />
-      <Line w="50%" h={2} />
+      <Line h={2} color={c.accent} />
+      <Line w="50%" h={2} color={c.track} />
     </div>
   </div>
 );
@@ -231,27 +231,26 @@ const PreviewUnlock = () => (
     <Line h={3} color="#f59e0b" w="60%" />
   </Mini>
 );
-const PreviewStriped = () => (
-  <Mini bg="#eef4ff">
-    <Line w="40%" h={2} color="#2563eb" />
+const PreviewStriped = ({ c }) => (
+  <Mini bg={c.bg}>
+    <Line w="40%" h={2} color={c.accent} />
     <div
       style={{
         height: 4,
         borderRadius: 4,
-        backgroundImage:
-          "repeating-linear-gradient(45deg,#2563eb 0 4px,#7aa2f7 4px 8px)",
+        backgroundImage: `repeating-linear-gradient(45deg,${c.accent} 0 4px,${c.track} 4px 8px)`,
         width: "70%",
       }}
     />
   </Mini>
 );
-const PreviewAlmost = () => (
+const PreviewAlmost = ({ c }) => (
   <div
     style={{
       display: "flex",
       alignItems: "center",
       gap: 6,
-      background: "#fff0f2",
+      background: c.bg,
       borderRadius: 6,
       padding: 6,
     }}
@@ -261,33 +260,43 @@ const PreviewAlmost = () => (
         width: 12,
         height: 12,
         borderRadius: "50%",
-        background: "#e11d48",
+        background: c.accent,
       }}
     />
-    <Line h={3} color="#e11d48" w="45%" />
+    <Line h={3} color={c.accent} w="45%" />
     <div
-      style={{ width: 16, height: 8, borderRadius: 6, background: "#e11d48" }}
+      style={{ width: 16, height: 8, borderRadius: 6, background: c.accent }}
     />
   </div>
 );
 
-const BAR_STYLES = [
-  { value: "icon", label: "Icon", preview: <PreviewIcon /> },
-  { value: "reward", label: "Reward", preview: <PreviewReward /> },
-  // { value: "nextReward", label: "Next Reward", preview: <PreviewNextReward /> },
-  { value: "milestone", label: "Milestone", preview: <PreviewMilestone /> },
-  {
-    value: "threshold",
-    label: "Threshold Tracker",
-    preview: <PreviewThreshold />,
-  },
-  { value: "card", label: "Card", preview: <PreviewCard /> },
-  { value: "gift", label: "Gift steps", preview: <PreviewGift /> },
-  { value: "ring", label: "Ring", preview: <PreviewRing /> },
-  // { value: "unlock", label: "Unlock rewards", preview: <PreviewUnlock /> },
-  { value: "striped", label: "Striped", preview: <PreviewStriped /> },
-  { value: "almost", label: "Almost there", preview: <PreviewAlmost /> },
-];
+// Themed previews follow the selected template theme colour.
+const getBarStyles = (themeColor) => {
+  const c = (style) => getTheme(style, undefined, themeColor);
+  return [
+    { value: "icon", label: "Icon", preview: <PreviewIcon /> },
+    { value: "reward", label: "Reward", preview: <PreviewReward /> },
+    { value: "milestone", label: "Milestone", preview: <PreviewMilestone /> },
+    {
+      value: "threshold",
+      label: "Threshold Tracker",
+      preview: <PreviewThreshold />,
+    },
+    { value: "card", label: "Card", preview: <PreviewCard c={c("card")} /> },
+    { value: "gift", label: "Gift steps", preview: <PreviewGift c={c("gift")} /> },
+    { value: "ring", label: "Ring", preview: <PreviewRing c={c("ring")} /> },
+    {
+      value: "striped",
+      label: "Striped",
+      preview: <PreviewStriped c={c("striped")} />,
+    },
+    {
+      value: "almost",
+      label: "Almost there",
+      preview: <PreviewAlmost c={c("almost")} />,
+    },
+  ];
+};
 
 export default function TieredOffers({
   handleChange,
@@ -313,14 +322,15 @@ export default function TieredOffers({
       ? rewardsSettings.textColor
       : templateBackground?.color || rewardsSettings.textColor);
 
-  // Themed styles (card, gift, ring, unlock, striped, almost) are styled
-  // through the "Customize this style" card, so the legacy color / bar /
-  // background controls only apply to the NON-themed styles.
   const isThemed = !!THEMES[barStyle];
   const showLegacyStyling = !isThemed;
 
   const t = isThemed
-    ? getTheme(barStyle, rewardsSettings.styleConfig?.[barStyle])
+    ? getTheme(
+        barStyle,
+        rewardsSettings.styleConfig?.[barStyle],
+        templateBackground?.color,
+      )
     : {};
   const setCfg = (key, value) =>
     handleChange("rewardsSettings", (prev) => ({
@@ -330,6 +340,19 @@ export default function TieredOffers({
         [barStyle]: { ...prev.styleConfig?.[barStyle], [key]: value },
       },
     }));
+  // Choosing a style drops its custom colours so it follows the current
+  // template theme colour again (other settings like icon / size are kept).
+  const COLOR_KEYS = ["bg", "accent", "track", "textColor", "iconBg", "iconColor"];
+  const selectStyle = (value) =>
+    handleChange("rewardsSettings", (prev) => {
+      const cfg = { ...(prev.styleConfig?.[value] || {}) };
+      COLOR_KEYS.forEach((k) => delete cfg[k]);
+      return {
+        ...prev,
+        barStyle: value,
+        styleConfig: { ...prev.styleConfig, [value]: cfg },
+      };
+    });
   const resetCfg = () =>
     handleChange("rewardsSettings", (prev) => ({
       ...prev,
@@ -388,7 +411,7 @@ export default function TieredOffers({
       <LegacyCard sectioned title="Style">
         <BlockStack gap="300">
           <InlineGrid columns={3} gap="300">
-            {BAR_STYLES.map((s) => {
+            {getBarStyles().map((s) => {
               const selected = barStyle === s.value;
               return (
                 <div
@@ -396,9 +419,9 @@ export default function TieredOffers({
                   role="button"
                   tabIndex={0}
                   aria-pressed={selected}
-                  onClick={() => update("barStyle", s.value)}
+                  onClick={() => selectStyle(s.value)}
                   onKeyDown={(e) =>
-                    e.key === "Enter" && update("barStyle", s.value)
+                    e.key === "Enter" && selectStyle(s.value)
                   }
                   style={{
                     cursor: "pointer",

@@ -603,8 +603,11 @@ if (savedEl) {
     const discountCodesSettings =
       window.__HUB_ACTIVE_CART__?.discountCodesSettings;
 
+    // the offer tag follows the Template theme colour until a colour is picked
     const showOfferBgColor =
-      discountCodesSettings?.showOfferBgColor || "#6C4DFF";
+      discountCodesSettings?.showOfferBgColor ||
+      window.cartPlusTemplateBackground?.(designSettings)?.color ||
+      "#6C4DFF";
 
     // Custom CSS from Settings plus the enabled CSS blocks added in the editor sidebar
     hubUtils.applyCustomCSS(
@@ -1226,8 +1229,8 @@ if (savedEl) {
     const SP_TEMPLATES = {
       default: { layout: "button", accent: null, accentText: null, trackBg: "#f5f5f5", trackText: "#374151", radius: null },
       toggle: { layout: "toggle", accent: "#008a3e", accentText: "#ffffff", trackBg: "#f5f5f5", trackText: "#374151", radius: 999 },
-      toggle_dark: { layout: "toggle", accent: "#111827", accentText: "#ffffff", trackBg: "#eef0f3", trackText: "#374151", radius: 10 },
-      radio_dark: { layout: "radio", accent: "#111827", accentText: "#ffffff", trackBg: "#ffffff", trackText: "#1f2937", radius: 10 },
+      toggle_dark: { layout: "toggle", accent: null, accentText: "#ffffff", trackBg: null, previewAccent: "#111827", previewTrackBg: "#eef0f3", trackText: "#374151", radius: 10 },
+      radio_dark: { layout: "radio", accent: null, accentText: "#ffffff", trackBg: null, previewAccent: "#111827", previewTrackBg: "#ffffff", trackText: "#1f2937", radius: 10 },
     };
     const spTpl =
       SP_TEMPLATES[subscriptionSettings?.template] ||
@@ -1452,7 +1455,27 @@ if (savedEl) {
           const planHeadingText =
             subscriptionSettings?.planHeadingText || "Subscription plans";
 
-          const spAccent = spPick("accent") ?? btnColor;
+          // toggle / radio colours follow the Template theme (mirrors subscriptionThemeColors)
+          const spThemeBg = window.cartPlusTemplateBackground?.(designSettings);
+          const spThemeColor = spThemeBg?.color;
+          const spMix = (pct) => {
+            const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(spThemeColor || "").trim());
+            if (!m) return null;
+            let h = m[1];
+            if (h.length === 3) h = h.replace(/./g, (x) => x + x);
+            const n = parseInt(h, 16);
+            const ch = (v) => Math.round(v * (pct / 100) + 255 * (1 - pct / 100)).toString(16).padStart(2, "0");
+            return `#${ch((n >> 16) & 255)}${ch((n >> 8) & 255)}${ch(n & 255)}`;
+          };
+          const spAccent =
+            spPick("accent") ??
+            (spThemeBg ? window.cartPlusBgCss(spThemeBg) : null) ??
+            btnColor ??
+            spTpl.previewAccent;
+          // borders / dots need a plain colour (a gradient is invalid there)
+          const spAccentSolid = spPick("accent") ?? spThemeColor ?? btnColor ?? spTpl.previewAccent;
+          const spTrackBg = spPick("trackBg") ?? spMix(10) ?? spTpl.previewTrackBg ?? "#f5f5f5";
+          const spBorder = spMix(30) ?? "#e5e7eb";
           const spAccentText = spPick("accentText") ?? textColor;
           const spRadius = spPick("radius") ?? designSettings.buttonRadius ?? 8;
           const spSubLabel = (
@@ -1460,7 +1483,7 @@ if (savedEl) {
           ).replace(/\{\{selling_plan_group_name\}\}/g, groupName);
           const spOneLabel =
             subscriptionSettings?.planOptionsOneTimePurchaseText || "One-time";
-          const spVars = `--sp-accent:${spAccent};--sp-accent-text:${spAccentText};--sp-track-bg:${spPick("trackBg")};--sp-track-text:${spPick("trackText")};--sp-radius:${spRadius}px;`;
+          const spVars = `--sp-accent:${spAccent};--sp-accent-solid:${spAccentSolid};--sp-accent-text:${spAccentText};--sp-track-bg:${spTrackBg};--sp-border:${spBorder};--sp-track-text:${spPick("trackText")};--sp-radius:${spRadius}px;`;
           const spOpts =
             spLayout === "toggle"
               ? `<div class="hub-sp-toggle"><button type="button" class="hub-sp-opt" data-mode="subscribe">${spSubLabel}</button><button type="button" class="hub-sp-opt" data-mode="onetime">${spOneLabel}</button></div>`
@@ -1486,6 +1509,7 @@ if (savedEl) {
               }
               <div class="hub-subscription-view">
                <select class="hub-selling-plan-select"
+                     style="background-color:${spTrackBg};border:1.5px solid ${spBorder};border-radius:${Math.min(spRadius, 14)}px;color:${spPick("trackText") || "inherit"};"
                      data-variant-id="${item.variant_id}" data-current-plan="${sellingPlan ? sellingPlan.selling_plan.id : ""}">
                   <option value="" disabled ${!sellingPlan ? "selected" : ""}>${planHeadingText}</option>
                   ${options}

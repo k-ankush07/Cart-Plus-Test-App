@@ -3,6 +3,9 @@ import { backgroundToCss, useTemplateBackground } from "../utils/background";
 import { LibraryIcon } from "../ui/IconLibrary";
 import { ANNOUNCEMENT_TEMPLATES } from "../utils/announcementTemplates";
 
+const sameColor = (a, b) =>
+  a && b && String(a).toLowerCase() === String(b).toLowerCase();
+
 const paddingMap = {
   slim: "4px 20px",
   normal: "10px 20px",
@@ -79,10 +82,33 @@ function TemplateAnnouncement({ s, currency, templateBg }) {
   const [h, m, sec] = useCountdown(Number(s.seconds ?? t.seconds) || 0);
   if (!open) return null;
 
-  const color = s.textColor || t.color;
-  const iconColor = s.iconColor || t.iconColor;
-  const accentBg = s.accentBg || t.accentBg;
-  const accentText = s.accentText || t.accentText;
+  const matchesTemplateOwn =
+    (s.background?.type === "plain" &&
+      sameColor(s.background.color, t.background)) ||
+    (s.background?.type === "gradient" &&
+      t.backgroundGradient &&
+      sameColor(s.background.color, t.backgroundGradient.color) &&
+      sameColor(s.background.color2, t.backgroundGradient.color2));
+
+const hasCustomBg =
+  !!s.background &&
+  (s.backgroundCustom ??
+    (s.template !== "default" && !matchesTemplateOwn));
+    
+  const usingThemeBg = !hasCustomBg && !!templateBg;
+
+  const resolvedBackground = hasCustomBg
+    ? backgroundToCss(s.background)
+    : backgroundToCss(templateBg) ||
+      (t.backgroundGradient
+        ? backgroundToCss(t.backgroundGradient)
+        : t.background);
+
+  const color = usingThemeBg ? "#fff" : s.textColor || t.color;
+  const iconColor = usingThemeBg ? "#fff" : s.iconColor || t.iconColor;
+  const accentBg = usingThemeBg ? "#fff" : s.accentBg || t.accentBg;
+  const accentText = usingThemeBg ? "#111" : s.accentText || t.accentText;
+
   const Icon = ICONS[s.template];
   const showClose =
     s.showClose !== false &&
@@ -229,16 +255,7 @@ function TemplateAnnouncement({ s, currency, templateBg }) {
         padding: paddingMap[s.height] || paddingMap.normal,
         borderRadius: `${s.borderRadius ?? 12}px`,
         color,
-        // Default template follows the Template tab colour only (no own background)
-        background:
-          s.template === "default"
-            ? backgroundToCss(templateBg) ||
-              backgroundToCss(t.backgroundGradient)
-            : s.background
-              ? backgroundToCss(s.background)
-              : t.backgroundGradient
-                ? backgroundToCss(t.backgroundGradient)
-                : t.background,
+        background: resolvedBackground,
         fontSize: `${s.fontSize || 15}px`,
         lineHeight: 1.3,
         boxSizing: "border-box",

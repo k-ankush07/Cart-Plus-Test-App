@@ -18,7 +18,8 @@ import RichTextEditor from "../ui/RichTextEditor";
 import ColorInput from "../ui/ColorInput";
 import BackgroundInput from "../ui/BackgroundInput";
 import { getTimer, patchTimer, toggleTimer } from "../utils/timer";
-import { TIMER_TEMPLATES } from "../utils/timerTemplates";
+import { TIMER_TEMPLATES, themeTimerSettings } from "../utils/timerTemplates";
+import { useTemplateBackground } from "../utils/background";
 import "../../../index.css";
 
 const quickIcons = [
@@ -262,6 +263,7 @@ export default function Timer({
   accessToken,
   apiUrl,
 }) {
+  const templateBackground = useTemplateBackground();
   const timer = getTimer(headerSettings);
   const activeTemplate =
     timer.template ||
@@ -277,7 +279,11 @@ export default function Timer({
         ([setting]) => setting !== "label" && setting !== "maxLength",
       ),
     );
-    update({ template: key, ...settings });
+    update({
+      template: key,
+      ...settings,
+      ...themeTimerSettings(key, templateBackground),
+    });
   };
 
   const showSmallHeading = ["boxes", "rings"].includes(timer.style);

@@ -18,6 +18,7 @@ import { DiscountIcon } from "@shopify/polaris-icons";
 import ColorInput from "../ui/ColorInput";
 import RichTextEditor from "../ui/RichTextEditor";
 import IconLibrary from "../ui/IconLibrary";
+import { useTemplateBackground } from "../utils/background";
 import {
   DISCOUNT_TEMPLATES,
   TOKEN_KEYS,
@@ -213,7 +214,7 @@ export default function DiscountCode({
 
   const s = discountCodesSettings || {};
   const template = s.template || "";
-  const T = resolveDiscountStyle(s);
+  const T = resolveDiscountStyle(s, useTemplateBackground()?.color);
   const isClassic = !template;
   const isCompact = template === "compact_card";
   const isChip = template === "chip_badges";

@@ -2,7 +2,9 @@ import { useState } from "react";
 import {
   SUBSCRIPTION_TEMPLATES,
   DEFAULT_SUBSCRIBE_LABEL,
+  subscriptionThemeColors,
 } from "../utils/subscriptionTemplates";
+import { useTemplateBackground } from "../utils/background";
 
 export default function Subscription({
   subscriptionUpgradesSettings,
@@ -20,10 +22,21 @@ export default function Subscription({
   const pick = (k) => s[k] ?? t[k];
 
   const layout = pick("layout");
-  const accent = pick("accent") ?? designSettings?.buttonColor ?? "#000";
+  const themeColors = subscriptionThemeColors(useTemplateBackground());
+  const accent =
+    pick("accent") ??
+    themeColors.accent ??
+    designSettings?.buttonColor ??
+    t.previewAccent ??
+    "#000";
   const accentText =
     pick("accentText") ?? designSettings?.buttonTextColor ?? "#fff";
-  const trackBg = pick("trackBg");
+  // borders / dots need a plain colour (a gradient is invalid there)
+  const accentSolid =
+    pick("accent") ?? themeColors.solid ?? designSettings?.buttonColor ?? accent;
+  const trackBg =
+    pick("trackBg") ?? themeColors.trackBg ?? t.previewTrackBg ?? "#f5f5f5";
+  const idleBorder = themeColors.border ?? "#e5e7eb";
   const trackText = pick("trackText");
   const radius = pick("radius") ?? Number(designSettings?.buttonRadius) ?? 8;
 
@@ -100,7 +113,7 @@ export default function Subscription({
           textAlign: "left",
           background: trackBg,
           color: trackText,
-          border: `1.5px solid ${active ? accent : "#e5e7eb"}`,
+          border: `1.5px solid ${active ? accentSolid : idleBorder}`,
           borderRadius: r,
         }}
       >
@@ -111,7 +124,7 @@ export default function Subscription({
             borderRadius: "50%",
             boxSizing: "border-box",
             flexShrink: 0,
-            border: `${active ? 5 : 2}px solid ${active ? accent : "#9ca3af"}`,
+            border: `${active ? 5 : 2}px solid ${active ? accentSolid : "#9ca3af"}`,
           }}
         />
         {label}
@@ -141,7 +154,18 @@ export default function Subscription({
         </div>
       )}
       {subscribed && (
-        <select style={{ width: "100%", marginTop: 8, padding:"6px", fontSize:"12px" }} defaultValue="4">
+        <select
+          style={{
+            width: "100%",
+            marginTop: 8,
+            padding: "6px",
+            fontSize: "12px",
+            background: trackBg,
+            border: `1.5px solid ${idleBorder}`,
+            borderRadius: Math.min(radius, 14),
+          }}
+          defaultValue="4"
+        >
           <option value="4">Every 4 weeks</option>
           <option value="8">Every 8 weeks</option>
         </select>

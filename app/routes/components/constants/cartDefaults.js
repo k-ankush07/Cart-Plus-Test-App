@@ -116,7 +116,7 @@ export const defaultRecommendationsSettings = {
 
 export const defaultUpsellsSettings = {
   enabled: true,
-  useAiRecommended: false,
+  useAiRecommended: true,
   recommendationAlgorithm: "related",
   useSmartVariantMatching: true,
   sourceType: "products",

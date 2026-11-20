@@ -1654,6 +1654,7 @@ span.hub-total-arrow svg {
   border-radius: var(--sp-radius);
 }
 .hub-sp-toggle .hub-sp-opt {
+    line-height: 17px;
   flex: 1;
   border: 0;
   cursor: pointer;
@@ -1680,7 +1681,7 @@ span.hub-total-arrow svg {
   text-align: left;
   background: var(--sp-track-bg);
   color: var(--sp-track-text);
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--sp-border, #e5e7eb);
   border-radius: min(var(--sp-radius), 14px);
 }
 .hub-sp-radio .hub-sp-dot {
@@ -1699,11 +1700,11 @@ span.hub-total-arrow svg {
 }
 .hub-selling-plan-wrapper:not(.show-subscription) .hub-sp-radio .hub-sp-opt[data-mode="onetime"],
 .hub-selling-plan-wrapper.show-subscription .hub-sp-radio .hub-sp-opt[data-mode="subscribe"] {
-  border-color: var(--sp-accent);
+  border-color: var(--sp-accent-solid, var(--sp-accent));
 }
 .hub-selling-plan-wrapper:not(.show-subscription) .hub-sp-radio .hub-sp-opt[data-mode="onetime"] .hub-sp-dot,
 .hub-selling-plan-wrapper.show-subscription .hub-sp-radio .hub-sp-opt[data-mode="subscribe"] .hub-sp-dot {
-  border: 5px solid var(--sp-accent);
+  border: 5px solid var(--sp-accent-solid, var(--sp-accent));
 }
 .hub-sp-layout-toggle .hub-subscription-view,
 .hub-sp-layout-radio .hub-subscription-view {
@@ -2325,7 +2326,8 @@ span.upsell-text.suggestion-product {
   outline: none;
   box-shadow: none;
   cursor: pointer;
-  border: 1px solid #dddddd;
+  border: 1px solid var(--sp-border, #dddddd);
+  background-color: var(--sp-track-bg, #fff);
 }
 
 .hub-item-subscription-label {

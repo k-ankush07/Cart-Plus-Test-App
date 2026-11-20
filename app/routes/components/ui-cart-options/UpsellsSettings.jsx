@@ -28,6 +28,7 @@ import IconLibrary from "../ui/IconLibrary";
 import BackgroundInput from "../ui/BackgroundInput";
 import ProductItemCollections from "../ui/ProductItem-Collections";
 import { useState } from "react";
+import { useTemplateBackground } from "../utils/background";
 
 /* ---------- mini previews ---------- */
 const P_GRAY = "#d9d9d9";
@@ -230,6 +231,7 @@ export default function UpsellsSettings({
   accessToken,
   apiUrl,
 }) {
+  const templateBackground = useTemplateBackground();
   // older carts only have `direction`
   const layout =
     upsellsSettings.layout === "row" || !upsellsSettings.layout
@@ -458,7 +460,11 @@ export default function UpsellsSettings({
               />
               <ColorInput
                 label="Background"
-                value={upsellsSettings.buttonBackground || "#303030"}
+                value={
+                  upsellsSettings.buttonBackground ||
+                  templateBackground?.color ||
+                  "#303030"
+                }
                 onChange={(val) => update("buttonBackground", val)}
               />
               <ColorInput

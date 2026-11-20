@@ -302,7 +302,7 @@ const CartPreview = memo(function CartPreview({
             right: 0,
             bottom: 0,
             backgroundColor: "rgba(0, 0, 0, 0.25)",
-            zIndex: 10,
+            // zIndex: 8,
             pointerEvents: "auto",
           }}
         />

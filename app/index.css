@@ -191,10 +191,12 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
   z-index: 21; /* above the backdrop */
 }
 
-/* footer must sit above the breakdown overlay */
+/* footer must sit above the breakdown / offers overlays and above any
+   z-indexed cart content: the offers panel lives inside the footer and covers
+   the whole cart */
 .cart-app__footer {
   position: relative;
-  z-index: 9;
+  z-index: 30;
 }
 
 .cart-app__container {

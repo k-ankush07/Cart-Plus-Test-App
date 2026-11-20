@@ -15,7 +15,12 @@ import {
   TextField,
 } from "@shopify/polaris";
 import { CalendarCheckIcon } from "@shopify/polaris-icons";
-import { AGE_TEMPLATES, CLASSIC_BASE } from "../utils/ageTemplates";
+import {
+  AGE_TEMPLATES,
+  CLASSIC_BASE,
+  themeAgeSettings,
+} from "../utils/ageTemplates";
+import { useTemplateBackground } from "../utils/background";
 
 import RichTextEditor from "../ui/RichTextEditor";
 import BackgroundInput from "../ui/BackgroundInput";
@@ -289,6 +294,7 @@ export default function AgeVerification({
   currency,
 }) {
   const s = getAgeVerification(cartSettings);
+  const templateBackground = useTemplateBackground();
   const update = (patch) =>
     handleChange("cartSettings", patchAgeVerification(patch));
 
@@ -307,7 +313,11 @@ export default function AgeVerification({
 
   const applyTemplate = (key) => {
     const { label, ...settings } = AGE_TEMPLATES[key];
-    update({ template: key, ...settings });
+    update({
+      template: key,
+      ...settings,
+      ...themeAgeSettings(key, templateBackground),
+    });
   };
   const isTpl = !!s.template && !!AGE_TEMPLATES[s.template];
   // which settings the chosen template actually renders (mirrors the preview)

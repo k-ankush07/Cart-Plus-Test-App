@@ -483,7 +483,10 @@ window.hubUtils = {
             .replace(/\{\{saved_amount\}\}/gi, hubUtils.formatMoney(offer.saved))}</div>`
         : "";
     const btnBg =
-      window.cartPlusBgCss?.(u.buttonBackground) || designSettings.buttonColor || "#000000";
+      window.cartPlusBgCss?.(u.buttonBackground) ||
+      window.cartPlusBgCss?.(window.cartPlusTemplateBackground?.(window.__HUB_ACTIVE_CART__?.designSettings)) ||
+      designSettings.buttonColor ||
+      "#000000";
     const btnText = u.buttonTextColor || designSettings.buttonTextColor || "#ffffff";
     const btnRadius = u.buttonRadius ?? designSettings.buttonRadius ?? 0;
     const btnLabel = u.buttonText || "Add";
@@ -1479,6 +1482,12 @@ window.hubUtils = {
       }
 
       if (listEl) {
+        // no applied discount: the (empty) list must not leave its margin behind
+        listEl.style.display = hasDiscount
+          ? discountStyle.layout === "chipbadges"
+            ? "flex"
+            : "block"
+          : "none";
         if (discountStyle.layout === "compact") {
           listEl.innerHTML = allDiscounts
             .map((discount) => {

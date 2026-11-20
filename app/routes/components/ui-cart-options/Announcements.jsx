@@ -76,16 +76,21 @@ function AnnouncementTemplatePreview({
   selected,
   onSelect,
   designSettings,
+  customBackground,
 }) {
   const preview = TEMPLATE_PREVIEWS[template];
   const settings = ANNOUNCEMENT_TEMPLATES[template];
+  
   const themedBackground =
-    template === "default" ? templateBackground(designSettings) : undefined;
+    template === "default"
+      ? customBackground || templateBackground(designSettings)
+      : undefined;
+
   const background =
     backgroundToCss(themedBackground) ||
-    (settings.backgroundGradient
-      ? `linear-gradient(${settings.backgroundGradient.angle}deg, ${settings.backgroundGradient.color}, ${settings.backgroundGradient.color2})`
-      : settings.background);
+    (settings.previewGradient
+      ? `linear-gradient(${settings.previewGradient.angle}deg, ${settings.previewGradient.color}, ${settings.previewGradient.color2})`
+      : settings.previewBackground || settings.background);
 
   return (
     <button
@@ -201,26 +206,26 @@ export default function Announcements({
 
   const applyTemplate = (key) => {
     const t = ANNOUNCEMENT_TEMPLATES[key];
-    const themedBackground =
-      key === "default" ? templateBackground(designSettings) : undefined;
+    const themedBackground = templateBackground(designSettings);
+
     handleChange("announcement", {
       ...announcementSettings,
       template: key,
       icon: null,
       text: t.text,
-      iconColor: t.iconColor,
-      // Default template keeps no own background: it follows the Template tab
-      // colour until the Background card sets a custom one
+      iconColor: t.background === "transparent" ? "#ffffff" : t.iconColor,
       background:
         key === "default"
           ? null
-          : themedBackground ||
-            t.backgroundGradient || { type: "plain", color: t.background },
-      textColor: t.color,
+          : t.background === "transparent"
+            ? themedBackground
+            : t.backgroundGradient || { type: "plain", color: t.background },
+      textColor: t.background === "transparent" ? "#ffffff" : t.color,
       accentBg: t.accentBg,
       accentText: t.accentText,
     });
   };
+
   return (
     <div className="mainContent">
       {/* Page heading — matches reference HTML exactly */}
@@ -258,6 +263,11 @@ export default function Announcements({
             <AnnouncementTemplatePreview
               key={key}
               template={key}
+              customBackground={
+                key === (announcementSettings.template || "default")
+                  ? announcementSettings.background
+                  : undefined
+              }
               selected={
                 announcementSettings.template === key ||
                 (!announcementSettings.template && key === "default")
@@ -535,14 +545,14 @@ export default function Announcements({
       </LegacyCard>
 
       <BackgroundInput
-        value={
-          announcementSettings.background ||
-          (!announcementSettings.template ||
-          announcementSettings.template === "default"
-            ? templateBackground(designSettings)
-            : undefined)
+        value={announcementSettings.background}
+        onChange={(bg) =>
+          handleChange("announcement", {
+            ...announcementSettings,
+            background: bg,
+            backgroundCustom: !!bg,
+          })
         }
-        onChange={(background) => update("background", background)}
       />
     </div>
   );

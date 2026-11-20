@@ -4,7 +4,7 @@ import "swiper/css";
 import { Navigation } from "swiper/modules";
 import "swiper/css/navigation";
 import { applyDiscount } from "../utils/oneTick";
-import { backgroundToCss } from "../utils/background";
+import { backgroundToCss, useTemplateBackground } from "../utils/background";
 import { getCartItemOptions } from "../utils/cartItemOptions";
 import { LibraryIcon } from "../ui/IconLibrary";
 import NoProductPlaceholder from "../ui/NoProductPlaceholder";
@@ -173,6 +173,13 @@ export default function Upsells({
     cardBackground = null,
     showIfAlreadyInCart = false,
   } = upsellsSettings || {};
+
+  // Untouched button colour follows the selected template theme.
+  const templateBg = useTemplateBackground();
+  const themeButtonBg =
+    buttonBackground ||
+    backgroundToCss(templateBg) ||
+    designSettings.buttonColor;
 
   // a product that was added to the preview cart is hidden from the list, unless
   // "Show upsell for items already in cart" is ticked
@@ -668,7 +675,7 @@ export default function Upsells({
               className="cart-plus-internal-component__button cart-plus-public-component__button"
               style={{
                 borderRadius: `${buttonRadius ?? designSettings.buttonRadius}px`,
-                background: buttonBackground || designSettings.buttonColor,
+                background: themeButtonBg,
                 "--btn-hover-text": designSettings.buttonHoverColor,
                 "--btn-text": buttonTextColor || designSettings.buttonTextColor,
                 ...(buttonTextColor ? { color: buttonTextColor } : {}),
@@ -1118,7 +1125,7 @@ export default function Upsells({
                     borderRadius: "50%",
                     border: "none",
                     cursor: "pointer",
-                    background: buttonBackground || designSettings.buttonColor,
+                    background: themeButtonBg,
                     color:
                       buttonTextColor ||
                       designSettings.buttonTextColor ||

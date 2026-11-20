@@ -1,6 +1,6 @@
 export const newOffer = () => ({
   id: `offer-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-   mode: null,
+  mode: null,
   selected: { type: "products", items: [] },
   discountType: "percentage",
   discountValue: 10,
@@ -11,7 +11,7 @@ export const newOffer = () => ({
 // default offer: fixed id, taaki isDefault comparison sahi chale
 const DEFAULT_OFFER = {
   id: "offer-default",
-   mode: null,
+  mode: "auto",
   selected: { type: "products", items: [] },
   discountType: "percentage",
   discountValue: 10,
@@ -40,7 +40,16 @@ export const ONE_TICK_DEFAULTS = {
 };
 
 
-export const getOneTick = (cartSettings) => {
+// Button background: a colour the merchant picked wins; the untouched default
+// (#303030) follows the selected template theme colour / gradient.
+export const oneTickButtonBg = (oneTick, themeBg) => {
+  const bg = oneTick?.buttonBackground;
+  const untouched =
+    !bg || (bg.type === "plain" && String(bg.color).toLowerCase() === "#303030");
+  return untouched && themeBg ? themeBg : bg;
+};
+
+export const getOneTick =(cartSettings) => {
   const merged = { ...ONE_TICK_DEFAULTS, ...(cartSettings?.oneTick || {}) };
   if (!merged.offers || merged.offers.length === 0) {
     merged.offers = ONE_TICK_DEFAULTS.offers;

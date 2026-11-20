@@ -21,6 +21,7 @@ import {
 import {
   SUBSCRIPTION_TEMPLATES,
   DEFAULT_SUBSCRIBE_LABEL,
+  subscriptionThemeColors,
 } from "../utils/subscriptionTemplates";
 
 import "../../../index.css";
@@ -109,7 +110,7 @@ export default function SubscriptionUpgrades({
       <LegacyCard sectioned title="Template">
         <InlineGrid columns={2} gap="200">
           {Object.entries(SUBSCRIPTION_TEMPLATES).map(([key, t]) => {
-            const accent = t.accent ?? "#1a56db";
+            const accent = t.accent ?? t.previewAccent ?? "#1a56db";
             return (
               <button
                 key={key}
@@ -146,7 +147,7 @@ export default function SubscriptionUpgrades({
                       display: "flex",
                       gap: 3,
                       padding: 3,
-                      background: t.trackBg,
+                      background: t.trackBg ?? t.previewTrackBg,
                       borderRadius: Math.min(t.radius, 14),
                     }}
                   >
@@ -242,7 +243,12 @@ export default function SubscriptionUpgrades({
               label={
                 activeLayout === "button" ? "Button color" : "Active color"
               }
-              value={field("accent") ?? "#1a56db"}
+              value={
+                field("accent") ??
+                themeBg?.color ??
+                tpl.previewAccent ??
+                "#1a56db"
+              }
               onChange={(val) => update("accent", val)}
             />
             <ColorInput
@@ -254,7 +260,11 @@ export default function SubscriptionUpgrades({
               <>
                 <ColorInput
                   label="Background"
-                  value={field("trackBg")}
+                  value={
+                    field("trackBg") ??
+                    subscriptionThemeColors(themeBg).trackBg ??
+                    tpl.previewTrackBg
+                  }
                   onChange={(val) => update("trackBg", val)}
                 />
                 <ColorInput

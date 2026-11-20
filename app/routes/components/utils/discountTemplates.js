@@ -119,12 +119,14 @@ export const getLayout = (template) =>
   template ? DISCOUNT_TEMPLATES[template]?.layout : undefined;
 
 /** Saved settings + template defaults -> final values (with colour fallbacks). */
-export const resolveDiscountStyle = (s = {}) => {
+export const resolveDiscountStyle = (s = {}, themeColor) => {
   const tpl = s.template || "";
   const d = {
     ...TOKEN_DEFAULTS,
     ...(tpl ? DISCOUNT_TEMPLATES[tpl] || {} : CLASSIC_DEFAULTS),
   };
+  // the accent (and everything derived from it) follows the Template theme colour
+  if (tpl && themeColor) d.accent = themeColor;
   const t = { layout: d.layout };
 
   Object.keys(d).forEach((k) => {

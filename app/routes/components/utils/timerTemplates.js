@@ -1,4 +1,33 @@
+import { mixWithWhite } from "./rewardThemes";
+import { backgroundToCss } from "./background";
+
 const ic = (name) => ({ type: "icon", name });
+
+const NEUTRAL = ["#303030", "#ffffff", "#f1f1f1", "#161616", "#1a1a1a"];
+
+// Colours of a template re-based on the selected template theme colour.
+// Neutral / dark parts (white, black, grey) keep their look.
+export const themeTimerSettings = (key, themeBg) => {
+  const base = TIMER_TEMPLATES[key];
+  const color = themeBg?.color;
+  if (!base || !color) return {};
+  const out = {};
+  const isNeutral = (v) => !v || NEUTRAL.includes(String(v).toLowerCase());
+  const isTint = (v) => v && !isNeutral(v) && !String(v).includes("gradient");
+
+  if (base.iconColor && !isNeutral(base.iconColor)) out.iconColor = color;
+  if (base.iconBg && !isNeutral(base.iconBg)) out.iconBg = mixWithWhite(color, 28);
+  if (base.barColor) out.barColor = color;
+  if (base.barBackground && key !== "hurry_up")
+    out.barBackground = mixWithWhite(color, 28);
+  if (base.digitsColor && base.digitsColor === base.iconColor)
+    out.digitsColor = color;
+  if (isTint(base.background)) out.background = mixWithWhite(color, 12);
+  // dark gradient style takes the theme colour / gradient itself
+  if (String(base.background).includes("gradient"))
+    out.background = backgroundToCss(themeBg) || color;
+  return out;
+};
 
 export const TIMER_TEMPLATES = {
   price_expires: {

@@ -73,7 +73,10 @@ window.cartPlusCompactHTML = function (products) {
   const cardBorder = ds.accentBorder || "rgba(0, 0, 0, 0.08)";
   const radius = 8; // card corners are fixed; the Radius setting only rounds the image
   const btnBg =
-    window.cartPlusBgCss(u.buttonBackground) || ds.buttonColor || "#000";
+    window.cartPlusBgCss(u.buttonBackground) ||
+    window.cartPlusBgCss(window.cartPlusTemplateBackground?.(window.__HUB_ACTIVE_CART__?.designSettings)) ||
+    ds.buttonColor ||
+    "#000";
   const btnText = u.buttonTextColor || ds.buttonTextColor || "#fff";
   const imageSize = Number(u.imageSize) || 72;
   // N tiles share one row (8px gaps); the image fills the tile width

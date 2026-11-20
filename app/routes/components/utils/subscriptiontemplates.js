@@ -1,3 +1,6 @@
+import { mixWithWhite } from "./rewardThemes";
+import { backgroundToCss } from "./background";
+
 // Templates for the "Upgrade subscription" block.
 // layout: "button" (upgrade button) | "toggle" (segmented Subscribe | One-time) | "radio" (two option rows)
 // null = use the cart's design (theme) value, so `default` keeps today's look.
@@ -23,9 +26,12 @@ export const SUBSCRIPTION_TEMPLATES = {
   toggle_dark: {
     label: "Toggle dark",
     layout: "toggle",
-    accent: "#111827",
+    accent: null, // follows the theme colour
     accentText: "#ffffff",
-    trackBg: "#eef0f3",
+    trackBg: null, // theme tint
+    // fallbacks used by the picker preview / when no theme colour is set
+    previewAccent: "#111827",
+    previewTrackBg: "#eef0f3",
     trackText: "#374151",
     radius: 10,
   },
@@ -33,12 +39,27 @@ export const SUBSCRIPTION_TEMPLATES = {
   radio_dark: {
     label: "Radio dark",
     layout: "radio",
-    accent: "#111827",
+    accent: null, // follows the theme colour
     accentText: "#ffffff",
-    trackBg: "#ffffff",
+    trackBg: null, // theme tint
+    previewAccent: "#111827",
+    previewTrackBg: "#ffffff",
     trackText: "#1f2937",
     radius: 10,
   },
+};
+
+// Theme-based colours for the toggle / radio templates: the chosen Template
+// colour gives the active colour, a light tint for the background and border.
+export const subscriptionThemeColors = (themeBg) => {
+  const color = themeBg?.color;
+  if (!color) return {};
+  return {
+    accent: backgroundToCss(themeBg), // may be a gradient: backgrounds only
+    solid: color, // plain colour for borders / dots
+    trackBg: mixWithWhite(color, 10),
+    border: mixWithWhite(color, 30),
+  };
 };
 
 export const DEFAULT_SUBSCRIBE_LABEL = "{{selling_plan_group_name}}";

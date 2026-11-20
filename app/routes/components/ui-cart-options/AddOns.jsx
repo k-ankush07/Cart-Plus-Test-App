@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 import {
   Badge,
@@ -62,6 +62,55 @@ export default function AddOns({ addonsSettings, handleChange, currency }) {
   useEffect(() => {
     setTempProduct(addonsSettings.selectedProduct || null);
   }, [addonsSettings.selectedProduct]);
+
+  // Product add-on: pick the store's first product by default (same shape the
+  // picker saves: the product's first variant). Tried once per mount.
+  const autoPickedRef = useRef(false);
+  useEffect(() => {
+    if (
+      addonsSettings.type !== "product_addon" ||
+      addonsSettings.selectedProduct ||
+      autoPickedRef.current
+    )
+      return;
+    autoPickedRef.current = true;
+    let cancelled = false;
+    let finished = false;
+    (async () => {
+      try {
+        const res = await authenticatedFetch("/shopify/products?cursor=&query=");
+        const data = await res.json();
+        finished = true;
+        const node = data?.data?.products?.edges?.[0]?.node;
+        const variantEdges = node?.variants?.edges || [];
+        const variant =
+          (variantEdges.find((v) => v.node.availableForSale) || variantEdges[0])
+            ?.node;
+        if (cancelled || !node || !variant) return;
+        handleChange("addonsSettings", (prev) =>
+          prev.selectedProduct
+            ? prev
+            : {
+                ...prev,
+                selectedProduct: {
+                  id: variant.id,
+                  handle: node.handle,
+                  title: node.title,
+                  image: node.images?.edges?.[0]?.node?.url,
+                  price: variant.price,
+                },
+              },
+        );
+      } catch (err) {
+        console.error("Default add-on product:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      // allow another try only if this one was cut short before it got a response
+      if (!finished) autoPickedRef.current = false;
+    };
+  }, [addonsSettings.type, addonsSettings.selectedProduct]);
 
   const openModal = () => {
     setModalKey((k) => k + 1);

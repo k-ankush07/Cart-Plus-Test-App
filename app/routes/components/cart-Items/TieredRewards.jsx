@@ -209,7 +209,11 @@ export default function TieredRewards({
 
   const theme = THEMES[barStyle];
   if (THEMES[barStyle]) {
-    const t = getTheme(barStyle, rewardsSettings.styleConfig?.[barStyle]);
+    const t = getTheme(
+      barStyle,
+      rewardsSettings.styleConfig?.[barStyle],
+      templateBg?.color,
+    );
     const { bg, accent, track } = t;
     const h = t.barHeight;
     const iconColor = t.iconColor || accent;

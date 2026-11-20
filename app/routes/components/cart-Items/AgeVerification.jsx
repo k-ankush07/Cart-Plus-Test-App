@@ -1,6 +1,6 @@
-import { backgroundToCss } from "../utils/background";
+import { backgroundToCss, useTemplateBackground } from "../utils/background";
 import { fillAge, getAgeVerification } from "../utils/ageVerification";
-import { AGE_TEMPLATES,  } from "../utils/ageTemplates";
+import { AGE_TEMPLATES, themeAgeSettings } from "../utils/ageTemplates";
 
 const TICK_IMG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 6.5l2.6 2.6L10 3.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
 
@@ -44,7 +44,12 @@ export default function AgeVerification({
   declined = false,
   onChange,
 }) {
-  const s = getAgeVerification(cartSettings);
+  const templateBg = useTemplateBackground();
+  const saved = getAgeVerification(cartSettings);
+  // never customised (no template picked yet): the colours follow the theme
+  const s = cartSettings?.ageVerification?.template
+    ? saved
+    : { ...saved, ...themeAgeSettings(saved.template, templateBg) };
   if (!s.enabled) return null;
   const defaultBorder = "#dbe4f5";
   const themeBorder =

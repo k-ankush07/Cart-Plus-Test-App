@@ -39,9 +39,36 @@ const EXTRA = {
   },
 };
 
-export const getTheme = (style, overrides = {}) => {
+// Default colours follow the selected template theme colour (like the other
+// bar styles do); explicit per-style overrides still win.
+export const mixWithWhite =(hex, pct) => {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex).trim());
+  if (!m) return hex;
+  let h = m[1];
+  if (h.length === 3) h = h.replace(/./g, (x) => x + x);
+  const n = parseInt(h, 16);
+  const ch = (v) =>
+    Math.round(v * (pct / 100) + 255 * (1 - pct / 100))
+      .toString(16)
+      .padStart(2, "0");
+  return `#${ch((n >> 16) & 255)}${ch((n >> 8) & 255)}${ch(n & 255)}`;
+};
+
+const followTheme = (style, themeColor) => {
+  if (!themeColor || !THEMES[style]) return {};
+  const mix = (pct) => mixWithWhite(themeColor, pct);
+  return { accent: themeColor, bg: mix(12), track: mix(28) };
+};
+
+export const getTheme = (style, overrides = {}, themeColor) => {
   const clean = Object.fromEntries(
-    Object.entries(overrides || {}).filter(([, v]) => v !== undefined && v !== null),
+    Object.entries(overrides || {}).filter(([, v]) => v !== undefined && v !== null && v !== ""),
   );
-  return { ...COMMON, ...THEMES[style], ...EXTRA[style], ...clean };
+  return {
+    ...COMMON,
+    ...THEMES[style],
+    ...EXTRA[style],
+    ...followTheme(style, themeColor),
+    ...clean,
+  };
 };

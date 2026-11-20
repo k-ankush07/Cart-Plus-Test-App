@@ -38,7 +38,9 @@ import {
   newOffer,
   patchOneTick,
   toggleOneTick,
+  oneTickButtonBg,
 } from "../utils/oneTick";
+import { useTemplateBackground } from "../utils/background";
 import "../../../index.css";
 
 /* ---------- mini previews ---------- */
@@ -279,6 +281,7 @@ export default function OneTickUpsell({
   apiUrl,
 }) {
   const oneTick = getOneTick(cartSettings);
+  const templateBackground = useTemplateBackground();
   const update = (patch) => handleChange("cartSettings", patchOneTick(patch));
 
   const updateOffer = (id, patch) =>
@@ -839,7 +842,10 @@ export default function OneTickUpsell({
                 />
                 <ColorInput
                   label="Background"
-                  value={oneTick.buttonBackground?.color || "#303030"}
+                  value={
+                    oneTickButtonBg(oneTick, templateBackground)?.color ||
+                    "#303030"
+                  }
                   onChange={(color) =>
                     update({ buttonBackground: { type: "plain", color } })
                   }

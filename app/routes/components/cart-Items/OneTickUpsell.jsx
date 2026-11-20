@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { getOneTick, applyDiscount } from "../utils/oneTick";
-import { backgroundToCss } from "../utils/background";
+import { getOneTick, applyDiscount, oneTickButtonBg } from "../utils/oneTick";
+import { backgroundToCss, useTemplateBackground } from "../utils/background";
 import { LibraryIcon } from "../ui/IconLibrary";
 import NoProductPlaceholder from "../ui/NoProductPlaceholder";
 
@@ -87,6 +87,7 @@ export default function OneTickUpsell({
   onRemovePreviewProduct,
 }) {
   const oneTickSaved = getOneTick(cartSettings);
+  const templateBg = useTemplateBackground();
   const isActiveOffer = (o) =>
     o.mode === "auto" ||
     (o.mode === "manual" && o.selected?.items?.variants?.length > 0);
@@ -331,7 +332,8 @@ export default function OneTickUpsell({
         onRemovePreviewProduct?.(product.id, variant.id);
       }
     };
-    const accent = backgroundToCss(oneTick.buttonBackground) || "#303030";
+    const accent =
+      backgroundToCss(oneTickButtonBg(oneTick, templateBg)) || "#303030";
     const activeAccent =
       designSettings?.accentSolid || designSettings?.themeColor || accent;
     if (oneTick.trigger === "checkbox") {
@@ -450,7 +452,7 @@ export default function OneTickUpsell({
           width: full ? "100%" : undefined,
           borderRadius: oneTick.buttonRadius,
           fontSize: oneTick.buttonFontSize,
-          background: backgroundToCss(oneTick.buttonBackground),
+          background: backgroundToCss(oneTickButtonBg(oneTick, templateBg)),
           color: oneTick.buttonTextColor,
         }}
       >
@@ -845,7 +847,7 @@ export default function OneTickUpsell({
                 background:
                   i === activeDot
                     ? designSettings?.accentText ||
-                      backgroundToCss(oneTick.buttonBackground) ||
+                      backgroundToCss(oneTickButtonBg(oneTick, templateBg)) ||
                       "#303030"
                     : designSettings?.accentBorder || "#d0d0d0",
               }}

@@ -561,6 +561,24 @@ function cartPlusGetAge(cartSettings) {
   ) {
     settings.borderColor = themeBorder;
   }
+  // never customised (no template picked): accent, badge and the light button follow the Template theme
+  if (!savedSettings.template) {
+    const themeColor = window.cartPlusTemplateBackground?.(design)?.color;
+    const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(themeColor || "").trim());
+    if (m) {
+      let h = m[1];
+      if (h.length === 3) h = h.replace(/./g, (x) => x + x);
+      const n = parseInt(h, 16);
+      const mix = (p) => {
+        const ch = (v) => Math.round(v * p + 255 * (1 - p)).toString(16).padStart(2, "0");
+        return `#${ch((n >> 16) & 255)}${ch((n >> 8) & 255)}${ch(n & 255)}`;
+      };
+      settings.accent = themeColor;
+      settings.badgeColor = themeColor;
+      settings.secondaryBg = mix(0.12);
+      settings.borderColor = mix(0.35);
+    }
+  }
   return settings;
 }
 const cartPlusFillAge = (html, age) =>
@@ -908,12 +926,32 @@ window.cartPlusRewardThemed = function (barStyle, rewards, ctx) {
   if (!CART_PLUS_REWARD_THEMES[barStyle]) return "";
   const { sorted, cartTotal, maxAmount, getTierValue, fmt } = ctx;
   const overrides = Object.fromEntries(
-    Object.entries(rewards.styleConfig?.[barStyle] || {}).filter(([, v]) => v !== undefined && v !== null),
+    Object.entries(rewards.styleConfig?.[barStyle] || {}).filter(
+      ([, v]) => v !== undefined && v !== null && v !== "",
+    ),
   );
+  // default colours follow the Template theme colour (mirrors rewardThemes.js followTheme)
+  const themeColor = window.cartPlusTemplateBackground?.(window.__HUB_ACTIVE_CART__?.designSettings)?.color;
+  const mixWhite = (hex, pct) => {
+    const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex).trim());
+    if (!m) return hex;
+    let h = m[1];
+    if (h.length === 3) h = h.replace(/./g, (x) => x + x);
+    const n = parseInt(h, 16);
+    const ch = (v) =>
+      Math.round(v * (pct / 100) + 255 * (1 - pct / 100))
+        .toString(16)
+        .padStart(2, "0");
+    return `#${ch((n >> 16) & 255)}${ch((n >> 8) & 255)}${ch(n & 255)}`;
+  };
+  const themed = themeColor
+    ? { accent: themeColor, bg: mixWhite(themeColor, 12), track: mixWhite(themeColor, 28) }
+    : {};
   const t = {
     ...CART_PLUS_REWARD_COMMON,
     ...CART_PLUS_REWARD_THEMES[barStyle],
     ...CART_PLUS_REWARD_EXTRA[barStyle],
+    ...themed,
     ...overrides,
   };
   const { bg, accent, track } = t;
@@ -1126,6 +1164,11 @@ function cartPlusGetDiscountTemplateStyle(settings = {}) {
   const template = CART_PLUS_DISCOUNT_TEMPLATE_DEFAULTS[settings.template];
   if (!template) return null;
   const defaults = { ...CART_PLUS_DISCOUNT_TOKEN_DEFAULTS, ...template };
+  // the accent (and everything derived from it) follows the Template theme colour
+  const themeColor = window.cartPlusTemplateBackground?.(
+    window.__HUB_ACTIVE_CART__?.designSettings,
+  )?.color;
+  if (themeColor) defaults.accent = themeColor;
   const style = { layout: defaults.layout };
 
   Object.keys(defaults).forEach((key) => {
@@ -1282,7 +1325,8 @@ function renderDiscountTemplateHTMLInternal(blockId, settings, style) {
         : `<button type="button" data-discount-clear-all onclick="removeDiscountCode(this,'${blockId}')" style="border:1px solid ${style.pillBorder};background:${style.pillBg};color:${style.pillColor};border-radius:999px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;">${escape(style.clearAllText)}</button>`
     }
   </div>`;
-  const list = `<div data-discount-list style="${style.layout === "chipbadges" ? "display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;" : "margin-top:4px;"}"></div>`;
+  // hidden until a discount is applied (hub-utils.js shows it), so it leaves no empty gap
+  const list = `<div data-discount-list style="display:none;${style.layout === "chipbadges" ? "gap:8px;flex-wrap:wrap;margin-top:12px;" : "margin-top:4px;"}"></div>`;
   const moreOffers = style.showMoreOffers
     ? `<button type="button" onclick="hubOpenOffersPanel('${blockId}')" style="flex:1;display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;color:${style.moreOffersColor};font-size:13px;font-weight:700;cursor:pointer;">${iconHtml}+1 ${escape(style.moreOffersText)}</button>`
     : "";

@@ -1,3 +1,5 @@
+import { mixWithWhite } from "./rewardThemes";
+
 const plain = (color) => ({ type: "plain", color });
 
 const BASE = {
@@ -65,6 +67,20 @@ export const AGE_TEMPLATES = {
     subtitle: "You must be {{minimumAge}} years or older to enter this site.",
     accent: "#0ea5e9",
   },
+};
+
+// Template colours re-based on the selected Template theme colour: the button /
+// toggle accent, the badge and the light secondary button.
+export const themeAgeSettings = (key, themeBg) => {
+  const base = AGE_TEMPLATES[key];
+  const color = themeBg?.color;
+  if (!base || !color) return {};
+  return {
+    accent: color,
+    badgeColor: color,
+    secondaryBg: mixWithWhite(color, 12),
+    borderColor: mixWithWhite(color, 35),
+  };
 };
 
 export const CLASSIC_BASE = {

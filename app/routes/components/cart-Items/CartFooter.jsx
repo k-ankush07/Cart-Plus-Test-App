@@ -116,6 +116,7 @@ export default function CartFooter({
           offerOpen={offerOpen}
           designSettings={designSettings}
           currency={currency}
+          subtotal={subtotal}
           shop={shop}
           apiUrl={apiUrl}
         />

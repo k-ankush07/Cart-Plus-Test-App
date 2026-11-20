@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { resolveDiscountStyle } from "../utils/discountTemplates";
 import { LibraryIcon } from "../ui/IconLibrary";
+import { useTemplateBackground } from "../utils/background";
 
 const API_KEY = import.meta.env.VITE_API_SECRET_KEY || "";
 
@@ -239,6 +240,7 @@ export default function DiscountCode({
   const [showInput, setShowInput] = useState(false);
 
   const iconColor = designSettings?.iconColor || "#0000";
+  const templateBg = useTemplateBackground();
 
   const fetchDiscounts = useCallback(async () => {
     if (!shop) return;
@@ -282,7 +284,7 @@ export default function DiscountCode({
   if (discountCodesSettings?.enabled) return null;
 
   const cs = discountCodesSettings || {};
-  const T = resolveDiscountStyle(cs);
+  const T = resolveDiscountStyle(cs, templateBg?.color);
   const layout = T.layout; // "compact" | "chipbadges" | undefined (classic)
   const defaultCouponHeadingColor = designSettings?.dark
     ? designSettings.textColor || "#f3f3f3"
@@ -297,7 +299,9 @@ export default function DiscountCode({
 
   const placeholder = cs.placeholder || "Discount code";
   const buttonText = cs.buttonText || "Apply";
-  const showOfferBgColor = cs.showOfferBgColor || "#6C4DFF";
+  // the offer tag follows the Template theme colour until a colour is picked
+  const showOfferBgColor =
+    cs.showOfferBgColor || templateBg?.color || "#6C4DFF";
   const invalidMessage =
     cs.invalidCodeMessage ??
     "This discount code isn't valid. Please check the code and try again.";

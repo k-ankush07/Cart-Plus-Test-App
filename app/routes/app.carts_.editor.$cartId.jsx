@@ -9,12 +9,17 @@ import { requireShopData  } from "./components/shop.server";
 import { useLoaderData, useSearchParams } from "react-router-dom";
 import { archiveAbTest, getCart, updateCart } from "../services/apiRoutes";
 import { TEMPLATE_DEFAULTS } from "./components/utils/templateTheme";
-import { templateBackground } from "./components/utils/background";
 import {
   ageSelectionMissing,
   getAgeVerification,
 } from "./components/utils/ageVerification";
 import { oneTickProblem } from "./components/utils/oneTick";
+import { templateBackground } from "./components/utils/background";
+import { patchTimer } from "./components/utils/timer";
+import { patchOneTick, ONE_TICK_DEFAULTS } from "./components/utils/oneTick";
+import { themeTimerSettings } from "./components/utils/timerTemplates";
+import { AGE_TEMPLATES, themeAgeSettings } from "./components/utils/ageTemplates";
+import { patchAgeVerification } from "./components/utils/ageVerification";
 import {
   getCustomBlocks,
   isCustomBlockKey,
@@ -528,6 +533,104 @@ export default function CartEditor() {
     });
   }, []);
 
+  // When the Template colour / gradient changes, the Timer template and the
+  // themed Progress Bar styles follow it right away (no re-click needed).
+  const themeKey = JSON.stringify([
+    designSettings?.colorMode,
+    designSettings?.themeColor,
+    designSettings?.gradientStart,
+    designSettings?.gradientEnd,
+    designSettings?.gradientAngle,
+  ]);
+  const prevThemeKeyRef = useRef(themeKey);
+  useEffect(() => {
+    if (prevThemeKeyRef.current === themeKey) return;
+    prevThemeKeyRef.current = themeKey;
+    // Back at the saved design (Discard, or switching A/B variant): everything
+    // was restored together, so there is nothing to re-theme (and doing so would
+    // bring the save bar back).
+    if (isSettingsEqual(initialSettingsRef.current?.design, designSettings)) return;
+    const themeBg = templateBackground(designSettings);
+
+    // handleChange sets "unsaved" from the LAST call only, so only call it when
+    // that section really changes, and finish with the design section (which
+    // always differs from the saved one here) to keep the save bar on.
+    const COLOR_KEYS = ["bg", "accent", "track", "textColor", "iconBg", "iconColor"];
+    if (headerSettings?.timer?.template) {
+      handleChange("header", (prev) =>
+        prev?.timer?.template
+          ? patchTimer(themeTimerSettings(prev.timer.template, themeBg))(prev)
+          : prev,
+      );
+    }
+    const hasStyleColors = Object.values(rewardsSettings?.styleConfig || {}).some(
+      (cfg) => COLOR_KEYS.some((k) => cfg?.[k] !== undefined),
+    );
+    if (hasStyleColors) {
+      handleChange("rewardsSettings", (prev) => {
+        if (!prev?.styleConfig) return prev;
+        const styleConfig = Object.fromEntries(
+          Object.entries(prev.styleConfig).map(([style, cfg]) => {
+            const next = { ...(cfg || {}) };
+            COLOR_KEYS.forEach((k) => delete next[k]);
+            return [style, next];
+          }),
+        );
+        return { ...prev, styleConfig };
+      });
+    }
+    // Subscription toggle / radio templates: drop a stale custom colour so they follow the theme
+    const sub = subscriptionUpgradesSettings;
+    if (
+      sub?.template &&
+      sub.template !== "default" &&
+      (sub.accent != null || sub.trackBg != null)
+    ) {
+      handleChange("subscriptionUpgradesSettings", (prev) => ({
+        ...prev,
+        accent: null,
+        trackBg: null,
+      }));
+    }
+    // Age verification template: re-base its colours on the new theme
+    const ageTpl = cartSettings?.ageVerification?.template;
+    if (ageTpl && AGE_TEMPLATES[ageTpl]) {
+      handleChange(
+        "cartSettings",
+        patchAgeVerification(themeAgeSettings(ageTpl, themeBg)),
+      );
+    }
+    // Discount code templates: drop a stale custom accent so they follow the theme
+    // (accent + every colour that is derived from it)
+    const DISCOUNT_THEMED = [
+      "accent", "headingColor", "amountColor", "bannerBg", "badgeBg",
+      "pillColor", "pillBorder", "chipBg", "chipColor", "moreOffersColor",
+      "iconColor", "buttonBg", "dashedColor", "showOfferBgColor",
+    ];
+    if (
+      discountCodesSettings?.template &&
+      DISCOUNT_THEMED.some((k) => discountCodesSettings[k])
+    ) {
+      handleChange("discountCodesSettings", (prev) => ({
+        ...prev,
+        ...Object.fromEntries(DISCOUNT_THEMED.map((k) => [k, undefined])),
+      }));
+    }
+    // Cross-sell button colour follows the theme again
+    if (upsellsSettings?.buttonBackground) {
+      handleChange("upsellsSettings", (prev) => ({
+        ...prev,
+        buttonBackground: null,
+      }));
+    }
+    // One Tick Upsell button colour: back to the untouched default (= follows the theme)
+    const tickBg = cartSettings?.oneTick?.buttonBackground;
+    if (tickBg && !(tickBg.type === "plain" && String(tickBg.color).toLowerCase() === "#303030")) {
+      handleChange("cartSettings", patchOneTick({ buttonBackground: ONE_TICK_DEFAULTS.buttonBackground }));
+    }
+    handleChange("design", (prev) => prev);
+  }, [themeKey]);
+
   // The A/B test setup (which variants exist, how traffic is split) counts as an unsaved change
   // on its own: "isDirty" only follows the last edit, so adding a variant and touching nothing
   // else could lose the Save button.
@@ -598,36 +701,12 @@ export default function CartEditor() {
   }, [cart?.cartId]);
 
   useEffect(() => {
-    if (announcementSettings?.template !== "default") return;
-    const background = templateBackground(designSettings);
-    if (!background) return;
-
-    const linkedAnnouncement = isSettingsEqual(
-      announcementSettings.background,
-      background,
-    )
-      ? announcementSettings
-      : { ...announcementSettings, background };
-
-    if (linkedAnnouncement !== announcementSettings) {
-      setAnnouncementSettings(linkedAnnouncement);
-    }
-
-    // The linking above runs on load and again after Discard, so compare against the SAVED
-    // announcement linked the same way. Otherwise the linking alone (no edit by the user)
-    // shows the save bar, and Discard brings it straight back.
-    const savedBackground = templateBackground(initialSettingsRef.current.design);
-    const initialAnnouncement = initialSettingsRef.current.announcement;
-    const linkedInitialAnnouncement =
-      initialAnnouncement?.template === "default" &&
-      savedBackground &&
-      !isSettingsEqual(initialAnnouncement.background, savedBackground)
-        ? { ...initialAnnouncement, background: savedBackground }
-        : initialAnnouncement;
-
     setIsDirty(
       !isSettingsEqual(initialSettingsRef.current.design, designSettings) ||
-        !isSettingsEqual(linkedInitialAnnouncement, linkedAnnouncement),
+        !isSettingsEqual(
+          initialSettingsRef.current.announcement,
+          announcementSettings,
+        ),
     );
   }, [announcementSettings, designSettings]);
 

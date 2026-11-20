@@ -200,8 +200,14 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
 
 // ── painting ───────────────────────────────────────────────────────────────
 function cartPlusOneTickTrigger(blockId, oneTick, offer, variantId) {
-  const accent = window.cartPlusBgCss(oneTick.buttonBackground) || "#303030";
   const design = window.__HUB_ACTIVE_CART__?.designSettings || {};
+  // untouched default (#303030) follows the Template theme colour / gradient
+  const bgSetting = oneTick.buttonBackground;
+  const untouched =
+    !bgSetting || (bgSetting.type === "plain" && String(bgSetting.color).toLowerCase() === "#303030");
+  const themeBg = window.cartPlusTemplateBackground?.(design);
+  const accent =
+    window.cartPlusBgCss(untouched && themeBg ? themeBg : bgSetting) || "#303030";
   const activeColor = design.accentSolid || design.themeColor || accent;
   const call = (on, button = "", trigger = "") =>
     `cartPlusOneTickToggle('${blockId}','${offer.id}','${variantId}',${on}${button}${trigger})`;
