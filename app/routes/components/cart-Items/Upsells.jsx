@@ -33,6 +33,94 @@ function hexToRGBA(hex = "#16a34a", opacity = 1) {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+const splitTitle = (t) =>
+  String(t || "")
+    .split(" / ")
+    .map((s) => s.trim());
+
+function VariantSelects({
+  product,
+  selectedVariant,
+  onChange,
+  style,
+  classes,
+}) {
+  const rows = product.variants.map((v) => ({ v, parts: splitTitle(v.title) }));
+  const optionCount = Math.max(...rows.map((r) => r.parts.length));
+
+  if (optionCount <= 1) {
+    return (
+      <select
+        className="cart-plus-upsell-item-variant-selector"
+        value={selectedVariant.id}
+        onChange={(e) => onChange(product.id, e.target.value)}
+        style={style}
+      >
+        {product.variants.map((variant) => (
+          <option key={variant.id} value={variant.id}>
+            {variant.title}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  const current = splitTitle(selectedVariant.title);
+
+  const handleOption = (i, value) => {
+    const want = [...current];
+    want[i] = value;
+    let best = null;
+    let bestScore = -1;
+    rows.forEach((r) => {
+      if (r.parts[i] !== value) return;
+      const score = r.parts.reduce(
+        (s, p, idx) => s + (p === want[idx] ? 1 : 0),
+        0,
+      );
+      if (score > bestScore) {
+        best = r;
+        bestScore = score;
+      }
+    });
+    if (best) onChange(product.id, best.v.id);
+  };
+
+  return (
+    <div
+      className={` ${classes || ""}`}
+      style={{
+        display: "flex",
+        gap: 4,
+        width: "100%",
+        flexWrap: "wrap",
+        justifyContent: "flex-end",
+      }}
+    >
+      {Array.from({ length: optionCount }, (_, i) => {
+        const values = [
+          ...new Set(rows.map((r) => r.parts[i]).filter(Boolean)),
+        ];
+        return (
+          <select
+            key={i}
+            className="cart-plus-upsell-item-variant-selector"
+            value={current[i] ?? ""}
+            onChange={(e) => handleOption(i, e.target.value)}
+            style={style}
+          >
+            {values.map((val) => (
+              <option key={val} value={val}>
+                {val}
+              </option>
+            ))}
+          </select>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Upsells({
   upsellsSettings,
   designSettings,
@@ -362,6 +450,7 @@ export default function Upsells({
         /\{\{saved_amount\}\}/gi,
         `${currency}${discount.saved.toFixed(2)}`,
       );
+    const hasVariantSelect = product.variants.length > 1;
 
     return (
       <div
@@ -370,7 +459,6 @@ export default function Upsells({
           background:
             backgroundToCss(cardBackground) || designSettings.accentColor,
           ...(vertical ? { padding: 9 } : {}),
-          // Radius setting rounds the product images only, not the card
           border: `1px solid ${cardBorder}`,
           ...(vertical
             ? {
@@ -509,9 +597,20 @@ export default function Upsells({
           </div>
         </div>
         <div
-          className="cart-plus-internal-component-upsell-tile__variant-row cart-plus-public-component-upsell-tile__variant-row"
+          className={`cart-plus-internal-component-upsell-tile__variant-row cart-plus-public-component-upsell-tile__variant-row ${
+            hasVariantSelect ? "" : "cart-plus-no-variant"
+          }`}
           style={{
             color: primary,
+            ...(!hasVariantSelect
+              ? {
+                  minHeight: 0,
+                  height: "auto",
+                  marginTop: 0,
+                  paddingTop: 0,
+                  gap: 0,
+                }
+              : {}),
             ...(vertical
               ? {
                   display: "flex",
@@ -524,18 +623,12 @@ export default function Upsells({
           }}
         >
           {product.variants.length > 1 && (
-            <select
-              className="cart-plus-upsell-item-variant-selector"
-              value={selectedVariant.id}
-              onChange={(e) => handleVariantChange(product.id, e.target.value)}
+            <VariantSelects
+              product={product}
+              selectedVariant={selectedVariant}
+              onChange={handleVariantChange}
               style={{ color: primary }}
-            >
-              {product.variants.map((variant) => (
-                <option key={variant.id} value={variant.id}>
-                  {variant.title}
-                </option>
-              ))}
-            </select>
+            />
           )}
 
           {trigger === "checkbox" && (
@@ -679,7 +772,6 @@ export default function Upsells({
           display: "flex",
           flexDirection: "column",
           gap: 6,
-          zIndex: 1,
           padding: 6,
           boxSizing: "border-box",
           background:
@@ -695,36 +787,47 @@ export default function Upsells({
             : {}),
         }}
       >
-        {title && (
-          <div
-            className="cart-plus-internal-style__title-large cart-plus-upsells-title"
-            style={{ color: primary, textAlign: "left", flexShrink: 0 }}
-          >
-            {titleIcon && (
-              <span
-                style={{
-                  display: "inline-flex",
-                  verticalAlign: "middle",
-                  marginRight: 6,
-                }}
-              >
-                <LibraryIcon
-                  value={titleIcon}
-                  size={18}
-                  color={upsellsSettings.iconColor || undefined}
-                />
-              </span>
-            )}
-            <p
-              dangerouslySetInnerHTML={{ __html: title }}
-              style={{ display: "inline" }}
-            />
-          </div>
-        )}
+        <div
+          className="cart-plus-upsells-side-panel-upsells"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            position: "relative",
+            zIndex: 99,
+          }}
+        >
+          {title && (
+            <div
+              className="cart-plus-internal-style__title-large cart-plus-upsells-title"
+              style={{ color: primary, textAlign: "left", flexShrink: 0 }}
+            >
+              {titleIcon && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    verticalAlign: "middle",
+                    marginRight: 6,
+                  }}
+                >
+                  <LibraryIcon
+                    value={titleIcon}
+                    size={18}
+                    color={upsellsSettings.iconColor || undefined}
+                  />
+                </span>
+              )}
+              <p
+                dangerouslySetInnerHTML={{ __html: title }}
+                style={{ display: "inline" }}
+              />
+            </div>
+          )}
 
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} vertical />
-        ))}
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} vertical />
+          ))}
+        </div>
       </div>
     );
   }
@@ -1140,23 +1243,47 @@ export default function Upsells({
                 </div>
 
                 {product.variants.length > 1 && (
-                  <div
-                    className="  cart-plus-internal-component-upsell-tile__variant-row upsell"
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      width: "100%",
-                      margin: 0,
-                      padding: 0,
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <select
+                  // <div
+                  //   className="  cart-plus-internal-component-upsell-tile__variant-row upsell"
+                  //   style={{
+                  //     display: "flex",
+                  //     justifyContent: "center",
+                  //     width: "100%",
+                  //     margin: 0,
+                  //     padding: 0,
+                  //     boxSizing: "border-box",
+                  //   }}
+                  // >
+                  //   <select
+                  //     className="cart-plus-upsell-item-variant-selector"
+                  //     value={v.id}
+                  //     onChange={(e) =>
+                  //       handleVariantChange(product.id, e.target.value)
+                  //     }
+                  //     style={{
+                  //       width: "100%",
+                  //       margin: 0,
+                  //       textAlign: "center",
+                  //       textAlignLast: "center",
+                  //       fontSize: 11,
+                  //       color: primary,
+                  //       minWidth: 0,
+                  //     }}
+                  //   >
+                  //     {product.variants.map((variant) => (
+                  //       <option key={variant.id} value={variant.id}>
+                  //         {variant.title}
+                  //       </option>
+                  //     ))}
+                  //   </select>
+                  // </div>
+                  <div className="cart-plus-internal-component-upsell-tile__variant-row upsell">
+                    <VariantSelects
+                      product={product}
+                      selectedVariant={v}
+                      classes={"cart-plus-upsell-item-variant-selector-compact"}
+                      onChange={handleVariantChange}
                       className="cart-plus-upsell-item-variant-selector"
-                      value={v.id}
-                      onChange={(e) =>
-                        handleVariantChange(product.id, e.target.value)
-                      }
                       style={{
                         width: "100%",
                         margin: 0,
@@ -1166,13 +1293,7 @@ export default function Upsells({
                         color: primary,
                         minWidth: 0,
                       }}
-                    >
-                      {product.variants.map((variant) => (
-                        <option key={variant.id} value={variant.id}>
-                          {variant.title}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                 )}
               </div>

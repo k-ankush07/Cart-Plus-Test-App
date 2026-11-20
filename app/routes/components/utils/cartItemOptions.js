@@ -5,6 +5,8 @@ export const CART_ITEM_DEFAULTS = {
   showQuantityError: false,
   quantityErrorMessage:
     "Sorry, the available quantity for this product has been reached.",
+  showtextLimit:false,
+  textLimit:40,
   showCompareAt: true,
   showDiscountTag: true,
   showSavings: null, // null = follow cartSettings.showSavingsBelowPrices

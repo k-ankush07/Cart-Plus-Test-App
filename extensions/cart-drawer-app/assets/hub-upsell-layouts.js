@@ -244,12 +244,16 @@ window.cartPlusRemoveSidePanel = function (blockId) {
   document.getElementById(`hub-upsell-side-${blockId}`)?.remove();
   // the cart goes back to its own spot once the panel is gone
   const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+  if (drawer) {
+    drawer._hubSidePanelRenderToken =
+      (drawer._hubSidePanelRenderToken || 0) + 1;
+  }
   drawer?.classList.remove("hub-side-shifted");
   drawer?.classList.remove("hub-side-panel-right");
 };
 
 // cards stacked in a strip beside the cart, with the Cross-sell title on top (same as the editor)
-window.cartPlusRenderSidePanel = function (blockId, products, settings) {
+window.cartPlusRenderSidePanel = async function (blockId, products, settings) {
   const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
   if (!drawer) return;
 
@@ -258,37 +262,41 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
     return;
   }
 
+  const renderToken = (drawer._hubSidePanelRenderToken || 0) + 1;
+  drawer._hubSidePanelRenderToken = renderToken;
   const { ds, u, primary } = cartPlusUpsellColors();
   const cfg = settings || u;
-  const cards = products
-    .map((p) =>
-      hubUtils.getProductCardHTML(p, {
-        ...(settings || window.__HUB_ACTIVE_CART__?.upsellsSettings || {}),
-        showReviews: (settings || window.__HUB_ACTIVE_CART__?.upsellsSettings)
-          ?.showReviews,
-        upsellSettings: settings,
-        upsellLayout: "side",
-      }),
-    )
-    .join("");
+  const buildPanelContent = (panelProducts) => {
+    const cards = panelProducts
+      .map((p) =>
+        hubUtils.getProductCardHTML(p, {
+          ...(settings || window.__HUB_ACTIVE_CART__?.upsellsSettings || {}),
+          showReviews: (settings || window.__HUB_ACTIVE_CART__?.upsellsSettings)
+            ?.showReviews,
+          upsellSettings: settings,
+          upsellLayout: "side",
+        }),
+      )
+      .join("");
 
-  // title + icon, like the other layouts
-  const titleIcon =
-    cfg.icon === undefined ? { type: "icon", name: "star" } : cfg.icon;
-  const iconHtml = titleIcon
-    ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, cfg.iconColor || undefined) || ""}</span>`
-    : "";
-  const titleHtml = cfg.title
-    ? `<div class="hub-side-title upcart-internal-style__title-large" style="color:${primary};text-align:left;flex-shrink:0;font-weight:450;font-size:14px;">${iconHtml}${cfg.title}</div>`
-    : "";
-  const html = titleHtml + cards;
+    const titleIcon =
+      cfg.icon === undefined ? { type: "icon", name: "star" } : cfg.icon;
+    const iconHtml = titleIcon
+      ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, cfg.iconColor || undefined) || ""}</span>`
+      : "";
+    const titleHtml = cfg.title
+      ? `<div class="hub-side-title upcart-internal-style__title-large" style="color:${primary};text-align:left;flex-shrink:0;font-weight:450;font-size:14px;">${iconHtml}${cfg.title}</div>`
+      : "";
+    return { html: titleHtml + cards, hasCards: !!cards.trim() };
+  };
+  const initialContent = buildPanelContent(products);
+  const html = initialContent.html;
 
   let panel = document.getElementById(`hub-upsell-side-${blockId}`);
-  if (!cards.trim()) {
+  if (!initialContent.hasCards) {
     window.cartPlusRemoveSidePanel(blockId);
     return;
   }
-  const signature = `${cfg.sidePanelPosition || "left"}:${html}`;
   if (!panel) {
     panel = document.createElement("div");
     panel.id = `hub-upsell-side-${blockId}`;
@@ -318,8 +326,9 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
   } else {
     panel.style.removeProperty("--cart-custom-font");
   }
-  if (panel.dataset.sig === signature) return;
-  panel.dataset.sig = signature;
+  if (panel.previousElementSibling !== drawer) {
+    drawer.insertAdjacentElement("afterend", panel);
+  }
 
   const bodyBg =
     window.cartPlusBgCss(
@@ -370,11 +379,39 @@ window.cartPlusRenderSidePanel = function (blockId, products, settings) {
   );
   panel.style.height = floating ? "calc(100% - 32px)" : "100%";
   panel.style.background = bodyBg;
-  panel.innerHTML = html;
-  hubUtils.applyRatings(panel);
-  panel
-    .querySelectorAll(".hub-add-btn")
-    .forEach((b) => b.classList.add("hub-side-add"));
+  const renderPanelHTML = (nextHTML) => {
+    const nextSignature = `${cfg.sidePanelPosition || "left"}:${nextHTML}`;
+    if (panel.dataset.sig === nextSignature) return;
+    panel.dataset.sig = nextSignature;
+    panel.innerHTML = nextHTML;
+    hubUtils.applyRatings(panel);
+    panel
+      .querySelectorAll(".hub-add-btn")
+      .forEach((b) => b.classList.add("hub-side-add"));
+  };
+  renderPanelHTML(html);
+
+  let liveProducts;
+  try {
+    liveProducts = await Promise.all(
+      products.map((product) => hubUtils.getLiveProduct(product)),
+    );
+  } catch (error) {
+    console.error("[CartPlus] Failed to load live side-panel products:", error);
+    return;
+  }
+  if (
+    !drawer.isConnected ||
+    drawer._hubSidePanelRenderToken !== renderToken
+  ) {
+    return;
+  }
+  const liveContent = buildPanelContent(liveProducts);
+  if (!liveContent.hasCards) {
+    window.cartPlusRemoveSidePanel(blockId);
+    return;
+  }
+  renderPanelHTML(liveContent.html);
 };
 
 if (!window._cartPlusSideBound) {
@@ -470,7 +507,7 @@ window.cartPlusRedrawUpsells = async function () {
   if (layout === "side") {
     container.innerHTML = "";
     container.style.display = "none";
-    window.cartPlusRenderSidePanel(blockId, cached, settings);
+    await window.cartPlusRenderSidePanel(blockId, cached, settings);
     return;
   }
 

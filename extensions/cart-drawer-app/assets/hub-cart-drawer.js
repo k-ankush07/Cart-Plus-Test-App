@@ -10,7 +10,7 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-const apiUrl = "http://localhost:7002";
+const apiUrl = "https://arts-widespread-solving-beta.trycloudflare.com";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");
@@ -295,6 +295,7 @@ function initCartDrawerAfterData() {
       });
   }
 
+  window.cartPlusRemoveSidePanel?.(blockId);
   document.getElementById(`hub-cart-drawer-${blockId}`)?.remove();
   document.getElementById(`hub-cart-bg-${blockId}`)?.remove();
   window.injectCartHTML(blockId, root);

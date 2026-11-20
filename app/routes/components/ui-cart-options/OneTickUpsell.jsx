@@ -71,6 +71,8 @@ const PSquare = ({ size = 14, color = P_GRAY, radius = 3 }) => (
   />
 );
 
+const getProductKey = (selected) => selected?.items?.products?.[0] || null;
+
 /* Layout previews */
 const RowPreview = () => (
   <div
@@ -293,6 +295,14 @@ export default function OneTickUpsell({
     handlePrev: () => {},
     handleNext: () => {},
   });
+  const takenKeys = oneTick.offers
+    .filter((o) => o.id !== pickerFor && o.mode === "manual")
+    .map((o) => getProductKey(o.selected))
+    .filter(Boolean);
+
+  const pickedKey = getProductKey(picked);
+  const isDuplicate = !!pickedKey && takenKeys.includes(pickedKey);
+
   const pickerOffer = oneTick.offers.find((o) => o.id === pickerFor);
   const [openOffers, setOpenOffers] = useState({});
 
@@ -675,69 +685,72 @@ export default function OneTickUpsell({
                         )}
                         {offerReady && (
                           <>
-                        <Divider />
+                            <Divider />
 
-                        {/* discount */}
-                        <InlineGrid columns={2} gap="300">
-                          <Select
-                            label="Discount"
-                            options={[
-                              { label: "No discount", value: "none" },
-                              { label: "Percentage off", value: "percentage" },
-                              { label: "Amount off", value: "amount" },
-                            ]}
-                            value={offer.discountType}
-                            onChange={(discountType) =>
-                              updateOffer(offer.id, { discountType })
-                            }
-                          />
-                          <TextField
-                            label="Value"
-                            type="number"
-                            min={0}
-                            value={String(offer.discountValue)}
-                            disabled={offer.discountType === "none"}
-                            autoComplete="off"
-                            suffix={
-                              offer.discountType === "percentage"
-                                ? "%"
-                                : undefined
-                            }
-                            onChange={(v) =>
-                              updateOffer(offer.id, {
-                                discountValue: Number(v) || 0,
-                              })
-                            }
-                          />
-                        </InlineGrid>
-
-                        <Divider />
-
-                        {/* label */}
-                        <BlockStack gap="200">
-                          <Checkbox
-                            label="Show label"
-                            checked={offer.showLabel}
-                            onChange={(showLabel) =>
-                              updateOffer(offer.id, { showLabel })
-                            }
-                          />
-                          {offer.showLabel && (
-                            <>
-                              <RichTextEditor
-                                value={offer.label}
-                                onChange={(label) =>
-                                  updateOffer(offer.id, { label })
+                            {/* discount */}
+                            <InlineGrid columns={2} gap="300">
+                              <Select
+                                label="Discount"
+                                options={[
+                                  { label: "No discount", value: "none" },
+                                  {
+                                    label: "Percentage off",
+                                    value: "percentage",
+                                  },
+                                  { label: "Amount off", value: "amount" },
+                                ]}
+                                value={offer.discountType}
+                                onChange={(discountType) =>
+                                  updateOffer(offer.id, { discountType })
                                 }
-                                maxLength={25}
                               />
-                              <Text as="p" variant="bodySm" tone="subdued">
-                                Use {"{{saved_percentage}}"} or{" "}
-                                {"{{saved_amount}}"}.
-                              </Text>
-                            </>
-                          )}
-                        </BlockStack>
+                              <TextField
+                                label="Value"
+                                type="number"
+                                min={0}
+                                value={String(offer.discountValue)}
+                                disabled={offer.discountType === "none"}
+                                autoComplete="off"
+                                suffix={
+                                  offer.discountType === "percentage"
+                                    ? "%"
+                                    : undefined
+                                }
+                                onChange={(v) =>
+                                  updateOffer(offer.id, {
+                                    discountValue: Number(v) || 0,
+                                  })
+                                }
+                              />
+                            </InlineGrid>
+
+                            <Divider />
+
+                            {/* label */}
+                            <BlockStack gap="200">
+                              <Checkbox
+                                label="Show label"
+                                checked={offer.showLabel}
+                                onChange={(showLabel) =>
+                                  updateOffer(offer.id, { showLabel })
+                                }
+                              />
+                              {offer.showLabel && (
+                                <>
+                                  <RichTextEditor
+                                    value={offer.label}
+                                    onChange={(label) =>
+                                      updateOffer(offer.id, { label })
+                                    }
+                                    maxLength={25}
+                                  />
+                                  <Text as="p" variant="bodySm" tone="subdued">
+                                    Use {"{{saved_percentage}}"} or{" "}
+                                    {"{{saved_amount}}"}.
+                                  </Text>
+                                </>
+                              )}
+                            </BlockStack>
                           </>
                         )}
                       </BlockStack>
@@ -881,6 +894,7 @@ export default function OneTickUpsell({
               singleProduct
               showCollections={false}
               includeProductData
+              disabledProductKeys={takenKeys}
               onSelect={(data) => setPicked(data)}
               initialSelected={pickerOffer.selected}
               onPaginationChange={(p) => setPagination(p)}

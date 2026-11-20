@@ -3,6 +3,7 @@
 window.CART_PLUS_TEXT_DEFAULTS = {
   free: "Free",
 };
+
 window.cartPlusText = function (key, vars) {
   const custom = window.__HUB_ACTIVE_CART__?.designSettings?.texts?.[key];
   let text =
@@ -39,8 +40,8 @@ window.cartPlusSaveHtml = function (prefix, amount) {
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
   );
 };
-
 window.hubUtils = {
+  
   cartPlusApplyOfferDiscount(offer, cents) {
     const base = Math.max(0, Number(cents) || 0);
     const value = Math.max(0, Number(offer?.discountValue) || 0);
@@ -57,6 +58,91 @@ window.hubUtils = {
       saved,
       percent: base ? Math.round((saved / base) * 100) : 0,
     };
+  },
+    _escHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    })[c]);
+  },
+
+  splitVariantTitle(t) {
+    return String(t || "").split(/\s*\/\s*/).map((s) => s.trim());
+  },
+  getVariantSelectsHTML(variants, variantOptions, primary) {
+    const rows = variants.map((variant) => {
+      const optionValues = [
+        variant.option1,
+        variant.option2,
+        variant.option3,
+      ];
+      if (!optionValues.some((value) => value != null && value !== "")) {
+        return hubUtils.splitVariantTitle(variant.title);
+      }
+
+      const values = optionValues.map((value) => String(value ?? "").trim());
+      while (values.length && !values[values.length - 1]) values.pop();
+      return values;
+    });
+    const optionCount = Math.max(0, ...rows.map((row) => row.length));
+    if (optionCount <= 1) {
+      return `<select class="hub-variant-select cart-plus-upsell-option-select cart-plus-upsell-option-select-0 cart-plus-public-component-upsell-tile__variant-row" style="color:${primary};">${variantOptions}</select>`;
+    }
+
+    const current = rows[0];
+    const visible = Array.from({ length: optionCount }, (_, i) => {
+      const values = [...new Set(rows.map((r) => r[i]).filter(Boolean))];
+      return `<select class="hub-option-select cart-plus-upsell-item-variant-selector cart-plus-upsell-option-select cart-plus-upsell-option-select-${i}" data-index="${i}" style="color:${primary};">
+        ${values
+          .map(
+            (val) =>
+              `<option value="${hubUtils._escHtml(val)}" ${val === current[i] ? "selected" : ""}>${hubUtils._escHtml(val)}</option>`,
+          )
+          .join("")}
+      </select>`;
+    }).join("");
+
+    return `<div class="cart-plus-variant-selects cart-plus-upsell-option" style="display:flex;gap:4px;width:100%;flex-wrap:wrap;">
+      <select class="hub-variant-select" style="display:none;" tabindex="-1" aria-hidden="true">${variantOptions}</select>
+      ${visible}
+    </div>`;
+  },
+
+  initVariantSelects() {
+    if (window._hubVariantSelectsInit) return;
+    window._hubVariantSelectsInit = true;
+
+    document.addEventListener("change", (e) => {
+      const sel = e.target.closest?.(".hub-option-select");
+      if (!sel) return;
+
+      const wrap = sel.closest(".cart-plus-variant-selects");
+      const hidden = wrap?.querySelector(".hub-variant-select");
+      if (!hidden) return;
+
+      const selects = [...wrap.querySelectorAll(".hub-option-select")];
+      const want = selects.map((s) => s.value);
+      const idx = Number(sel.dataset.index);
+
+      let best = null;
+      let bestScore = -1;
+      [...hidden.options].forEach((opt) => {
+        const parts = hubUtils.splitVariantTitle(opt.textContent);
+        if (parts[idx] !== sel.value) return;
+        const score = parts.reduce((s, p, i) => s + (p === want[i] ? 1 : 0), 0);
+        if (score > bestScore) {
+          best = { opt, parts };
+          bestScore = score;
+        }
+      });
+      if (!best) return;
+
+      selects.forEach((s, i) => {
+        if (best.parts[i] !== undefined) s.value = best.parts[i];
+      });
+
+      hidden.value = best.opt.value;
+      hidden.dispatchEvent(new Event("change", { bubbles: true }));
+    });
   },
   authHeaders(extra = {}) {
     const API_KEY =
@@ -302,6 +388,7 @@ window.hubUtils = {
   },
 
   getProductCardHTML(product, settings = {}) {
+    hubUtils.initVariantSelects();
     if (
       !settings.showIfAlreadyInCart &&
       window._hubCartProductIds?.has(String(product.id))
@@ -446,16 +533,11 @@ window.hubUtils = {
           ${offerLabel}
         </div>
       </div>
-      <div class="upcart-internal-component-upsell-tile__variant-row">
-           ${
-             hasMultipleVariants
-               ? `<select class="hub-variant-select cart-plus-public-component-upsell-tile__variant-row" style="color:${primary};">
-                     ${variantOptions}
-                   </select>`
-               : ""
-           }
-          ${trigger}
-        </div>
+
+        <div class="upcart-internal-component-upsell-tile__variant-row ${hasMultipleVariants ? "" : "cart-plus-no-variant"}">
+        ${hasMultipleVariants ? hubUtils.getVariantSelectsHTML(variants, variantOptions, primary) : ""}
+        ${trigger}
+      </div>
     </div>
   `;
   },
@@ -1587,4 +1669,42 @@ hubUtils.getCheckoutButtonText = function (cartSettings, totalFormatted) {
   }
   const rawText = cartSettings?.checkoutButtonText || "Proceed to checkout";
   return rawText.replace("{{total_price}}", totalFormatted || "");
+};
+
+hubUtils.getLiveProduct = async function (p) {
+  if (!p) return p;
+
+  if (!p.handle && p.id) {
+    const numId = String(p.id).replace(/\D/g, "");
+    window._hubHandleById = window._hubHandleById || {};
+    if (!Object.keys(window._hubHandleById).length) {
+      const all = await hubUtils.getAllRecommendations();
+      all.forEach((x) => (window._hubHandleById[String(x.id)] = x.handle));
+    }
+    p = { ...p, handle: window._hubHandleById[numId] };
+  }
+
+  if (!p.handle) return p;
+
+  window._hubProductJsonCache = window._hubProductJsonCache || {};
+  window._hubProductJsonCache[p.handle] ||= fetch(`/products/${p.handle}.js`).then((r) => r.json());
+  try {
+    const live = await window._hubProductJsonCache[p.handle];
+    return {
+      ...p,
+      id: live.id,
+      handle: live.handle,
+      title: live.title,
+      featured_image: live.featured_image,
+      images: (live.images || []).map((src) => ({ src })),
+      variants: live.variants.map((v) => ({
+        ...v,
+        price: v.price / 100,
+        compare_at_price: v.compare_at_price ? v.compare_at_price / 100 : 0,
+        featured_image: v.featured_image ? { src: v.featured_image.src } : null,
+      })),
+    };
+  } catch {
+    return p;
+  }
 };

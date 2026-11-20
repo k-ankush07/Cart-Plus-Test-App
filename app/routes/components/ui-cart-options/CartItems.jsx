@@ -300,6 +300,22 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
               autoComplete="off"
             />
           )}
+           <Checkbox
+            label="Show text limit"
+            checked={opts.showtextLimit}
+            onChange={(v) => setOpt({ showtextLimit: v })}
+          />
+          {opts.showtextLimit && (
+            <RangeSlider
+              label="Text Limit"
+              min={10}
+              max={100}
+              output
+              value={opts.textLimit}
+              suffix={<Text as="span">{opts.textLimit}</Text>}
+              onChange={(textLimit) => setOpt({ textLimit })}
+            />
+          )}
           <Checkbox
             label="Show compare-at price"
             checked={opts.showCompareAt}

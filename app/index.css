@@ -201,9 +201,9 @@ body.library-modal-open .Polaris-Modal-Dialog__Container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    box-shadow:
-        -8px 0 32px rgba(0, 0, 0, 0.15),
-        0 8px 32px rgba(0, 0, 0, 0.15);
+   box-shadow:
+  -4px 0 20px rgba(0, 0, 0, 0.08),
+  0 4px 20px rgba(0, 0, 0, 0.08);
     z-index: 1;
 }
 
@@ -810,17 +810,23 @@ h3.cart-plus-compact-heading {
 
 .cart-plus-internal-component-upsell-tile__variant-row {
     display: flex;
-    align-items: center;
     gap: 10px;
     flex: 0 0 auto;
     justify-content: right;
     margin-top: 6px;
 }
 
+.cart-plus-upsell-item-variant-selector-compact {
+    flex-direction: column;
+}
+
+.cart-plus-upsell-item-variant-selector-compact select.cart-plus-upsell-item-variant-selector {
+    max-width: 100%;
+}
+
 .cart-plus-internal-component-upsell-tile__variant-row select {
     flex: 1;
-    min-width: 100px;
-    max-width: 140px;
+    max-width: 100px;
     height: 31px;
     padding: 6px;
     border: 1px solid #ccc;

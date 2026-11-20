@@ -190,7 +190,7 @@ window.cartPlusRenderEmptyUpsell = async function (blockId) {
     // Side panel: nothing inside the empty cart, the strip sits beside it
     if (layout === "side") {
       delete host.dataset.sig;
-      window.cartPlusRenderSidePanel?.(blockId, products, s);
+      await window.cartPlusRenderSidePanel?.(blockId, products, s);
       return;
     }
     window.cartPlusRemoveSidePanel?.(blockId);

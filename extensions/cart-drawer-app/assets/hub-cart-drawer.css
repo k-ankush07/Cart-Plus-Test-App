@@ -1436,16 +1436,13 @@ span.hub-total-arrow svg {
 
 .upcart-internal-component-upsell-tile__variant-row {
   display: flex;
-  align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
   justify-content: right;
 }
 
 .upcart-internal-component-upsell-tile__variant-row select {
   flex: 1;
-  min-width: 100px;
-  max-width: 140px;
+  max-width: 100px;
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -1453,6 +1450,18 @@ span.hub-total-arrow svg {
   font-size: 12px;
   outline: none;
   box-shadow: none;
+}
+
+.cart-plus-variant-selects.cart-plus-upsell-option {
+    justify-content: right !important;
+}
+
+.hub-upsell-side-panel .cart-plus-variant-selects.cart-plus-upsell-option {
+    flex-wrap: wrap;
+}
+
+.hub-upsell-side-panel .upcart-internal-component-upsell-tile__variant-row{
+    flex-wrap: wrap;
 }
 
 .upcart-internal-component-upsell-tile__variant-row button {
@@ -2013,26 +2022,26 @@ display: flex;
   font-family: var(--cart-custom-font, "Poppins"), sans-serif !important;
 }
 
-.cart-app--customFont,
-.cart-app--customFont h1,
-.cart-app--customFont h2,
-.cart-app--customFont h3,
-.cart-app--customFont h4,
-.cart-app--customFont h5,
-.cart-app--customFont h6,
-.cart-app--customFont .h0,
-.cart-app--customFont .h1,
-.cart-app--customFont .h2,
-.cart-app--customFont .h3,
-.cart-app--customFont .h4,
-.cart-app--customFont .h5,
-.cart-app--customFont p,
-.cart-app--customFont button,
-.cart-app--customFont a,
-.cart-app--customFont span,
-.cart-app--customFont input,
-.cart-app--customFont textarea,
-.cart-app--customFont select {
+.hub-cart-drawer.cart-app--customFont,
+.hub-cart-drawer.cart-app--customFont h1,
+.hub-cart-drawer.cart-app--customFont h2,
+.hub-cart-drawer.cart-app--customFont h3,
+.hub-cart-drawer.cart-app--customFont h4,
+.hub-cart-drawer.cart-app--customFont h5,
+.hub-cart-drawer.cart-app--customFont h6,
+.hub-cart-drawer.cart-app--customFont .h0,
+.hub-cart-drawer.cart-app--customFont .h1,
+.hub-cart-drawer.cart-app--customFont .h2,
+.hub-cart-drawer.cart-app--customFont .h3,
+.hub-cart-drawer.cart-app--customFont .h4,
+.hub-cart-drawer.cart-app--customFont .h5,
+.hub-cart-drawer.cart-app--customFont p,
+.hub-cart-drawer.cart-app--customFont button,
+.hub-cart-drawer.cart-app--customFont a,
+.hub-cart-drawer.cart-app--customFont span,
+.hub-cart-drawer.cart-app--customFont input,
+.hub-cart-drawer.cart-app--customFont textarea,
+.hub-cart-drawer.cart-app--customFont select {
   margin: 0;
 }
 
@@ -3827,4 +3836,11 @@ select.hub-compact-variant {
   grid-row: 2;
   align-self: end;
   margin-top: 6px;
+}
+
+.hub-cart-drawer.cart-app select:focus,
+.hub-cart-drawer.cart-app select:focus,
+.hub-cart-drawer.cart-app select:focus-visible {
+  outline: none;
+  box-shadow: none;
 }

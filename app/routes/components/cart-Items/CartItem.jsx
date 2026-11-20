@@ -347,14 +347,27 @@ function ClassicLayout({
                 overflowWrap: "break-word",
               }}
             >
-              <a
-                href="#"
-                className="cart-plus-product-title-link"
-                onClick={(e) => e.preventDefault()}
-                style={{ color: textColor, textDecoration: "none" }}
+              <div
+                className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title"
+                style={{ color: textColor, fontSize: "13px", fontWeight: 500 }}
               >
-                {item.name}
-              </a>
+                {item.showtextLimit &&
+                item.textLimit > 0 &&
+                item.name.length > item.textLimit ? (
+                  <span title={item.name}>
+                    {item.name.substring(0, item.textLimit)}...
+                  </span>
+                ) : (
+                  <a
+                    href="#"
+                    className="cart-plus-product-title-link"
+                    onClick={(e) => e.preventDefault()}
+                    style={{ color: textColor, textDecoration: "none" }}
+                  >
+                    {item.name}
+                  </a>
+                )}
+              </div>
             </div>
             {item.variantTitle && (
               <div
@@ -441,7 +454,10 @@ function ClassicLayout({
                   borderRadius: "14px",
                 }}
               >
-                {savingsLabel(cartSettings.savingsText, money(currency, item.compareAt - item.price))}
+                {savingsLabel(
+                  cartSettings.savingsText,
+                  money(currency, item.compareAt - item.price),
+                )}
               </div>
             )}
             <DiscountBadge
@@ -521,14 +537,22 @@ function SubscriptionLayout({
                 className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title"
                 style={{ color: textColor, fontSize: "13px", fontWeight: 500 }}
               >
-                <a
-                  href="#"
-                  className="cart-plus-product-title-link"
-                  onClick={(e) => e.preventDefault()}
-                  style={{ color: textColor, textDecoration: "none" }}
-                >
-                  {item.name}
-                </a>
+                {item.showtextLimit &&
+                item.textLimit > 0 &&
+                item.name.length > item.textLimit ? (
+                  <span title={item.name}>
+                    {item.name.substring(0, item.textLimit)}...
+                  </span>
+                ) : (
+                  <a
+                    href="#"
+                    className="cart-plus-product-title-link"
+                    onClick={(e) => e.preventDefault()}
+                    style={{ color: textColor, textDecoration: "none" }}
+                  >
+                    {item.name}
+                  </a>
+                )}
               </div>
               {item.variantTitle && (
                 <div
@@ -609,7 +633,10 @@ function SubscriptionLayout({
                   lineHeight: "18px",
                 }}
               >
-                {savingsLabel(cartSettings.savingsText, money(currency, item.compareAt - item.price))}
+                {savingsLabel(
+                  cartSettings.savingsText,
+                  money(currency, item.compareAt - item.price),
+                )}
               </span>
             )}
           </div>
@@ -698,7 +725,20 @@ function ModernLayout({
               className="cart-app-item__title cart-plus-product-title cart-plus-bundle-item-product-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title"
               style={{ color: textColor, fontSize: "13px", fontWeight: 500 }}
             >
-              <span className="cart-plus-product-title-link">{item.name}</span>
+              {item.showtextLimit &&
+              item.textLimit > 0 &&
+              item.name.length > item.textLimit ? (
+                <span
+                  className="cart-plus-product-title-link"
+                  title={item.name}
+                >
+                  {item.name.substring(0, item.textLimit)}...
+                </span>
+              ) : (
+                <span className="cart-plus-product-title-link">
+                  {item.name}
+                </span>
+              )}
             </div>
             {item.variantTitle && (
               <div
@@ -751,7 +791,10 @@ function ModernLayout({
                     lineHeight: "18px",
                   }}
                 >
-                  {savingsLabel(cartSettings.savingsText, money(currency, item.compareAt - item.price))}
+                  {savingsLabel(
+                    cartSettings.savingsText,
+                    money(currency, item.compareAt - item.price),
+                  )}
                 </span>
               )}
             </div>
@@ -834,7 +877,8 @@ function CartItemRow({
   const layout = cartSettings.cartItemLayout || "classic";
   const deleteBehavior = cartSettings.deleteBehavior || "undo";
   const removedItemOpacity =
-    Math.min(100, Math.max(10, Number(cartSettings.removedItemOpacity) || 40)) / 100;
+    Math.min(100, Math.max(10, Number(cartSettings.removedItemOpacity) || 40)) /
+    100;
 
   const undoTimerRef = useRef(null);
 
@@ -879,6 +923,8 @@ function CartItemRow({
     hasDiscount,
     savePct: hasDiscount ? Math.round((1 - price / compareAt) * 100) : 0,
     variantTitle: opts.showVariants ? variantTitle : "",
+    textLimit: opts.textLimit || 0,
+    showtextLimit: opts.showtextLimit || false,
   };
 
   // image size / radius from the "Styles" card (unset = the layout's own size)
@@ -1069,27 +1115,27 @@ export default function CartItem({
 
   if (loading && !rows.length) return <CartItemSkeleton />;
 
-return (
-  <div
-    style={{
-      padding: "12px 16px",
-      display: "flex",
-      flexDirection: "column",
-      gap: `${getCartItemOptions(rest.cartSettings).itemGap ?? 15}px`,
-    }}
-  >
-    <style>{`@keyframes cpRowIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}`}</style>
-    {rows.map((r) => (
-      <div key={r.key} style={{ animation: "cpRowIn .35s ease" }}>
-        <CartItemRow
-          product={r.product}
-          qty={qtys[r.key] ?? 1}
-          setQty={makeSetQty(r.key)}
-          onRemove={() => onRemovePreviewProduct?.(r.productId, r.variantId)}
-          {...rest}
-        />
-      </div>
-    ))}
-  </div>
-);
+  return (
+    <div
+      style={{
+        padding: "12px 16px",
+        display: "flex",
+        flexDirection: "column",
+        gap: `${getCartItemOptions(rest.cartSettings).itemGap ?? 15}px`,
+      }}
+    >
+      <style>{`@keyframes cpRowIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}`}</style>
+      {rows.map((r) => (
+        <div key={r.key} style={{ animation: "cpRowIn .35s ease" }}>
+          <CartItemRow
+            product={r.product}
+            qty={qtys[r.key] ?? 1}
+            setQty={makeSetQty(r.key)}
+            onRemove={() => onRemovePreviewProduct?.(r.productId, r.variantId)}
+            {...rest}
+          />
+        </div>
+      ))}
+    </div>
+  );
 }

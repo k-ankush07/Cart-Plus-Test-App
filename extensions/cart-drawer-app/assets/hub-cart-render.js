@@ -971,7 +971,11 @@ if (savedEl) {
       );
       if (layout === "side") {
         upsellContainer.style.display = "none";
-        window.cartPlusRenderSidePanel?.(blockId, products, upsellSettings);
+        window
+          .cartPlusRenderSidePanel?.(blockId, products, upsellSettings)
+          .catch((error) =>
+            console.error("[CartPlus] Side-panel rendering failed:", error),
+          );
         upsellContainer.dataset.renderedHandles = handles;
         delete upsellContainer.dataset.renderingHandles;
         return;
@@ -1525,7 +1529,8 @@ if (savedEl) {
           : `<span class="hub-price">${hubUtils.formatMoney(effectiveUnitPrice)}</span>`;
 
         const hasCompare = effectiveCompare > 0;
-
+        const showtextLimit = itemOpts.showtextLimit || false;
+        const textLimit = itemOpts.textLimit || 0;
         const variantHtml =
           itemOpts.showVariants &&
           item.options_with_values &&
@@ -1584,6 +1589,8 @@ if (savedEl) {
           discountColor,
           iconColor,
           singleItemPrice: itemOpts.singleItemPrice,
+          showtextLimit,
+          textLimit
         };
 
         const layoutFn =
@@ -2044,7 +2051,11 @@ if (savedEl) {
           if (upLayout === "side" && upsellProducts.length > 0) {
             // Side panel: nothing inside the cart, the strip sits beside it (left / right as set in the editor)
             upsellContainer.style.display = "none";
-            window.cartPlusRenderSidePanel?.(blockId, upsellProducts, upsellSettings);
+            await window.cartPlusRenderSidePanel?.(
+              blockId,
+              upsellProducts,
+              upsellSettings,
+            );
           } else if (upsellProducts.length > 0) {
             window.cartPlusRemoveSidePanel?.(blockId);
             upsellContainer.style.display = ""; 

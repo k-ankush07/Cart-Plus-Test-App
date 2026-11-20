@@ -63,15 +63,31 @@ function cartPlusNormalizeProduct(p, pricesInCents) {
     "";
   return {
     id: cartPlusIdOf(p.id),
+    handle: p.handle,
     title: p.title,
     image: typeof image === "string" ? image : image?.src || "",
     variants: (p.variants || []).map((v) => ({
       id: cartPlusIdOf(v.id),
       title: v.title,
+      option1: v.option1,
+      option2: v.option2,
+      option3: v.option3,
       price: toCents(v.price),
-      image: v.featured_image?.src || "",
+      image: v.featured_image?.src || v.image?.src || v.image || "",
     })),
   };
+}
+
+function cartPlusOneTickOptionParts(variant) {
+  const optionValues = [variant.option1, variant.option2, variant.option3];
+  if (optionValues.some((value) => value != null && value !== "")) {
+    const values = optionValues.map((value) => String(value ?? "").trim());
+    while (values.length && !values[values.length - 1]) values.pop();
+    return values;
+  }
+  return String(variant.title || "")
+    .split(/\s*\/\s*/)
+    .map((value) => value.trim());
 }
 
 async function cartPlusLoadAllProducts() {
@@ -107,7 +123,7 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
   const auto = oneTick.offers.filter((o) => !manual.includes(o));
 
   if (manual.length) {
-    manual.forEach((offer) => {
+    await Promise.all(manual.map(async (offer) => {
       const wanted = offer.selected.items.variants.map(cartPlusIdOf);
       const savedProducts = offer.selected.items.productData || [];
       const savedProduct = savedProducts.find((product) =>
@@ -115,18 +131,12 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
           wanted.includes(cartPlusIdOf(variant.id)),
         ),
       );
-      if (savedProduct) {
-        const product = cartPlusNormalizeProduct(savedProduct, false);
-        const chosen = product.variants.filter((variant) =>
-          wanted.includes(cartPlusIdOf(variant.id)),
-        );
-        products[offer.id] = {
-          ...product,
-          variants: chosen.length ? chosen : product.variants,
-        };
+      if (savedProduct?.handle) {
+        const liveProduct = await hubUtils.getLiveProduct(savedProduct);
+        products[offer.id] = cartPlusNormalizeProduct(liveProduct, false);
         return;
       }
-    });
+    }));
 
     const unresolvedManual = manual.filter((offer) => !products[offer.id]);
     if (unresolvedManual.length) {
@@ -137,12 +147,7 @@ async function cartPlusLoadOfferProducts(oneTick, cart) {
           p.variants.some((v) => wanted.includes(v.id)),
         );
         if (!product) return;
-        // only the variants ticked in the picker
-        const chosen = product.variants.filter((v) => wanted.includes(v.id));
-        products[offer.id] = {
-          ...product,
-          variants: chosen.length ? chosen : product.variants,
-        };
+        products[offer.id] = product;
       });
     }
   }
@@ -211,6 +216,50 @@ function cartPlusOneTickTrigger(blockId, oneTick, offer, variantId) {
   return `<button type="button" class="cart-plus-onetick-btn" onclick="${call("true", ",this")}" style="width:100%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border:none;cursor:pointer;padding:6px 8px;border-radius:${oneTick.buttonRadius}px;font-size:${oneTick.buttonFontSize}px;background:${accent};color:${oneTick.buttonTextColor};">${oneTick.buttonLabel}</button>`;
 }
 
+function cartPlusOneTickVariantSelects(
+  blockId,
+  oneTick,
+  offer,
+  product,
+  variant,
+) {
+  if (product.variants.length < 2) return "";
+
+  const selectedParts = cartPlusOneTickOptionParts(variant);
+  const optionGroups = Math.max(
+    0,
+    ...product.variants.map((item) => cartPlusOneTickOptionParts(item).length),
+  );
+  const escape = hubUtils._escHtml;
+
+  return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(75px,1fr));gap:4px;width:100%;margin-top:4px;">
+    ${Array.from({ length: optionGroups }, (_, index) => {
+      const values = [
+        ...new Set(
+          product.variants
+            .map(cartPlusOneTickOptionParts)
+            .filter((parts) =>
+              selectedParts
+                .slice(0, index)
+                .every((selected, previous) => parts[previous] === selected),
+            )
+            .map((parts) => parts[index])
+            .filter(Boolean),
+        ),
+      ];
+
+      return `<select aria-label="Variant option ${index + 1}" onchange="cartPlusOneTickOption('${blockId}','${offer.id}',${index},this.value)" style="width:100%;min-width:0;box-sizing:border-box;font-size:12px;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:${oneTick.secondaryTextColor};">
+        ${values
+          .map(
+            (value) =>
+              `<option value="${escape(value)}"${value === selectedParts[index] ? " selected" : ""}>${escape(value)}</option>`,
+          )
+          .join("")}
+      </select>`;
+    }).join("")}
+  </div>`;
+}
+
 function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
   const cardBorder =
     window.__HUB_ACTIVE_CART__?.designSettings?.accentBorder ||
@@ -238,15 +287,13 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
     offer.showLabel && saved > 0
       ? `<div style="font-size:11px;color:${oneTick.secondaryTextColor};">${label}</div>`
       : "";
-  const select =
-    product.variants.length > 1
-      ? `<select onchange="cartPlusOneTickVariant('${blockId}','${offer.id}',this.value)" style="width:100%;font-size:12px;margin-top:4px;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:${oneTick.secondaryTextColor};">${product.variants
-          .map(
-            (v) =>
-              `<option value="${v.id}"${v.id === variant.id ? " selected" : ""}>${v.title}</option>`,
-          )
-          .join("")}</select>`
-      : "";
+  const select = cartPlusOneTickVariantSelects(
+    blockId,
+    oneTick,
+    offer,
+    product,
+    variant,
+  );
   const trigger = cartPlusOneTickTrigger(blockId, oneTick, offer, variant.id);
   const img = variant.image || product.image;
 
@@ -275,11 +322,10 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
         ${savingHtml}
       </div>
       <div style="margin-top:2px;">${price}</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;justify-content:right">
-        <div style="flex:1;min-width:0;">${select.replace("margin-top:4px;", "")}</div>
-        ${isRow ? `<div style="flex-shrink:0; display:flex">${trigger}</div>` : ""}
+      <div style="display:flex;flex-direction:row;align-items:center;gap:8px;margin-top:8px;">
+        <div style="flex:1;min-width:0;">${select}</div>
+        <div style="flex-shrink:0;">${trigger}</div>
       </div>
-      ${!isRow ? `<div style="margin-top:12px;">${trigger}</div>` : ""}
     </div>
   </div>`;
 }
@@ -373,6 +419,7 @@ window.cartPlusRenderOneTick = async function (blockId, cart) {
 
   const products = await cartPlusLoadOfferProducts(oneTick, cart);
   if (_at < (window._cartPlusOneTickAt || 0)) return; // a newer render started while loading
+  window._cartPlusOneTickProducts = products;
   const inCart = new Set(cart.items.map((i) => String(i.variant_id)));
   const cards = oneTick.offers
     .map((offer) => ({ offer, product: products[offer.id] }))
@@ -493,6 +540,36 @@ window.cartPlusOneTickVariant = function (blockId, offerId, variantId) {
   (window._cartPlusOneTickVariant ||= {})[offerId] = variantId;
   if (window._cartPlusOneTickCart)
     window.cartPlusRenderOneTick(blockId, window._cartPlusOneTickCart);
+};
+
+window.cartPlusOneTickOption = function (blockId, offerId, optionIndex, value) {
+  const product = window._cartPlusOneTickProducts?.[offerId];
+  if (!product) return;
+
+  const selectedId = window._cartPlusOneTickVariant?.[offerId];
+  const current =
+    product.variants.find((variant) => variant.id === selectedId) ||
+    product.variants[0];
+  if (!current) return;
+
+  const selectedParts = cartPlusOneTickOptionParts(current);
+  const candidates = product.variants.filter((variant) => {
+    const parts = cartPlusOneTickOptionParts(variant);
+    return (
+      parts[optionIndex] === value &&
+      selectedParts
+        .slice(0, optionIndex)
+        .every((selected, index) => parts[index] === selected)
+    );
+  });
+  const best =
+    candidates.find((candidate) =>
+      cartPlusOneTickOptionParts(candidate).every(
+        (part, index) => index <= optionIndex || part === selectedParts[index],
+      ),
+    ) || candidates[0];
+
+  if (best) window.cartPlusOneTickVariant(blockId, offerId, best.id);
 };
 
 // tick = the offer's product goes into the cart, untick = it is removed again

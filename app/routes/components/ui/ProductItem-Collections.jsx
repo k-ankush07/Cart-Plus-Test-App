@@ -1,28 +1,50 @@
 import {
-    Text,
-    Button,
-    InlineStack,
-    BlockStack,
-    Checkbox,
-    ResourceList, Thumbnail,
-    Badge,
-    Icon,
-    Spinner,
-    TextField,
-    ResourceItem,
-    Tabs,
-    Pagination,
-    Box
+  Text,
+  Button,
+  InlineStack,
+  BlockStack,
+  Checkbox,
+  ResourceList,
+  Thumbnail,
+  Badge,
+  Icon,
+  Spinner,
+  TextField,
+  ResourceItem,
+  Tabs,
+  Pagination,
+  Box,
 } from "@shopify/polaris";
-import {
-    ChevronDownIcon,
-    ChevronUpIcon,
-} from "@shopify/polaris-icons";
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import { ChevronDownIcon, ChevronUpIcon } from "@shopify/polaris-icons";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { useAuthenticatedFetch } from "../utils/useAuthenticatedFetch";
 
-const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSelected, showCollections = true, showProducts = true, maxSelect = null, singleProduct = false, multiSelectCollections = false, onPaginationChange, includeProductData = false }, ref) => {
-
+const ProductItemCollections = React.forwardRef(
+  (
+    {
+      currency,
+      onSelect,
+      initialSelected,
+      showCollections = true,
+      showProducts = true,
+      maxSelect = null,
+      singleProduct = false,
+      multiSelectCollections = false,
+      onPaginationChange,
+      includeProductData = false,
+      disabledProductKeys = [], // <-- here, inside the props object
+    },
+    ref, // <-- ref stays the second argument
+  ) => {
+    const isProductTaken = (product) =>
+      disabledProductKeys.includes(product.id);
+    const [productCache, setProductCache] = useState({});
     const authenticatedFetch = useAuthenticatedFetch();
     const [cursorStack, setCursorStack] = useState([]);
     const [openProducts, setOpenProducts] = useState({});
@@ -32,7 +54,9 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
     const [cursor, setCursor] = useState(null);
     const [search, setSearch] = useState("");
     const [showSelected, setShowSelected] = useState(false);
-    const [activeTab, setActiveTab] = useState(showProducts ? "products" : "collections");
+    const [activeTab, setActiveTab] = useState(
+      showProducts ? "products" : "collections",
+    );
     const [hasNextPage, setHasNextPage] = useState(false);
     const [collectionsLoading, setCollectionsLoading] = useState(false);
     const searchDebounceRef = useRef(null);
@@ -40,579 +64,674 @@ const ProductItemCollections = React.forwardRef(({ currency, onSelect, initialSe
 
     const cursorRef = useRef(null);
     const cursorStackRef = useRef([]);
+    const firstRender = useRef(true);
 
     useEffect(() => {
-        if (!initialSelected) return;
+      if (firstRender.current) {
+        firstRender.current = false;
+        return;
+      }
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = setTimeout(() => {
+        currentSearchRef.current = search;
+        if (showSelected) return;
+        setCursorStack([]);
+        loadMore(null, search);
+      }, 400);
+      return () => clearTimeout(searchDebounceRef.current);
+    }, [search]);
 
-        if (initialSelected.type === "products") {
-            const variants = Array.isArray(initialSelected.items)
-                ? initialSelected.items
-                : initialSelected.items?.variants || [];
+    useEffect(() => {
+      if (!localProducts.length) return;
+      setProductCache((prev) => {
+        const next = { ...prev };
+        localProducts.forEach((p) => {
+          next[p.id] = p;
+        });
+        return next;
+      });
+    }, [localProducts]);
 
-            setSelectedVariants(variants);
+    useEffect(() => {
+      if (!initialSelected) return;
+
+      if (initialSelected.type === "products") {
+        const variants = Array.isArray(initialSelected.items)
+          ? initialSelected.items
+          : initialSelected.items?.variants || [];
+
+        setSelectedVariants(variants);
+
+        const seeded = initialSelected.items?.productData || [];
+        if (seeded.length) {
+          setProductCache((prev) => {
+            const next = { ...prev };
+            seeded.forEach((p) => {
+              if (!next[p.id]) {
+                next[p.id] = {
+                  ...p,
+                  status: "ACTIVE",
+                  price: p.variants?.[0]?.price || "0",
+                };
+              }
+            });
+            return next;
+          });
         }
+      }
 
-        if (initialSelected.type === "collections") {
-            setSelectedCollections(initialSelected.items || []);
-            setSelectedVariants([]);
-            setActiveTab("collections");
-        }
+      if (initialSelected.type === "collections") {
+        setSelectedCollections(initialSelected.items || []);
+        setSelectedVariants([]);
+        setActiveTab("collections");
+      }
     }, [initialSelected]);
 
     const toggleVariants = (id) => {
-        setOpenProducts((prev) => ({
-            ...prev,
-            [id]: !prev[id],
-        }));
+      setOpenProducts((prev) => ({
+        ...prev,
+        [id]: !prev[id],
+      }));
     };
 
     const isSelected = (id) => selectedVariants.includes(id);
 
-    const emitProductSelection = (updated) => {
-        const selectedProducts = localProducts.filter((p) =>
-            p.variants.some((v) => updated.includes(v.id))
-        );
-        const productIds = selectedProducts.map((p) => p.id);
-        const titles = selectedProducts.map((p) => p.title);
-        const images = selectedProducts.map((p) => p.image);
-        const productData = includeProductData
-            ? selectedProducts.map((product) => ({
-                id: product.id,
-                title: product.title,
-                handle: product.handle,
-                image: product.image,
-                variants: product.variants
-                    .filter((variant) => updated.includes(variant.id))
-                    .map((variant) => ({
-                        id: variant.id,
-                        title: variant.title,
-                        price: variant.price,
-                        compareAtPrice: variant.compareAtPrice,
-                        available: variant.available,
-                        image: variant.image,
-                    })),
-            }))
-            : undefined;
+    const getKnownProducts = () => {
+      const map = { ...productCache };
+      localProducts.forEach((p) => {
+        map[p.id] = p;
+      });
+      return Object.values(map);
+    };
 
-        onSelect({
-            type: "products",
-            items: {
-                variants: updated,
-                products: productIds,
-                titles,
-                images,
-                ...(productData ? { productData } : {}),
-            }
-        });
+    const emitProductSelection = (updated) => {
+      const selectedProducts = getKnownProducts().filter((p) =>
+        p.variants.some((v) => updated.includes(v.id)),
+      );
+      const productIds = selectedProducts.map((p) => p.id);
+      const titles = selectedProducts.map((p) => p.title);
+      const images = selectedProducts.map((p) => p.image);
+      const productData = includeProductData
+        ? selectedProducts.map((product) => ({
+            id: product.id,
+            title: product.title,
+            handle: product.handle,
+            image: product.image,
+            variants: product.variants
+              .filter((variant) => updated.includes(variant.id))
+              .map((variant) => ({
+                id: variant.id,
+                title: variant.title,
+                price: variant.price,
+                compareAtPrice: variant.compareAtPrice,
+                available: variant.available,
+                image: variant.image,
+              })),
+          }))
+        : undefined;
+
+      onSelect({
+        type: "products",
+        items: {
+          variants: updated,
+          products: productIds,
+          titles,
+          images,
+          ...(productData ? { productData } : {}),
+        },
+      });
     };
 
     const toggleSelect = (variant) => {
-        if (!variant.available) return; // out of stock variant, block selection
+      if (!variant.available) return;
 
-        setSelectedCollections([]);
+      const owner = getKnownProducts().find((p) =>
+        p.variants.some((v) => v.id === variant.id),
+      );
+      if (owner && isProductTaken(owner)) return;
 
-        let updated;
-        if (selectedVariants.includes(variant.id)) {
-            updated = selectedVariants.filter((id) => id !== variant.id);
-        } else if (maxSelect === 1) {
-            updated = [variant.id];
-        } else if (singleProduct) {
-            // one product only: keep the ticked variants of this product, drop other products
-            const owner = localProducts.find((p) =>
-                p.variants.some((v) => v.id === variant.id)
-            );
-            const sameProduct = selectedVariants.filter((id) =>
-                owner?.variants.some((v) => v.id === id)
-            );
-            updated = [...sameProduct, variant.id];
-        } else {
-            updated = [...selectedVariants, variant.id];
-        }
+      setSelectedCollections([]);
 
-        setSelectedVariants(updated);
-        emitProductSelection(updated);
+      let updated;
+      if (selectedVariants.includes(variant.id)) {
+        updated = selectedVariants.filter((id) => id !== variant.id);
+      } else if (maxSelect === 1) {
+        updated = [variant.id];
+      } else if (singleProduct) {
+        const sameProduct = selectedVariants.filter((id) =>
+          owner?.variants.some((v) => v.id === id),
+        );
+        updated = [...sameProduct, variant.id];
+      } else {
+        updated = [...selectedVariants, variant.id];
+      }
+
+      setSelectedVariants(updated);
+      emitProductSelection(updated);
     };
 
     const isProductSelected = (product) =>
-        product.variants.some((v) => selectedVariants.includes(v.id));
+      product.variants.some((v) => selectedVariants.includes(v.id));
 
     const isProductOutOfStock = (product) =>
-        product.variants.every((v) => !v.available);
+      product.variants.every((v) => !v.available);
 
     const toggleProduct = (product) => {
-        if (isProductOutOfStock(product)) return; // out of stock product, block selection
+      if (isProductOutOfStock(product) || isProductTaken(product)) return;
 
-        setSelectedCollections([]);
+      setSelectedCollections([]);
 
-        const variantIds = product.variants
-            .filter((v) => v.available)
-            .map((v) => v.id);
+      const variantIds = product.variants
+        .filter((v) => v.available)
+        .map((v) => v.id);
 
-        if (variantIds.length === 0) return;
+      if (variantIds.length === 0) return;
 
-        const allSelected = variantIds.every((id) =>
-            selectedVariants.includes(id)
-        );
+      const allSelected = variantIds.every((id) =>
+        selectedVariants.includes(id),
+      );
 
-        let updated;
+      let updated;
 
-        if (allSelected) {
-            updated = selectedVariants.filter((id) => !variantIds.includes(id));
-        } else if (maxSelect === 1) {
-            updated = [variantIds[0]];
-        } else if (singleProduct) {
-            updated = variantIds; // replaces any other product
-        } else {
-            updated = [...new Set([...selectedVariants, ...variantIds])];
-        }
+      if (allSelected) {
+        updated = selectedVariants.filter((id) => !variantIds.includes(id));
+      } else if (maxSelect === 1) {
+        updated = [variantIds[0]];
+      } else if (singleProduct) {
+        updated = variantIds;
+      } else {
+        updated = [...new Set([...selectedVariants, ...variantIds])];
+      }
 
-        setSelectedVariants(updated);
-        emitProductSelection(updated);
+      setSelectedVariants(updated);
+      emitProductSelection(updated);
     };
 
-    const selectedProductCount = new Set(
-        localProducts
-            .filter((product) =>
-                product.variants.some((v) =>
-                    selectedVariants.includes(v.id)
-                )
-            )
-            .map((p) => p.id)
-    ).size;
+    const selectedProductsList = getKnownProducts().filter((p) =>
+      p.variants.some((v) => selectedVariants.includes(v.id)),
+    );
+    const selectedProductCount = selectedProductsList.length;
 
     useEffect(() => {
-        onPaginationChange?.({
-            hasPrevious: cursorStack.length > 0,
-            hasNext: hasNextPage,
-            handlePrev,
-            handleNext,
-        });
-    }, [cursorStack, hasNextPage]);
-
-    useImperativeHandle(ref, () => ({
-        hasPrevious: cursorStack.length > 0,
-        hasNext: hasNextPage,
+      onPaginationChange?.({
+        hasPrevious: !showSelected && cursorStack.length > 0,
+        hasNext: !showSelected && hasNextPage,
         handlePrev,
         handleNext,
+      });
+    }, [cursorStack, hasNextPage, showSelected]);
+
+    useImperativeHandle(ref, () => ({
+      hasPrevious: cursorStack.length > 0,
+      hasNext: hasNextPage,
+      handlePrev,
+      handleNext,
     }));
 
-    useEffect(() => { cursorRef.current = cursor; }, [cursor]);
-    useEffect(() => { cursorStackRef.current = cursorStack; }, [cursorStack]);
+    useEffect(() => {
+      cursorRef.current = cursor;
+    }, [cursor]);
+    useEffect(() => {
+      cursorStackRef.current = cursorStack;
+    }, [cursorStack]);
 
     const handleNext = async () => {
-        if (!hasNextPage) return;
-        setCursorStack((prev) => [...prev, cursorRef.current]);
-        await loadMore(cursorRef.current, currentSearchRef.current);
+      if (!hasNextPage) return;
+      setCursorStack((prev) => [...prev, cursorRef.current]);
+      await loadMore(cursorRef.current, currentSearchRef.current);
     };
 
     const handlePrev = async () => {
-        const stack = [...cursorStackRef.current];
-        if (stack.length === 0) return;
-        stack.pop();
-        const prevCursor =
-            stack.length > 0 ? stack[stack.length - 1] : null;
-        setCursorStack(stack);
-        await loadMore(prevCursor, currentSearchRef.current);
+      const stack = [...cursorStackRef.current];
+      if (stack.length === 0) return;
+      stack.pop();
+      const prevCursor = stack.length > 0 ? stack[stack.length - 1] : null;
+      setCursorStack(stack);
+      await loadMore(prevCursor, currentSearchRef.current);
     };
 
     useEffect(() => {
-        loadMore(null, "");
+      loadMore(null, "");
     }, []);
 
     useEffect(() => {
-        clearTimeout(searchDebounceRef.current);
-        searchDebounceRef.current = setTimeout(() => {
-            currentSearchRef.current = search;
-            setCursorStack([]);
-            loadMore(null, search);
-        }, 400);
-        return () => clearTimeout(searchDebounceRef.current);
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = setTimeout(() => {
+        currentSearchRef.current = search;
+        setCursorStack([]);
+        loadMore(null, search);
+      }, 400);
+      return () => clearTimeout(searchDebounceRef.current);
     }, [search]);
 
     const loadMore = async (cursorValue, searchQuery) => {
-        setLoading(true);
+      setLoading(true);
 
-        try {
-            const q = searchQuery !== undefined ? searchQuery : currentSearchRef.current;
-            const res = await authenticatedFetch(`/shopify/products?cursor=${cursorValue || ""}&query=${encodeURIComponent(q)}`);
-            const data = await res.json();
+      try {
+        const q =
+          searchQuery !== undefined ? searchQuery : currentSearchRef.current;
+        const res = await authenticatedFetch(
+          `/shopify/products?cursor=${cursorValue || ""}&query=${encodeURIComponent(q)}`,
+        );
+        const data = await res.json();
 
-            const edges = data?.data?.products?.edges || [];
+        const edges = data?.data?.products?.edges || [];
 
-            const newProducts = edges.map((p) => ({
-                id: p.node.id,
-                title: p.node.title,
-                status: p.node.status,
-                image: p.node.images.edges[0]?.node?.url,
-                price: p.node.variants.edges[0]?.node?.price || "0",
-                variants: p.node.variants.edges.map((v) => ({
-                    id: v.node.id,
-                    title: v.node.title,
-                    price: v.node.price,
-                    compareAtPrice: v.node.compareAtPrice,
-                    available: v.node.availableForSale,
-                    image: v.node.image?.url || null,
-                }))
-            }));
+        const newProducts = edges.map((p) => ({
+          id: p.node.id,
+          title: p.node.title,
+          status: p.node.status,
+          image: p.node.images.edges[0]?.node?.url,
+          price: p.node.variants.edges[0]?.node?.price || "0",
+          variants: p.node.variants.edges.map((v) => ({
+            id: v.node.id,
+            title: v.node.title,
+            price: v.node.price,
+            compareAtPrice: v.node.compareAtPrice,
+            available: v.node.availableForSale,
+            image: v.node.image?.url || null,
+          })),
+        }));
 
-            setLocalProducts(newProducts);
+        setLocalProducts(newProducts);
 
-            const lastCursor = edges[edges.length - 1]?.cursor;
-            setCursor(lastCursor);
+        const lastCursor = edges[edges.length - 1]?.cursor;
+        setCursor(lastCursor);
 
-            setHasNextPage(data?.data?.products?.pageInfo?.hasNextPage);
+        setHasNextPage(data?.data?.products?.pageInfo?.hasNextPage);
+      } catch (err) {
+        console.error(err);
+      }
 
-        } catch (err) {
-            console.error(err);
-        }
-
-        setLoading(false);
+      setLoading(false);
     };
 
-    const filteredProducts = localProducts.filter((product) =>
-        showSelected
-            ? product.variants.some((v) => selectedVariants.includes(v.id))
-            : true
-    );
+    const filteredProducts = showSelected
+      ? selectedProductsList.filter((p) =>
+          p.title.toLowerCase().includes(search.toLowerCase()),
+        )
+      : localProducts;
 
     const [collections, setCollections] = useState([]);
     const [selectedCollections, setSelectedCollections] = useState([]);
 
     const loadCollections = async () => {
-        setCollectionsLoading(true);
+      setCollectionsLoading(true);
 
-        try {
-            const res = await authenticatedFetch(`/shopify/collections`, {
-                credentials: "include",
-            });
+      try {
+        const res = await authenticatedFetch(`/shopify/collections`, {
+          credentials: "include",
+        });
 
-            const data = await res.json();
+        const data = await res.json();
 
-            const edges = data?.collections || [];
+        const edges = data?.collections || [];
 
-            const formatted = edges.map((c) => ({
-                id: c.node.id,
-                title: c.node.title,
-                image: c.node.image?.url || "",
-                productsCount: c.node.productsCount?.count || 0,
-            }));
+        const formatted = edges.map((c) => ({
+          id: c.node.id,
+          title: c.node.title,
+          image: c.node.image?.url || "",
+          productsCount: c.node.productsCount?.count || 0,
+        }));
 
-            setCollections(formatted);
+        setCollections(formatted);
+      } catch (err) {
+        console.error(err);
+      }
 
-        } catch (err) {
-            console.error(err);
-        }
-
-        setCollectionsLoading(false);
+      setCollectionsLoading(false);
     };
 
     useEffect(() => {
-        if (activeTab === "collections") {
-            loadCollections();
-        }
+      if (activeTab === "collections") {
+        loadCollections();
+      }
     }, [activeTab]);
 
     const filteredCollections = collections.filter((col) => {
-        const matchesSearch = col.title
-            .toLowerCase()
-            .includes(search.toLowerCase());
+      const matchesSearch = col.title
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-        const matchesSelected = showSelected
-            ? selectedCollections.includes(col.id)
-            : true;
+      const matchesSelected = showSelected
+        ? selectedCollections.includes(col.id)
+        : true;
 
-        return matchesSearch && matchesSelected;
+      return matchesSearch && matchesSelected;
     });
 
     const handleCollectionSelect = (id) => {
-        setSelectedVariants([]);
+      setSelectedVariants([]);
 
-        let updated;
-        if (multiSelectCollections) {
-            updated = selectedCollections.includes(id)
-                ? selectedCollections.filter((item) => item !== id)
-                : [...selectedCollections, id];
-        } else {
-            updated = selectedCollections.includes(id) ? [] : [id];
-        }
+      let updated;
+      if (multiSelectCollections) {
+        updated = selectedCollections.includes(id)
+          ? selectedCollections.filter((item) => item !== id)
+          : [...selectedCollections, id];
+      } else {
+        updated = selectedCollections.includes(id) ? [] : [id];
+      }
 
-        setSelectedCollections(updated);
-        const selected = collections.filter((c) => updated.includes(c.id));
-        const titles = selected.map((c) => c.title);
-        const images = selected.map((c) => c.image);
+      setSelectedCollections(updated);
+      const selected = collections.filter((c) => updated.includes(c.id));
+      const titles = selected.map((c) => c.title);
+      const images = selected.map((c) => c.image);
 
-        onSelect({ type: "collections", items: updated, titles, images });
+      onSelect({ type: "collections", items: updated, titles, images });
     };
 
     return (
-        <div>
-            <BlockStack gap="300">
-                {showProducts && showCollections && (
-                    <Tabs
-                        tabs={[
-                            { id: "products", content: "Product", accessibilityLabel: "Search Products" },
-                            { id: "collections", content: "Collection", accessibilityLabel: "Search Collections" },
-                        ]}
-                        selected={activeTab === "products" ? 0 : 1}
-                        onSelect={(index) => setActiveTab(index === 0 ? "products" : "collections")}
-                        fitted
-                    />
-                )}
-                <div style={{ height: "4px" }} />
-            </BlockStack>
+      <div>
+        <BlockStack gap="300">
+          {showProducts && showCollections && (
+            <Tabs
+              tabs={[
+                {
+                  id: "products",
+                  content: "Product",
+                  accessibilityLabel: "Search Products",
+                },
+                {
+                  id: "collections",
+                  content: "Collection",
+                  accessibilityLabel: "Search Collections",
+                },
+              ]}
+              selected={activeTab === "products" ? 0 : 1}
+              onSelect={(index) =>
+                setActiveTab(index === 0 ? "products" : "collections")
+              }
+              fitted
+            />
+          )}
+          <div style={{ height: "4px" }} />
+        </BlockStack>
 
-            <BlockStack gap="300">
-                <InlineStack gap="200">
-                    <div style={{ flex: 1 }}>
-                        <TextField
-                            placeholder="Search products"
-                            value={search}
-                            onChange={setSearch}
-                            autoComplete="off"
-                        />
-                    </div>
-                </InlineStack>
+        <BlockStack gap="300">
+          <InlineStack gap="200">
+            <div style={{ flex: 1 }}>
+              <TextField
+                placeholder="Search products"
+                value={search}
+                onChange={setSearch}
+                autoComplete="off"
+              />
+            </div>
+          </InlineStack>
 
-                <InlineStack align="space-between">
-                    <Text tone="subdued">
-                        {activeTab === "products"
-                            ? `${selectedProductCount} product${selectedProductCount !== 1 ? "s" : ""} selected`
-                            : `${selectedCollections.length} collection${selectedCollections.length !== 1 ? "s" : ""} selected`}
-                    </Text>
-                    <Checkbox
-                        label="Show only selected"
-                        checked={showSelected}
-                        onChange={(value) => setShowSelected(value)}
-                    />
-                </InlineStack>
-            </BlockStack>
-            {activeTab === "products" && (
-                <div style={{ position: "relative", minHeight: "200px" }}>
-                    {loading && (
-                        <>
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    background: "rgba(255,255,255,0.7)",
-                                    zIndex: 10,
-                                }}
-                            />
-                            <div
-                                style={{
-                                    position: "fixed",
-                                    top: "50%",
-                                    left: "50%",
-                                    transform: "translate(-50%, -50%)",
-                                    zIndex: 11,
-                                }}
-                            >
-                                <Spinner accessibilityLabel="Loading products" size="large" />
-                            </div>
-                        </>
-                    )}
-
-                    {showSelected && filteredProducts.length === 0 && !loading && (
-                        <Text alignment="center" tone="subdued">
-                            No items to display
-                        </Text>
-                    )}
-
-                    <ResourceList
-                        resourceName={{ singular: "product", plural: "products" }}
-                        items={filteredProducts}
-                        renderItem={(product) => {
-                            const index = filteredProducts.indexOf(product);
-                            const outOfStock = isProductOutOfStock(product);
-
-                            return (
-                                <div key={product.id}>
-
-                                    {/* PRODUCT ROW */}
-                                    <div style={{
-                                        padding: "10px 0",
-                                        borderBottom: index !== filteredProducts.length - 1
-                                            ? "1px solid #e1e3e5"
-                                            : "none",
-                                        opacity: outOfStock ? 0.5 : 1,
-                                    }}>
-
-                                        <InlineStack align="space-between" wrap={false} gap="500">
-
-                                            {/* LEFT */}
-                                            <InlineStack gap="200" align="start" blockAlign="start" wrap={false}>
-
-                                                <Checkbox
-                                                    checked={isProductSelected(product)}
-                                                    onChange={() => toggleProduct(product)}
-                                                    disabled={outOfStock}
-                                                />
-                                                <div style={{ minWidth: "40px" }}>
-                                                    <Thumbnail source={product.image} size="small" />
-                                                </div>
-                                                <div onClick={() => toggleVariants(product.id)} style={{ cursor: "pointer" }}>
-                                                    <BlockStack>
-                                                        <Text fontWeight="medium">{product.title}</Text>
-
-                                                        {product.variants.length > 0 && (
-                                                            <InlineStack gap="50" align="left">
-                                                                <div style={{ display: "inline-flex", alignItems: "center" }}>
-                                                                    <Text tone="subdued" variant="bodySm">
-                                                                        {product.variants.length} variants
-                                                                    </Text>
-
-                                                                    {product.variants.length > 1 && (
-                                                                        <Icon source={openProducts[product.id] ? ChevronUpIcon : ChevronDownIcon} />
-                                                                    )}
-                                                                </div>
-                                                            </InlineStack>
-                                                        )}
-                                                    </BlockStack>
-                                                </div>
-
-                                            </InlineStack>
-
-                                            <div style={{
-                                                display: "flex", gap: "8px", justifyContent: "flex-end", minWidth: outOfStock
-                                                    ? "165px"
-                                                    : "90px",
-                                            }}>
-                                                <div
-                                                    style={{
-                                                        lineHeight: 1,
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        height: "25px",
-                                                        gap: "8px"
-                                                    }}
-                                                >
-                                                    {product.status !== "ACTIVE" && (
-                                                        <Badge tone={product.status === "DRAFT" ? "info" : "warning"}>
-                                                            {product.status === "DRAFT" ? "Draft" : "Archived"}
-                                                        </Badge>
-                                                    )}
-
-                                                    {outOfStock && (
-                                                        <Badge tone="warning">Out of stock</Badge>
-                                                    )}
-                                                </div>
-                                                <Text alignment="end">{product.price} {currency}</Text>
-                                            </div>
-
-                                        </InlineStack>
-                                    </div>
-
-                                    {/* VARIANTS */}
-                                    {product.variants.length > 1 &&
-                                        openProducts[product.id] &&
-                                        product.variants.map((v) => (
-                                            <div
-                                                key={v.id}
-                                                style={{
-                                                    padding: "8px 0 8px 40px",
-                                                    borderBottom: "1px solid #f1f2f3",
-                                                    opacity: v.available ? 1 : 0.5,
-                                                }}
-                                            >
-                                                <InlineStack align="space-between">
-
-                                                    <InlineStack gap="200">
-                                                        <Checkbox
-                                                            checked={isSelected(v.id)}
-                                                            onChange={() => toggleSelect(v, product)}
-                                                            disabled={!v.available}
-                                                        />
-
-                                                        <Thumbnail
-                                                            source={v.image || product.image}
-                                                            size="extraSmall"
-                                                        />
-
-                                                        <Text>{v.title}</Text>
-                                                    </InlineStack>
-
-                                                    <InlineStack gap="200">
-                                                        {!v.available && (
-                                                            <Badge tone="warning">Out of stock</Badge>
-                                                        )}
-                                                        <Text>{v.price} {currency}</Text>
-                                                    </InlineStack>
-
-                                                </InlineStack>
-                                            </div>
-                                        ))}
-
-                                </div>
-                            );
-                        }}
-                    />
-                </div>)}
-
-            {activeTab === "collections" && (
-                <div style={{ position: "relative", minHeight: "200px" }}>
-                    {collectionsLoading && (
-                        <div
-                            style={{
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                background: "rgba(255,255,255,0.7)",
-                                zIndex: 10,
-                            }}
-                        >
-                            <Spinner accessibilityLabel="Loading collections" size="large" />
-                        </div>
-                    )}
-                    <ResourceList
-                        resourceName={{ singular: "collection", plural: "collections" }}
-                        items={filteredCollections}
-                        renderItem={(item) => {
-                            const { id, title, image, productsCount } = item;
-
-                            return (
-                                <ResourceItem
-                                    id={id}
-                                    onClick={() =>
-                                        handleCollectionSelect(id)}
-                                >
-                                    <InlineStack align="space-between" blockAlign="center">
-
-                                        {/* LEFT */}
-                                        <InlineStack gap="300" blockAlign="center">
-
-                                            <div onClick={(e) => e.stopPropagation()}>
-                                                <Checkbox
-                                                    checked={selectedCollections.includes(id)}
-                                                    onChange={() => handleCollectionSelect(id)}
-                                                />
-                                            </div>
-
-                                            <Thumbnail source={image} size="small" />
-
-                                            <BlockStack gap="050">
-                                                <Text fontWeight="medium">{title}</Text>
-                                                <Text tone="subdued" variant="bodySm">
-                                                    {productsCount} products
-                                                </Text>
-                                            </BlockStack>
-                                        </InlineStack>
-                                    </InlineStack>
-                                </ResourceItem>
-                            );
-                        }}
-                    />
+          <InlineStack align="space-between">
+            <Text tone="subdued">
+              {activeTab === "products"
+                ? `${selectedProductCount} product${selectedProductCount !== 1 ? "s" : ""} selected`
+                : `${selectedCollections.length} collection${selectedCollections.length !== 1 ? "s" : ""} selected`}
+            </Text>
+            <Checkbox
+              label="Show only selected"
+              checked={showSelected}
+              onChange={(value) => setShowSelected(value)}
+            />
+          </InlineStack>
+        </BlockStack>
+        {activeTab === "products" && (
+          <div style={{ position: "relative", minHeight: "200px" }}>
+            {loading && (
+              <>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "rgba(255,255,255,0.7)",
+                    zIndex: 10,
+                  }}
+                />
+                <div
+                  style={{
+                    position: "fixed",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    zIndex: 11,
+                  }}
+                >
+                  <Spinner accessibilityLabel="Loading products" size="large" />
                 </div>
+              </>
             )}
-        </div>
-    )
-});
+
+            {showSelected && filteredProducts.length === 0 && !loading && (
+              <Text alignment="center" tone="subdued">
+                No items to display
+              </Text>
+            )}
+
+            <ResourceList
+              resourceName={{ singular: "product", plural: "products" }}
+              items={filteredProducts}
+              renderItem={(product) => {
+                const index = filteredProducts.indexOf(product);
+                const outOfStock = isProductOutOfStock(product);
+                const taken = isProductTaken(product);
+                return (
+                  <div key={product.id}>
+                    {/* PRODUCT ROW */}
+                    <div
+                      style={{
+                        padding: "10px 0",
+                        borderBottom:
+                          index !== filteredProducts.length - 1
+                            ? "1px solid #e1e3e5"
+                            : "none",
+                        opacity: outOfStock || taken ? 0.5 : 1,
+                      }}
+                    >
+                      <InlineStack align="space-between" wrap={false} gap="500">
+                        {/* LEFT */}
+                        <InlineStack
+                          gap="200"
+                          align="start"
+                          blockAlign="start"
+                          wrap={false}
+                        >
+                          <Checkbox
+                            checked={isProductSelected(product)}
+                            onChange={() => toggleProduct(product)}
+                            disabled={outOfStock || taken}
+                          />
+                          <div style={{ minWidth: "40px" }}>
+                            <Thumbnail source={product.image} size="small" />
+                          </div>
+                          <div
+                            onClick={() => toggleVariants(product.id)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <BlockStack>
+                              <Text fontWeight="medium">{product.title}</Text>
+
+                              {product.variants.length > 0 && (
+                                <InlineStack gap="50" align="left">
+                                  <div
+                                    style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <Text tone="subdued" variant="bodySm">
+                                      {product.variants.length} variants
+                                    </Text>
+
+                                    {product.variants.length > 1 && (
+                                      <Icon
+                                        source={
+                                          openProducts[product.id]
+                                            ? ChevronUpIcon
+                                            : ChevronDownIcon
+                                        }
+                                      />
+                                    )}
+                                  </div>
+                                </InlineStack>
+                              )}
+                            </BlockStack>
+                          </div>
+                        </InlineStack>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "8px",
+                            justifyContent: "flex-end",
+                            minWidth: outOfStock || taken ? "165px" : "90px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              lineHeight: 1,
+                              display: "flex",
+                              alignItems: "center",
+                              height: "25px",
+                              gap: "8px",
+                            }}
+                          >
+                            {product.status !== "ACTIVE" && (
+                              <Badge
+                                tone={
+                                  product.status === "DRAFT"
+                                    ? "info"
+                                    : "warning"
+                                }
+                              >
+                                {product.status === "DRAFT"
+                                  ? "Draft"
+                                  : "Archived"}
+                              </Badge>
+                            )}
+
+                            {outOfStock && (
+                              <Badge tone="warning">Out of stock</Badge>
+                            )}
+                            {taken && (
+                              <Badge tone="info">Used in another offer</Badge>
+                            )}
+                          </div>
+                          <Text alignment="end">
+                            {product.price} {currency}
+                          </Text>
+                        </div>
+                      </InlineStack>
+                    </div>
+
+                    {/* VARIANTS */}
+                    {product.variants.length > 1 &&
+                      openProducts[product.id] &&
+                      product.variants.map((v) => (
+                        <div
+                          key={v.id}
+                          style={{
+                            padding: "8px 0 8px 40px",
+                            borderBottom: "1px solid #f1f2f3",
+                            opacity: v.available ? 1 : 0.5,
+                          }}
+                        >
+                          <InlineStack align="space-between">
+                            <InlineStack gap="200">
+                              <Checkbox
+                                checked={isSelected(v.id)}
+                                onChange={() => toggleSelect(v, product)}
+                                disabled={!v.available || taken}
+                              />
+
+                              <Thumbnail
+                                source={v.image || product.image}
+                                size="extraSmall"
+                              />
+
+                              <Text>{v.title}</Text>
+                            </InlineStack>
+
+                            <InlineStack gap="200">
+                              {!v.available && (
+                                <Badge tone="warning">Out of stock</Badge>
+                              )}
+                              <Text>
+                                {v.price} {currency}
+                              </Text>
+                            </InlineStack>
+                          </InlineStack>
+                        </div>
+                      ))}
+                  </div>
+                );
+              }}
+            />
+          </div>
+        )}
+
+        {activeTab === "collections" && (
+          <div style={{ position: "relative", minHeight: "200px" }}>
+            {collectionsLoading && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(255,255,255,0.7)",
+                  zIndex: 10,
+                }}
+              >
+                <Spinner
+                  accessibilityLabel="Loading collections"
+                  size="large"
+                />
+              </div>
+            )}
+            <ResourceList
+              resourceName={{ singular: "collection", plural: "collections" }}
+              items={filteredCollections}
+              renderItem={(item) => {
+                const { id, title, image, productsCount } = item;
+
+                return (
+                  <ResourceItem
+                    id={id}
+                    onClick={() => handleCollectionSelect(id)}
+                  >
+                    <InlineStack align="space-between" blockAlign="center">
+                      {/* LEFT */}
+                      <InlineStack gap="300" blockAlign="center">
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedCollections.includes(id)}
+                            onChange={() => handleCollectionSelect(id)}
+                          />
+                        </div>
+
+                        <Thumbnail source={image} size="small" />
+
+                        <BlockStack gap="050">
+                          <Text fontWeight="medium">{title}</Text>
+                          <Text tone="subdued" variant="bodySm">
+                            {productsCount} products
+                          </Text>
+                        </BlockStack>
+                      </InlineStack>
+                    </InlineStack>
+                  </ResourceItem>
+                );
+              }}
+            />
+          </div>
+        )}
+      </div>
+    );
+  },
+);
 
 export default ProductItemCollections;

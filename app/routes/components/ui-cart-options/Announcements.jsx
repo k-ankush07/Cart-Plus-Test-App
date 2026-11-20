@@ -81,9 +81,11 @@ function AnnouncementTemplatePreview({
   const settings = ANNOUNCEMENT_TEMPLATES[template];
   const themedBackground =
     template === "default" ? templateBackground(designSettings) : undefined;
-  const background = backgroundToCss(themedBackground) || (settings.backgroundGradient
-    ? `linear-gradient(${settings.backgroundGradient.angle}deg, ${settings.backgroundGradient.color}, ${settings.backgroundGradient.color2})`
-    : settings.background);
+  const background =
+    backgroundToCss(themedBackground) ||
+    (settings.backgroundGradient
+      ? `linear-gradient(${settings.backgroundGradient.angle}deg, ${settings.backgroundGradient.color}, ${settings.backgroundGradient.color2})`
+      : settings.background);
 
   return (
     <button
@@ -337,12 +339,14 @@ export default function Announcements({
                   ANNOUNCEMENT_TEMPLATES[announcementSettings.template]
                     .buttonText
                 }
-                 maxLength={15}
+                maxLength={15}
                 onChange={(v) => update("buttonText", v)}
               />
             )}
 
-            {["vip", "flash_sale", "free_gift"].includes(announcementSettings.template) && (
+            {["vip", "flash_sale", "free_gift"].includes(
+              announcementSettings.template,
+            ) && (
               <TextField
                 label="Link (URL)"
                 autoComplete="off"
@@ -367,9 +371,13 @@ export default function Announcements({
               />
             )}
 
-           {["coupon", "flash_sale", "free_gift", "progress", "countdown"].includes(
-              announcementSettings.template,
-            ) && (
+            {[
+              "coupon",
+              "flash_sale",
+              "free_gift",
+              "progress",
+              "countdown",
+            ].includes(announcementSettings.template) && (
               <InlineGrid columns={2} gap="300">
                 <ColorInput
                   label={
@@ -526,12 +534,16 @@ export default function Announcements({
         </LegacyStack>
       </LegacyCard>
 
-      {announcementSettings.template !== "default" && (
-        <BackgroundInput
-          value={announcementSettings.background}
-          onChange={(background) => update("background", background)}
-        />
-      )}
+      <BackgroundInput
+        value={
+          announcementSettings.background ||
+          (!announcementSettings.template ||
+          announcementSettings.template === "default"
+            ? templateBackground(designSettings)
+            : undefined)
+        }
+        onChange={(background) => update("background", background)}
+      />
     </div>
   );
 }

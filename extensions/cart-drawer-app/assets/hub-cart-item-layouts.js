@@ -7,6 +7,17 @@ function hexToRGBA(hex, opacity) {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+const truncate = (text = "", show, limit) =>
+  show && limit > 0 && text.length > limit
+    ? `${text.substring(0, limit)}...`
+    : text;
+
+const escapeAttr = (s = "") =>
+  String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
+
 // "Products in cart" options from the editor (cartSettings.cartItem)
 window.cartPlusGetItemOptions = function (cartSettings) {
   const cs = cartSettings || window.__HUB_ACTIVE_CART__?.cartSettings || {};
@@ -38,11 +49,13 @@ window.cartPlusGetItemOptions = function (cartSettings) {
 
 // same glyphs as the editor's DeleteGlyph
 const _DELETE_GLYPHS = {
-  trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+  trash:
+    '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
   bin: '<path d="M5 7h14l-1.2 13a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 7Z"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M3 7h18"/>',
   lid: '<path d="M4 7h16"/><path d="M9 7l.5-2h5L15 7"/><path d="M6 7l1 13h10l1-13"/>',
   x: '<path d="M5 5l14 14"/><path d="M19 5L5 19"/>',
-  "x-circle": '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6"/><path d="M15 9l-6 6"/>',
+  "x-circle":
+    '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6"/><path d="M15 9l-6 6"/>',
 };
 
 const _trashIcon = (color = "currentColor", hoverColor = "red") => `
@@ -123,10 +136,19 @@ function _discountBadgesHtml(item, discountColor = "#1e7e34") {
     .join("");
 }
 
-function _wrapper(key, inner, sellingPlanHtml, customHtmlBlocks, isReward, item) {
+function _wrapper(
+  key,
+  inner,
+  sellingPlanHtml,
+  customHtmlBlocks,
+  isReward,
+  item,
+) {
   const linePrice = item?.final_line_price ?? 0;
   // custom HTML slots only get a wrapper when they have content
-  const between = hubUtils.renderCustomHTML(customHtmlBlocks.between_line_items);
+  const between = hubUtils.renderCustomHTML(
+    customHtmlBlocks.between_line_items,
+  );
   const below = hubUtils.renderCustomHTML(customHtmlBlocks.below_cart_items);
   return `
     <div class="hub-cart-for-item cart-plus-public-cart-item" data-item-key="${key}"${isReward ? ' data-is-reward="1"' : ""} data-line-price="${linePrice}" style="position:relative">
@@ -158,15 +180,23 @@ function classicItemHTML(ctx) {
     unitSave,
     saveHtml,
     discountColor,
-    iconColor 
+    iconColor,
+    showtextLimit,
+    textLimit,
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
 
+  const fullTitle = item.product_title || item.title || "";
+  const shownTitle = truncate(fullTitle, showtextLimit, textLimit);
+
   // LINE TOTAL = item.final_line_price (unit price × quantity, after discounts)
   // COMPARE TOTAL = effectiveCompare × quantity (original price × quantity)
-  const lineTotal = ctx.singleItemPrice ? effectiveUnitPrice : item.final_line_price;
-  const compareTotal = effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
+  const lineTotal = ctx.singleItemPrice
+    ? effectiveUnitPrice
+    : item.final_line_price;
+  const compareTotal =
+    effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
 
   const rightCol = isReward
     ? `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
@@ -212,7 +242,7 @@ function classicItemHTML(ctx) {
         <img src="${item.image}" alt="${item.product_title}" class="hub-item-img cart-plus-public-component-product-tile__image" />
       </div>
       <div class="hub-item-info cart-plus-public-component-product-tile__info">
-        <a href="/products/${item.handle}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
+       <a href="/products/${item.handle}" title="${escapeAttr(fullTitle)}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems}">${shownTitle}</a>
         ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
         ${variantHtml}
         ${propertiesHtml}
@@ -225,7 +255,14 @@ function classicItemHTML(ctx) {
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
     </div>`;
 
-  return _wrapper(item.key, inner, sellingPlanHtml, customHtmlBlocks, isReward, item);
+  return _wrapper(
+    item.key,
+    inner,
+    sellingPlanHtml,
+    customHtmlBlocks,
+    isReward,
+    item,
+  );
 }
 
 // ── Layout 2: Subscription ───────────────────────────────────────────────────
@@ -252,15 +289,22 @@ function subscriptionItemHTML(ctx) {
     unitSave,
     saveHtml,
     discountColor,
-    iconColor 
+    iconColor,
+    showtextLimit,
+    textLimit,
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
 
+  const fullTitle = item.product_title || item.title || "";
+  const shownTitle = truncate(fullTitle, showtextLimit, textLimit);
   // LINE TOTAL = item.final_line_price (unit price × quantity, after discounts)
   // COMPARE TOTAL = effectiveCompare × quantity (original price × quantity)
-  const lineTotal = ctx.singleItemPrice ? effectiveUnitPrice : item.final_line_price;
-  const compareTotal = effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
+  const lineTotal = ctx.singleItemPrice
+    ? effectiveUnitPrice
+    : item.final_line_price;
+  const compareTotal =
+    effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
   const totalSave = unitSave * (ctx.singleItemPrice ? 1 : item.quantity);
 
   const priceRow = isReward
@@ -288,7 +332,7 @@ function subscriptionItemHTML(ctx) {
       </div>
       <div class="hub-item-info cart-plus-public-component-product-tile__info">
           <div style="width: 100%; display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
-          <a href="/products/${item.handle}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems};flex:1;min-width:0;">${item.product_title || item.title}</a>
+         <a href="/products/${item.handle}" title="${escapeAttr(fullTitle)}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems};flex:1;min-width:0;">${shownTitle}</a>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
             ${_deleteBtn(item.key, item.product_title, iconColor)}
             ${discountBadges}
@@ -310,7 +354,14 @@ function subscriptionItemHTML(ctx) {
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
     </div>`;
 
-  return _wrapper(item.key, inner, sellingPlanHtml, customHtmlBlocks, isReward, item);
+  return _wrapper(
+    item.key,
+    inner,
+    sellingPlanHtml,
+    customHtmlBlocks,
+    isReward,
+    item,
+  );
 }
 
 // ── Layout 3: Modern ─────────────────────────────────────────────────────────
@@ -336,12 +387,20 @@ function modernItemHTML(ctx) {
     showSavings,
     discountColor,
     iconColor,
+    showtextLimit,
+    textLimit,
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
 
-  const lineTotal = ctx.singleItemPrice ? effectiveUnitPrice : item.final_line_price;
-  const compareTotal = effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
+  const fullTitle = item.product_title || item.title || "";
+  const shownTitle = truncate(fullTitle, showtextLimit, textLimit);
+
+  const lineTotal = ctx.singleItemPrice
+    ? effectiveUnitPrice
+    : item.final_line_price;
+  const compareTotal =
+    effectiveCompare * (ctx.singleItemPrice ? 1 : item.quantity);
   const totalSave = unitSave * (ctx.singleItemPrice ? 1 : item.quantity);
 
   const priceRow = `
@@ -362,7 +421,7 @@ function modernItemHTML(ctx) {
       </div>
       <div class="hub-item-info cart-plus-public-component-product-tile__info" style="flex-wrap:nowrap;justify-content:space-between;align-items:stretch">
         <div class="hub-cart-item--modern-title" style="flex-direction:column;flex-wrap:nowrap;gap:5px;min-width:0;flex:1">
-          <a href="/products/${item.handle}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems}">${item.product_title || item.title}</a>
+          <a href="/products/${item.handle}" title="${escapeAttr(fullTitle)}" class="hub-item-title cart-plus-public-component-product-tile__header cart-plus-public-component-product-tile__product-title" style="color:${colorItems}">${shownTitle}</a>
           ${sellingPlan ? `<p class="hub-item-subscription-label">${sellingPlan.selling_plan.name}</p>` : ""}
           ${variantHtml}
           ${propertiesHtml}
@@ -385,7 +444,14 @@ function modernItemHTML(ctx) {
       ${sellingPlanHtml ? `<div class="hub-selling-plan-container" style="flex:0 0 100%">${sellingPlanHtml}</div>` : ""}
     </div>`;
 
-  return _wrapper(item.key, inner, sellingPlanHtml, customHtmlBlocks, isReward, item);
+  return _wrapper(
+    item.key,
+    inner,
+    sellingPlanHtml,
+    customHtmlBlocks,
+    isReward,
+    item,
+  );
 }
 
 window.hubItemLayouts = {
