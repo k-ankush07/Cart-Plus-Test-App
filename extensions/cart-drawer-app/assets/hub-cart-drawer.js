@@ -933,9 +933,23 @@ function initCartDrawerAfterData() {
 
         const shouldOpen =
           window.__HUB_ACTIVE_CART__?.cartSettings?.openOnAddToCart !== false;
-        if (shouldOpen) {
-          _cartUpdateTimer = setTimeout(() => openDrawer(true), 100);
-        }
+        _cartUpdateTimer = setTimeout(() => {
+          if (shouldOpen) {
+            openDrawer(true);
+            return;
+          }
+
+          const drawer = document.getElementById(`hub-cart-drawer-${blockId}`);
+          if (!drawer || !window.hubCartRender) return;
+          if (window._hubRenderInProgress) {
+            window._hubPendingRender = {
+              drawer,
+              opts: { showSkeleton: false },
+            };
+            return;
+          }
+          window.hubCartRender(drawer, { showSkeleton: false });
+        }, 100);
       });
     }
   }
