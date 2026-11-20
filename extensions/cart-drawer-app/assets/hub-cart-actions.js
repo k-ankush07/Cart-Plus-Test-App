@@ -52,7 +52,9 @@ function _hubHideAllCartSections(blockId) {
     cartItemsEl.style.opacity = "0";
     cartItemsEl.style.pointerEvents = "none";
   }
-  const cartBody = document.getElementById(`hub-upcart-cart-body`);
+  const cartBody =
+    drawer.querySelector(".hub-cart-items-CartPreview") ||
+    document.getElementById("hub-upcart-cart-body");
   if (cartBody) {
     cartBody.style.transition = "opacity 0.2s ease";
     cartBody.style.opacity = "0";
@@ -119,7 +121,9 @@ function _hubRestoreAllCartSections(blockId) {
 
   const cartItemsEl = document.getElementById(`hub-cart-items-${blockId}`);
   if (cartItemsEl) restore(cartItemsEl);
-  const cartBody = document.getElementById(`hub-upcart-cart-body`);
+  const cartBody =
+    drawer.querySelector(".hub-cart-items-CartPreview") ||
+    document.getElementById("hub-upcart-cart-body");
   if (cartBody) restore(cartBody);
 
   restore(drawer.querySelector(".hub-cart-footer"));
@@ -132,12 +136,103 @@ function _hubRestoreAllCartSections(blockId) {
   restore(document.getElementById(`hub-trust-badges-bottom-${blockId}`));
 }
 
+function _hubGetQtyPreview(cart, key, quantity) {
+  const item = cart?.items?.find(
+    (cartItem) => String(cartItem.key) === String(key),
+  );
+  if (!item) return null;
+
+  const oldQuantity = Number(item.quantity) || 0;
+  if (!oldQuantity) return null;
+
+  const oldLinePrice = Number(item.final_line_price) || 0;
+  const newLinePrice = Math.round((oldLinePrice / oldQuantity) * quantity);
+  const oldOriginalLinePrice =
+    Number(item.original_line_price) ||
+    (Number(item.original_price) || 0) * oldQuantity;
+  const newOriginalLinePrice =
+    (Number(item.original_price) || 0) * quantity;
+  const subtotal = Math.max(
+    0,
+    (Number(cart.items_subtotal_price) || 0) - oldLinePrice + newLinePrice,
+  );
+  const originalTotal = Math.max(
+    0,
+    (Number(cart.original_total_price) || 0) -
+      oldOriginalLinePrice +
+      newOriginalLinePrice,
+  );
+  // Keep the existing cart-level discount ratio for the brief optimistic preview.
+  const oldSubtotal = Number(cart.items_subtotal_price) || 0;
+  const total = oldSubtotal
+    ? Math.max(
+        0,
+        Math.round(
+          subtotal * ((Number(cart.total_price) || 0) / oldSubtotal),
+        ),
+      )
+    : subtotal;
+
+  const updatedItem = {
+    ...item,
+    quantity,
+    final_line_price: newLinePrice,
+    original_line_price: newOriginalLinePrice,
+  };
+  return {
+    item: updatedItem,
+    cart: {
+      ...cart,
+      items: cart.items.map((cartItem) =>
+        String(cartItem.key) === String(key) ? updatedItem : cartItem,
+      ),
+      item_count:
+        (Number(cart.item_count) || 0) + quantity - oldQuantity,
+      items_subtotal_price: subtotal,
+      original_total_price: originalTotal,
+      total_price: total,
+    },
+  };
+}
+
+function _hubPaintQtyPreview(itemEl, item, cart) {
+  if (itemEl && item) {
+    itemEl.dataset.linePrice = String(item.final_line_price || 0);
+    const priceEl = itemEl.querySelector(".hub-item-unit-price");
+    if (priceEl) {
+      const itemOptions = window.cartPlusGetItemOptions?.() || {};
+      const price = itemOptions.singleItemPrice
+        ? Math.round(
+            (Number(item.final_line_price) || 0) /
+              Math.max(1, Number(item.quantity) || 1),
+          )
+        : Number(item.final_line_price) || 0;
+      priceEl.textContent = hubUtils.formatMoney(price);
+    }
+  }
+
+  if (!cart) return;
+  const blockId = window.HUB_CART_BLOCK_ID;
+  window._hubCartFinalTotal = Number(cart.total_price) || 0;
+  window.cartPlusSummaryFromCart?.(blockId, cart);
+  const grandTotal =
+    window._hubCartFinalTotal + (Number(window._hubShippingPriceCents) || 0);
+  const totalEl = document.getElementById(`hub-cart-total-${blockId}`);
+  if (totalEl) totalEl.textContent = hubUtils.formatMoney(grandTotal);
+  const grandEl = document.getElementById(`hub-grand-total-${blockId}`);
+  if (grandEl) grandEl.textContent = hubUtils.formatMoney(grandTotal);
+}
+
 async function updateQty(key, qty, btn = null) {
   if (btn && btn.classList.contains("loading")) return;
 
   const itemEl = btn?.closest("[data-item-key]");
   const qtyInput = itemEl?.querySelector(".hub-qty-input");
   const previousQty = Number(qtyInput?.value || qty);
+  const previousCart = window._hubLastRenderedCart;
+  const previousItem = previousCart?.items?.find(
+    (cartItem) => String(cartItem.key) === String(key),
+  );
   itemEl?.querySelector(".hub-qty-error")?.remove();
 
   if (btn) {
@@ -156,6 +251,8 @@ async function updateQty(key, qty, btn = null) {
 
     const minusBtn = itemEl?.querySelector(".hub-qty-btn.minus");
     if (minusBtn) minusBtn.disabled = qty <= 1;
+    const preview = _hubGetQtyPreview(previousCart, key, qty);
+    if (preview) _hubPaintQtyPreview(itemEl, preview.item, preview.cart);
 
     const response = await fetch("/cart/change.js", {
       method: "POST",
@@ -171,10 +268,35 @@ async function updateQty(key, qty, btn = null) {
       throw error;
     }
 
-    await window.hubCartRender(getDrawer());
+    const updatedCart = await response.json();
+    const blockId = window.HUB_CART_BLOCK_ID;
+    window._hubLastRenderedCart = updatedCart;
+    const updatedItem = updatedCart.items?.find(
+      (cartItem) => String(cartItem.key) === String(key),
+    );
+    _hubPaintQtyPreview(itemEl, updatedItem, updatedCart);
+
+    const renderPromise = window.hubCartRender(getDrawer(), {
+      cart: updatedCart,
+    });
+    renderPromise.catch((err) =>
+      console.error("Cart render after quantity update failed:", err),
+    );
+    document.dispatchEvent(
+      new CustomEvent("cart:updated", {
+        detail: { cart: updatedCart, skipItemRerender: true },
+      }),
+    );
+
+    if (btn?.isConnected) {
+      btn.classList.remove("loading");
+      btn.innerHTML = ICONS[btn.dataset.type];
+      _hubEnableQtySiblings(btn, qty);
+    }
   } catch (err) {
     console.error("Qty update error:", err);
     if (qtyInput) qtyInput.value = previousQty;
+    _hubPaintQtyPreview(itemEl, previousItem, previousCart);
     const minusBtn = itemEl?.querySelector(".hub-qty-btn.minus");
     if (minusBtn) minusBtn.disabled = previousQty <= 1;
 
@@ -429,6 +551,8 @@ async function _commitRemoval(key) {
   const updates = { [key]: 0 };
 
   if (cartWillBeEmpty) {
+    window._hubRenderGen = (window._hubRenderGen || 0) + 1;
+    window._hubPendingRender = null;
     if (window.cartPlusSetEmptyHeaderVisibility) {
       window.cartPlusSetEmptyHeaderVisibility(drawer, true);
     } else {
@@ -475,6 +599,7 @@ async function _commitRemoval(key) {
       p.itemEl?.remove();
 
       _hubHideAllCartSections(blockId);
+      window.cartPlusSetBodyUpsellVisibility?.(blockId, true);
       const rewardsSettings = window.__HUB_ACTIVE_CART__?.rewardsSettings;
       if (rewardsSettings) {
         hubUtils.renderRewardsBar(
@@ -484,7 +609,9 @@ async function _commitRemoval(key) {
         );
       }
 
-      const cartBody = document.getElementById("hub-upcart-cart-body");
+      const cartBody =
+        drawer.querySelector(".hub-cart-items-CartPreview") ||
+        document.getElementById("hub-upcart-cart-body");
       if (cartBody) {
         cartBody.style.transition = "";
         cartBody.style.opacity = "";
@@ -512,6 +639,11 @@ async function _commitRemoval(key) {
         cartItemsEl.style.opacity = "";
         cartItemsEl.style.pointerEvents = "";
         cartItemsEl.classList.add("footer-empty");
+        const body = cartItemsEl.closest(".hub-cart-items-CartPreview");
+        body?.classList.add("hub-cart-empty-layout");
+        if (cartItemsEl.parentElement && cartItemsEl.parentElement !== body) {
+          cartItemsEl.parentElement.classList.add("hub-cart-empty-section");
+        }
       }
       if (container) {
         container.innerHTML = window.cartPlusEmptyCartHTML
@@ -529,16 +661,20 @@ async function _commitRemoval(key) {
       }
       window._hubLastCartHadItems = false;
 
-      networkDone
-        .then(() => {
-          window._hubRenderInProgress = false;
-          window._hubRewardUpdating = false;
-          return window.hubCartRender(drawer);
-        })
-        .then(() => {
-          _hubRestoreAllCartSections(blockId);
-        })
-        .catch(() => {});
+      try {
+        await networkDone;
+        window._hubRenderInProgress = false;
+        window._hubRewardUpdating = false;
+        window._hubPendingRender = null;
+        await window.hubCartRender(drawer);
+      } catch (error) {
+        console.error(
+          "[CartPlus] Failed to refresh the empty cart after removal:",
+          error,
+        );
+      } finally {
+        _hubRestoreAllCartSections(blockId);
+      }
       return;
     }
 

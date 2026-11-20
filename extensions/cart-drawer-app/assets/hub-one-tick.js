@@ -602,6 +602,10 @@ window.cartPlusOneTickToggle = async function (
 // the cart just became empty: drop the section right away instead of waiting for the next full render
 window.cartPlusHideOneTick = function (blockId) {
   const el = document.getElementById(`cart-plus-onetick-${blockId}`);
+  window._cartPlusOneTickAt = Math.max(
+    Date.now(),
+    (window._cartPlusOneTickAt || 0) + 1,
+  );
   window._cartPlusOneTickCart = null;
   if (!el) return;
   el.style.display = "none";

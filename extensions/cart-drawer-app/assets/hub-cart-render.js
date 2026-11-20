@@ -151,6 +151,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       cart = await res.json();
     }
     cart._hubAt = Date.now();
+    if (window._hubRenderGen !== _gen) return;
 
     // Auto-remove orphan addons/rewards: if the only items left are
     // addons or gift/reward items (no paying products), drop them all.
@@ -176,6 +177,7 @@ window.hubCartRender = async function (drawer, opts = {}) {
       const refreshed = await fetch("/cart.js");
       cart = await refreshed.json();
     }
+    if (window._hubRenderGen !== _gen) return;
     window._hubLastRenderedCart = cart;
 
     // Load One Tick offers before the drawer's other product and reward requests.
@@ -233,6 +235,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
         } catch (e) {}
       }),
     );
+
+    if (window._hubRenderGen !== _gen) return;
 
     hubUtils.updateDiscountUI(blockId, cart);
 
@@ -315,6 +319,8 @@ window.hubCartRender = async function (drawer, opts = {}) {
       window._hubRewardUpdating = false; // FIX: guarantee flag reset
     }
 
+    if (window._hubRenderGen !== _gen) return;
+
     // Rewards changed the cart in the background (e.g. while the page is loading).
     // Only refresh an already-open drawer; never pop it open by itself.
     if (isCartChanged)
@@ -333,7 +339,17 @@ window.hubCartRender = async function (drawer, opts = {}) {
 
     const cartItemsEl = document.getElementById(`hub-cart-items-${blockId}`);
     if (cartItemsEl) {
-      cartItemsEl.classList.toggle("footer-empty", cart.items.length === 0);
+      const isEmpty = cart.items.length === 0;
+      const body = cartItemsEl.closest(".hub-cart-items-CartPreview");
+      window.cartPlusSetBodyUpsellVisibility?.(blockId, isEmpty);
+      cartItemsEl.classList.toggle("footer-empty", isEmpty);
+      body?.classList.toggle("hub-cart-empty-layout", isEmpty);
+      if (cartItemsEl.parentElement && cartItemsEl.parentElement !== body) {
+        cartItemsEl.parentElement.classList.toggle(
+          "hub-cart-empty-section",
+          isEmpty,
+        );
+      }
     }
 
     // ── ANNOUNCEMENT ──────────────────────────────────────────────────────
@@ -1515,6 +1531,8 @@ if (savedEl) {
         return layoutFn(layoutCtx);
       }),
     );
+
+    if (window._hubRenderGen !== _gen) return;
 
     const previousItems = Array.from(
       container.querySelectorAll(".hub-cart-for-item[data-item-key]"),

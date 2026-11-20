@@ -3318,7 +3318,14 @@ select.hub-compact-variant {
 }
 
 /* Empty cart fills the whole body, so the content stays centred and the Cross-sell sits at the bottom */
-.hub-cart-items-CartPreview:has(> .hub-cart-items.footer-empty) {
+.hub-cart-items-CartPreview.hub-cart-empty-layout {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.hub-cart-empty-section {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -3335,6 +3342,10 @@ select.hub-compact-variant {
 }
 .hub-cart-items.footer-empty > .cart-plus-empty-cart {
   flex: 1 1 auto;
+}
+
+.hub-empty-cart-hidden-section {
+  display: none !important;
 }
 
 /* ── Template > Appearance: Dark ──

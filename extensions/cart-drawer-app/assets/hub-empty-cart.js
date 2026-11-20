@@ -41,10 +41,31 @@ window.cartPlusGetEmptyUpsells = (cartSettings) => ({
   ...(cartSettings?.emptyUpsells || {}),
 });
 
+window.cartPlusSetBodyUpsellVisibility = function (blockId, isEmpty) {
+  ["top", "bottom"].forEach((position) => {
+    const upsell = document.getElementById(
+      `hub-upsell-${position}-${blockId}`,
+    );
+    if (!upsell) return;
+    (upsell.closest(".cp-bg") || upsell).classList.toggle(
+      "hub-empty-cart-hidden-section",
+      isEmpty,
+    );
+    if (isEmpty) upsell.innerHTML = "";
+  });
+};
+
 window.cartPlusEmptyCartHTML = function (blockId) {
   const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
   const ds = window.__HUB_ACTIVE_CART__?.designSettings || {};
   const s = window.cartPlusGetEmptyCart(cartSettings);
+  const emptyUpsells = window.cartPlusGetEmptyUpsells(cartSettings);
+  const emptyUpsellLayout =
+    window.cartPlusUpsellLayout?.(emptyUpsells) ||
+    emptyUpsells.layout ||
+    emptyUpsells.direction;
+  const reserveUpsellSpace =
+    emptyUpsells.enabled === false && emptyUpsellLayout !== "side";
   const message = s.message ?? cartSettings.emptyCartMessage ?? "Your cart is empty";
   const customHtml = cartSettings.customHtmlBlocks?.empty_cart || "";
   const iconColor =
@@ -58,7 +79,7 @@ window.cartPlusEmptyCartHTML = function (blockId) {
   const btnText = s.buttonTextColor || ds.buttonTextColor || "#ffffff";
   const login = window.cartPlusLoginHTML?.(cartSettings, "emptyLogin") || "";
 
-  return `<div class="hub-cart-empty cart-plus-empty-cart" style="display:flex;flex-direction:column;flex:1 1 auto;width:100%;min-width:0;max-width:100%;box-sizing:border-box;background:${window.cartPlusBgCss(s.background)};">
+  return `<div class="hub-cart-empty cart-plus-empty-cart${reserveUpsellSpace ? " cart-plus-empty-cart--has-upsells" : ""}" style="display:flex;flex-direction:column;flex:1 1 auto;width:100%;min-width:0;max-width:100%;box-sizing:border-box;background:${window.cartPlusBgCss(s.background)};">
     <div style="flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 16px;text-align:center;">
       <div>${customHtml}</div>
       ${window.hubLibraryIconHTML?.(s.icon, 56, iconColor) || ""}
@@ -70,7 +91,7 @@ window.cartPlusEmptyCartHTML = function (blockId) {
           : ""
       }
     </div>
-    <div id="cart-plus-empty-upsell-${blockId}" style="width:100%;min-width:0;max-width:100%;overflow:hidden;box-sizing:border-box;"></div>
+    <div id="cart-plus-empty-upsell-${blockId}" style="width:100%;min-width:0;max-width:100%;overflow:hidden;box-sizing:border-box;${reserveUpsellSpace ? `min-height:${emptyUpsellLayout === "list" ? 280 : 180}px;` : ""}"></div>
   </div>`;
 };
 
@@ -94,67 +115,108 @@ async function cartPlusEmptyUpsellProducts(s) {
 }
 
 window.cartPlusRenderEmptyUpsell = async function (blockId) {
+  window.cartPlusSetBodyUpsellVisibility(blockId, true);
   const host = document.getElementById(`cart-plus-empty-upsell-${blockId}`);
   if (!host) return;
-  const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
-  const s = window.cartPlusGetEmptyUpsells(cartSettings);
-  if (s.enabled !== false) {
-    host.innerHTML = "";
+  if (host._cartPlusEmptyUpsellPromise) {
+    await host._cartPlusEmptyUpsellPromise;
+    return;
+  }
+
+  const renderPromise = (async () => {
+    const cartSettings = window.__HUB_ACTIVE_CART__?.cartSettings || {};
+    const s = window.cartPlusGetEmptyUpsells(cartSettings);
+    const emptyCart = host.closest(".cart-plus-empty-cart");
+    const clearReservedSpace = () => {
+      emptyCart?.classList.remove("cart-plus-empty-cart--has-upsells");
+      host.style.minHeight = "";
+      delete host.dataset.layout;
+    };
+
+    if (s.enabled !== false) {
+      host.innerHTML = "";
+      clearReservedSpace();
+      window.cartPlusRemoveSidePanel?.(blockId);
+      return;
+    }
+
+    const layout = window.cartPlusUpsellLayout(s);
+    if (layout === "side") {
+      host.innerHTML = "";
+      clearReservedSpace();
+    } else {
+      emptyCart?.classList.add("cart-plus-empty-cart--has-upsells");
+      host.dataset.layout = layout;
+      host.style.minHeight = layout === "list" ? "280px" : "180px";
+    }
+
+    const products = await cartPlusEmptyUpsellProducts(s);
+    if (!host.isConnected) return;
+    if (!products.length) {
+      host.innerHTML = "";
+      clearReservedSpace();
+      window.cartPlusRemoveSidePanel?.(blockId);
+      return;
+    }
+
+    const ds = window.__HUB_ACTIVE_CART__?.designSettings || {};
+
+    // Side panel: nothing inside the empty cart, the strip sits beside it
+    if (layout === "side") {
+      delete host.dataset.sig;
+      window.cartPlusRenderSidePanel?.(blockId, products, s);
+      return;
+    }
     window.cartPlusRemoveSidePanel?.(blockId);
-    return;
-  }
 
-  const products = await cartPlusEmptyUpsellProducts(s);
-  if (!document.getElementById(`cart-plus-empty-upsell-${blockId}`)) return; // cart changed meanwhile
-  if (!products.length) {
-    host.innerHTML = "";
-    window.cartPlusRemoveSidePanel?.(blockId);
-    return;
-  }
+    // same products and layout as what is already on screen: nothing to redraw
+    const sig = JSON.stringify([layout, products.map((p) => p.id), s.title, s.trigger]);
+    if (host.dataset.sig === sig && host.firstElementChild) return;
+    host.dataset.sig = sig;
+    const primary = s.primaryTextColor || ds.textColor || "#6b7280";
 
-  const layout = window.cartPlusUpsellLayout(s);
-  const ds = window.__HUB_ACTIVE_CART__?.designSettings || {};
+    const titleIcon = s.icon === undefined ? { type: "icon", name: "star" } : s.icon;
+    const iconHtml = titleIcon
+      ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, s.iconColor || undefined) || ""}</span>`
+      : "";
+    const title = s.title
+      ? `<h3 class="upsell-heading" style="color:${primary};${layout === "compact" ? "display:flex;align-items:center;justify-content:space-between;gap:8px;" : ""}"><div>${iconHtml}${s.title}</div>${layout === "compact" ? window.cartPlusCompactArrowsHTML?.() || "" : ""}</h3>`
+      : "";
 
-  // Side panel: nothing inside the empty cart, the strip sits beside it
-  if (layout === "side") {
-    host.innerHTML = "";
-    delete host.dataset.sig;
-    window.cartPlusRenderSidePanel?.(blockId, products, s);
-    return;
-  }
-  window.cartPlusRemoveSidePanel?.(blockId);
+    host.innerHTML = `<div class="upsell-container upsell-bottom"><div class="upsell-inner">${title}<div class="upsell-products"></div></div></div>`;
+    const productsDiv = host.querySelector(".upsell-products");
 
-  // same products and layout as what is already on screen: nothing to redraw
-  const sig = JSON.stringify([layout, products.map((p) => p.id), s.title, s.trigger]);
-  if (host.dataset.sig === sig && host.firstElementChild) return;
-  host.dataset.sig = sig;
-  const primary = s.primaryTextColor || ds.textColor || "#6b7280";
-
-  const titleIcon = s.icon === undefined ? { type: "icon", name: "star" } : s.icon;
-  const iconHtml = titleIcon
-    ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, s.iconColor || undefined) || ""}</span>`
-    : "";
-  const title = s.title
-    ? `<h3 class="upsell-heading" style="color:${primary};${layout === "compact" ? "display:flex;align-items:center;justify-content:space-between;gap:8px;" : ""}"><div>${iconHtml}${s.title}</div>${layout === "compact" ? window.cartPlusCompactArrowsHTML?.() || "" : ""}</h3>`
-    : "";
-
-  host.innerHTML = `<div class="upsell-container upsell-bottom"><div class="upsell-inner">${title}<div class="upsell-products"></div></div></div>`;
-  const productsDiv = host.querySelector(".upsell-products");
-
-  if (layout === "compact") {
-    window._cartPlusUpsellOverride = s;
-    productsDiv.innerHTML = window.cartPlusCompactHTML(products);
-    window._cartPlusUpsellOverride = null;
-    const track = productsDiv.querySelector(".hub-compact-track");
-    if (track) setTimeout(() => window.cartPlusCompactEdges(track), 0);
-    return;
-  }
-  await window.renderProducts(productsDiv, products, {
-    layout: layout === "carousel" ? "carousel" : "block",
-    upsellLayout: layout,
-    showReviews: s.showReviews,
-    carouselIndicator: s.carouselIndicator,
-    showIfAlreadyInCart: true,
-    upsellSettings: s,
+    if (layout === "compact") {
+      window._cartPlusUpsellOverride = s;
+      productsDiv.innerHTML = window.cartPlusCompactHTML(products);
+      window._cartPlusUpsellOverride = null;
+      const track = productsDiv.querySelector(".hub-compact-track");
+      if (track) setTimeout(() => window.cartPlusCompactEdges(track), 0);
+      return;
+    }
+    await window.renderProducts(productsDiv, products, {
+      layout: layout === "carousel" ? "carousel" : "block",
+      upsellLayout: layout,
+      showReviews: s.showReviews,
+      carouselIndicator: s.carouselIndicator,
+      showIfAlreadyInCart: true,
+      upsellSettings: s,
+    });
+  })();
+  host._cartPlusEmptyUpsellPromise = renderPromise.catch((error) => {
+    console.error("[CartPlus] Empty-cart upsell rendering failed:", error);
+    if (host.isConnected) {
+      host.innerHTML = "";
+      host
+        .closest(".cart-plus-empty-cart")
+        ?.classList.remove("cart-plus-empty-cart--has-upsells");
+      host.style.minHeight = "";
+    }
   });
+
+  try {
+    await host._cartPlusEmptyUpsellPromise;
+  } finally {
+    delete host._cartPlusEmptyUpsellPromise;
+  }
 };
