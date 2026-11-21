@@ -284,7 +284,7 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
   const isCarousel = oneTick.layout === "carousel";
   const isRow = oneTick.layout === "row" || oneTick.layout === "list";
 
-  const price = `<div style="font-size:13px;color:${oneTick.primaryTextColor};">${fmt(final)}${
+  const price = `<div style="line-height:1.25;font-size:13px;color:${oneTick.primaryTextColor};">${fmt(final)}${
     saved > 0
       ? ` <span style="text-decoration:line-through;color:${oneTick.secondaryTextColor};font-size:12px;">${fmt(variant.price)}</span>`
       : ""
@@ -324,11 +324,11 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
     </div>
     <div style="flex:1;min-width:0;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-        <div style="font-weight:500;font-size:13px;line-height:1.25;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
+        <div style="line-height:1.25;font-weight:500;font-size:13px;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
         ${savingHtml}
       </div>
       <div style="margin-top:2px;">${price}</div>
-      <div style="display:flex;flex-direction:row;align-items:center;gap:8px;margin-top:8px;">
+      <div style="display:flex;flex-direction:row;align-items:center;gap:8px;margin-top:4px;">
         <div style="flex:1;min-width:0;">${select}</div>
         <div style="flex-shrink:0;">${trigger}</div>
       </div>
