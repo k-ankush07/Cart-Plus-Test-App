@@ -2441,6 +2441,21 @@ p.price.cart-plus-public-component-upsell-tile__price-row {
   padding: 5px 16px !important;
 }
 
+/* The very last footer section (bottom of the footer) gets the same 12px below as the first one has above */
+.cart-plus-footer-stack > .cp-sec[data-cp-last] .cart-additional-notes,
+.cart-plus-footer-stack > .cp-sec[data-cp-last] .cart-addon-tile,
+.cart-plus-footer-stack > .cp-sec[data-cp-last] .cart-plus-summary,
+.cart-plus-footer-stack > .cp-sec[data-cp-last] .cart-discount-row,
+.cart-plus-footer-stack > .cp-sec[data-cp-last] .cart-plus-discount-tpl,
+.cart-plus-footer-stack > .cp-sec[data-cp-last] .cart-plus-age-verification,
+.cart-plus-footer-stack > .cp-sec[data-cp-last] .cart-plus-login-message,
+.cart-plus-footer-stack > .cp-sec[data-cp-last] .cart-plus-checkout-button-container-row {
+  padding-bottom: 12px !important;
+}
+.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack.cart-plus-footer-stack > .cp-sec[data-cp-last] .cart-plus-payment-badges {
+  padding-bottom: 12px !important;
+}
+
 .cart-plus-upsells-side-panel h3.cart-plus-internal-component-upsell-tile__title.cart-plus-public-component-upsell-tile__title {
     text-align: center;
 }

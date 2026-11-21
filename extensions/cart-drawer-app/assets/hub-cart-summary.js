@@ -171,7 +171,22 @@ window.cartPlusRenderSummary = function (blockId, data) {
       "cart-plus-summary__total",
     ),
   ].join("");
-  const savingsBannerBg = s.savingsBannerBg || "#b6eb98";
+  // the savings banner follows the Template theme until its colours are changed
+  const themeSolid = themedDs?.themed ? themedDs.accentSolid : null;
+  const mixWhite = (hex, pct) => {
+    const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex).trim());
+    if (!m) return hex;
+    let h = m[1];
+    if (h.length === 3) h = h.replace(/./g, (x) => x + x);
+    const n = parseInt(h, 16);
+    const ch = (v) => Math.round(v * (pct / 100) + 255 * (1 - pct / 100)).toString(16).padStart(2, "0");
+    return "#" + ch((n >> 16) & 255) + ch((n >> 8) & 255) + ch(n & 255);
+  };
+  const isDefaultBg = !s.savingsBannerBg || String(s.savingsBannerBg).toLowerCase() === "#b6eb98";
+  const isDefaultText = !s.savingsBannerTextColor || String(s.savingsBannerTextColor).toLowerCase() === "#1d2b1a";
+  const savingsBannerBg = isDefaultBg && themeSolid ? mixWhite(themeSolid, 30) : s.savingsBannerBg || "#b6eb98";
+  const savingsBannerTextColor =
+    isDefaultText && themeSolid ? themedDs.textColor || "#1d2b1a" : s.savingsBannerTextColor || "#1d2b1a";
   const savingsBannerText = (s.savingsBannerText || "You're saving {amount} on this order")
     .split("{amount}")
     .map((part, index, parts) => {
@@ -182,7 +197,7 @@ window.cartPlusRenderSummary = function (blockId, data) {
     .join("");
   const savingsBanner =
     s.design === "price-details" && saved > 0 && s.showSavingsBanner
-      ? `<div class="cart-plus-summary__savings" style="--summary-savings-bg:${savingsBannerBg};--summary-savings-text:${s.savingsBannerTextColor || "#1d2b1a"};--summary-savings-border:${cartPlusShade(savingsBannerBg, -25)};--summary-savings-start:${cartPlusShade(savingsBannerBg, -12)};--summary-savings-end:${cartPlusShade(savingsBannerBg, 6)}">${savingsBannerText}</div>`
+      ? `<div class="cart-plus-summary__savings" style="--summary-savings-bg:${savingsBannerBg};--summary-savings-text:${savingsBannerTextColor};--summary-savings-border:${cartPlusShade(savingsBannerBg, -25)};--summary-savings-start:${cartPlusShade(savingsBannerBg, -12)};--summary-savings-end:${cartPlusShade(savingsBannerBg, 6)}">${savingsBannerText}</div>`
       : "";
 
   const designTitles = {

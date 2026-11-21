@@ -20,6 +20,7 @@ import { patchOneTick, ONE_TICK_DEFAULTS } from "./components/utils/oneTick";
 import { themeTimerSettings } from "./components/utils/timerTemplates";
 import { AGE_TEMPLATES, themeAgeSettings } from "./components/utils/ageTemplates";
 import { patchAgeVerification } from "./components/utils/ageVerification";
+import { patchSummary, SUMMARY_DEFAULTS } from "./components/utils/summary";
 import { themeAnnouncementSettings } from "./components/utils/announcementTemplates";
 import {
   getCustomBlocks,
@@ -592,6 +593,26 @@ export default function CartEditor() {
         accent: null,
         trackBg: null,
       }));
+    }
+    // Summary savings banner: back to the default colours (which follow the theme)
+    const sm = cartSettings?.summary;
+    if (
+      sm &&
+      ((sm.savingsBannerBg && String(sm.savingsBannerBg).toLowerCase() !== "#b6eb98") ||
+        (sm.savingsBannerTextColor &&
+          String(sm.savingsBannerTextColor).toLowerCase() !== "#1d2b1a"))
+    ) {
+      handleChange(
+        "cartSettings",
+        patchSummary({
+          savingsBannerBg: SUMMARY_DEFAULTS.savingsBannerBg,
+          savingsBannerTextColor: SUMMARY_DEFAULTS.savingsBannerTextColor,
+        }),
+      );
+    }
+    // Header background: a custom colour / gradient would hide the theme tint, so drop it
+    if (headerSettings?.background) {
+      handleChange("header", (prev) => ({ ...prev, background: null }));
     }
     // Announcement template: the themed bar background + button colours follow the new theme
     const annTpl = announcementSettings?.template;

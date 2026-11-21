@@ -22,6 +22,8 @@ import {
   getSummary,
   patchSummary,
 } from "../utils/summary";
+import { useTemplateBackground } from "../utils/background";
+import { mixWithWhite } from "../utils/rewardThemes";
 import "../../../index.css";
 
 const PREVIEW_LINE = {
@@ -38,6 +40,7 @@ export default function CartSummary({
   apiUrl,
 }) {
   const s = getSummary(cartSettings);
+  const templateBackground = useTemplateBackground();
   const update = (patch) => handleChange("cartSettings", patchSummary(patch));
 
   return (
@@ -343,7 +346,12 @@ export default function CartSummary({
                 <InlineGrid columns={2} gap="400">
                   <ColorInput
                     label="Banner background"
-                    value={s.savingsBannerBg}
+                    value={
+                      String(s.savingsBannerBg || "").toLowerCase() ===
+                        "#b6eb98" && templateBackground?.color
+                        ? mixWithWhite(templateBackground.color, 30)
+                        : s.savingsBannerBg
+                    }
                     onChange={(val) => update({ savingsBannerBg: val })}
                   />
                   <ColorInput

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { backgroundToCss } from "../utils/background";
 import { getSummary } from "../utils/summary";
+import { mixWithWhite } from "../utils/rewardThemes";
 import { LibraryIcon } from "../ui/IconLibrary";
 
 const ICON_PATHS = {
@@ -174,8 +175,21 @@ export default function Summary({
     </span>
   );
 
-  const bannerBg = s.savingsBannerBg || "#b6eb98";
-  const bannerTextColor = s.savingsBannerTextColor || "#1d2b1a";
+  // the savings banner follows the Template theme until its colours are changed
+  const themeSolid = designSettings?.themed ? designSettings.accentSolid : null;
+  const isDefaultBg =
+    !s.savingsBannerBg || String(s.savingsBannerBg).toLowerCase() === "#b6eb98";
+  const isDefaultText =
+    !s.savingsBannerTextColor ||
+    String(s.savingsBannerTextColor).toLowerCase() === "#1d2b1a";
+  const bannerBg =
+    isDefaultBg && themeSolid
+      ? mixWithWhite(themeSolid, 30)
+      : s.savingsBannerBg || "#b6eb98";
+  const bannerTextColor =
+    isDefaultText && themeSolid
+      ? designSettings.textColor || "#1d2b1a"
+      : s.savingsBannerTextColor || "#1d2b1a";
 
   const design = s.design;
   // Template theme: Card / Striped borders follow the theme colour

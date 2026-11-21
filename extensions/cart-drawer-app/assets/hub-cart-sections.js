@@ -355,7 +355,7 @@ window.cartPlusTimerTemplate = function (timer, design, left, total) {
     const msg = String(timer.message || "").replace(TOKEN, `<strong>${clock}</strong>`);
     return {
       css: `${wrapper}background:transparent;padding:10px 16px;margin:0;`,
-      html: `<span style="display:inline-flex;align-items:center;gap:6px;background:${bg};padding:6px 14px;border-radius:999px;font-size:13px;">${icon(16)}<span>${msg}</span></span>`,
+      html: `<span style="line-height:1.2;display:inline-flex;align-items:center;gap:6px;background:${bg};padding:6px 14px;border-radius:999px;font-size:13px;">${icon(16)}<span>${msg}</span></span>`,
     };
   }
 
@@ -1322,7 +1322,7 @@ function renderDiscountTemplateHTMLInternal(blockId, settings, style) {
   const inputWrap = `<div class="hub-discount-input-btn" id="hub-discount-input-wrap-${blockId}" style="${pairStyle}">${input}${button}</div>`;
   const banner = `<div data-discount-banner style="display:flex;align-items:center;gap:12px;padding:6px;border-radius:${style.bannerRadius}px;background:${style.bannerBg};">
     <span style="width:35px;height:35px;border-radius:${style.badgeRadius}px;background:${style.badgeBg};color:${style.badgeColor};display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;">${escape(style.badgeText)}</span>
-    <div style="flex:1;"><div style="font-size:10px;font-weight:600;color:${style.headingColor};">${escape(style.heading)}</div><div data-discount-total style="font-size:${style.amountSize}px;font-weight:800;color:${style.amountColor};">${hubUtils.formatMoney(0)}</div></div>
+    <div style="flex:1;"><div style="font-size:10px;font-weight:600;color:${style.headingColor};">${escape(style.heading)}</div><div data-discount-total style="line-height:1.2;font-size:${style.amountSize}px;font-weight:800;color:${style.amountColor};">${hubUtils.formatMoney(0)}</div></div>
     ${
       style.layout === "compact"
         ? `<span data-discount-pill style="border:1px solid ${style.pillBorder};color:${style.pillColor};background:${style.pillBg};border-radius:999px;padding:6px 12px;font-size:10px;font-weight:600;"></span>`
@@ -1330,13 +1330,13 @@ function renderDiscountTemplateHTMLInternal(blockId, settings, style) {
     }
   </div>`;
   // hidden until a discount is applied (hub-utils.js shows it), so it leaves no empty gap
-  const list = `<div data-discount-list style="display:none;${style.layout === "chipbadges" ? "gap:8px;flex-wrap:wrap;margin-top:12px;" : "margin-top:4px;"}"></div>`;
+  const list = `<div data-discount-list style="line-height:1.2;display:none;${style.layout === "chipbadges" ? "gap:8px;flex-wrap:wrap;margin-top:12px;" : "margin-top:4px;"}"></div>`;
   const moreOffers = style.showMoreOffers
     ? `<button type="button" onclick="hubOpenOffersPanel('${blockId}')" style="flex:1;display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;color:${style.moreOffersColor};font-size:13px;font-weight:700;cursor:pointer;">${iconHtml}+1 ${escape(style.moreOffersText)}</button>`
     : "";
   const shellContent =
     style.layout === "compact"
-      ? `${style.showBanner ? banner : ""}${style.showList ? list : ""}${(style.showMoreOffers || style.showEnterLink) ? `<div style="display:flex;align-items:center;margin-top:10px;">${style.showMoreOffers ? moreOffers : ""}${style.showMoreOffers && style.showEnterLink ? `<span style="width:1px;align-self:stretch;background:#e1e3e5;margin:0 12px;"></span>` : ""}${style.showEnterLink ? compactEnterLink : ""}</div>` : ""}${inputWrap}${message}`
+      ? `${style.showBanner ? banner : ""}${style.showList ? list : ""}${(style.showMoreOffers || style.showEnterLink) ? `<div style="line-height:1.2;display:flex;align-items:center;margin-top:10px;">${style.showMoreOffers ? moreOffers : ""}${style.showMoreOffers && style.showEnterLink ? `<span style="width:1px;align-self:stretch;background:#e1e3e5;margin:0 12px;"></span>` : ""}${style.showEnterLink ? compactEnterLink : ""}</div>` : ""}${inputWrap}${message}`
       : `${style.showBanner ? banner : ""}${style.showList ? list : ""}${inputWrap}${message}${style.showEnterLink ? `<div style="margin-top:10px;">${chipEnterLink}</div>` : ""}`;
   return `<div class="hub-discount-input-row-items cart-plus-discount-code-row cart-plus-public-discount-code" id="hub-discount-row-${blockId}" style="padding:0;"><div class="cart-plus-discount-tpl" style="${shell}">${status}${shellContent}</div></div>`;
 }
@@ -1510,7 +1510,7 @@ window.cartPlusPaymentBadgesHTML = function (cartSettings) {
         ? `<div class="cart-plus-trust-badges" style="display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:${justify};font-size:13px;${/^#[0-9a-f]{3,8}$/i.test(s.textColor || "") ? `color:${s.textColor};` : ""}">${trust
             .map(
               (t) =>
-                `<span style="display:inline-flex;align-items:center;gap:6px;"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" style="flex-shrink:0;">${icons[t.icon] || icons.lock || ""}</svg>${t.text}</span>`,
+                `<span style="display:line-height:1.2;inline-flex;align-items:center;gap:6px;"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" style="flex-shrink:0;">${icons[t.icon] || icons.lock || ""}</svg>${t.text}</span>`,
             )
             .join("")}</div>`
         : ""

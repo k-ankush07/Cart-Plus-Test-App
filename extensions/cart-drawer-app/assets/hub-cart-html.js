@@ -764,6 +764,11 @@ window.cartPlusMarkFooterFirst = function (blockId) {
     if (first) found = true;
     el.toggleAttribute("data-cp-first", first);
   });
+  // the last section that takes up space gets the same 12px below as the first one has above
+  const visible = [...stack.children].filter((el) => el.offsetHeight > 0);
+  [...stack.children].forEach((el) =>
+    el.toggleAttribute("data-cp-last", el === visible[visible.length - 1]),
+  );
 
   if (!stack._cpObs) {
     let t;

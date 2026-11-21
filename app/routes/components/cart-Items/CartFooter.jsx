@@ -189,6 +189,11 @@ export default function CartFooter({
       if (first) found = true;
       el.toggleAttribute("data-cp-first", first);
     });
+    // the last section that takes up space gets the same 12px below as the first one has above
+    const visible = kids.filter((el) => el.offsetHeight > 0);
+    kids.forEach((el) =>
+      el.toggleAttribute("data-cp-last", el === visible[visible.length - 1]),
+    );
   });
 
   return (
