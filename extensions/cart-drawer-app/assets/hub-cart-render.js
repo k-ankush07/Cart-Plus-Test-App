@@ -996,7 +996,7 @@ if (savedEl) {
           ? { type: "icon", name: "star" }
           : upsellSettings.icon;
       const iconHtml = titleIcon
-        ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, upsellSettings.iconColor || undefined) || ""}</span>`
+        ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, upsellSettings.iconColor || window.cartPlusTemplateBackground?.(window.__HUB_ACTIVE_CART__?.designSettings)?.color || undefined) || ""}</span>`
         : "";
       if (layout === "compact") {
         heading.style.display = "flex";
@@ -2093,7 +2093,7 @@ if (savedEl) {
                 ? { type: "icon", name: "star" }
                 : upsellSettings.icon;
             const iconHtml = titleIcon
-              ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, upsellSettings.iconColor || undefined) || ""}</span>`
+              ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, upsellSettings.iconColor || window.cartPlusTemplateBackground?.(window.__HUB_ACTIVE_CART__?.designSettings)?.color || undefined) || ""}</span>`
               : "";
             if (upLayout === "compact") {
               heading.style.display = "flex";

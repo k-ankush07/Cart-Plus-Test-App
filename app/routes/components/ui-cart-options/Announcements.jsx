@@ -83,7 +83,7 @@ function AnnouncementTemplatePreview({
 }) {
   const preview = TEMPLATE_PREVIEWS[template];
   const settings = ANNOUNCEMENT_TEMPLATES[template];
-  
+
   const themedBackground =
     template === "default"
       ? customBackground || templateBackground(designSettings)
@@ -221,7 +221,7 @@ export default function Announcements({
         key === "default"
           ? null
           : t.background === "transparent"
-            ? themedBackground
+            ? null // follows the live Template theme (no stale saved copy)
             : t.backgroundGradient || { type: "plain", color: t.background },
       textColor: t.background === "transparent" ? "#ffffff" : t.color,
       accentBg: t.accentBg,
@@ -263,25 +263,27 @@ export default function Announcements({
       </Box>
 
       <LegacyCard sectioned title="Template">
-        <InlineGrid columns={3} gap="200">
-          {Object.entries(ANNOUNCEMENT_TEMPLATES).map(([key, t]) => (
-            <AnnouncementTemplatePreview
-              key={key}
-              template={key}
-              customBackground={
-                key === (announcementSettings.template || "default")
-                  ? announcementSettings.background
-                  : undefined
-              }
-              selected={
-                announcementSettings.template === key ||
-                (!announcementSettings.template && key === "default")
-              }
-              designSettings={designSettings}
-              onSelect={() => applyTemplate(key)}
-            />
-          ))}
-        </InlineGrid>
+        <div className="cart-plus-template-grid">
+          <InlineGrid columns={{ xs: 1, sm: 1, md: 1, lg: 1, xl: 3 }} gap="200">
+            {Object.entries(ANNOUNCEMENT_TEMPLATES).map(([key, t]) => (
+              <AnnouncementTemplatePreview
+                key={key}
+                template={key}
+                customBackground={
+                  key === (announcementSettings.template || "default")
+                    ? announcementSettings.background
+                    : undefined
+                }
+                selected={
+                  announcementSettings.template === key ||
+                  (!announcementSettings.template && key === "default")
+                }
+                designSettings={designSettings}
+                onSelect={() => applyTemplate(key)}
+              />
+            ))}
+          </InlineGrid>
+        </div>
       </LegacyCard>
 
       {[

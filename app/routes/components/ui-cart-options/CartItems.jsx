@@ -178,17 +178,16 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
       removedItemOpacity: value,
     }));
 
-
   const opts = getCartItemOptions(cartSettings);
   const setOpt = (patch) => handleChange("cartSettings", patchCartItem(patch));
 
   return (
     <BlockStack gap="400">
-       <Box >
+      <Box>
         <InlineStack align="space-between" blockAlign="center">
           <InlineStack blockAlign="center" gap="100">
             <Icon source={CartIcon} />
-           <Text variant="headingMd" as="h2">
+            <Text variant="headingMd" as="h2">
               Products
             </Text>
           </InlineStack>
@@ -196,24 +195,16 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
       </Box>
 
       <Card sectioned>
-        <BlockStack gap="300">
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "12px",
-            }}
-          >
-            {LAYOUT_OPTIONS.map((layout) => (
-              <LayoutThumb
-                key={layout}
-                value={layout}
-                selected={selected === layout}
-                onSelect={onSelect}
-              />
-            ))}
-          </div>
-        </BlockStack>
+        <InlineGrid columns={{ xs: 2, sm: 3, md: 3, lg: 3, xl: 3 }} gap="300">
+          {LAYOUT_OPTIONS.map((layout) => (
+            <LayoutThumb
+              key={layout}
+              value={layout}
+              selected={selected === layout}
+              onSelect={onSelect}
+            />
+          ))}
+        </InlineGrid>
       </Card>
 
       <Card sectioned>
@@ -264,7 +255,11 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
                 max={100}
                 step={5}
                 output
-                suffix={<Text variant="bodySm" tone="subdued">{removedItemOpacity}%</Text>}
+                suffix={
+                  <Text variant="bodySm" tone="subdued">
+                    {removedItemOpacity}%
+                  </Text>
+                }
                 onChange={onRemovedItemOpacityChange}
               />
             </Box>
@@ -300,7 +295,7 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
               autoComplete="off"
             />
           )}
-           <Checkbox
+          <Checkbox
             label="Show text limit"
             checked={opts.showtextLimit}
             onChange={(v) => setOpt({ showtextLimit: v })}
@@ -391,7 +386,9 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
             max={40}
             output
             value={opts.itemGap ?? DEFAULT_ITEM_GAP}
-            suffix={<Text as="span">{opts.itemGap ?? DEFAULT_ITEM_GAP} px</Text>}
+            suffix={
+              <Text as="span">{opts.itemGap ?? DEFAULT_ITEM_GAP} px</Text>
+            }
             onChange={(itemGap) => setOpt({ itemGap })}
           />
           <BlockStack gap="100">

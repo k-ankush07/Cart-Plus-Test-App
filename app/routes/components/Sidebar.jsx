@@ -532,7 +532,7 @@ const Sidebar = memo(function Sidebar({
 
   return (
     // fixed width so the sidebar keeps its size in both "Item in cart" and "Empty" views
-    <div style={{ width: 300, minWidth: 300, flexShrink: 0 }}>
+    <div style={{ width: 300, minWidth: 300, flexShrink: 0 }} className="cart-plus-sidebar">
       <BlockStack gap="300">
         {/* ── Card 1: Previewing items & market ── */}
         <Card>

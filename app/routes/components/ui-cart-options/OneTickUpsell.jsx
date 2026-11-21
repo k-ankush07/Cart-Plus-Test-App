@@ -231,44 +231,46 @@ const OptionCards = ({
     <Text as="p" variant="bodyMd" fontWeight="medium">
       {label}
     </Text>
-    <InlineGrid columns={3} gap="200">
-      {options.map((o) => {
-        const selected = value === o.value;
-        return (
-          <div
-            key={o.value}
-            role="button"
-            tabIndex={0}
-            aria-label={`${label}: ${o.label}`}
-            aria-pressed={selected}
-            onClick={() => onChange(o.value)}
-            onKeyDown={(e) => e.key === "Enter" && onChange(o.value)}
-            style={{
-              cursor: "pointer",
-              borderRadius: 10,
-              padding: 12,
-              minHeight: 84,
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              gap: 8,
-              background: selected ? "#fff" : "#f6f6f7",
-              border: selected ? "2px solid #1a1a1a" : "1px solid #e1e3e5",
-            }}
-          >
-            <div style={{ pointerEvents: "none" }}>{o.preview}</div>
-            {showLabels && (
-              <div style={{ textAlign: "center" }}>
-                <Text as="span" variant="bodySm" fontWeight="medium">
-                  {o.label}
-                </Text>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </InlineGrid>
+    <div className="cart-plus-template-grid">
+      <InlineGrid columns={{ xs: 1, sm: 1, md: 1, lg: 1, xl: 3 }} gap="200">
+        {options.map((o) => {
+          const selected = value === o.value;
+          return (
+            <div
+              key={o.value}
+              role="button"
+              tabIndex={0}
+              aria-label={`${label}: ${o.label}`}
+              aria-pressed={selected}
+              onClick={() => onChange(o.value)}
+              onKeyDown={(e) => e.key === "Enter" && onChange(o.value)}
+              style={{
+                cursor: "pointer",
+                borderRadius: 10,
+                padding: 12,
+                minHeight: 84,
+                boxSizing: "border-box",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                gap: 8,
+                background: selected ? "#fff" : "#f6f6f7",
+                border: selected ? "2px solid #1a1a1a" : "1px solid #e1e3e5",
+              }}
+            >
+              <div style={{ pointerEvents: "none" }}>{o.preview}</div>
+              {showLabels && (
+                <div style={{ textAlign: "center" }}>
+                  <Text as="span" variant="bodySm" fontWeight="medium">
+                    {o.label}
+                  </Text>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </InlineGrid>
+    </div>
   </BlockStack>
 );
 

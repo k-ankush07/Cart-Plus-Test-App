@@ -23,6 +23,7 @@ import SectionBg from "./cart-Items/SectionBg";
 import { backgroundToCss } from "./utils/background";
 import { getCartItemOptions } from "./utils/cartItemOptions";
 import { applyTemplateTheme } from "./utils/templateTheme";
+import { useMediaQuery, SIDE_PANEL_LIST_QUERY } from "./utils/useMediaQuery";
 
 function scopeCss(css, scope) {
   if (!css) return "";
@@ -118,8 +119,10 @@ const CartPreview = memo(function CartPreview({
   const sideUpsells = emptyCart
     ? getEmptyUpsells(cartSettings)
     : upsellsSettings;
+  // small screens: the Side panel becomes the normal List inside the cart
+  const isNarrow = useMediaQuery(SIDE_PANEL_LIST_QUERY);
   const sidePanelEnabled =
-    sideUpsells?.layout === "side" && !sideUpsells?.enabled;
+    sideUpsells?.layout === "side" && !sideUpsells?.enabled && !isNarrow;
   const sidePanelOnRight =
     sidePanelEnabled && sideUpsells?.sidePanelPosition === "right";
 
@@ -280,7 +283,7 @@ const CartPreview = memo(function CartPreview({
       }}
     >
       {/* Cross-sell "Side panel" layout: a strip of products beside the cart */}
-      {!sideUpsells.enabled && sideUpsells.layout === "side" && (
+      {!sideUpsells.enabled && sideUpsells.layout === "side" && !isNarrow && (
         <Upsells
           sidePanel
           upsellsSettings={sideUpsells}

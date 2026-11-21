@@ -71,7 +71,8 @@ export const themeAnnouncementSettings = (key, themeBg) => {
   const color = themeBg?.color;
   if (!t || key === "default" || !color) return {};
   const out = {};
-  if (t.background === "transparent") out.background = themeBg;
+  // not saved: the bar reads the live Template theme (a saved copy goes stale)
+  if (t.background === "transparent") out.background = null;
   if (t.accentBg) {
     out.accentBg = "#ffffff";
     out.accentText = color;

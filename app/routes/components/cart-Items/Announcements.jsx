@@ -107,7 +107,9 @@ const hasCustomBg =
   const color = usingThemeBg ? "#fff" : s.textColor || t.color;
   const iconColor = usingThemeBg ? "#fff" : s.iconColor || t.iconColor;
   const accentBg = usingThemeBg ? "#fff" : s.accentBg || t.accentBg;
-  const accentText = usingThemeBg ? "#111" : s.accentText || t.accentText;
+  const accentText = usingThemeBg
+    ? templateBg?.color || "#111"
+    : s.accentText || t.accentText;
 
   const Icon = ICONS[s.template];
   const showClose =

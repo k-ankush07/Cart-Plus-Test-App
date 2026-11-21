@@ -31,6 +31,7 @@ import {
 import { getCurrencySymbol } from "./utils/currency";
 import { toggleBanner, patchBanner } from "./utils/banner";
 import { toggleTimer } from "./utils/timer";
+import { useMediaQuery, SIDE_PANEL_LIST_QUERY } from "./utils/useMediaQuery";
 import { toggleOneTick } from "./utils/oneTick";
 import { toggleSummary } from "./utils/summary";
 import { toggleAgeVerification } from "./utils/ageVerification";
@@ -159,6 +160,17 @@ const CartLayout = memo(function CartLayout({
   const [publishLoading, setPublishLoading] = useState(false);
   const [unpublishModal, setUnpublishModal] = useState(false);
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
+
+  // On narrow screens the preview slides over the editor, so it starts hidden
+  // (the arrow button opens it). Crossing the breakpoint hides / shows it.
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(max-width: 1200px)");
+    if (mq.matches) setIsPreviewVisible(false);
+    const onChange = (e) => setIsPreviewVisible(!e.matches);
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
 
   // Fetch all carts when popover opens
   useEffect(() => {
@@ -405,7 +417,10 @@ const CartLayout = memo(function CartLayout({
 
   const sideUpsells =
     previewMode === "items" ? upsellsSettings : getEmptyUpsells(cartSettings);
-  const sideLayout = sideUpsells?.layout === "side";
+  // small screens: the Side panel becomes the normal List inside the cart, so the
+  // preview needs no extra room for it
+  const isNarrowForSide = useMediaQuery(SIDE_PANEL_LIST_QUERY);
+  const sideLayout = sideUpsells?.layout === "side" && !isNarrowForSide;
   const sidePanelEnabled = sideLayout && !sideUpsells?.enabled;
   const sidePanelOnRight =
     sidePanelEnabled && sideUpsells?.sidePanelPosition === "right";

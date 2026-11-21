@@ -625,12 +625,21 @@ export default function CartEditor() {
         ...Object.fromEntries(DISCOUNT_THEMED.map((k) => [k, undefined])),
       }));
     }
-    // Cross-sell button colour follows the theme again
-    if (upsellsSettings?.buttonBackground) {
+    // Cross-sell button + icon colours follow the theme again
+    if (upsellsSettings?.buttonBackground || upsellsSettings?.iconColor) {
       handleChange("upsellsSettings", (prev) => ({
         ...prev,
         buttonBackground: null,
+        iconColor: null,
       }));
+    }
+    // One Tick Upsell icon colour: back to the untouched default (= follows the theme)
+    const tickIcon = cartSettings?.oneTick?.iconColor;
+    if (tickIcon && String(tickIcon).toLowerCase() !== "#000000") {
+      handleChange(
+        "cartSettings",
+        patchOneTick({ iconColor: ONE_TICK_DEFAULTS.iconColor }),
+      );
     }
     // One Tick Upsell button colour: back to the untouched default (= follows the theme)
     const tickBg = cartSettings?.oneTick?.buttonBackground;

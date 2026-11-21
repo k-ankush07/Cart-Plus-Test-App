@@ -87,7 +87,8 @@ function TimerTemplatePreview({ template, selected, onSelect }) {
           alignItems: "center",
           gap: 7,
           borderRadius: 8,
-          background: settings.style === "text" ? "transparent" : settings.background,
+          background:
+            settings.style === "text" ? "transparent" : settings.background,
           justifyContent: settings.style === "text" ? "center" : undefined,
           color: settings.textColor,
           fontSize: 9,
@@ -317,16 +318,21 @@ export default function Timer({
           <Text as="h3" variant="headingSm">
             Templates
           </Text>
-          <InlineGrid columns={3} gap="200">
-            {Object.entries(TIMER_TEMPLATES).map(([key]) => (
-              <TimerTemplatePreview
-                key={key}
-                template={key}
-                selected={activeTemplate === key}
-                onSelect={() => applyTemplate(key)}
-              />
-            ))}
-          </InlineGrid>
+          <div className="cart-plus-template-grid">
+            <InlineGrid
+              columns={{ xs: 1, sm: 1, md: 1, lg: 1, xl: 3 }}
+              gap="200"
+            >
+              {Object.entries(TIMER_TEMPLATES).map(([key]) => (
+                <TimerTemplatePreview
+                  key={key}
+                  template={key}
+                  selected={activeTemplate === key}
+                  onSelect={() => applyTemplate(key)}
+                />
+              ))}
+            </InlineGrid>
+          </div>
         </BlockStack>
       </Card>
 
@@ -389,7 +395,7 @@ export default function Timer({
                 value={timer.subText || ""}
                 autoComplete="off"
                 helpText="Use {{minutes}} for remaining minutes"
-                 maxLength={30}
+                maxLength={30}
                 onChange={(subText) => update({ subText })}
               />
             )}

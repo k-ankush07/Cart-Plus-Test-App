@@ -283,7 +283,11 @@ const getBarStyles = (themeColor) => {
       preview: <PreviewThreshold />,
     },
     { value: "card", label: "Card", preview: <PreviewCard c={c("card")} /> },
-    { value: "gift", label: "Gift steps", preview: <PreviewGift c={c("gift")} /> },
+    {
+      value: "gift",
+      label: "Gift steps",
+      preview: <PreviewGift c={c("gift")} />,
+    },
     { value: "ring", label: "Ring", preview: <PreviewRing c={c("ring")} /> },
     {
       value: "striped",
@@ -342,7 +346,14 @@ export default function TieredOffers({
     }));
   // Choosing a style drops its custom colours so it follows the current
   // template theme colour again (other settings like icon / size are kept).
-  const COLOR_KEYS = ["bg", "accent", "track", "textColor", "iconBg", "iconColor"];
+  const COLOR_KEYS = [
+    "bg",
+    "accent",
+    "track",
+    "textColor",
+    "iconBg",
+    "iconColor",
+  ];
   const selectStyle = (value) =>
     handleChange("rewardsSettings", (prev) => {
       const cfg = { ...(prev.styleConfig?.[value] || {}) };
@@ -410,58 +421,60 @@ export default function TieredOffers({
 
       <LegacyCard sectioned title="Style">
         <BlockStack gap="300">
-          <InlineGrid columns={3} gap="300">
-            {getBarStyles().map((s) => {
-              const selected = barStyle === s.value;
-              return (
-                <div
-                  key={s.value}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={selected}
-                  onClick={() => selectStyle(s.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && selectStyle(s.value)
-                  }
-                  style={{
-                    cursor: "pointer",
-                    borderRadius: 10,
-                    padding: 10,
-                    background: "#fff",
-                    border: `2px solid ${selected ? "#303030" : "#e1e3e5"}`,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                    minHeight: 92,
-                  }}
-                >
-                  <Text as="span" variant="bodySm" fontWeight="medium">
-                    {s.label}
-                  </Text>
+          <div className="cart-plus-template-grid">
+            <InlineGrid
+              columns={{ xs: 1, sm: 1, md: 1, lg: 1, xl: 3 }}
+              gap="200"
+            >
+              {getBarStyles().map((s) => {
+                const selected = barStyle === s.value;
+                return (
                   <div
+                    key={s.value}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={selected}
+                    onClick={() => selectStyle(s.value)}
+                    onKeyDown={(e) => e.key === "Enter" && selectStyle(s.value)}
                     style={{
-                      flex: 1,
+                      cursor: "pointer",
+                      borderRadius: 10,
+                      padding: 10,
+                      background: "#fff",
+                      border: `2px solid ${selected ? "#303030" : "#e1e3e5"}`,
                       display: "flex",
                       flexDirection: "column",
-                      justifyContent: "center",
-                      padding: "8px 10px",
-                      borderRadius: 6,
-                      background: "#f7f7f7",
-                      border: "1px solid #ededed",
-                      pointerEvents: "none",
+                      gap: 8,
+                      minHeight: 92,
                     }}
                   >
-                    {s.preview}
+                    <Text as="span" variant="bodySm" fontWeight="medium">
+                      {s.label}
+                    </Text>
+                    <div
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        padding: "8px 10px",
+                        borderRadius: 6,
+                        background: "#f7f7f7",
+                        border: "1px solid #ededed",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      {s.preview}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </InlineGrid>
-
+                );
+              })}
+            </InlineGrid>
+          </div>
           {isThemed && (
             <LegacyCard sectioned title="Customize this style">
               <BlockStack gap="300">
-                <InlineGrid columns={2} gap="300">
+                <InlineGrid columns={{ xs: 1, sm: 1, xl: 2 }} gap="300">
                   <ColorInput
                     label="Background"
                     value={t.bg}

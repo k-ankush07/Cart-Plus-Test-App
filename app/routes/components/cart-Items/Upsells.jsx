@@ -8,6 +8,7 @@ import { backgroundToCss, useTemplateBackground } from "../utils/background";
 import { getCartItemOptions } from "../utils/cartItemOptions";
 import { LibraryIcon } from "../ui/IconLibrary";
 import NoProductPlaceholder from "../ui/NoProductPlaceholder";
+import { useMediaQuery, SIDE_PANEL_LIST_QUERY } from "../utils/useMediaQuery";
 
 const money = (value) => Number(value).toFixed(2);
 
@@ -198,12 +199,16 @@ export default function Upsells({
     4,
     Math.max(1, Number(compactColumnsSetting) || 3),
   );
-  const layout =
+  // On small screens the "Side panel" has no room beside the cart, so it is shown
+  // as the normal List layout inside the cart (same as the storefront does)
+  const isNarrow = useMediaQuery(SIDE_PANEL_LIST_QUERY);
+  const savedLayout =
     upsellsSettings?.layout && upsellsSettings.layout !== "row"
       ? upsellsSettings.layout
       : direction === "carousel"
         ? "carousel"
         : "list";
+  const layout = savedLayout === "side" && isNarrow ? "list" : savedLayout;
   const primary = primaryTextColor || designSettings.textColor || "#6b7280";
   const secondary = secondaryTextColor || primary;
   const cardBorder = designSettings?.accentBorder || "rgba(0, 0, 0, 0.08)";
@@ -721,6 +726,8 @@ export default function Upsells({
   }, [carouselIndicator, products]);
 
   // Side panel: nothing inside the cart body, the panel itself is drawn beside the cart
+  // narrow: the list inside the cart replaces the side panel
+  if (sidePanel && isNarrow) return null;
   if (layout === "side" && !sidePanel) return null;
 
   // manual selection with nothing picked yet: an empty slot instead of random store products

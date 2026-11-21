@@ -790,7 +790,7 @@ window.cartPlusAnnouncementTemplate = function (ann, cart) {
   const color = ann.textColor || t.color;
   const iconColor = ann.iconColor || t.iconColor;
   const accentBg = ann.accentBg || t.accentBg;
-  const accentText = ann.accentText || t.accentText;
+  let accentText = ann.accentText || t.accentText;
   const current = Number(
     ann.template === "progress"
       ? (cart?.total_price || 0) / 100
@@ -807,19 +807,19 @@ window.cartPlusAnnouncementTemplate = function (ann, cart) {
     formatAmount(remaining),
   );
   const padding = { slim: "4px 20px", normal: "10px 20px", thick: "18px 20px" }[ann.height] || "10px 20px";
-  const themedBackground =
-    ann.template === "default"
-      ? window.cartPlusTemplateBackground?.(
-          window.__HUB_ACTIVE_CART__?.designSettings,
-        )
-      : undefined;
-  // Default template ignores any saved background: it follows the Template tab colour
+  // No saved background (or the Default template): the bar follows the live Template theme
+  const themedBackground = window.cartPlusTemplateBackground?.(
+    window.__HUB_ACTIVE_CART__?.designSettings,
+  );
   const bg =
     ann.background && ann.template !== "default"
       ? window.cartPlusBgCss(ann.background)
       : themedBackground
         ? window.cartPlusBgCss(themedBackground)
         : t.background;
+  // on the themed bar the button text takes the theme colour (as in the editor)
+  const onThemeBg = !(ann.background && ann.template !== "default") && !!themedBackground;
+  if (onThemeBg && themedBackground.color) accentText = themedBackground.color;
   const pill = `background:#fff;color:#111;border-radius:999px;padding:4px 14px;font-size:12px;font-weight:700;white-space:nowrap;line-height:1.3;box-sizing:border-box;`;
 
   const isDefault = ann.template === "default";

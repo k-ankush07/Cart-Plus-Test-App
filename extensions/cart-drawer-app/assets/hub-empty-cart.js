@@ -203,7 +203,7 @@ window.cartPlusRenderEmptyUpsell = async function (blockId) {
 
     const titleIcon = s.icon === undefined ? { type: "icon", name: "star" } : s.icon;
     const iconHtml = titleIcon
-      ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, s.iconColor || undefined) || ""}</span>`
+      ? `<span style="display:inline-flex;vertical-align:middle;margin-right:6px;">${window.hubLibraryIconHTML?.(titleIcon, 18, s.iconColor || window.cartPlusTemplateBackground?.(window.__HUB_ACTIVE_CART__?.designSettings)?.color || undefined) || ""}</span>`
       : "";
     const title = s.title
       ? `<h3 class="upsell-heading" style="color:${primary};${layout === "compact" ? "display:flex;align-items:center;justify-content:space-between;gap:8px;" : ""}"><div>${iconHtml}${s.title}</div>${layout === "compact" ? window.cartPlusCompactArrowsHTML?.() || "" : ""}</h3>`
