@@ -21,6 +21,7 @@ import { themeTimerSettings } from "./components/utils/timerTemplates";
 import { AGE_TEMPLATES, themeAgeSettings } from "./components/utils/ageTemplates";
 import { patchAgeVerification } from "./components/utils/ageVerification";
 import { patchSummary, SUMMARY_DEFAULTS } from "./components/utils/summary";
+import { patchEmptyCart } from "./components/utils/emptyCart";
 import { themeAnnouncementSettings } from "./components/utils/announcementTemplates";
 import {
   getCustomBlocks,
@@ -593,6 +594,10 @@ export default function CartEditor() {
         accent: null,
         trackBg: null,
       }));
+    }
+    // Empty cart icon colour: back to default (= follows the theme)
+    if (cartSettings?.emptyCart?.iconColor) {
+      handleChange("cartSettings", patchEmptyCart({ iconColor: null }));
     }
     // Summary savings banner: back to the default colours (which follow the theme)
     const sm = cartSettings?.summary;

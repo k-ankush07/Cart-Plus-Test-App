@@ -10,7 +10,7 @@ const authHeaders = (extra = {}) => ({
   ...extra,
 });
 
-const apiUrl = "https://arts-widespread-solving-beta.trycloudflare.com";
+const apiUrl = "https://textapp.cartplus.io";
 
 function getSessionId() {
   let sessionId = sessionStorage.getItem("hub_session_id");
