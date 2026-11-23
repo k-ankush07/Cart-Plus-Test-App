@@ -23,6 +23,7 @@ import {
   Checkbox,
 } from "@shopify/polaris";
 
+
 import {
   defaultSettings,
   defaultHeaderSettings,
