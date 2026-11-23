@@ -260,7 +260,7 @@ export default function Summary({
       classic: {
         ...row,
         fontWeight: 600,
-        borderTop: "1px solid rgba(0,0,0,0.1)",
+        borderTop: `1px solid ${themeBorder || "rgba(0,0,0,0.1)"}`,
         paddingTop: 6,
       },
       card: {
@@ -312,7 +312,7 @@ export default function Summary({
           style={{
             ...itemStyle,
             ...(design === "price-details" && it.key === "savings"
-              ? { color: "#16803c" }
+              ? { color: designSettings?.themed ? designSettings.accentSolid : "#16803c" }
               : {}),
           }}
         >
@@ -376,7 +376,7 @@ export default function Summary({
                         fontWeight: 700,
                         fontSize: 15 ,
                         textDecoration: "underline",
-                        textDecorationColor: "#2f8f4e",
+                        textDecorationColor: designSettings?.themed ? designSettings.accentSolid : "#2f8f4e",
                         textDecorationThickness: 2,
                         textUnderlineOffset: 4,
                       }}
