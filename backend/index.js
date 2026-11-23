@@ -18,14 +18,14 @@ import { requireApiKey } from "./middleware/auth.js";
 const app = express();
 const port = process.env.PORT || 7002;
 
-app.use(express.json());
-
 app.use(
   cors({
     origin: true,
     credentials: true,
   }),
 );
+
+app.use(express.json({ limit: "25mb" }));
 
 app.use("/api", requireApiKey);
 

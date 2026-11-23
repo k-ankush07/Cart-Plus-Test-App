@@ -625,22 +625,28 @@ function AppCartsInner({
       minimumFractionDigits: 2,
     }).format(Number(n ?? 0));
 
-  const filteredCarts = [...carts]
-    .filter((c) => {
-      if (selectedTab === 1) return c.status === "published";
-      if (selectedTab === 2) return c.status !== "published";
-      if (selectedTab === 3) {
-        const abTest = c.cartSettings?.abTest;
-        return Boolean(abTest?.archived || abTest?.archive?.length);
-      }
-      return true;
-    })
-    .filter((c) =>
-      (c.cartName || "My Cart")
-        .toLowerCase()
-        .includes(searchValue.toLowerCase()),
-    )
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+const filteredCarts = [...carts]
+  .filter((c) => {
+    if (selectedTab === 1) return c.status === "published";
+    if (selectedTab === 2) return c.status !== "published";
+    if (selectedTab === 3) {
+      const abTest = c.cartSettings?.abTest;
+      return Boolean(abTest?.archived || abTest?.archive?.length);
+    }
+    return true;
+  })
+  .filter((c) =>
+    (c.cartName || "My Cart")
+      .toLowerCase()
+      .includes(searchValue.toLowerCase()),
+  )
+  .sort((a, b) => {
+    const aLive = a.status === "published" ? 1 : 0;
+    const bLive = b.status === "published" ? 1 : 0;
+    if (aLive !== bLive) return bLive - aLive;
+
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
 
   const limit = PLAN_ORDER_LIMITS[shopPlan] ?? PLAN_ORDER_LIMITS.free;
   const limitReached = currentMonthOrders >= limit;
