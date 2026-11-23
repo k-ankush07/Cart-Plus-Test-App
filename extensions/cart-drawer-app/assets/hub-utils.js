@@ -497,7 +497,6 @@ window.hubUtils = {
       compact: "hub-rec-product-compact",
       side: "hub-rec-product-side-panel",
     }[layout];
-
     // Button, Checkbox or Toggle; all three go through the same ".hub-add-btn" add-to-cart handler
     let trigger;
     if (u.trigger === "checkbox") {

@@ -2474,33 +2474,41 @@ p.price.cart-plus-public-component-upsell-tile__price-row {
     max-width: 2500px;
     margin: 0 auto;
 }
+
+.cart-plus-internal-component-upsell-tile.cart-plus-upsell-item-card select.cart-plus-upsell-item-variant-selector {
+    max-width: 75px;
+}
 /* Cross-sell LIST layout (editor preview): same compact grid as the storefront */
-.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card {
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card,
+.cart-plus-slider-wrapper .swiper-slide > .cart-plus-upsell-item-card {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     column-gap: 12px;
     row-gap: 0;
     align-items: start;
 }
-.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card > .cart-plus-internal-component-upsell-tile__info_count {
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card > .cart-plus-internal-component-upsell-tile__info_count,
+.cart-plus-slider-wrapper .swiper-slide > .cart-plus-upsell-item-card > .cart-plus-internal-component-upsell-tile__info_count {
     display: contents;
 }
-.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card .cart-plus-internal-component-upsell-tile__image-container {
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card .cart-plus-internal-component-upsell-tile__image-container,
+.cart-plus-slider-wrapper .swiper-slide > .cart-plus-upsell-item-card .cart-plus-internal-component-upsell-tile__image-container {
     grid-column: 1;
     grid-row: 1 / span 2;
 }
-.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card .cart-plus-internal-component-upsell-tile__info {
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card .cart-plus-internal-component-upsell-tile__info,
+.cart-plus-slider-wrapper .swiper-slide > .cart-plus-upsell-item-card .cart-plus-internal-component-upsell-tile__info {
     grid-column: 2;
     grid-row: 1;
     min-width: 0;
 }
-.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card > .cart-plus-internal-component-upsell-tile__variant-row {
+.cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card > .cart-plus-internal-component-upsell-tile__variant-row,
+.cart-plus-slider-wrapper .swiper-slide > .cart-plus-upsell-item-card > .cart-plus-internal-component-upsell-tile__variant-row {
     grid-column: 2;
     grid-row: 2;
     align-self: end;
     margin-top: 6px;
 }
-
 /* ─────────────────────────────────────────────────────────────────────────
    Editor responsive layout (1440px down to mobile)
    The cart preview is fixed on the right and the editor reserves room for it

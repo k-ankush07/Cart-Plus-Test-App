@@ -71,7 +71,7 @@ window.cartPlusCompactHTML = function (products) {
   const fmt = hubUtils.formatMoney;
   const bg = window.cartPlusBgCss(u.cardBackground) || ds.accentColor || "";
   const cardBorder = ds.accentBorder || "rgba(0, 0, 0, 0.08)";
-  const radius = 8; // card corners are fixed; the Radius setting only rounds the image
+  const radius = 8; 
   const btnBg =
     window.cartPlusBgCss(u.buttonBackground) ||
     window.cartPlusBgCss(window.cartPlusTemplateBackground?.(window.__HUB_ACTIVE_CART__?.designSettings)) ||

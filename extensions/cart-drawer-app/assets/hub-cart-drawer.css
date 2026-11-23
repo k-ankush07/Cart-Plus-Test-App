@@ -1446,7 +1446,7 @@ span.hub-total-arrow svg {
 
 .upcart-internal-component-upsell-tile__variant-row select {
   flex: 1;
-  max-width: 100px;
+  max-width: 74px;
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -3841,29 +3841,28 @@ select.hub-compact-variant {
 }
 
 @keyframes hubCompactSpin { to { transform: rotate(360deg); } }
-/* Cross-sell LIST layout: image on the left, the variant select + Add button sit under the
-   price (same column) instead of on a separate full-width row below the image. Removes the
-   empty band between the price and the controls. Carousel / compact / side panel keep their own layout. */
-.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) {
+/* Cross-sell List and Carousel layouts: image on the left, with variant controls and Add
+   under the price in the right column instead of a separate full-width row. */
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   column-gap: 12px;
   row-gap: 0;
   align-items: start;
 }
-.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) > .upcart-internal-component-upsell-tile__info_count {
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) > .upcart-internal-component-upsell-tile__info_count {
   display: contents;
 }
-.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) .upcart-internal-component-upsell-tile__image-container {
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) .upcart-internal-component-upsell-tile__image-container {
   grid-column: 1;
   grid-row: 1 / span 2;
 }
-.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) .upcart-internal-component-upsell-tile__info {
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) .upcart-internal-component-upsell-tile__info {
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
 }
-.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-carousel):not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) > .upcart-internal-component-upsell-tile__variant-row {
+.hub-cart-drawer .hub-rec-product:not(.hub-rec-product-compact):not(.hub-rec-product-side-panel) > .upcart-internal-component-upsell-tile__variant-row {
   grid-column: 2;
   grid-row: 2;
   align-self: end;

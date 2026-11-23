@@ -621,7 +621,7 @@ export default function Upsells({
                   minHeight: 0,
                   height: "auto",
                   marginTop: 0,
-                  paddingTop: 0,
+                  paddingTop: 8,
                   gap: 0,
                 }
               : {}),
