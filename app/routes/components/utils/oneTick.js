@@ -22,7 +22,7 @@ const DEFAULT_OFFER = {
 export const ONE_TICK_DEFAULTS = {
   enabled: false,
   title: "You might also like",
-  icon: { type: "icon", name: "star" },
+  icon: { type: "icon", name: "magic" },
   iconColor: "#000000",
   layout: "list",
   trigger: "button",

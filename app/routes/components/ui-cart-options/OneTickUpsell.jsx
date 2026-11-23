@@ -372,6 +372,7 @@ export default function OneTickUpsell({
               value={oneTick.icon}
               onChange={(icon) => update({ icon })}
               quickIcons={[
+                "magic",
                 "star",
                 "heart",
                 "right",
