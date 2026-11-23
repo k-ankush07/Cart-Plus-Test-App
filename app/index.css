@@ -2475,8 +2475,12 @@ p.price.cart-plus-public-component-upsell-tile__price-row {
     margin: 0 auto;
 }
 
+.cart-plus-upsells-side-panel-upsells select.cart-plus-upsell-item-variant-selector {
+    max-width: 100% !important;
+}
+
 .cart-plus-internal-component-upsell-tile.cart-plus-upsell-item-card select.cart-plus-upsell-item-variant-selector {
-    max-width: 75px;
+    max-width: 90px;
 }
 /* Cross-sell LIST layout (editor preview): same compact grid as the storefront */
 .cart-plus-internal-upsell__vertical-layout-wrapper > .cart-plus-upsell-item-card,

@@ -909,7 +909,7 @@ if (savedEl) {
             }
 
             const swiper = new window.Swiper(swiperEl, {
-              slidesPerView: rendered.length === 1 ? 1 : 1.2,
+              slidesPerView: rendered.length === 1 ? 1 : 1.1,
               spaceBetween: 12,
               on: {
                 init(swiper) {

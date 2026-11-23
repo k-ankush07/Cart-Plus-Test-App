@@ -981,7 +981,7 @@ export default function Upsells({
             }}
             onSlideChange={(swiper) => updateProgress(swiper)}
             spaceBetween={12}
-            slidesPerView={products.length <= 1 ? 1 : 1.2}
+            slidesPerView={products.length <= 1 ? 1 : 1.1}
           >
             {products.map((product) => (
               <SwiperSlide key={product.id}>
