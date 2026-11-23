@@ -404,7 +404,9 @@ export default function CartEditor() {
   const abTesting = {
     resetKey: abKey,
     openOnMount: openAbTestOnLoad,
-    defaultValue: cartSettings?.abTest
+    // only a RUNNING test is restored; a finished (archived) one must not
+    // pre-fill its old variants / traffic split when a new test is started
+    defaultValue: cartSettings?.abTest?.enabled
       ? {
           ...cartSettings.abTest,
           activeVariant: abActiveRef.current || cartSettings.abTest.variants?.[0] || "A",

@@ -93,6 +93,18 @@ export const archiveAbTest = async (apiUrl, cartId, winnerId) => {
   });
   return res.json();
 };
+
+export const rerunAbTest = async (apiUrl, cartId, archiveId) => {
+  const res = await fetch(
+    `${apiUrl}/api/rerun-ab-test/${cartId}/${encodeURIComponent(archiveId)}`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: authHeaders(),
+    },
+  );
+  return res.json();
+};
   
 export const getCarts = async (apiUrl, shop) => {
   return fetchJsonRetry(`${apiUrl}/api/get-carts?shop=${shop}`, {

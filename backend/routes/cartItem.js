@@ -104,6 +104,24 @@ const CART_SETTING_KEYS = [
 const pick = (obj, keys) =>
   Object.fromEntries(keys.map((k) => [k, obj?.[k]]));
 
+const cartAbSnapshot = (cart) => ({
+  design: cart.designSettings,
+  header: cart.headerSettings,
+  announcement: cart.announcementSettings,
+  rewardsSettings: cart.rewardsSettings,
+  recommendationsSettings: cart.recommendationsSettings,
+  subscriptionUpgradesSettings: cart.subscriptionUpgradesSettings,
+  upsellsSettings: cart.upsellsSettings,
+  additionalNotesSettings: cart.additionalNotesSettings,
+  addonsSettings: cart.addonsSettings,
+  discountCodesSettings: cart.discountCodesSettings,
+  expressPaymentsSettings: cart.expressPaymentsSettings,
+  trustBadgesSettings: cart.trustBadgesSettings,
+  cartSettings: Object.fromEntries(
+    Object.entries(cart.cartSettings || {}).filter(([key]) => key !== "abTest"),
+  ),
+});
+
 // ─── Carts ───────────────────────────────────────────────────────────────────
 
 router.get("/get-carts", async (req, res) => {
@@ -313,6 +331,16 @@ router.post("/archive-ab-test/:cartId", async (req, res) => {
         ];
       }),
     );
+    const controlId = abTest.controlId || variantKeys[0];
+    const controlSnapshot = cartAbSnapshot(cart);
+    const snapshots = Object.fromEntries(
+      variantKeys.map((variantKey) => [
+        variantKey,
+        variantKey === controlId
+          ? controlSnapshot
+          : abTest.data?.[variantKey],
+      ]),
+    );
 
     const winnerId =
       requestedWinnerId ||
@@ -330,10 +358,12 @@ router.post("/archive-ab-test/:cartId", async (req, res) => {
       endedAt,
       variants: variantKeys,
       weights: abTest.weights || {},
-      controlId: abTest.controlId || variantKeys[0],
+      allocation: abTest.allocation || "even",
+      controlId,
       variantIds: abTest.variantIds || {},
       winnerId,
       variantStats,
+      snapshots,
     };
     const archivedAbTest = {
       ...abTest,
@@ -343,24 +373,9 @@ router.post("/archive-ab-test/:cartId", async (req, res) => {
       archive: [...(abTest.archive || []), archiveRecord],
     };
 
-    const controlId = abTest.controlId || variantKeys[0];
     const winnerSnapshot =
       winnerId === controlId
-        ? {
-            design: cart.designSettings,
-            header: cart.headerSettings,
-            announcement: cart.announcementSettings,
-            rewardsSettings: cart.rewardsSettings,
-            recommendationsSettings: cart.recommendationsSettings,
-            subscriptionUpgradesSettings: cart.subscriptionUpgradesSettings,
-            upsellsSettings: cart.upsellsSettings,
-            additionalNotesSettings: cart.additionalNotesSettings,
-            addonsSettings: cart.addonsSettings,
-            discountCodesSettings: cart.discountCodesSettings,
-            expressPaymentsSettings: cart.expressPaymentsSettings,
-            trustBadgesSettings: cart.trustBadgesSettings,
-            cartSettings: cart.cartSettings,
-          }
+        ? controlSnapshot
         : abTest.data?.[winnerId];
 
     if (!winnerSnapshot) {
@@ -409,6 +424,139 @@ router.post("/archive-ab-test/:cartId", async (req, res) => {
   } catch (error) {
     console.error("ARCHIVE A/B TEST ERROR:", error);
     return res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.post("/rerun-ab-test/:cartId/:archiveId", async (req, res) => {
+  try {
+    const { cartId, archiveId } = req.params;
+    const cart = await cartModels.findByCartId(cartId);
+    if (!cart) {
+      return res.status(404).json({ success: false, message: "Cart not found" });
+    }
+
+    const abTest = cart.cartSettings?.abTest;
+    if (abTest?.enabled) {
+      return res.status(409).json({
+        success: false,
+        message: "End the active A/B test before re-running an archived test.",
+      });
+    }
+    const archiveRecord = abTest?.archive?.find(
+      (record) => record.id === archiveId,
+    );
+    if (!archiveRecord) {
+      return res.status(404).json({
+        success: false,
+        message: "Archived A/B test not found",
+      });
+    }
+
+    const variants = archiveRecord.variants;
+    if (
+      !Array.isArray(variants) ||
+      variants.length < 2 ||
+      variants.length > 5
+    ) {
+      return res.status(409).json({
+        success: false,
+        message: "This archived test has an invalid variant configuration.",
+      });
+    }
+
+    const controlId = variants.includes(archiveRecord.controlId)
+      ? archiveRecord.controlId
+      : variants[0];
+    const latestArchive =
+      abTest.archive?.[abTest.archive.length - 1]?.id === archiveId;
+    const canUseLegacySnapshots =
+      latestArchive &&
+      !abTest.enabled &&
+      Array.isArray(variants) &&
+      Array.isArray(abTest.variants) &&
+      variants.length === abTest.variants.length &&
+      variants.every((id, index) => id === abTest.variants[index]);
+    const fallbackSnapshot = cartAbSnapshot(cart);
+    const missingSnapshots = [];
+    const snapshots = Object.fromEntries(
+      (variants || []).map((id) => {
+        const savedSnapshot =
+          archiveRecord.snapshots?.[id] || abTest.data?.[id];
+        if (savedSnapshot) return [id, savedSnapshot];
+        if (canUseLegacySnapshots) {
+          missingSnapshots.push(id);
+          return [id, fallbackSnapshot];
+        }
+        return [id, undefined];
+      }),
+    );
+    if (variants.some((id) => !snapshots?.[id])) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "This archived test does not have saved variant settings and cannot be re-run.",
+      });
+    }
+
+    const controlSnapshot = snapshots[controlId];
+    const variantIds = Object.fromEntries(
+      variants.map((id) => [id, crypto.randomUUID()]),
+    );
+    const variantMeta = Object.fromEntries(
+      variants.map((id) => [id, new Date().toISOString()]),
+    );
+    const data = Object.fromEntries(
+      variants
+        .filter((id) => id !== controlId)
+        .map((id) => [id, snapshots[id]]),
+    );
+    const nextAbTest = {
+      ...abTest,
+      enabled: true,
+      archived: false,
+      winnerId: null,
+      variants,
+      allocation: archiveRecord.allocation || "even",
+      weights: archiveRecord.weights || {},
+      controlId,
+      variantIds,
+      variantMeta,
+      data,
+    };
+    const { abTest: _previousAbTest, ...controlCartSettings } =
+      controlSnapshot.cartSettings || {};
+    const updatedCart = await cartModels.update(cartId, {
+      designSettings: controlSnapshot.design,
+      headerSettings: controlSnapshot.header,
+      announcementSettings: controlSnapshot.announcement,
+      rewardsSettings: controlSnapshot.rewardsSettings,
+      recommendationsSettings: controlSnapshot.recommendationsSettings,
+      subscriptionUpgradesSettings: controlSnapshot.subscriptionUpgradesSettings,
+      upsellsSettings: controlSnapshot.upsellsSettings,
+      additionalNotesSettings: controlSnapshot.additionalNotesSettings,
+      addonsSettings: controlSnapshot.addonsSettings,
+      discountCodesSettings: controlSnapshot.discountCodesSettings,
+      expressPaymentsSettings: controlSnapshot.expressPaymentsSettings,
+      trustBadgesSettings: controlSnapshot.trustBadgesSettings,
+      cartSettings: {
+        ...controlCartSettings,
+        abTest: nextAbTest,
+      },
+    });
+
+    return res.json({
+      success: true,
+      message: missingSnapshots.length
+        ? `A/B test re-run with fresh variant IDs. Settings for variant${missingSnapshots.length > 1 ? "s" : ""} ${missingSnapshots.join(", ")} were unavailable and copied from the current cart.`
+        : "A/B test re-run successfully with fresh variant IDs.",
+      data: { cart: updatedCart },
+    });
+  } catch (error) {
+    console.error("RE-RUN A/B TEST ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Could not re-run the A/B test",
+    });
   }
 });
 

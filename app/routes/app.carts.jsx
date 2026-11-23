@@ -58,11 +58,12 @@ import {
   DiscountIcon,
   PlusCircleIcon,
   ReceiptIcon,
+  RefreshIcon,
 } from "@shopify/polaris-icons";
 
 import DateRangePicker from "./components/ui/DateRangePicker";
 import { Await, useLoaderData, useNavigate } from "react-router-dom";
-import { Suspense, useState, useEffect, Fragment } from "react";
+import { Suspense, useState, useEffect, Fragment, createElement } from "react";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import { requireShopData } from "./components/shop.server";
 
@@ -75,6 +76,7 @@ import {
   duplicateCart,
   syncDiscountStatus,
   archiveAbTest,
+  rerunAbTest,
 } from "../services/apiRoutes";
 import "../index.css";
 
@@ -198,9 +200,6 @@ async function checkAppEmbed(shopDomain, accessToken, themeId) {
   return false;
 }
 
-// The backend requires x-api-key on every /api route; without it these
-// calls got 401 and silently fell back to plan="free", orders=0, so the
-// "limit reached" banner / disabled buttons never showed.
 const apiKeyHeaders = () => ({
   "x-api-key":
     process.env.API_SECRET_KEY || import.meta.env.VITE_API_SECRET_KEY || "",
@@ -393,6 +392,7 @@ function AppCartsInner({
   const [popoverActive, setPopoverActive] = useState(false);
   const [cartToEndAbTest, setCartToEndAbTest] = useState(null);
   const [endingAbTest, setEndingAbTest] = useState(false);
+  const [rerunningAbTestId, setRerunningAbTestId] = useState(null);
 
   // Table UI state
   const [selectedTab, setSelectedTab] = useState(0);
@@ -425,7 +425,7 @@ function AppCartsInner({
   const [range, setRange] = useState({ start: defaultStart, end: today });
   const [carts, setCarts] = useState(initialCarts);
   const [cartStats, setCartStats] = useState(initialCartStats);
-  const [creatingFrom, setCreatingFrom] = useState(null);
+  const [creatingFrom, setCreatingFrom] = useState(null)
 
   // ← true on mount so table cells show skeleton until first fetch completes
   const [statsLoading, setStatsLoading] = useState(true);
@@ -616,6 +616,33 @@ function AppCartsInner({
     }
   };
 
+  const handleRerunAbTest = async (cart, test) => {
+    const archiveId = test.id;
+    if (!archiveId || rerunningAbTestId) return;
+    setRerunningAbTestId(archiveId);
+    try {
+      const result = await rerunAbTest(apiUrl, cart.cartId, archiveId);
+      if (!result.success || !result.data?.cart) {
+        throw new Error(result.message || "Could not re-run the A/B test");
+      }
+
+      setCarts((prev) =>
+        prev.map((item) =>
+          item.cartId === cart.cartId ? result.data.cart : item,
+        ),
+      );
+      setSelectedTab(0);
+      shopify.toast.show(result.message || "A/B test re-run successfully");
+    } catch (error) {
+      console.error("RE-RUN A/B TEST ERROR:", error);
+      shopify.toast.show(error.message || "Could not re-run the A/B test", {
+        isError: true,
+      });
+    } finally {
+      setRerunningAbTestId(null);
+    }
+  };
+
   // ─── Derived data ──────────────────────────────────────────────────────────
 
   const fmt = (n) =>
@@ -751,10 +778,11 @@ const filteredCarts = [...carts]
         <IndexTable.Row
           id={cart.cartId || `${i}`}
           position={i}
-          onClick={() => navigate(cartEditorPath)}
         >
           <IndexTable.Cell>
-            <CartHoverCard cart={cart}>
+            {createElement(
+              selectedTab === 3 ? Fragment : CartHoverCard,
+              selectedTab === 3 ? {} : { cart },
               <div
                 style={{
                   display: "flex",
@@ -791,6 +819,7 @@ const filteredCarts = [...carts]
                   </span>
                 )}
 
+                {selectedTab !== 3 && (
                 <span
                   style={{
                     width: 10,
@@ -800,7 +829,20 @@ const filteredCarts = [...carts]
                     background: isLive ? "#008060" : "#e51c00",
                   }}
                 />
-                <Text as="span">{name}</Text>
+                )}
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => navigate(cartEditorPath)}
+                >
+                  <Text as="span">{name}</Text>
+                  {selectedTab === 0 && (
+                    <Icon source={EditIcon} tone="subdued" />
+                  )}
+                </span>
                 {selectedTab === 3 && archivedTests.length > 0 ? (
                   <Badge tone="success">
                     {archivedTests.length}{" "}
@@ -809,26 +851,18 @@ const filteredCarts = [...carts]
                 ) : abTest ? (
                   <Badge tone="success">A/B test</Badge>
                 ) : null}
-                <span
-                  style={{ display: "inline-flex", cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(cartEditorPath);
-                  }}
-                >
-                  <Icon source={EditIcon} tone="subdued" />
-                </span>
-              </div>
-            </CartHoverCard>
+              </div>,
+            )}
           </IndexTable.Cell>
 
           {shownMetrics.map((m) => (
             <IndexTable.Cell key={m.id}>
-              {metricValue(m.id, cart, s)}
+              {selectedTab === 3 ? null : metricValue(m.id, cart, s)}
             </IndexTable.Cell>
           ))}
 
           <IndexTable.Cell>
+            {selectedTab === 3 ? null : (
             <InlineStack gap="200" align="end" blockAlign="center" wrap={false}>
               {selectedTab !== 3 && (
                 <Button
@@ -929,6 +963,7 @@ const filteredCarts = [...carts]
                 </Popover>
               </span>
             </InlineStack>
+            )}
           </IndexTable.Cell>
         </IndexTable.Row>
 
@@ -937,35 +972,68 @@ const filteredCarts = [...carts]
           archivedTests.flatMap((test, testIndex) => {
             const testId = test.id || `${cart.cartId}-archive-${testIndex}`;
             const testVariants = test.variants || [];
-            const startDate = test.startedAt
-              ? new Date(test.startedAt).toLocaleDateString()
-              : "";
-            const endDate = test.endedAt
-              ? new Date(test.endedAt).toLocaleDateString()
-              : "";
+            const testNumber = archivedTests.length - testIndex;
+            const fmtDate = (d) =>
+              d
+                ? new Date(d).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : "";
+            const startDate = fmtDate(test.startedAt);
+            const endDate = fmtDate(test.endedAt);
 
             return [
               <IndexTable.Row
                 key={`${testId}-summary`}
                 id={`${testId}-summary`}
                 position={1000 + i * 100 + testIndex * 10}
+                tone="subdued"
               >
                 <IndexTable.Cell>
-                  <div style={{ paddingLeft: 28 }}>
+                  <div
+                    style={{
+                      paddingLeft: 28,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      flexWrap: "wrap",
+                    }}
+                  >
                     <Text as="span" fontWeight="semibold">
-                      Test {testIndex + 1}
+                      Test #{testNumber}
                     </Text>
-                    <Text as="span" variant="bodySm" tone="subdued">
-                      {" "}
-                      {startDate}
-                      {endDate ? ` – ${endDate}` : ""}
-                    </Text>
+                    {(startDate || endDate) && (
+                      <Text as="span" variant="bodySm" tone="subdued">
+                        {startDate}
+                        {endDate ? ` — ${endDate}` : ""}
+                      </Text>
+                    )}
+                    {test.winnerId && (
+                      <Badge tone="success">Winner: Variant {test.winnerId}</Badge>
+                    )}
                   </div>
                 </IndexTable.Cell>
                 {shownMetrics.map((metric) => (
                   <IndexTable.Cell key={`${testId}-${metric.id}`} />
                 ))}
-                <IndexTable.Cell />
+                <IndexTable.Cell>
+                  <InlineStack align="end" blockAlign="center" wrap={false}>
+                    <Button
+                      size="slim"
+                      icon={RefreshIcon}
+                      loading={rerunningAbTestId === testId}
+                      disabled={!test.id || rerunningAbTestId !== null}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleRerunAbTest(cart, test);
+                      }}
+                    >
+                      Re-run
+                    </Button>
+                  </InlineStack>
+                </IndexTable.Cell>
               </IndexTable.Row>,
               ...testVariants.map((variantId, variantIndex) => {
                 const variantStats = test.variantStats?.[variantId] || {};
@@ -973,6 +1041,7 @@ const filteredCarts = [...carts]
                   ...cart,
                   createdAt: test.startedAt || cart.createdAt,
                 };
+                const isWinner = variantId === test.winnerId;
                 return (
                   <IndexTable.Row
                     key={`${testId}-${variantId}`}
@@ -988,15 +1057,18 @@ const filteredCarts = [...carts]
                           gap: 8,
                         }}
                       >
-                        <Text as="span">Variant {variantId}</Text>
+                        <Text
+                          as="span"
+                          fontWeight={isWinner ? "semibold" : "regular"}
+                        >
+                          Variant {variantId}
+                        </Text>
                         {test.weights?.[variantId] != null && (
                           <Text as="span" variant="bodySm" tone="subdued">
                             {test.weights[variantId]}% of traffic
                           </Text>
                         )}
-                        {variantId === test.winnerId && (
-                          <Badge tone="success">Winner</Badge>
-                        )}
+                        {isWinner && <Badge tone="success">Winner</Badge>}
                         {variantId === test.controlId && <Badge>Control</Badge>}
                       </div>
                     </IndexTable.Cell>
