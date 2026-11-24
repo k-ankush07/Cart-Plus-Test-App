@@ -115,7 +115,7 @@
 .hub-cart-item {
   display: flex;
   gap: 10px;
-  padding: 15px 15px;
+  /* padding: 15px 15px; */
   border-bottom: 1px solid #f0f0f0;
   align-items: flex-start;
   text-align: left;
@@ -1304,7 +1304,6 @@ span.hub-total-arrow svg {
   border-radius: 5px;
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 12px;
   border: 1px solid #E8E8E8
 }
 
@@ -2626,6 +2625,7 @@ button.remove-btn {
   display: flex;
   gap: 5px;
   margin-bottom: 3px;
+  align-items: center;
 }
 
 .hub-coupon-error {
@@ -2772,7 +2772,7 @@ select.hub-variant-option-select {
 
 /* ====== responsive styles ====== */
 
-@media screen and (max-width:440px) {
+/* @media screen and (max-width:440px) {
   .cart-plus-public-component-product-title-container {
     width: 100%;
   }
@@ -2804,7 +2804,7 @@ select.hub-variant-option-select {
     font-size: 11px !important;
   }
 
-}
+} */
 /* Custom HTML / CSS blocks added in the editor sidebar */
 .cart-custom-html {
   padding: 0px 16px;
@@ -2817,7 +2817,7 @@ select.hub-variant-option-select {
 }
 .cart-plus-summary__title,
 .cart-plus-summary__toggle {
-  margin-bottom: 6px;
+  margin-bottom: 6px !important;
   line-height: 1;
 }
 .cart-plus-summary__toggle {
@@ -2852,8 +2852,6 @@ select.hub-variant-option-select {
 .cart-plus-summary__content-inner {
   min-height: 0;
   overflow: hidden;
-  /* room for the rows box-shadow (overflow:hidden would clip it); the negative
-     margin cancels the extra space so the layout does not move */
   padding: 6px 8px 14px;
   margin: -6px -8px -14px;
 }
@@ -3660,8 +3658,8 @@ select.hub-compact-variant {
 }
 /* checkout button: keep a consistent gap above it in every footer position */
 .cart-plus-footer-stack > .cp-sec .cart-plus-checkout-btn-container {
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
   box-sizing: border-box;
 }
 /* checkout button as the very first footer section uses the same top spacing */

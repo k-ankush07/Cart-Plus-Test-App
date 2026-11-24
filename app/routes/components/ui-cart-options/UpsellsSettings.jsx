@@ -407,9 +407,7 @@ export default function UpsellsSettings({
                 max={imageSizeMax}
                 output
                 value={imageSize}
-                suffix={
-                  <Text as="span">{imageSize} px</Text>
-                }
+                suffix={<Text as="span">{imageSize} px</Text>}
                 onChange={(val) => update("imageSize", val)}
               />
               <RangeSlider
@@ -437,45 +435,45 @@ export default function UpsellsSettings({
       </Box>
 
       {upsellsSettings.layout !== "compact" && (
-      <Box paddingBlockStart="300">
-        <Card>
-          <BlockStack gap="300">
-            <Text variant="headingSm">Button Style</Text>
-            <InlineGrid columns={2} gap="400">
-              <RangeSlider
-                label="Border radius"
-                min={0}
-                max={24}
-                output
-                value={upsellsSettings.buttonRadius ?? 6}
-                onChange={(val) => update("buttonRadius", val)}
-              />
-              <RangeSlider
-                label="Font size"
-                min={10}
-                max={20}
-                output
-                value={upsellsSettings.buttonFontSize ?? 14}
-                onChange={(val) => update("buttonFontSize", val)}
-              />
-              <ColorInput
-                label="Background"
-                value={
-                  upsellsSettings.buttonBackground ||
-                  templateBackground?.color ||
-                  "#303030"
-                }
-                onChange={(val) => update("buttonBackground", val)}
-              />
-              <ColorInput
-                label="Text"
-                value={upsellsSettings.buttonTextColor || "#ffffff"}
-                onChange={(val) => update("buttonTextColor", val)}
-              />
-            </InlineGrid>
-          </BlockStack>
-        </Card>
-      </Box>
+        <Box paddingBlockStart="300">
+          <Card>
+            <BlockStack gap="300">
+              <Text variant="headingSm">Button Style</Text>
+              <InlineGrid columns={2} gap="400">
+                <RangeSlider
+                  label="Border radius"
+                  min={0}
+                  max={24}
+                  output
+                  value={upsellsSettings.buttonRadius ?? 6}
+                  onChange={(val) => update("buttonRadius", val)}
+                />
+                <RangeSlider
+                  label="Font size"
+                  min={10}
+                  max={20}
+                  output
+                  value={upsellsSettings.buttonFontSize ?? 14}
+                  onChange={(val) => update("buttonFontSize", val)}
+                />
+                <ColorInput
+                  label="Background"
+                  value={
+                    upsellsSettings.buttonBackground ||
+                    templateBackground?.color ||
+                    "#303030"
+                  }
+                  onChange={(val) => update("buttonBackground", val)}
+                />
+                <ColorInput
+                  label="Text"
+                  value={upsellsSettings.buttonTextColor || "#ffffff"}
+                  onChange={(val) => update("buttonTextColor", val)}
+                />
+              </InlineGrid>
+            </BlockStack>
+          </Card>
+        </Box>
       )}
 
       <Box paddingBlockStart="300">
@@ -580,6 +578,15 @@ export default function UpsellsSettings({
                 autoComplete="off"
               />
             )}
+            <RangeSlider
+              label="Item Spacing"
+              value={upsellsSettings.upsellSpacing}
+              onChange={(val) => update("upsellSpacing", val)}
+              output
+              min={3}
+              max={15}
+              step={1}
+            />
 
             <InlineStack align="space-between">
               <Text variant="bodyMd" fontWeight="medium">

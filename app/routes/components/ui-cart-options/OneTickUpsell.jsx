@@ -17,6 +17,7 @@ import {
   Icon,
   Divider,
   Badge,
+  Card
 } from "@shopify/polaris";
 import {
   CartIcon,
@@ -868,6 +869,16 @@ export default function OneTickUpsell({
           value={oneTick.cardBackground || undefined}
           onChange={(cardBackground) => update({ cardBackground })}
         />
+        <Card>
+          <RangeSlider
+            label="Card spacing"
+            min={3}
+            max={15}
+            output
+            value={oneTick.itemSpacing}
+            onChange={(itemSpacing) => update({ itemSpacing })}
+          />
+        </Card>
       </BlockStack>
 
       <Modal

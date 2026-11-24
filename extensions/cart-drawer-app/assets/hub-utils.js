@@ -511,7 +511,7 @@ window.hubUtils = {
     }
 
     return `
-    <div class="hub-rec-product ${layoutClass || ""} upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" data-product-handle="${product.handle}" style="background:${cardBg};border:1px solid ${cardBorder};">
+    <div class="hub-rec-product ${layoutClass || ""} upcart-internal-component-upsell-tile cart-plus-public-component-upsell-tile" data-product-handle="${product.handle}" style="background:${cardBg};border:1px solid ${cardBorder};${u.upsellSpacing !== undefined && u.upsellSpacing !== null && u.upsellSpacing !== "" ? `padding:${Number(u.upsellSpacing) || 0}px;` : ""}">
       <div class="upcart-internal-component-upsell-tile__info_count cart-plus-public-component-upsell-tile">
         <div class="upcart-internal-component-upsell-tile__image-container cart-plus-public-component-upsell-tile__image-container" style="${imageBox}">
           <img class="hub-product-img cart-plus-public-component-upsell-tile__image"
@@ -1571,30 +1571,20 @@ window.hubUtils = {
         <!-- LEFT -->
         <div class="hub-discount-left">
           
-          <div class="hub-discount-image">
-            <svg viewBox="0 0 20 20" style="fill: ${iconColor};">
-          <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
-         <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
-         <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
-         <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
-         </svg>
-          </div>
+         <div class="hub-discount-image" style="width:20px;height:20px;min-width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="20" height="20" fill="${iconColor || "currentColor"}" style="display:block;width:20px;height:20px;fill:${iconColor || "currentColor"};">
+    <path d="M12.78 8.28a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 1 0 1.06 1.06l4.5-4.5Z"/>
+    <path d="M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+    <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
+    <path fill-rule="evenodd" d="M12.094 3.514c-.822-1.79-3.366-1.79-4.188 0a.804.804 0 0 1-1.011.42c-1.848-.686-3.647 1.113-2.962 2.96a.804.804 0 0 1-.419 1.012c-1.79.822-1.79 3.366 0 4.188a.805.805 0 0 1 .42 1.011c-.686 1.848 1.113 3.647 2.96 2.962a.805.805 0 0 1 1.012.419c.822 1.79 3.366 1.79 4.188 0a.805.805 0 0 1 1.011-.42c1.848.686 3.647-1.113 2.962-2.96a.805.805 0 0 1 .419-1.012c1.79-.822 1.79-3.366 0-4.188a.805.805 0 0 1-.42-1.011c.686-1.848-1.113-3.647-2.96-2.962a.805.805 0 0 1-1.012-.419Zm-2.825.626a.804.804 0 0 1 1.462 0 2.304 2.304 0 0 0 2.896 1.2.804.804 0 0 1 1.034 1.034 2.304 2.304 0 0 0 1.199 2.895.804.804 0 0 1 0 1.462 2.304 2.304 0 0 0-1.2 2.896.805.805 0 0 1-1.034 1.034 2.304 2.304 0 0 0-2.895 1.199.804.804 0 0 1-1.462 0 2.304 2.304 0 0 0-2.896-1.2.804.804 0 0 1-1.033-1.034 2.305 2.305 0 0 0-1.2-2.895.804.804 0 0 1 0-1.462 2.304 2.304 0 0 0 1.2-2.896.804.804 0 0 1 1.033-1.033 2.304 2.304 0 0 0 2.896-1.2Z"/>
+  </svg>
+</div>
 
           <div class="hub-discount-chip">
             <div class="hub-discount-title-btn">
               <span class="code-cart" style="background:${hexToRGBA(discountColor, 0.1)}; color:${discountColor};">${app.title}</span>
 
-              ${
-                isManual
-                  ? `<button onclick="removeDiscountCode(this, '${blockId}')" class="remove-btn">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                      </button>`
-                  : ""
-              }
-
-            </div>
-
-             ${
+                 ${
                app.total_allocated_amount
                  ? `<div class="saved-badge" style="background:${hexToRGBA(savingsColor, 0.1)}; color:${savingsColor};">
         Saved ${
@@ -1606,7 +1596,15 @@ window.hubUtils = {
                  : ""
              }
 
+              ${
+                isManual
+                  ? `<button onclick="removeDiscountCode(this, '${blockId}')" class="remove-btn">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>`
+                  : ""
+              }
 
+            </div>
           </div>
         </div>
 

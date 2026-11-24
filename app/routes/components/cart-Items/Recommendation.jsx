@@ -443,7 +443,10 @@ export default function Recommendation({ recommendationsSettings, currency, cart
                     </div>
 
                 ) : (
-                    <div className="upcart-internal-upsell__vertical-layout-wrapper block">
+                    <div
+                        className="upcart-internal-upsell__vertical-layout-wrapper block"
+                        style={{ padding: `${upsellsSettings.upsellSpacing}px` }}
+                    >
                         {renderProducts()}
                     </div>)}
             </div>)}

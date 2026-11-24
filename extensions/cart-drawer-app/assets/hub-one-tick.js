@@ -304,7 +304,7 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
   const img = variant.image || product.image;
 
   if (isCarousel) {
-    return `<div class="cart-plus-onetick-card" style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;flex:0 0 43%;min-width:0;box-sizing:border-box;scroll-snap-align:start;">
+    return `<div class="cart-plus-onetick-card" style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:${oneTick.itemSpacing}px;display:flex;flex-direction:column;gap:8px;flex:0 0 43%;min-width:0;box-sizing:border-box;scroll-snap-align:start;">
       <img src="${img}" alt="${product.title}" style="width:${oneTick.imageSize}px;max-width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:${oneTick.radius}px;display:block;align-self:center;">
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0;">
         <div style="font-weight:600;font-size:13px;line-height:1.3;color:${oneTick.primaryTextColor};display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${product.title}</div>
@@ -318,7 +318,7 @@ function cartPlusOneTickCard(blockId, oneTick, offer, product, cardBg) {
     offer.showLabel && saved > 0
       ? `<div style="font-size:11px;font-weight:400;color:#1e7e34;white-space:nowrap;flex-shrink:0;">${label}</div>`
       : "";
-  return `<div class="cart-plus-onetick-card" style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:12px;display:flex;flex-direction:row;align-items:center;gap:12px;">
+  return `<div class="cart-plus-onetick-card" style="background:${cardBg};border:1px solid ${cardBorder};border-radius:10px;padding:${oneTick.itemSpacing}px;display:flex;flex-direction:row;align-items:center;gap:12px;">
     <div class="cart-plus-drawer__xs-row-thumb" style="width:90px;height:90px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
       <img src="${img}" alt="${product.title}" style="width:${oneTick.imageSize * 0.45}px;height:${oneTick.imageSize * 0.45}px;max-width:100%;max-height:100%;display:block;object-fit:cover;border-radius:${oneTick.radius * 0.45}px;">
     </div>

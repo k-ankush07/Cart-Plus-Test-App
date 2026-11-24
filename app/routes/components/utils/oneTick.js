@@ -37,6 +37,7 @@ export const ONE_TICK_DEFAULTS = {
   buttonBackground: { type: "plain", color: "#303030" },
   buttonTextColor: "#ffffff",
   cardBackground: null,
+  itemSpacing: 5,
 };
 
 

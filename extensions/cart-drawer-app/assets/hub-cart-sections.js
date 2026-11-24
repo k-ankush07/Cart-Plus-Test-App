@@ -1506,15 +1506,17 @@ window.cartPlusPaymentBadgesHTML = function (cartSettings) {
         : ""
     }
     ${
-      trust.length
-        ? `<div class="cart-plus-trust-badges" style="display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:${justify};font-size:13px;${/^#[0-9a-f]{3,8}$/i.test(s.textColor || "") ? `color:${s.textColor};` : ""}">${trust
-            .map(
-              (t) =>
-                `<span style="display:line-height:1.2;inline-flex;align-items:center;gap:6px;"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" style="flex-shrink:0;">${icons[t.icon] || icons.lock || ""}</svg>${t.text}</span>`,
-            )
-            .join("")}</div>`
-        : ""
-    }
+  trust.length
+    ? `<div class="cart-plus-trust-badges" style="display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:${justify};font-size:13px;${
+        /^#[0-9a-f]{3,8}$/i.test(s.textColor || "") ? `color:${s.textColor};` : ""
+      }">${trust
+        .map(
+          (t) =>
+            `<span style="display:inline-flex;align-items:center;gap:6px;line-height:1.2;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="16" height="16" fill="currentColor" style="flex-shrink:0;display:block;">${icons[t.icon] || icons.lock || ""}</svg>${t.text}</span>`,
+        )
+        .join("")}</div>`
+    : ""
+}
   </div>`;
 };
 

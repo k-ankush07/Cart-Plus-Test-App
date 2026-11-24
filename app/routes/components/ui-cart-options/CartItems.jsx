@@ -311,6 +311,17 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
               onChange={(textLimit) => setOpt({ textLimit })}
             />
           )}
+
+          <RangeSlider
+            label="Item Spacing"
+            min={3}
+            max={15}
+            output
+            value={opts.cartSpacing}
+            suffix={<Text as="span">{opts.cartSpacing}px</Text>}
+            onChange={(cartSpacing) => setOpt({ cartSpacing })}
+          />
+
           <Checkbox
             label="Show compare-at price"
             checked={opts.showCompareAt}

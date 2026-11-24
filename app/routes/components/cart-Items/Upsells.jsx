@@ -482,6 +482,7 @@ export default function Upsells({
                 textAlign: "center",
               }
             : {}),
+            padding:`${upsellsSettings.upsellSpacing}px`,
         }}
       >
         <div
@@ -958,7 +959,7 @@ export default function Upsells({
                 height="20"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke={designSettings.iconColor || "#ABABAB"}
+                stroke="#FFFF"
                 strokeWidth="2"
               >
                 <path d="M15 18l-6-6 6-6"></path>
@@ -1004,7 +1005,7 @@ export default function Upsells({
                 height="20"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke={designSettings.iconColor || "#ABABAB"}
+                stroke="#FFFF"
                 strokeWidth="2"
               >
                 <path d="M9 6l6 6-6 6"></path>
@@ -1090,7 +1091,7 @@ export default function Upsells({
                     designSettings.accentColor,
                   borderRadius: 8,
                   border: `1px solid ${cardBorder}`,
-                  padding: 8,
+                  padding: `${upsellsSettings.upsellSpacing}px`,
                   display: "flex",
                   flexDirection: "column",
                   gap: "5px",

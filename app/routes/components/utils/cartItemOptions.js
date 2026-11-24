@@ -8,6 +8,7 @@ export const CART_ITEM_DEFAULTS = {
   showtextLimit:false,
   textLimit:40,
   showCompareAt: true,
+  cartSpacing:5,
   showDiscountTag: true,
   showSavings: null, // null = follow cartSettings.showSavingsBelowPrices
   singleItemPrice: false, // unit price instead of the line total

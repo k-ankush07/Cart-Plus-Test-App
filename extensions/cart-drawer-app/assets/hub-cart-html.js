@@ -317,7 +317,7 @@ window.injectCartHTML = function (blockId, root) {
   @media (max-width: 480px) {
     #hub-cart-drawer-${blockId} {
       width: ${mobileWidth} !important;
-      max-width: 100vw !important;
+      // max-width: 100vw !important;
     }
   }
 `;

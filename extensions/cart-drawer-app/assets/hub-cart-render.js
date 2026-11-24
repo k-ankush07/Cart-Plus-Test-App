@@ -760,10 +760,10 @@ if (savedEl) {
         container.classList.add("hub-swiper-loading");
         container.innerHTML = `
           <div class="hub-swiper-wrapper">
-            ${indicator === "buttons" ? `<div class="hub-swiper-prev" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></div>` : ""}
+            ${indicator === "buttons" ? `<div class="hub-swiper-prev" style="background:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFF" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></div>` : ""}
             <div class="hub-swiper swiper"><div class="swiper-wrapper" style="display:flex;gap:12px;">${slidesHTML}</div></div>
-            ${indicator === "buttons" ? `<div class="hub-swiper-next" style = "background-color:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>` : ""}
-            ${indicator === "progressBar" ? `<div class="hub-progress-bar"><div class="hub-progress-bar-fill" style = "background-color:${btnColor}"></div></div>` : ""}
+            ${indicator === "buttons" ? `<div class="hub-swiper-next" style="background:${btnColor}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFF" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>` : ""}
+            ${indicator === "progressBar" ? `<div class="hub-progress-bar"><div class="hub-progress-bar-fill" style="background:${btnColor}"></div></div>` : ""}
           </div>`;
         _hubAnimateReturningUpsells(
           container,
@@ -771,7 +771,12 @@ if (savedEl) {
         );
       } else {
         container.style.display = "";
-        container.innerHTML = `<div class="upcart-internal-upsell__vertical-layout-wrapper">${html}</div>`;
+        const _spacing = window.__HUB_ACTIVE_CART__?.upsellsSettings?.upsellSpacing;
+        const _padStyle =
+          _spacing !== undefined && _spacing !== null && _spacing !== ""
+            ? ` style="padding:${Number(_spacing) || 0}px"`
+            : "";
+        container.innerHTML = `<div class="upcart-internal-upsell__vertical-layout-wrapper"${_padStyle}>${html}</div>`;
         _hubAnimateReturningUpsells(
           container,
           settings.enteringProductHandles,
@@ -1410,7 +1415,7 @@ if (savedEl) {
           (designSettings.showStrikethrough || false) && itemOpts.showCompareAt;
         const savingsColor = designSettings.savingsColor || "#16a34a";
         const iconColor = designSettings.iconColor || "#000000";
-
+               
         // FIX: read from pre-built cache — zero fetches here
         const cacheKey = `${item.handle}_${item.variant_id}`;
         let compareAtPrice = window._hubCompareCache[cacheKey] ?? 0;
@@ -1555,6 +1560,7 @@ if (savedEl) {
         const hasCompare = effectiveCompare > 0;
         const showtextLimit = itemOpts.showtextLimit || false;
         const textLimit = itemOpts.textLimit || 0;
+        const cartSpacing = itemOpts.cartSpacing || 5;
         const variantHtml =
           itemOpts.showVariants &&
           item.options_with_values &&
@@ -1614,7 +1620,8 @@ if (savedEl) {
           iconColor,
           singleItemPrice: itemOpts.singleItemPrice,
           showtextLimit,
-          textLimit
+          textLimit,
+          cartSpacing
         };
 
         const layoutFn =

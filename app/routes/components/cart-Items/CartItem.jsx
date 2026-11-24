@@ -925,6 +925,7 @@ function CartItemRow({
     variantTitle: opts.showVariants ? variantTitle : "",
     textLimit: opts.textLimit || 0,
     showtextLimit: opts.showtextLimit || false,
+    cartSpacing: opts.cartSpacing || 5,
   };
 
   // image size / radius from the "Styles" card (unset = the layout's own size)
@@ -1021,6 +1022,7 @@ function CartItemRow({
             opacity: isRemoved ? removedItemOpacity : 1,
             pointerEvents: isRemoved ? "none" : "auto",
             transition: "opacity 0.3s ease",
+            padding:`${opts.cartSpacing}px`,
             // Template theme: the card border follows the theme colour
             ...(designSettings?.accentBorder
               ? { border: `1px solid ${designSettings.accentBorder}` }

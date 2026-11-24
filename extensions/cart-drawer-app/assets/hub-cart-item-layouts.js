@@ -183,9 +183,10 @@ function classicItemHTML(ctx) {
     iconColor,
     showtextLimit,
     textLimit,
+    cartSpacing
   } = ctx;
-
   const discountBadges = _discountBadgesHtml(item, discountColor);
+
 
   const fullTitle = item.product_title || item.title || "";
   const shownTitle = truncate(fullTitle, showtextLimit, textLimit);
@@ -237,7 +238,7 @@ function classicItemHTML(ctx) {
        </div>`;
 
   const inner = `
-    <div class="hub-cart-item cart-plus-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">
+    <div class="hub-cart-item cart-plus-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap; padding:${cartSpacing}px">
       <div class="hub-item-img-wrap cart-plus-public-component-product-tile__image-wrapper">
         <img src="${item.image}" alt="${item.product_title}" class="hub-item-img cart-plus-public-component-product-tile__image" />
       </div>
@@ -292,6 +293,7 @@ function subscriptionItemHTML(ctx) {
     iconColor,
     showtextLimit,
     textLimit,
+    cartSpacing
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
@@ -326,7 +328,7 @@ function subscriptionItemHTML(ctx) {
        ${saveHtml}`;
 
   const inner = `
-    <div class="hub-cart-item hub-cart-item--subscription cart-plus-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">
+    <div class="hub-cart-item hub-cart-item--subscription cart-plus-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap; padding:${cartSpacing}px;">
       <div class="hub-item-img-wrap hub-item-img-wrap--sm cart-plus-public-component-product-tile__image-wrapper">
         <img src="${item.image}" alt="${item.product_title}" class="hub-item-img cart-plus-public-component-product-tile__image" />
       </div>
@@ -389,6 +391,7 @@ function modernItemHTML(ctx) {
     iconColor,
     showtextLimit,
     textLimit,
+    cartSpacing
   } = ctx;
 
   const discountBadges = _discountBadgesHtml(item, discountColor);
@@ -415,7 +418,7 @@ function modernItemHTML(ctx) {
     `;
 
   const inner = `
-    <div class="hub-cart-item hub-cart-item--modern cart-plus-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap">
+    <div class="hub-cart-item hub-cart-item--modern cart-plus-public-component-product-tile" style="color:${colorItems};flex-wrap:wrap; padding:${cartSpacing}px">
       <div class="hub-item-img-wrap cart-plus-public-component-product-tile__image-wrapper">
         <img src="${item.image}" alt="${item.product_title}" class="hub-item-img cart-plus-public-component-product-tile__image" />
       </div>

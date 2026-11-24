@@ -151,6 +151,7 @@ export const defaultUpsellsSettings = {
   buttonBackground: null,
   buttonTextColor: null,
   cardBackground: null,
+  upsellSpacing: 5,
 };
 
 export const defaultAdditionalNotesSettings = {
