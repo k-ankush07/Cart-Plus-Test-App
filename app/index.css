@@ -2479,6 +2479,11 @@ p.price.cart-plus-public-component-upsell-tile__price-row {
     max-width: 100% !important;
 }
 
+.file-upload-img {
+    display: flex;
+    justify-content: center;
+}
+
 .cart-plus-internal-component-upsell-tile.cart-plus-upsell-item-card select.cart-plus-upsell-item-variant-selector {
     max-width: 90px;
 }

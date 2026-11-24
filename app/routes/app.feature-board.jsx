@@ -203,7 +203,7 @@ function FilePreview({ file, onRemove }) {
 function AttachButton({ onPick, disabled }) {
   const ref = useRef(null);
   return (
-    <>
+    <div className="file-upload-img">
       <input
         ref={ref}
         type="file"
@@ -222,7 +222,7 @@ function AttachButton({ onPick, disabled }) {
       >
         + Add attachment
       </Button>
-    </>
+    </div>
   );
 }
 
