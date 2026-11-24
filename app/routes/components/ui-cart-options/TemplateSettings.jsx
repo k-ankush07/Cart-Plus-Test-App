@@ -420,12 +420,12 @@ const LayoutOption = ({ value, label, selected, onSelect }) => (
   </div>
 );
 
-const SliderRow = ({ label, value, max, unit, onChange }) => (
+const SliderRow = ({ label, value, min = 0, max, unit, onChange }) => (
   <div style={{ flex: 1, minWidth: 140 }}>
     <RangeSlider
       label={label}
       value={value}
-      min={0}
+      min={min}
       max={max}
       output
       suffix={
@@ -586,7 +586,10 @@ export default function TemplateSettings({
                       onClick={() => update({ themeColor: c })}
                     />
                   ))}
-              <div className="cp-custom-swatch" style={{ width: 28, height: 28 }}>
+              <div
+                className="cp-custom-swatch"
+                style={{ width: 28, height: 28 }}
+              >
                 <Popover
                   active={customOpen}
                   autofocusTarget="none"
@@ -814,6 +817,27 @@ export default function TemplateSettings({
                   unit="px"
                   value={t.radiusImages}
                   onChange={(v) => update({ radiusImages: v })}
+                />
+              </InlineStack>
+            </BlockStack>
+
+            <BlockStack>
+              <InlineStack gap="400" wrap>
+                <SliderRow
+                  label="Container padding (L/R)"
+                  min={5}
+                  max={30}
+                  unit="px"
+                  value={t.cartbodylrPadding}
+                  onChange={(v) => update({ cartbodylrPadding: v })}
+                />
+                <SliderRow
+                  label="Container padding (T/B)"
+                  min={5}
+                  max={30}
+                  unit="px"
+                  value={t.cartbodytbPadding}
+                  onChange={(v) => update({ cartbodytbPadding: v })}
                 />
               </InlineStack>
             </BlockStack>

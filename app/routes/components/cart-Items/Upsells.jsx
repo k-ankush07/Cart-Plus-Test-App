@@ -851,6 +851,9 @@ export default function Upsells({
   return (
     <div
       className={`cart-plus-internal-upsell cart-plus-public-upsell cart-plus-upsells cart-plus-upsells-module ${upsellsSettings?.position === "bottom" ? "hub-upsell-product" : "custom-upsell-top"}`}
+      style={{
+        padding: `${designSettings?.cartbodytbPadding ?? 12}px ${designSettings?.cartbodylrPadding ?? 16}px`,
+      }}
     >
       {title && (
         <div

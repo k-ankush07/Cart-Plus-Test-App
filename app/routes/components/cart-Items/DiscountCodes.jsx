@@ -389,7 +389,7 @@ export default function DiscountCode({
       style={{
         flex: 1,
         minWidth: 0,
-        padding: "10px 12px",
+        padding: "5px 12px",
         fontSize: 13,
         color: T.inputColor,
         background: T.inputBg,

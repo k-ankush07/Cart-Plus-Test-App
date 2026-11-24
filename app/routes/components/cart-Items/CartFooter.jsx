@@ -220,10 +220,16 @@ export default function CartFooter({
 
         {designSettings.continueshopping && (
           <div
-            className="cart-plus-continue-shopping styles_Footer__continueShopping__ cart-plus-continue-shopping"
+            className="cart-plus-continue-shopping styles_Footer__continueShopping__"
             style={{ color: designSettings.textColor }}
           >
-            <p>{cartSettings.continueShoppingText}</p>
+            <a
+              href={cartSettings.continueShoppingButtonLink || "#"}
+              onClick={(e) => e.preventDefault()}
+               style={{ color: "inherit", textDecoration: "none" }}
+            >
+              <p>{cartSettings.continueShoppingText}</p>
+            </a>
           </div>
         )}
 

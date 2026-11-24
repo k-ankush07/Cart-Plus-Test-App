@@ -9,6 +9,7 @@ import {
   Text,
   LegacyCard,
   Checkbox,
+  TextField,
 } from "@shopify/polaris";
 import { CartIcon } from "@shopify/polaris-icons";
 
@@ -68,17 +69,45 @@ export default function CheckoutButton({
               onChange={(val) => update({ label: val })}
             />
             <Text variant="bodySm" tone="subdued">
-              Use {"{{Price}}"} to show the cart total.
+              Use {"{{total_price}}"} to show the cart total.
             </Text>
           </BlockStack>
         </Card>
 
         <LegacyCard sectioned title="Button settings">
-          <Checkbox
-            label="Show continue shopping button"
-            checked={designSettings.continueshopping}
-            onChange={(val) => handleChange1("continueshopping", val)}
-          />
+          <BlockStack gap="300">
+            <Checkbox
+              label="Show continue shopping button"
+              checked={!!designSettings.continueshopping}
+              onChange={(val) => handleChange1("continueshopping", val)}
+            />
+            {designSettings.continueshopping && (
+              <>
+                <TextField
+                  label="Continue shopping button text"
+                  maxLength={40}
+                  value={cartSettings.continueShoppingText}
+                  onChange={(value) =>
+                    handleChange("cartSettings", (prev) => ({
+                      ...prev,
+                      continueShoppingText: value,
+                    }))
+                  }
+                />
+                <TextField
+                  label="Continue shopping button link"
+                  maxLength={100}
+                  value={cartSettings.continueShoppingButtonLink}
+                  onChange={(value) =>
+                    handleChange("cartSettings", (prev) => ({
+                      ...prev,
+                      continueShoppingButtonLink: value,
+                    }))
+                  }
+                />
+              </>
+            )}
+          </BlockStack>
         </LegacyCard>
 
         <Card>

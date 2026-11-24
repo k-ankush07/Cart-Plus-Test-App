@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, Fragment } from "react";
+import { memo, useState, useEffect, useRef, Fragment } from "react";
 import {
   Box,
   BlockStack,
@@ -76,7 +76,12 @@ const SECTIONS = [
       },
       { key: "Summary", icon: ReceiptIcon, toggle: true, drag: true },
       { key: "Discount code", icon: DiscountIcon, toggle: true, drag: true },
-      { key: "Age Verification", icon: CalendarCheckIcon, toggle: true, drag: true },
+      {
+        key: "Age Verification",
+        icon: CalendarCheckIcon,
+        toggle: true,
+        drag: true,
+      },
       { key: "Login", icon: PersonIcon, toggle: true, drag: true },
       { key: "Checkout Button", icon: CartIcon, drag: true },
       { key: "Payment Badges", icon: PaymentIcon, toggle: true, drag: true },
@@ -213,6 +218,20 @@ const Sidebar = memo(function Sidebar({
   const [marketList, setMarketList] = useState([]);
   const [primaryMarketId, setPrimaryMarketId] = useState(null);
   const [marketsLoaded, setMarketsLoaded] = useState(false);
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      let el = rootRef.current;
+      while (el) {
+        if (el.scrollTop > 0) el.scrollTo({ top: 0, behavior: "smooth" });
+        el = el.parentElement;
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [activeTab]);
 
   useEffect(() => {
     let cancelled = false;
@@ -532,7 +551,11 @@ const Sidebar = memo(function Sidebar({
 
   return (
     // fixed width so the sidebar keeps its size in both "Item in cart" and "Empty" views
-    <div style={{ width: 300, minWidth: 300, flexShrink: 0 }} className="cart-plus-sidebar">
+    <div
+      ref={rootRef}
+      style={{ width: 300, minWidth: 300, flexShrink: 0 }}
+      className="cart-plus-sidebar"
+    >
       <BlockStack gap="300">
         {/* ── Card 1: Previewing items & market ── */}
         <Card>

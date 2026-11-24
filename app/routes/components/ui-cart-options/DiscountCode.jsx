@@ -347,24 +347,6 @@ export default function DiscountCode({
           </BlockStack>
         </Card>
 
-        {/* ───────── Container (Compact + Chip) ───────── */}
-        {!isClassic && (
-          <Section
-            title="Container"
-            hint="The outer box of the discount block."
-          >
-            <InlineGrid columns={3} gap="300">
-              {color("bg", "Background")}
-              {color("textColor", "Text color", "#1a1a1a")}
-              {color("accent", "Accent color")}
-            </InlineGrid>
-            <InlineGrid columns={2} gap="300">
-              {num("radius", "Border radius (px)", 0, 40)}
-              {num("padding", "Inner padding (px)", 0, 48)}
-            </InlineGrid>
-            {toggle("shadow", "Show shadow")}
-          </Section>
-        )}
         {/* ───────── Savings banner (Compact + Chip) ───────── */}
         {!isClassic && (
           <Section
@@ -412,6 +394,25 @@ export default function DiscountCode({
                 </InlineGrid>
               </>
             )}
+          </Section>
+        )}
+
+          {/* ───────── Container (Compact + Chip) ───────── */}
+        {!isClassic && (
+          <Section
+            title="Container"
+            hint="The outer box of the discount block."
+          >
+            <InlineGrid columns={3} gap="300">
+              {color("bg", "Background")}
+              {color("textColor", "Text color", "#1a1a1a")}
+              {color("accent", "Accent color")}
+            </InlineGrid>
+            <InlineGrid columns={2} gap="300">
+              {num("radius", "Border radius (px)", 0, 40)}
+              {num("padding", "Inner padding (px)", 0, 48)}
+            </InlineGrid>
+            {toggle("shadow", "Show shadow")}
           </Section>
         )}
 

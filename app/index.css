@@ -1482,7 +1482,7 @@ span.cart-plus-rewards-tier-icon {
 .cart-plus-internal-upsell {
     border-radius: 5px;
     position: relative;
-    padding: 15px 15px 15px 15px;
+    /* padding: 15px 15px 15px 15px; */
 }
 
 .cart-app-item__title {

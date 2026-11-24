@@ -314,7 +314,8 @@ export default function OneTickUpsell({
   };
 
   const trigger = (offer, product, variant, full = false) => {
-    const on = inCart(product).some((v) => v.id === variant.id) || !!armed[offer.id];
+    const on =
+      inCart(product).some((v) => v.id === variant.id) || !!armed[offer.id];
     const toggle = (v) => {
       // tick = this product goes into the cart items, untick = it is removed again
       if (v) {
@@ -767,7 +768,12 @@ export default function OneTickUpsell({
   };
 
   return (
-    <div className="cart-plus-one-tick" style={{ padding: "12px 16px" }}>
+    <div
+      className="cart-plus-one-tick"
+      style={{
+        padding: `${designSettings?.cartbodytbPadding ?? 12}px ${designSettings?.cartbodylrPadding ?? 16}px`,
+      }}
+    >
       {/* scrollbar chhupane ke liye + stack css */}
       <style>
         {`.cp-track{scrollbar-width:none;-ms-overflow-style:none}.cp-track::-webkit-scrollbar{display:none}`}

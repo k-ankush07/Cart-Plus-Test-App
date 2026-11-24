@@ -1118,7 +1118,7 @@ export default function CartItem({
   return (
     <div
       style={{
-        padding: "12px 16px",
+        padding: `${rest.designSettings?.cartbodytbPadding ?? 12}px ${rest.designSettings?.cartbodylrPadding ?? 16}px`,
         display: "flex",
         flexDirection: "column",
         gap: `${getCartItemOptions(rest.cartSettings).itemGap ?? 15}px`,

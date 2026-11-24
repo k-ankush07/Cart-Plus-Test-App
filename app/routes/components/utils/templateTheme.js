@@ -37,6 +37,8 @@ export const TEMPLATE_DEFAULTS = {
   radiusFields: 10,
   radiusImages: 5,
   radiusDrawer: 14,
+  cartbodylrPadding: 15,
+  cartbodytbPadding: 15,
 };
 
 const mix = (color, pct, surface) =>

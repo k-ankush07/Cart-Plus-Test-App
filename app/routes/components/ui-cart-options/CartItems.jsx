@@ -296,7 +296,7 @@ export default function CartItems({ handleChange, cartSettings, currency }) {
             />
           )}
           <Checkbox
-            label="Show text limit"
+            label="Heading Text Limit"
             checked={opts.showtextLimit}
             onChange={(v) => setOpt({ showtextLimit: v })}
           />

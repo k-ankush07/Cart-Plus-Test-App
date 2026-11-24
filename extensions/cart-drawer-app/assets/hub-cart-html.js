@@ -1,5 +1,5 @@
 const DEFAULT_LOGO = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="48" viewBox="0 0 160 48"><rect width="160" height="48" rx="4" fill="#f3f4f6"/><path d="M18 16h20v17H18zM15 16l3-6h20l3 6M23 33v-8h10v8" fill="none" stroke="#6b7280" stroke-width="2" stroke-linejoin="round"/><text x="48" y="29" fill="#6b7280" font-family="Arial,sans-serif" font-size="14">Your logo</text></svg>'
+  '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="48" viewBox="0 0 160 48"><rect width="160" height="48" rx="4" fill="#f3f4f6"/><path d="M18 16h20v17H18zM15 16l3-6h20l3 6M23 33v-8h10v8" fill="none" stroke="#6b7280" stroke-width="2" stroke-linejoin="round"/><text x="48" y="29" fill="#6b7280" font-family="Arial,sans-serif" font-size="14">Your logo</text></svg>',
 )}`;
 
 function getFontWeight(weight) {
@@ -45,14 +45,17 @@ const customBlockHTML = (b) =>
   `<div class="cart-custom-html" data-cart-plus-block="${b.id}">${b.code}</div>`;
 
 function getActiveCustomBlocks(cartSettings) {
-  return (Array.isArray(cartSettings.customBlocks) ? cartSettings.customBlocks : [])
-    .filter((b) => b && b.enabled && b.code);
+  return (
+    Array.isArray(cartSettings.customBlocks) ? cartSettings.customBlocks : []
+  ).filter((b) => b && b.enabled && b.code);
 }
 
 // <script> tags added through innerHTML do not run, so recreate them
 function activateCustomBlockScripts(blockId) {
   document
-    .querySelectorAll(`#hub-cart-drawer-${blockId} [data-cart-plus-block] script`)
+    .querySelectorAll(
+      `#hub-cart-drawer-${blockId} [data-cart-plus-block] script`,
+    )
     .forEach((old) => {
       const fresh = document.createElement("script");
       [...old.attributes].forEach((a) => fresh.setAttribute(a.name, a.value));
@@ -107,7 +110,7 @@ window.injectCartHTML = function (blockId, root) {
     window.__HUB_ACTIVE_CART__?.cart?.item_count ??
     window.__HUB_CART_COUNT__ ??
     0;
-    
+
   // ── Derived header values ──────────────────────────────────────────────────
   const headerPadding =
     headerSettings.height === "slim" ? "15px 25px" : "30px 30px";
@@ -166,8 +169,7 @@ window.injectCartHTML = function (blockId, root) {
     const wrapperStyle = `flex:1;text-align:${textAlign}; line-height:1;`;
 
     if (titleType === "logo") {
-      const src =
-        headerSettings.logo || DEFAULT_LOGO;
+      const src = headerSettings.logo || DEFAULT_LOGO;
       const marginStyle =
         alignment === "center"
           ? "margin:0 auto;"
@@ -264,6 +266,14 @@ window.injectCartHTML = function (blockId, root) {
   }
   const itemOpts = window.cartPlusGetItemOptions(cartSettings);
   const cardBgCss = window.cartPlusBgCss(itemOpts.cardBackground);
+  const getBodyPadding = (value, fallback) => {
+    if (value === null || value === undefined || value === "") return fallback;
+    const parsed = Number(value);
+    return Number.isFinite(parsed)
+      ? Math.max(0, Math.min(30, parsed))
+      : fallback;
+  };
+  const bodyPadding = `${getBodyPadding(designSettings.cartbodytbPadding, 12)}px ${getBodyPadding(designSettings.cartbodylrPadding, 16)}px`;
   const itemStyleCss = [
     itemOpts.imageSize
       ? `#hub-cart-drawer-${blockId} .hub-item-img-wrap { width: ${itemOpts.imageSize}px !important; height: ${itemOpts.imageSize}px !important; }`
@@ -278,6 +288,9 @@ window.injectCartHTML = function (blockId, root) {
   bs.textContent = `
   ${cardBgCss ? `#hub-cart-drawer-${blockId} .hub-cart-item { background: ${cardBgCss} !important; }` : ""}
   ${Number.isFinite(Number(itemOpts.itemGap)) && itemOpts.itemGap !== null ? `#hub-cart-drawer-${blockId} .hub-cart-items { gap: ${Math.max(0, Math.min(80, Number(itemOpts.itemGap)))}px !important; }` : ""}
+  #hub-cart-drawer-${blockId} .hub-cart-items:not(.footer-empty):not(:has(> .hub-cart-empty)) { padding: ${bodyPadding} !important; }
+  #hub-cart-drawer-${blockId} .cart-plus-one-tick,
+  #hub-cart-drawer-${blockId} .hub-upsell.upsell-container { padding: ${bodyPadding} !important; }
   ${itemOpts.showCardBackground === false ? `#hub-cart-drawer-${blockId} .hub-cart-item { background: transparent !important; }` : ""}
   ${itemOpts.showCardBorder === false ? `#hub-cart-drawer-${blockId} .hub-cart-item { border: none !important; }` : ""}
   ${itemStyleCss}
@@ -312,18 +325,23 @@ window.injectCartHTML = function (blockId, root) {
   const expressPaymentsSettings =
     window.__HUB_ACTIVE_CART__?.expressPaymentsSettings || {};
 
-    const expressAlignment = expressPaymentsSettings.alignment || "stretch";
+  const expressAlignment = expressPaymentsSettings.alignment || "stretch";
 
-const expressAlignItems =
-  expressAlignment === "center" ? "center"
-  : expressAlignment === "left" ? "flex-start"
-  : expressAlignment === "right" ? "flex-end"
-  : "stretch";
+  const expressAlignItems =
+    expressAlignment === "center"
+      ? "center"
+      : expressAlignment === "left"
+        ? "flex-start"
+        : expressAlignment === "right"
+          ? "flex-end"
+          : "stretch";
 
-const expressMaxWidth =
-  expressAlignment === "stretch" ? "100%" : (expressPaymentsSettings.buttonWidth || "300px");
+  const expressMaxWidth =
+    expressAlignment === "stretch"
+      ? "100%"
+      : expressPaymentsSettings.buttonWidth || "300px";
 
-bs.textContent += `
+  bs.textContent += `
   #hub-express-payments-${blockId} .dynamic-checkout__content,
   #hub-express-payments-${blockId} shopify-accelerated-checkout-cart,
   #hub-express-payments-${blockId} shopify-accelerated-checkout,
@@ -379,18 +397,25 @@ bs.textContent += `
 
   // ── Editor sections, built per row so they follow cartSettings.sectionOrder ──
   const activeCart = window.__HUB_ACTIVE_CART__ || {};
-  const sectionBg = (key, html) => window.cartPlusSectionBg(cartSettings, key, html);
+  const sectionBg = (key, html) =>
+    window.cartPlusSectionBg(cartSettings, key, html);
   const sectionOrder = cartSettings.sectionOrder || {};
   const upsellsOnTop = activeCart.upsellsSettings?.position === "top";
   const defaultOrder = window.cartPlusDefaultOrder;
   const bodyDefault = upsellsOnTop
     ? ["Cross-sell", "One Tick Upsell", "Products in cart"]
     : defaultOrder.Body;
-  const headerOrder = window.cartPlusResolveOrder(sectionOrder.Header, defaultOrder.Header);
+  const headerOrder = window.cartPlusResolveOrder(
+    sectionOrder.Header,
+    defaultOrder.Header,
+  );
   const bodyOrder = sectionOrder.Body
     ? window.cartPlusResolveOrder(sectionOrder.Body, bodyDefault)
     : bodyDefault;
-  const footerOrder = window.cartPlusResolveOrder(sectionOrder.Footer, defaultOrder.Footer);
+  const footerOrder = window.cartPlusResolveOrder(
+    sectionOrder.Footer,
+    defaultOrder.Footer,
+  );
 
   // custom HTML blocks are rows too (their ids sit in the saved order)
   const blockRows = Object.fromEntries(
@@ -402,8 +427,10 @@ bs.textContent += `
   const slot = (content) => (content ? `<div>${content}</div>` : "");
   const annSettings = activeCart.announcementSettings;
   const upsellOn = on(activeCart.upsellsSettings);
-  const upsellPos = activeCart.upsellsSettings?.position === "top" ? "top" : "bottom";
-  const trustPos = activeCart.trustBadgesSettings?.position === "top" ? "top" : "bottom";
+  const upsellPos =
+    activeCart.upsellsSettings?.position === "top" ? "top" : "bottom";
+  const trustPos =
+    activeCart.trustBadgesSettings?.position === "top" ? "top" : "bottom";
   const trustHtml = (pos) =>
     on(activeCart.trustBadgesSettings) && trustPos === pos
       ? sectionBg(
@@ -412,7 +439,9 @@ bs.textContent += `
         )
       : "";
   const renderRows = (order, rows) =>
-    order.map((key) => (key in rows ? rows[key] : blockRows[key] || "")).join("");
+    order
+      .map((key) => (key in rows ? rows[key] : blockRows[key] || ""))
+      .join("");
 
   const renderFooterRows = (order, rows) =>
     order
@@ -505,16 +534,31 @@ bs.textContent += `
   "
 ></div>
   `;
+
+  const continueShoppingButtonLink =
+    cartSettings.continueShoppingButtonLink || "";
+
+  const safeLink = /^(https?:\/\/|\/)/.test(continueShoppingButtonLink || "")
+    ? continueShoppingButtonLink
+    : "";
+
   const continueHTML = `
-        ${
-          designSettings.continueshopping
-            ? `<a id="hub-continue-shopping-${blockId}" href="#" class="hub-continue-shopping" style="color:${designSettings.textColor}"
-           onclick="(function(e){e.preventDefault();document.getElementById('hub-close-${blockId}').click();})(event)">
+  ${
+    designSettings.continueshopping
+      ? `<a id="hub-continue-shopping-${blockId}"
+           href="${safeLink || "#"}"
+           class="hub-continue-shopping"
+           style="color:${designSettings.textColor}"
+           ${
+             safeLink
+               ? ""
+               : `onclick="(function(e){e.preventDefault();document.getElementById('hub-close-${blockId}').click();})(event)"`
+           }>
           ${continueShoppingText}
         </a>`
-            : ""
-        }
-  `;
+      : ""
+  }
+`;
   const modalsHTML = `
       <!-- COUPON SUCCESS MODAL -->
       <div id="hub-coupon-success-${blockId}" class="hub-coupon-success-overlay" style="display:none;">
@@ -595,13 +639,16 @@ bs.textContent += `
     "Progress Bar": !on(activeCart.rewardsSettings)
       ? ""
       : sectionBg(
-      "Progress Bar",
-      `<div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;" class="cart-plus-internal-rewards cart-plus-public-rewards tier-card upcart-rewards"></div>`,
-    ),
+          "Progress Bar",
+          `<div id="hub-rewards-${blockId}" style="display:none;flex-shrink:0;" class="cart-plus-internal-rewards cart-plus-public-rewards tier-card upcart-rewards"></div>`,
+        ),
   };
 
   const bodyRows = {
-    "One Tick Upsell": sectionBg("One Tick Upsell", window.cartPlusOneTickContainerHTML?.(blockId, cartSettings) || ""),
+    "One Tick Upsell": sectionBg(
+      "One Tick Upsell",
+      window.cartPlusOneTickContainerHTML?.(blockId, cartSettings) || "",
+    ),
     "Products in cart": `
       <div id="hub-cart-items-${blockId}" class="hub-cart-items ${disableFixedFooter ? "no-fixed-footer" : ""}">
         ${itemsSkeleton}
@@ -628,7 +675,8 @@ bs.textContent += `
     Summary: `${window.cartPlusSummaryContainerHTML?.(blockId, cartSettings) || ""}${legacySummaryHTML}`,
     "Discount code": sectionBg(
       "Discount code",
-      window.cartPlusDiscountTemplateHTML?.(blockId, discountCodesSettings) || discountRowHTML,
+      window.cartPlusDiscountTemplateHTML?.(blockId, discountCodesSettings) ||
+        discountRowHTML,
     ),
     "Age Verification": window.cartPlusAgeHTML(blockId, cartSettings),
     Login: window.cartPlusLoginHTML(cartSettings),
@@ -648,18 +696,29 @@ bs.textContent += `
     window.cartPlusBgCss(cartSettings.cartItem?.sectionBackground) ||
     designSettings.bodyBackground ||
     "";
-  const headerBackground = designSettings.headerBackground || headerSettings.backgroundColor;
-  const footerBackground = designSettings.footerBackground || designSettings.accentColor || "";
+  const headerBackground =
+    designSettings.headerBackground || headerSettings.backgroundColor;
+  const footerBackground =
+    designSettings.footerBackground || designSettings.accentColor || "";
   const floating = !!designSettings.floating;
-  const drawerWidth = (designSettings.desktopWidth === "wide" ? 500 : 440) - (floating ? 32 : 0);
+  const drawerWidth =
+    (designSettings.desktopWidth === "wide" ? 500 : 440) - (floating ? 32 : 0);
   const themedVars = designSettings.themed
     ? `color:${designSettings.textColor};${floating ? "border-radius:" + designSettings.drawerRadius + "px;" : ""}--cp-surface:${designSettings.backgroundColor};--cp-text:${designSettings.textColor};--cp-card-radius:${designSettings.cardRadius}px;--cp-field-radius:${designSettings.fieldRadius}px;--cp-image-radius:${designSettings.imageRadius}px;${designSettings.accentBorder ? "--cp-accent-border:" + designSettings.accentBorder + ";" : ""}${designSettings.accentSolid ? "--cp-accent-solid:" + designSettings.accentSolid + ";" : ""}${designSettings.themed && designSettings.buttonColor ? "--cp-accent-bg:" + designSettings.buttonColor + ";" : ""}`
     : "";
 
   // Custom font (Appearance → Fonts). Whitelisted so the setting can't inject anything.
   const CART_PLUS_FONTS = [
-    "Poppins", "Inter", "Roboto", "Montserrat", "Playfair Display",
-    "Open Sans", "Lato", "Nunito", "Raleway", "Merriweather",
+    "Poppins",
+    "Inter",
+    "Roboto",
+    "Montserrat",
+    "Playfair Display",
+    "Open Sans",
+    "Lato",
+    "Nunito",
+    "Raleway",
+    "Merriweather",
   ];
   let customFontVar = "";
   if (!designSettings.inheritFonts) {
@@ -667,7 +726,8 @@ bs.textContent += `
       ? designSettings.customFont
       : CART_PLUS_FONTS[0];
     customFontVar = `--cart-custom-font:'${fontName}';`;
-    const fontLinkId = "cart-plus-font-" + fontName.replace(/\s+/g, "-").toLowerCase();
+    const fontLinkId =
+      "cart-plus-font-" + fontName.replace(/\s+/g, "-").toLowerCase();
     if (!document.getElementById(fontLinkId)) {
       const link = document.createElement("link");
       link.id = fontLinkId;

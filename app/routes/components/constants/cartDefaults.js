@@ -257,6 +257,7 @@ export const defaultCartSettings = {
   savingsText: "Save",
   emptyCartMessage: "Your cart is empty",
   continueShoppingText: "Or continue shopping",
+  continueShoppingButtonLink: "/collections",
   discountsSavingsText: "Discounts",
   checkoutButtonText: "Checkout • {{total_price}}",
   showBundleSingular: "Show 1 item",

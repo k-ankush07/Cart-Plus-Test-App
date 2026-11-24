@@ -3671,7 +3671,7 @@ select.hub-compact-variant {
 }
 .cart-plus-footer-stack .hub-continue-shopping {
   padding-top: 0;
-  padding-bottom: 5px;
+  padding-bottom: 15px;
 }
 .cart-plus-footer-stack > .cp-sec:not([data-cp-first]) .hub-cart-checkout-btn {
   margin-top: 0 !important;
