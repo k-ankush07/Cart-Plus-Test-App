@@ -401,15 +401,17 @@ export default function UpsellsSettings({
                   </ButtonGroup>
                 </BlockStack>
               )}
-              <RangeSlider
-                label="Image size"
-                min={60}
-                max={imageSizeMax}
-                output
-                value={imageSize}
-                suffix={<Text as="span">{imageSize} px</Text>}
-                onChange={(val) => update("imageSize", val)}
-              />
+              {upsellsSettings.layout !== "compact" && (
+                <RangeSlider
+                  label="Image size"
+                  min={60}
+                  max={imageSizeMax}
+                  output
+                  value={imageSize}
+                  suffix={<Text as="span">{imageSize} px</Text>}
+                  onChange={(val) => update("imageSize", val)}
+                />
+              )}
               <RangeSlider
                 label="Radius"
                 min={0}

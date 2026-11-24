@@ -468,8 +468,11 @@ window.hubUtils = {
       layout === "side"
         ? `${sidePanelRadius}%`
         : `${u.radius * imageScale}px`;
+    const fullWidthImage = (Number(u.imageSize) || 0) >= 140;
     const imageBox = [
-      layout === "side"
+      fullWidthImage
+        ? `width:100%;max-width:100%;box-sizing:border-box;`
+        : layout === "side"
         ? `width:${scaledImageSize}px;max-width:100%;box-sizing:border-box;`
         : `width:${scaledImageSize * imageScale}px;max-width:100%;`,
       u.radius !== null && u.radius !== undefined

@@ -223,9 +223,11 @@ export default function Upsells({
 
   const imageScale = 1;
   const scaledImageSize = Math.min(Number(imageSize) || 70, 140);
+  // At the 140px maximum the image switches to full width
+  const fullWidthImage = (Number(imageSize) || 0) >= 140;
   const imageBox = {
-    width: scaledImageSize,
-    minWidth: scaledImageSize,
+    width: fullWidthImage ? "100%" : scaledImageSize,
+    minWidth: fullWidthImage ? 0 : scaledImageSize,
     flexShrink: 0,
     aspectRatio: "1 / 1",
     ...(radius !== null
@@ -234,7 +236,7 @@ export default function Upsells({
   };
   const sidePanelImageBox = {
     ...imageBox,
-    width: scaledImageSize,
+    width: fullWidthImage ? "100%" : scaledImageSize,
     minWidth: 0,
     maxWidth: "100%",
     alignSelf: "center",
