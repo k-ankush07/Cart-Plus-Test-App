@@ -301,7 +301,7 @@ const MainContent = memo(function MainContent({
           blockId={activeTab}
           cartSettings={cartSettings}
           handleChange={handleChange}
-          onDeleted={() => setActiveTab?.("Header")}
+          onDeleted={() => setActiveTab?.("Template")}
         />
       ) : (
         componentMap[activeTab] || (

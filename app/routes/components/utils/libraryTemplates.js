@@ -241,7 +241,7 @@ export const LIBRARY_TEMPLATES = [
   --social-proof-heart-color: #E24343;
 }
 .social-proof-slide__block-rating {
-    display: flex; align-items: center; justify-content: flex-start;
+    display: flex; align-items: center; justify-content: flex-start; gap: 10px;
     font-size: 14px; width: fit-content; margin: 10px auto;
 }
 .social-proof-slide__block-hearts {
@@ -282,12 +282,13 @@ export const LIBRARY_TEMPLATES = [
     color: #A71E1E;
     text-align: center;
     padding: 6px;
-    margin-top: 20px;
+    margin: 20px;
     border-radius: 20px;
     width: 300px;
     margin-left: auto;
     margin-right: auto;
     font-size: 14px;
+    font-weight: 450;
   }
 </style>`,
   },
@@ -307,7 +308,7 @@ export const LIBRARY_TEMPLATES = [
     transition: transform 0.3s;
   }
   .unique-rating-stars-Edc789 svg:hover { transform: scale(1.3); }
-  .unique-rating-text-Rfv012 { font-size: 14px; color: #333; }
+  .unique-rating-text-Rfv012 { font-size: 14px; color: #333;font-weight: 450; }
 </style>
 <div class="unique-rating-container-Wsx456">
   <div class="unique-rating-stars-Edc789">
@@ -324,7 +325,7 @@ export const LIBRARY_TEMPLATES = [
     code: `<style>
     .unique-review-container-Abc {
         display: flex; align-items: center; gap: 8px;
-        font-size: 12px; width: fit-content; margin: 10px auto;
+        font-size: 12px; width: fit-content; margin: 10px auto; font-weight: 500; 
     }
     .unique-review-count-Def, .unique-review-rating-Ghi, .unique-verified-purchase-Jkl {
         display: flex; align-items: center;
@@ -425,6 +426,7 @@ export const LIBRARY_TEMPLATES = [
   p {
     font-size: 14px; line-height: 1.2;
     text-align: center; margin: 6px 0;
+    font-weight: 500;
   }
 </style>
 <p>🗸 Ultra fast charging</p>
@@ -490,7 +492,7 @@ export const LIBRARY_TEMPLATES = [
     category: "trust",
     type: "html",
     code: `<style>
-    .usa-widget-7907 { text-align: center; margin: 10px 0; }
+    .usa-widget-7907 { text-align: center; margin: 10px 0;line-height: 1.2; }
     .usa-text-7907 {
         font-size: 14px; color: #333333;
         display: flex; align-items: center; justify-content: center;
@@ -661,6 +663,7 @@ export const LIBRARY_TEMPLATES = [
     right: -4px; bottom: -4px; border-radius: 24px;
     background: linear-gradient(135deg, #26F0FF, #E82356);
     z-index: -1;
+    display: block!important;
   }
 </style>
 <div class="center">
@@ -695,7 +698,7 @@ export const LIBRARY_TEMPLATES = [
     title: "30-day money back V2",
     category: "trust",
     type: "html",
-    code: `<div class="unique-container-Abc123Xyz" style="background-color: white; border: 1px solid #E2E2E2; border-radius: 10px; padding: 10px; margin-top: 5px; margin-bottom: 5px; position: relative; overflow: hidden;">
+    code: `<div class="unique-container-Abc123Xyz" style="line-height: 1; background-color: white; border: 1px solid #E2E2E2; border-radius: 10px; padding: 10px; margin-top: 5px; margin-bottom: 5px; position: relative; overflow: hidden;">
   <div class="unique-circle-Abc123Xyz"></div>
   <span class="unique-text-Abc123Xyz" style="margin-left: 10px; font-size: 16px;">30-day money back Guarantee</span>
 </div>
@@ -726,14 +729,14 @@ export const LIBRARY_TEMPLATES = [
         background-color: #ff4d4d; padding: 10px 20px;
         display: flex; align-items: center;
     }
-    .unique-deal-text-Abc123 { font-weight: 700; color: white; }
+    .unique-deal-text-Abc123 { font-weight: 700; color: white; line-height: 20px; }
     .unique-deal-timer-container-Abc123 {
         background-color: #ff6666; padding: 10px 20px;
         display: flex; align-items: center; justify-content: center;
         flex-grow: 1;
     }
     .unique-deal-timer-Abc123 {
-        font-size: 16px; font-weight: 700; color: white;
+        font-size: 16px; font-weight: 700; color: white; line-height: 20px;
         animation: unique-timerAnimation-Abc123 1s ease-in-out infinite alternate;
     }
     @keyframes unique-timerAnimation-Abc123 {
@@ -759,6 +762,7 @@ export const LIBRARY_TEMPLATES = [
         display: flex; align-items: center;
         font-size: 14px; color: #ff9900;
         width: fit-content; margin: 10px auto;
+        line-height: 1;
     }
     .unique-highlight-AbC456 {
         background-color: #ffe6cc; padding: 2px 5px;
@@ -939,7 +943,7 @@ export const LIBRARY_TEMPLATES = [
     title: "Free shipping with icon",
     category: "trust",
     type: "html",
-    code: `<div style="display: flex; align-items: center; justify-content: center; color: #00493B; margin: 10px 0;">
+    code: `<div style="display: flex; align-items: center; justify-content: center; color: #00493B; margin: 10px 0; line-height: 1.2; ">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#00493B" viewBox="0 0 20 20">
         <path fill="#00493B" d="M1.45831 4.16675c-.34505 0-.624997.27995-.624997.625s.279947.625.624997.625h5.41667c.34505 0 .625.27995.625.625s-.27995.625-.625.625H1.45831c-.34505 0-.624997.27995-.624997.625s.279947.625.624997.625h3.75c.34506 0 .625.27995.625.625s-.27994.625-.625.625h-3.75c-.34505 0-.624997.27995-.624997.625s.279947.62495.624997.62495h2.08334c.34505 0 .625.28.625.625 0 .3451-.27995.625-.625.625H1.45831c-.34505 0-.624997.28-.624997.625v.8334c0 1.033.842017 1.875 1.874997 1.875h.29731c.27344.9592 1.15669 1.6666 2.20269 1.6666 1.04601 0 1.92926-.7074 2.20269-1.6666h3.839V6.04175c0-1.03299-.842-1.875-1.87502-1.875H1.45831ZM12.5 5.83341v8.54169c0 1.263 1.0286 2.2916 2.2916 2.2916 1.0461 0 1.9293-.7074 2.2027-1.6666h.2973c1.0374 0 1.875-.8377 1.875-1.875v-2.6498c0-.2625-.0542-.52513-.1627-.76168L17.7756 6.9467c-.2995-.67492-.9701-1.11329-1.7123-1.11329H12.5Zm1.6666 1.25h1.8967c.2474 0 .471.1454.5708.3711l.6836 1.54297c.1237.27561-.0781.58594-.3798.58594h-2.7713c-.23 0-.4166-.18664-.4166-.41667V7.50008c0-.23003.1866-.41667.4166-.41667ZM5.20831 13.3334c.57509 0 1.04167.4666 1.04167 1.0417 0 .5751-.46658 1.0416-1.04167 1.0416-.57508 0-1.04166-.4665-1.04166-1.0416 0-.5751.46658-1.0417 1.04166-1.0417Zm9.58329 0c.5751 0 1.0417.4666 1.0417 1.0417 0 .5751-.4666 1.0416-1.0417 1.0416-.575 0-1.0416-.4665-1.0416-1.0416 0-.5751.4666-1.0417 1.0416-1.0417Z"/>
     </svg>
@@ -1011,6 +1015,7 @@ export const LIBRARY_TEMPLATES = [
     padding: 8px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     font-size: 14px; color: #d6336c;
     width: fit-content; margin: 10px auto;
+    line-height: 1; 
   }
   .unique-badge-icon-Ghi789 {
     width: 20px; height: 20px; margin-right: 8px;
@@ -1042,6 +1047,7 @@ export const LIBRARY_TEMPLATES = [
     font-size: 14px; color: #5cb85c;
     width: fit-content; margin: 10px auto;
     transition: transform 0.3s ease-in-out;
+    line-height: 1;
   }
   .unique-badge-icon-Tuv789 {
     margin-right: 8px; font-size: 20px;
@@ -1064,6 +1070,7 @@ export const LIBRARY_TEMPLATES = [
     padding: 8px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     font-size: 14px; color: #f0ad4e;
     width: fit-content; margin: 10px auto;
+    line-height: 1;
   }
   .unique-badge-icon-Def123 {
     margin-right: 8px; font-size: 20px;
@@ -1086,6 +1093,7 @@ export const LIBRARY_TEMPLATES = [
     padding: 8px 12px; box-shadow: 0 4px 6px rgba(255, 117, 24, 0.5);
     font-size: 14px; color: #fff;
     width: fit-content; margin: 10px auto;
+    line-height: 1;
   }
   .unique-badge-icon-Hel789 {
     margin-right: 8px; font-size: 20px; color: #fff;
@@ -1108,6 +1116,7 @@ export const LIBRARY_TEMPLATES = [
     padding: 8px 12px; box-shadow: 0 4px 6px rgba(255, 235, 59, 0.5);
     font-size: 14px; color: #000;
     width: fit-content; margin: 10px auto;
+    line-height: 1;
   }
   .badge-icon-easter {
     margin-right: 8px; font-size: 20px; color: #000;
