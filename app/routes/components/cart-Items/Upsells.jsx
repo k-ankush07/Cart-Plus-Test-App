@@ -226,8 +226,9 @@ export default function Upsells({
   // At the 140px maximum the image switches to full width
   const fullWidthImage = (Number(imageSize) || 0) >= 140;
   const imageBox = {
-    width: fullWidthImage ? "100%" : scaledImageSize,
-    minWidth: fullWidthImage ? 0 : scaledImageSize,
+    // List / Carousel: at the 140px maximum the image drops to 75px
+    width: fullWidthImage ? 75 : scaledImageSize,
+    minWidth: fullWidthImage ? 75 : scaledImageSize,
     flexShrink: 0,
     aspectRatio: "1 / 1",
     ...(radius !== null

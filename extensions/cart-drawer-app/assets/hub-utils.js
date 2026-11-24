@@ -470,8 +470,10 @@ window.hubUtils = {
         : `${u.radius * imageScale}px`;
     const fullWidthImage = (Number(u.imageSize) || 0) >= 140;
     const imageBox = [
-      fullWidthImage
+      fullWidthImage && layout === "side"
         ? `width:100%;max-width:100%;box-sizing:border-box;`
+        : fullWidthImage
+        ? `width:75px;max-width:100%;`
         : layout === "side"
         ? `width:${scaledImageSize}px;max-width:100%;box-sizing:border-box;`
         : `width:${scaledImageSize * imageScale}px;max-width:100%;`,
