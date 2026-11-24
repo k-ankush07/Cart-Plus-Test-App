@@ -35,7 +35,7 @@ export default function CheckoutButton({
     s.label ?? cartSettings?.checkoutButtonText ?? "Checkout • {{Price}}";
   const radius = s.radius ?? (Number(designSettings?.buttonRadius) || 0);
 
-   const handleChange1 = (key, value) => {
+  const handleChange1 = (key, value) => {
     setDesignSettings((prev) => ({
       ...prev,
       [key]: value,
@@ -45,12 +45,19 @@ export default function CheckoutButton({
   return (
     <div className="mainContent">
       <BlockStack gap="400">
+        <Box>
+          <InlineStack align="space-between" blockAlign="center">
+            <InlineStack blockAlign="center" gap="100">
+              <Icon source={CartIcon} />
+              <Text variant="headingMd" as="h2">
+                Checkout Button
+              </Text>
+            </InlineStack>
+          </InlineStack>
+        </Box>
         <Card>
           <BlockStack gap="300">
             <InlineStack blockAlign="center" gap="100">
-              <Box>
-                <Icon source={CartIcon} />
-              </Box>
               <Text variant="headingMd" as="h2">
                 Checkout Button
               </Text>

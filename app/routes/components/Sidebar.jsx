@@ -153,13 +153,13 @@ const Switch = ({ checked, onChange, label }) => (
 const SectionTitle = ({ children }) => (
   <InlineStack gap="200" blockAlign="center" wrap={false}>
     <div className="sb-line">
-      <Divider />
+      <Divider borderColor="border-inverse" borderWidth="025" />
     </div>
-    <Text as="span" variant="bodyXs" tone="subdued" fontWeight="semibold">
+    <Text as="span" variant="bodyXs" tone="subdued" fontWeight="bold">
       {String(children).toUpperCase()}
     </Text>
     <div className="sb-line">
-      <Divider />
+      <Divider borderColor="border-inverse" borderWidth="025" />
     </div>
   </InlineStack>
 );

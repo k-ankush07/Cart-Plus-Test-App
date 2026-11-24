@@ -15,8 +15,14 @@ import {
   Tag,
   Text,
   TextField,
+  Box 
 } from "@shopify/polaris";
-import { CalendarIcon, ClockIcon, GlobeIcon, CalendarTimeIcon } from "@shopify/polaris-icons";
+import {
+  CalendarIcon,
+  ClockIcon,
+  GlobeIcon,
+  CalendarTimeIcon,
+} from "@shopify/polaris-icons";
 
 import {
   MARKET_MODES,
@@ -40,7 +46,8 @@ const SectionTitle = ({ icon, children }) => (
 
 export default function CartVisibility({ cartSettings, handleChange }) {
   const s = getVisibility(cartSettings);
-  const update = (patch) => handleChange("cartSettings", patchVisibility(patch));
+  const update = (patch) =>
+    handleChange("cartSettings", patchVisibility(patch));
 
   const zones = useMemo(() => timezoneOptions(), []);
   const authenticatedFetch = useAuthenticatedFetch();
@@ -56,11 +63,13 @@ export default function CartVisibility({ cartSettings, handleChange }) {
       try {
         const res = await authenticatedFetch("/shopify/markets");
         const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || `Request failed: ${res.status}`);
+        if (!res.ok)
+          throw new Error(data?.error || `Request failed: ${res.status}`);
         if (!cancelled) setMarketList(data.markets || []);
       } catch (err) {
         console.error("Failed to load markets:", err);
-        if (!cancelled) setMarketsError("Couldn't load your markets. Please try again.");
+        if (!cancelled)
+          setMarketsError("Couldn't load your markets. Please try again.");
       } finally {
         if (!cancelled) setMarketsLoading(false);
       }
@@ -74,8 +83,10 @@ export default function CartVisibility({ cartSettings, handleChange }) {
   const [draft, setDraft] = useState([]);
 
   const needsMarkets = s.marketMode !== "all";
-  const actionLabel = s.marketMode === "except" ? "Exclude markets" : "Add markets";
-  const labelOf = (id) => marketList.find((m) => m.id === id)?.name || "Unknown market";
+  const actionLabel =
+    s.marketMode === "except" ? "Exclude markets" : "Add markets";
+  const labelOf = (id) =>
+    marketList.find((m) => m.id === id)?.name || "Unknown market";
 
   const openPicker = () => {
     setDraft(s.markets);
@@ -89,10 +100,22 @@ export default function CartVisibility({ cartSettings, handleChange }) {
   return (
     <div className="mainContent">
       <BlockStack gap="400">
+        <Box>
+          <InlineStack align="space-between" blockAlign="center">
+            <InlineStack blockAlign="center" gap="100">
+              <Icon source={GlobeIcon} />
+              <Text variant="headingMd" as="h2">
+                Cart markets
+              </Text>
+            </InlineStack>
+          </InlineStack>
+        </Box>
+
         <Card>
           <BlockStack gap="300">
-            <SectionTitle icon={GlobeIcon}>Cart markets</SectionTitle>
-
+            <Text variant="headingMd" as="h2">
+                Cart markets
+              </Text>
             <InlineGrid columns={2} gap="200">
               {MARKET_MODES.map((m) => (
                 <RadioButton
@@ -114,7 +137,9 @@ export default function CartVisibility({ cartSettings, handleChange }) {
                     {s.markets.map((id) => (
                       <Tag
                         key={id}
-                        onRemove={() => update({ markets: s.markets.filter((x) => x !== id) })}
+                        onRemove={() =>
+                          update({ markets: s.markets.filter((x) => x !== id) })
+                        }
                       >
                         {labelOf(id)}
                       </Tag>
@@ -123,7 +148,8 @@ export default function CartVisibility({ cartSettings, handleChange }) {
                 )}
                 {s.markets.length === 0 && (
                   <Text tone="subdued" variant="bodySm">
-                    Select at least one market. Until then, this cart shows in all markets.
+                    Select at least one market. Until then, this cart shows in
+                    all markets.
                   </Text>
                 )}
               </BlockStack>
@@ -218,7 +244,9 @@ export default function CartVisibility({ cartSettings, handleChange }) {
       <Modal
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
-        title={actionLabel === "Exclude markets" ? "Exclude markets" : "Add markets"}
+        title={
+          actionLabel === "Exclude markets" ? "Exclude markets" : "Add markets"
+        }
         primaryAction={{
           content: "Done",
           disabled: draft.length === 0,
@@ -227,7 +255,9 @@ export default function CartVisibility({ cartSettings, handleChange }) {
             setPickerOpen(false);
           },
         }}
-        secondaryActions={[{ content: "Cancel", onAction: () => setPickerOpen(false) }]}
+        secondaryActions={[
+          { content: "Cancel", onAction: () => setPickerOpen(false) },
+        ]}
       >
         <Modal.Section>
           <BlockStack gap="200">
@@ -243,13 +273,18 @@ export default function CartVisibility({ cartSettings, handleChange }) {
             {marketList.map((m) => (
               <Checkbox
                 key={m.id}
-                label={m.status && m.status !== "ACTIVE" ? `${m.name} (${m.status.toLowerCase()})` : m.name}
+                label={
+                  m.status && m.status !== "ACTIVE"
+                    ? `${m.name} (${m.status.toLowerCase()})`
+                    : m.name
+                }
                 checked={draft.includes(m.id)}
                 onChange={() => toggleDraft(m.id)}
               />
             ))}
             <Text tone="caution" variant="bodySm">
-              Keep at least one market ticked — to show this cart everywhere, choose All markets instead.
+              Keep at least one market ticked — to show this cart everywhere,
+              choose All markets instead.
             </Text>
           </BlockStack>
         </Modal.Section>

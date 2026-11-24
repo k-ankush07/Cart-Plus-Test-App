@@ -6,8 +6,10 @@ import {
   Select,
   Text,
   TextField,
+  Box,
+  Icon 
 } from "@shopify/polaris";
-
+import { PersonIcon } from "@shopify/polaris-icons";
 import RichTextEditor from "../ui/RichTextEditor";
 import { ALIGNMENT_OPTIONS, getLogin, patchLogin } from "../utils/loginMessage";
 import "../../../index.css";
@@ -24,13 +26,28 @@ const Field = ({ label, value, onChange }) => (
 
 const px = (val) => Math.max(0, Math.min(100, Number(val) || 0));
 
-export default function LoginMessage({ cartSettings, handleChange, settingsKey = "login" }) {
+export default function LoginMessage({
+  cartSettings,
+  handleChange,
+  settingsKey = "login",
+}) {
   const s = getLogin(cartSettings, settingsKey);
-  const update = (patch) => handleChange("cartSettings", patchLogin(patch, settingsKey));
+  const update = (patch) =>
+    handleChange("cartSettings", patchLogin(patch, settingsKey));
 
   return (
     <div className="mainContent">
       <BlockStack gap="400">
+        <Box>
+          <InlineStack align="space-between" blockAlign="center">
+            <InlineStack blockAlign="center" gap="100">
+              <Icon source={PersonIcon} />
+              <Text variant="headingMd" as="h2">
+                Login 
+              </Text>
+            </InlineStack>
+          </InlineStack>
+        </Box>
         <Card>
           <BlockStack gap="300">
             <InlineStack align="space-between" blockAlign="center">

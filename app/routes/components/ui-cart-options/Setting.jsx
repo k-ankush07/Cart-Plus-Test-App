@@ -100,8 +100,8 @@ export default function Setting({ handleChange, cartSettings }) {
     return (
         <div className="mainContent">
             {/* Page heading — matches reference HTML exactly */}
-            <Box paddingBlockEnd="400">
-                <BlockStack gap="400">
+            <Box>
+                <BlockStack gap="200">
                     <InlineStack gap="300" align="space-between" blockAlign="center">
                         <InlineStack blockAlign="center" gap="100">
                             <Box>

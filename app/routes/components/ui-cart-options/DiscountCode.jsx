@@ -636,7 +636,7 @@ export default function DiscountCode({
           {color("invalidColor", "Error text color", "#D72C0D")}
         </Section>
 
-        <Banner tone="warning">
+        {/* <Banner tone="warning">
           <BlockStack gap="200">
             <Text variant="bodyMd" fontWeight="semibold">
               Discount limitations
@@ -671,7 +671,7 @@ export default function DiscountCode({
               </Button>
             </div>
           </BlockStack>
-        </Banner>
+        </Banner> */}
       </BlockStack>
     </div>
   );

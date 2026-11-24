@@ -67,7 +67,13 @@ function TrustRow({ badge, index, count, onChange, onMove, onRemove }) {
         }
       >
         <Box padding="200">
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 36px)", gap: 6 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 36px)",
+              gap: 6,
+            }}
+          >
             {TRUST_ICONS.map(({ key }) => (
               <button
                 key={key}
@@ -87,7 +93,10 @@ function TrustRow({ badge, index, count, onChange, onMove, onRemove }) {
                   alignItems: "center",
                   justifyContent: "center",
                   borderRadius: 8,
-                  border: badge.icon === key ? "2px solid #303030" : "1px solid #e3e3e3",
+                  border:
+                    badge.icon === key
+                      ? "2px solid #303030"
+                      : "1px solid #e3e3e3",
                   boxSizing: "border-box",
                 }}
               >
@@ -120,14 +129,27 @@ function TrustRow({ badge, index, count, onChange, onMove, onRemove }) {
         disabled={index === count - 1}
         onClick={() => onMove(1)}
       />
-      <Button variant="plain" tone="critical" icon={XIcon} accessibilityLabel="Remove badge" onClick={onRemove} />
+      <Button
+        variant="plain"
+        tone="critical"
+        icon={XIcon}
+        accessibilityLabel="Remove badge"
+        onClick={onRemove}
+      />
     </InlineStack>
   );
 }
 
-export default function PaymentBadges({ cartSettings, handleChange, shop, accessToken, apiUrl }) {
+export default function PaymentBadges({
+  cartSettings,
+  handleChange,
+  shop,
+  accessToken,
+  apiUrl,
+}) {
   const s = getPaymentBadges(cartSettings);
-  const update = (patch) => handleChange("cartSettings", patchPaymentBadges(patch));
+  const update = (patch) =>
+    handleChange("cartSettings", patchPaymentBadges(patch));
 
   const [open, setOpen] = useState(false);
   // edits stay in a draft until "Save changes"
@@ -145,12 +167,16 @@ export default function PaymentBadges({ cartSettings, handleChange, shop, access
   };
 
   const draftSettings = { custom: draft.custom };
-  const selected = draft.badges.map((id) => resolveBadge(draftSettings, id)).filter(Boolean);
+  const selected = draft.badges
+    .map((id) => resolveBadge(draftSettings, id))
+    .filter(Boolean);
 
   const toggleBadge = (id) =>
     setDraft((d) => ({
       ...d,
-      badges: d.badges.includes(id) ? d.badges.filter((x) => x !== id) : [...d.badges, id],
+      badges: d.badges.includes(id)
+        ? d.badges.filter((x) => x !== id)
+        : [...d.badges, id],
     }));
 
   // drop `fromId` where `toId` is
@@ -209,6 +235,16 @@ export default function PaymentBadges({ cartSettings, handleChange, shop, access
   return (
     <div className="mainContent">
       <BlockStack gap="400">
+        <Box>
+          <InlineStack align="space-between" blockAlign="center">
+            <InlineStack blockAlign="center" gap="100">
+              <Icon source={PaymentIcon} />
+              <Text variant="headingMd" as="h2">
+                Payment Badges
+              </Text>
+            </InlineStack>
+          </InlineStack>
+        </Box>
         <Card>
           <BlockStack gap="300">
             <InlineStack align="space-between" blockAlign="center">
@@ -280,7 +316,9 @@ export default function PaymentBadges({ cartSettings, handleChange, shop, access
                   count={s.trustBadges.length}
                   onChange={(patch) => changeTrust(t.id, patch)}
                   onMove={(dir) => moveTrust(i, dir)}
-                  onRemove={() => setTrust(s.trustBadges.filter((x) => x.id !== t.id))}
+                  onRemove={() =>
+                    setTrust(s.trustBadges.filter((x) => x.id !== t.id))
+                  }
                 />
               ))}
               <div>
@@ -349,7 +387,9 @@ export default function PaymentBadges({ cartSettings, handleChange, shop, access
             setOpen(false);
           },
         }}
-        secondaryActions={[{ content: "Cancel", onAction: () => setOpen(false) }]}
+        secondaryActions={[
+          { content: "Cancel", onAction: () => setOpen(false) },
+        ]}
       >
         <Modal.Section>
           <InlineGrid columns={{ xs: 1, md: 2 }} gap="500">
@@ -447,7 +487,9 @@ export default function PaymentBadges({ cartSettings, handleChange, shop, access
                         cursor: "pointer",
                         padding: 3,
                         borderRadius: 8,
-                        border: on ? "2px solid #303030" : "2px solid transparent",
+                        border: on
+                          ? "2px solid #303030"
+                          : "2px solid transparent",
                       }}
                     >
                       <BadgeIcon badge={b} height={36} />
@@ -510,7 +552,8 @@ export default function PaymentBadges({ cartSettings, handleChange, shop, access
                 </div>
               </div>
               <Text tone="subdued" variant="bodySm">
-                Badges appear under the primary checkout button, in the exact order set on the left.
+                Badges appear under the primary checkout button, in the exact
+                order set on the left.
               </Text>
             </BlockStack>
           </InlineGrid>

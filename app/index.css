@@ -2459,6 +2459,11 @@ p.price.cart-plus-public-component-upsell-tile__price-row {
   padding-bottom: 12px !important;
 }
 
+.sb-line hr {
+  border: 0;
+  border-top: 1px solid #9d9d9d !important;
+}
+
 .cart-plus-upsells-side-panel h3.cart-plus-internal-component-upsell-tile__title.cart-plus-public-component-upsell-tile__title {
     text-align: center;
 }
