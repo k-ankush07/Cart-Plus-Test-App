@@ -26,12 +26,6 @@ import {
   ExternalIcon,
   CheckIcon,
   RefreshIcon,
-  MegaphoneIcon,
-  TargetIcon,
-  CartIcon,
-  DiscountIcon,
-  PlusCircleIcon,
-  ReceiptIcon,
   ChatIcon,
   PhoneIcon,
 } from "@shopify/polaris-icons";
@@ -52,10 +46,10 @@ import {
   Await,
   useLoaderData,
   useNavigate,
-  useRevalidator,
 } from "react-router-dom";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import LiveDot from "./components/ui/LiveDot";
+import AppFeatures from "./components/AppFeatures";
 
 // ─── pulse animation ───────────────────────────────────────────────────────────
 
@@ -924,7 +918,6 @@ function DashboardInner({
   currency,
 }) {
   const navigate = useNavigate();
-  const revalidator = useRevalidator();
 
   const authHeaders = useMemo(
     () => ({
@@ -1103,54 +1096,6 @@ function DashboardInner({
       (shopRevenue.upsellRevenue ?? 0) +
       (shopRevenue.subscriptionRevenue ?? 0) +
       (shopRevenue.baseRevenue ?? 0);
-
-  const featureCart = liveCarts[0];
-  const cartIdForFeatures = featureCart?.cartId;
-
-  const appFeatures = [
-    {
-      title: "Announcements",
-      subtitle: "Show messages in your cart",
-      icon: MegaphoneIcon,
-      module: "announcements",
-      isActive: featureCart?.announcementSettings?.enabled === false,
-    },
-    {
-      title: "Progress Bar",
-      subtitle: "Free shipping & reward goals",
-      icon: TargetIcon,
-      module: "rewards",
-      isActive: featureCart?.rewardsSettings?.enabled === false,
-    },
-    {
-      title: "One Click Upsell",
-      subtitle: "Add products in a single tap",
-      icon: CartIcon,
-      module: "one-tick-upsell",
-      isActive: !!featureCart?.cartSettings?.oneTick?.enabled,
-    },
-    {
-      title: "Discount Code",
-      subtitle: "Apply discounts in cart",
-      icon: DiscountIcon,
-      module: "discount-codes",
-      isActive: featureCart?.discountCodesSettings?.enabled === false,
-    },
-    {
-      title: "Add-ons",
-      subtitle: "Gift wrap, insurance & more",
-      icon: PlusCircleIcon,
-      module: "addons",
-      isActive: featureCart?.addonsSettings?.enabled === false,
-    },
-    {
-      title: "Summary",
-      subtitle: "Order summary in your cart",
-      icon: ReceiptIcon,
-      module: "summary",
-      isActive: !!featureCart?.cartSettings?.summary?.enabled,
-    },
-  ];
 
   useEffect(() => {
     if (window.Cal) return;
@@ -1817,71 +1762,7 @@ function DashboardInner({
 
         {/* ── App Features ── */}
         <Box paddingBlockStart="800">
-          <BlockStack gap="300">
-            <Text variant="headingMd" as="h3">
-              App Features 🔥
-            </Text>
-
-            <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
-              {appFeatures.map((f) => (
-                <Card key={f.title} padding="400">
-                  <BlockStack gap="300">
-                    <InlineStack gap="300" wrap={false}>
-                      <div
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 8,
-                          background: "#f1f2f3",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Icon source={f.icon} />
-                      </div>
-
-                      <div
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 2,
-                        }}
-                      >
-                        <Text variant="bodyMd" as="p">
-                          {f.title}
-                        </Text>
-                        <Text variant="headingSm" as="p">
-                          {f.subtitle}
-                        </Text>
-                      </div>
-
-                      {f.isActive && (
-                        <div style={{ flexShrink: 0 }}>
-                          <Badge tone="success">Active</Badge>
-                        </div>
-                      )}
-                    </InlineStack>
-
-                    <Button
-                      fullWidth
-                      disabled={!cartIdForFeatures}
-                      onClick={() =>
-                        navigate(
-                          `/app/carts/editor/${cartIdForFeatures}?from=home&module=${f.module}`,
-                        )
-                      }
-                    >
-                      Configure
-                    </Button>
-                  </BlockStack>
-                </Card>
-              ))}
-            </InlineGrid>
-          </BlockStack>
+          <AppFeatures apiUrl={apiUrl} shop={shop} carts={carts} from="home" />
         </Box>
         {/* <Box paddingBlockStart="400">
         <BlockStack gap="300">

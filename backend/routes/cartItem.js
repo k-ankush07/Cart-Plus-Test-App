@@ -1471,12 +1471,7 @@ router.get("/cart-stats", async (req, res) => {
               FROM analytics WHERE shop = $1 AND ${NOT_EMPTY_CART}${r}
               GROUP BY "cartId","eventType"`,
     );
-    // 3. shop level analytics
-    const q3 = withRange(
-      (r) => `SELECT "eventType", COUNT(*)::int AS count
-              FROM analytics WHERE shop = $1${r} GROUP BY "eventType"`,
-    );
-    // 4. shop revenue breakdown (optionally cartIds filter)
+    // Shop revenue breakdown (optionally cartIds filter)
     const q4 = (() => {
       const params = [cleanShop];
       let r = dateSql(params, start, end);
@@ -1494,7 +1489,7 @@ router.get("/cart-stats", async (req, res) => {
               FROM order_revenue WHERE shop = $1${r}`,
       };
     })();
-    // 5. orders by cart by date (cart_order_counts, date TEXT)
+    // Orders by cart by date (cart_order_counts, date TEXT)
     const q5 = (() => {
       const params = [cleanShop];
       const r = dateSql(params, startStr, endStr, '"date"');
@@ -1505,7 +1500,7 @@ router.get("/cart-stats", async (req, res) => {
               GROUP BY "cartId","date" ORDER BY "date" ASC`,
       };
     })();
-    // 6. impressions by cart by date
+    // Impressions by cart by date
     const q6 = withRange(
       (r) => `SELECT "cartId", ${DAY} AS date, COUNT(*)::int AS count
               FROM analytics
@@ -1513,14 +1508,14 @@ router.get("/cart-stats", async (req, res) => {
                 AND "eventType" = 'cart_impression'${r}
               GROUP BY "cartId", ${DAY} ORDER BY date ASC`,
     );
-    // 7. revenue by cart by date
+    // Revenue by cart by date
     const q7 = withRange(
       (r) => `SELECT "cartId", ${DAY} AS date, ${REV_SUM} AS "totalRevenue"
               FROM order_revenue WHERE shop = $1 AND ${NOT_EMPTY_CART}${r}
               GROUP BY "cartId", ${DAY} ORDER BY date ASC`,
     );
 
-    // 8 & 9. A/B variants (sirf jab published cart + active variants ho)
+    // A/B variants (sirf jab published cart + active variants ho)
     const hasVariants = !!publishedCart && activeVariantIds.length > 0;
     const q8 = hasVariants
       ? (() => {
@@ -1568,7 +1563,6 @@ router.get("/cart-stats", async (req, res) => {
     const [
       revenueByCart,
       analyticsByCart,
-      shopAnalytics,
       shopRevenueRows,
       ordersByCartByDate,
       impressionsByCartByDate,
@@ -1578,7 +1572,6 @@ router.get("/cart-stats", async (req, res) => {
     ] = await Promise.all([
       run(q1),
       run(q2),
-      run(q3),
       run(q4),
       run(q5),
       run(q6),
@@ -1669,24 +1662,6 @@ router.get("/cart-stats", async (req, res) => {
             : 0;
       });
     });
-
-    if (publishedCart?.cartId) {
-      const pid = publishedCart.cartId;
-      const hasPerCartAnalytics =
-        stats[pid] && (stats[pid].impressions > 0 || stats[pid].checkouts > 0);
-
-      if (!hasPerCartAnalytics) {
-        const shopImpressions =
-          shopAnalytics.find((e) => e.eventType === "cart_impression")?.count ||
-          0;
-        const shopCheckouts =
-          shopAnalytics.find((e) => e.eventType === "checkout_initiated")
-            ?.count || 0;
-
-        get(pid).impressions = shopImpressions;
-        get(pid).checkouts = shopCheckouts;
-      }
-    }
 
     const result = {};
     Object.entries(stats).forEach(

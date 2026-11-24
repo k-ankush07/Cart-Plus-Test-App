@@ -52,12 +52,6 @@ import {
   ChevronRightIcon,
   MenuVerticalIcon,
   SearchIcon,
-  MegaphoneIcon,
-  TargetIcon,
-  CartIcon,
-  DiscountIcon,
-  PlusCircleIcon,
-  ReceiptIcon,
   RefreshIcon,
 } from "@shopify/polaris-icons";
 
@@ -66,6 +60,7 @@ import { Await, useLoaderData, useNavigate } from "react-router-dom";
 import { Suspense, useState, useEffect, Fragment, createElement } from "react";
 import CartHoverCard from "./components/ui/CartHoverCard";
 import { requireShopData } from "./components/shop.server";
+import AppFeatures from "./components/AppFeatures";
 
 import {
   createCart,
@@ -677,53 +672,6 @@ const filteredCarts = [...carts]
 
   const limit = PLAN_ORDER_LIMITS[shopPlan] ?? PLAN_ORDER_LIMITS.free;
   const limitReached = currentMonthOrders >= limit;
-  const featureCart = [...carts]
-    .filter((cart) => cart.status === "published")
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-  const appFeatures = [
-    {
-      title: "Announcements",
-      subtitle: "Show messages in your cart",
-      icon: MegaphoneIcon,
-      module: "announcements",
-      isActive: featureCart?.announcementSettings?.enabled === false,
-    },
-    {
-      title: "Progress Bar",
-      subtitle: "Free shipping & reward goals",
-      icon: TargetIcon,
-      module: "rewards",
-      isActive: featureCart?.rewardsSettings?.enabled === false,
-    },
-    {
-      title: "One Click Upsell",
-      subtitle: "Add products in a single tap",
-      icon: CartIcon,
-      module: "one-tick-upsell",
-      isActive: !!featureCart?.cartSettings?.oneTick?.enabled,
-    },
-    {
-      title: "Discount Code",
-      subtitle: "Apply discounts in cart",
-      icon: DiscountIcon,
-      module: "discount-codes",
-      isActive: featureCart?.discountCodesSettings?.enabled === false,
-    },
-    {
-      title: "Add-ons",
-      subtitle: "Gift wrap, insurance & more",
-      icon: PlusCircleIcon,
-      module: "addons",
-      isActive: featureCart?.addonsSettings?.enabled === false,
-    },
-    {
-      title: "Summary",
-      subtitle: "Order summary in your cart",
-      icon: ReceiptIcon,
-      module: "summary",
-      isActive: !!featureCart?.cartSettings?.summary?.enabled,
-    },
-  ];
 
   const metricValue = (id, cart, s) => {
     if (id === "created") {
@@ -1348,70 +1296,14 @@ const filteredCarts = [...carts]
           </Layout.Section>
 
           {/* App Features */}
-
-          <Layout.Section gap="300">
+          <Layout.Section>
             <Box paddingBlockStart="800">
-              <BlockStack gap="300">
-                <Text variant="headingMd" as="h3">
-                  App Features 🔥
-                </Text>
-                <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
-                  {appFeatures.map((feature) => (
-                    <Card key={feature.title} padding="400">
-                      <BlockStack gap="300">
-                        <InlineStack gap="300" blockAlign="center" wrap={false}>
-                          <div
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: 8,
-                              background: "#f1f2f3",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              flexShrink: 0,
-                            }}
-                          >
-                            <Icon source={feature.icon} />
-                          </div>
-                          <div
-                            style={{
-                              flex: 1,
-                              minWidth: 0,
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 2,
-                            }}
-                          >
-                            <Text variant="bodyMd" as="p">
-                              {feature.title}
-                            </Text>
-                            <Text variant="headingSm" as="p">
-                              {feature.subtitle}
-                            </Text>
-                          </div>
-                          {feature.isActive && (
-                            <div style={{ flexShrink: 0 }}>
-                              <Badge tone="success">Active</Badge>
-                            </div>
-                          )}
-                        </InlineStack>
-                        <Button
-                          fullWidth
-                          disabled={!featureCart?.cartId}
-                          onClick={() =>
-                            navigate(
-                              `/app/carts/editor/${featureCart.cartId}?from=carts&module=${feature.module}`,
-                            )
-                          }
-                        >
-                          Configure
-                        </Button>
-                      </BlockStack>
-                    </Card>
-                  ))}
-                </InlineGrid>
-              </BlockStack>
+              <AppFeatures
+                apiUrl={apiUrl}
+                shop={shop}
+                carts={carts}
+                from="carts"
+              />
             </Box>
           </Layout.Section>
         </Layout>
